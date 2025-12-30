@@ -36,31 +36,28 @@
   - ✅ medians.R extracted (42 functions, 2,474 lines, 69 KB)
   - ✅ plotting.R extracted (97 functions, 4,519 lines, 119 KB)
   - ✅ effect-size.R extracted (41 functions, 1,516 lines, 43 KB)
-  - 🔄 Next: power.R, winsorize.R, and remaining modules
+  - ✅ power.R extracted (10 functions, 292 lines, 7.3 KB)
+  - 🔄 Next: winsorize.R, parallel.R, and remaining modules
 
 ### Overall Metrics
-- **Modules completed**: 15 of 20 (75%)
-- **Functions extracted**: 1,141 of 1,971 (57.9%)
-- **Lines extracted**: 61,636 of 97,199 (63.4%)
-- **Total size**: 1.76 MB of ~2.6 MB (67.7%)
-- **Status**: All 15 modules source successfully ✅
+- **Modules completed**: 16 of 20 (80%)
+- **Functions extracted**: 1,151 of 1,971 (58.4%)
+- **Lines extracted**: 61,928 of 97,199 (63.7%)
+- **Total size**: 1.77 MB of ~2.6 MB (68.1%)
+- **Status**: All 16 modules source successfully ✅
 
 ### Recently Completed (2025-12-30)
-**effect-size.R module** - Effect Size Functions:
-- 41 functions, 1,516 lines, 43 KB
-- Q statistics: qhat, qhatd, qhatds1, qhatDEP, qhatdepPB, shiftdhd
-- AKP robust effect size: akp.effect, akp.effect.ci
-- General ES summaries: ES.summary, ES.summary.CI, ES.summary.sub, ES.sum.REL.MAG
-- Dependent groups ES: dep.ES.summary, dep.ES.summary.CI, dep.ES.summary.sub, DEP.PAIR.ES
-- Factorial/ANOVA ES: IND.PAIR.ES, RCES, twowayESM, bw.es.A, bw.es.B, bw.es.I, ww.es
-- Interaction ES: inter.ES, inter.TDES.sub, interES.2by2, interJK.ESmul
-- Linear combination ES: lin.ES, linES.sub, rmlinES, LCES, deplin.ES.summary.CI
-- Mixed design ES: wwlin.es, wwwlin.es, bwwA.es, bwwA.es.sub
-- Miscellaneous: qno.est, t1way.EXES.ci, MUL.ES.sum, BEST.cell, KMS.ES.M
+**power.R module** - Power Analysis Functions:
+- 10 functions, 292 lines, 7.3 KB
+- One-sample power: pow1, powt1est, powt1an
+- Two-sample power: pow2an, powest
+- ANOVA power: anova_power, ancmg1.power
+- General tests: z.power, power.chisq.test
+- Regression explanatory power: epow
 - Successfully sourced and validated with all dependencies
 
 ### Next Steps
-1. Continue with remaining Week 3 modules (power.R, winsorize.R)
+1. Continue with remaining Week 3 modules (winsorize.R)
 2. Extract final modules (parallel.R, classification.R, special.R, zzz-internal.R)
 3. End-of-phase validation when all 20 modules extracted
 
@@ -147,7 +144,8 @@ All preparation tasks completed successfully:
 | medians.R | ✅ | 42 | 2,474 | 69 KB | msmed, med2g, medpb, MEDanova, med.effect |
 | plotting.R | ✅ | 97 | 4,519 | 119 KB | rplot, lplot, g2plot, gamplot, Bagplot, fbplot |
 | effect-size.R | ✅ | 41 | 1,516 | 43 KB | qhat, ES.summary, akp.effect, dep.ES.summary |
-| **TOTAL** | **15/20** | **1,141** | **61,636** | **1.76 MB** | **57.9% of functions** |
+| power.R | ✅ | 10 | 292 | 7.3 KB | pow1, powt1est, pow2an, anova_power, epow |
+| **TOTAL** | **16/20** | **1,151** | **61,928** | **1.77 MB** | **58.4% of functions** |
 
 ### Target Module Structure (20 Files)
 
@@ -166,9 +164,9 @@ All preparation tasks completed successfully:
 | covariance.R | ~50 | Covariance estimation ✅ |
 | mcp.R | ~55 | Multiple comparisons ✅ |
 | medians.R | ~40 | Median-based methods ✅ |
-| plotting.R | ~50 | Visualization |
-| effect-size.R | ~35 | Effect sizes |
-| power.R | ~25 | Power analysis |
+| plotting.R | ~50 | Visualization ✅ |
+| effect-size.R | ~35 | Effect sizes ✅ |
+| power.R | ~25 | Power analysis ✅ |
 | winsorize.R | ~30 | Winsorization methods |
 | parallel.R | ~80 | Multicore functions (*MC) |
 | classification.R | ~40 | Classification/discriminant |
@@ -304,7 +302,12 @@ All preparation tasks completed successfully:
   - Q statistics, AKP robust effect sizes, general ES summaries
   - Factorial/ANOVA ES, interaction ES, linear combination ES
   - Successfully sourced and validated
-- [ ] Extract power.R, winsorize.R, parallel.R
+- [x] Extract power.R
+  - **COMPLETED**: 10 functions extracted (292 lines, 7.3 KB)
+  - Includes: pow1, powt1est, powt1an, pow2an, powest, anova_power, ancmg1.power
+  - One-sample power, two-sample power, ANOVA power, regression power
+  - Successfully sourced and validated
+- [ ] Extract winsorize.R, parallel.R
 - [ ] Extract classification.R, special.R
 - [ ] Extract zzz-internal.R (last)
 - [ ] **End-of-phase validation**: Replace R/ with R-new/, build & check package
@@ -637,4 +640,4 @@ When resuming work:
 
 ---
 
-*Last updated: 2025-12-30 - Phase 1, Week 3 In Progress (1,141 functions extracted across 15 modules, effect-size.R completed)*
+*Last updated: 2025-12-30 - Phase 1, Week 3 In Progress (1,151 functions extracted across 16 modules, power.R completed)*
