@@ -33,35 +33,33 @@
   - ✅ regression-advanced.R extracted (75 functions, 3,433 lines, 95.2 KB)
   - ✅ covariance.R extracted (43 functions, 1,034 lines, 27 KB)
   - ✅ mcp.R extracted (106 functions, 9,046 lines, 255 KB)
-  - 🔄 Next: medians.R and remaining modules
+  - ✅ medians.R extracted (42 functions, 2,474 lines, 69 KB)
+  - 🔄 Next: plotting.R and remaining modules
 
 ### Overall Metrics
-- **Modules completed**: 12 of 20 (60%)
-- **Functions extracted**: 961 of 1,971 (48.8%)
-- **Lines extracted**: 53,062 of 97,199 (54.6%)
-- **Total size**: 1.5 MB of ~2.6 MB (57.7%)
-- **Status**: All 12 modules source successfully ✅
+- **Modules completed**: 13 of 20 (65%)
+- **Functions extracted**: 1,003 of 1,971 (50.9%)
+- **Lines extracted**: 55,601 of 97,199 (57.2%)
+- **Total size**: 1.6 MB of ~2.6 MB (61.5%)
+- **Status**: All 13 modules source successfully ✅
 
 ### Recently Completed (2025-12-30)
-**mcp.R module** - Multiple Comparisons Procedures:
-- 106 functions, 9,046 lines, 255 KB
-- Contrast generators: con1way, con2way, con3way
-- Linear contrasts: linconb, linconpb, linconbt, linconEP, linconES, linconQS
-- Dependent contrasts: lindep, lindepbt, pairdepb
-- Factorial MCP: mcp2a, mcp2atm, mcp3atm, mcp3med
-- Repeated measures: rmmcp, wmcp, rmmcppb, rmmcpES, rmmcpQS
-- Between-within: bwmcp, bwwmcp, bbwmcp, bwrmcp, bwimcp
-- Bootstrap MCP: mcppb, tmcppb, bmcppb, pbmcp, bbmcppb, wwmcppb
-- Split-plot: spmcpa, spmcpi, spmcpb, sppba, sppbb, sppbi
-- Quantile-based: qdmcp, qdmcpdif, mwwmcp, twwmcp, tkmcp
-- Effect size variants: esmcp, bbmcpEP, bbmcpQS, wmcpAKP, bmcpAKP
-- Specialized: stepmcp, signmcp, discmcp, sintmcp, anctsmcp, skmcp
-- P-value adjustment: mcpPV, mcpKadjp
+**medians.R module** - Median-based Methods:
+- 42 functions, 2,474 lines, 69 KB
+- Marginal medians: msmed, msmedse, msmedci, msmedsub
+- Median SE/CI: bpmed, bpmedse, medcipb
+- Two-group comparisons: med2g, medhd2g, medpb, medpb2, dmedpb
+- ANOVA: med1way, med2way, MEDanova, med2mcp
+- Median effects: med.effect, MED.ES, medpb.es
+- Specialized: medind, dlinmed, wwmed, wwwmed, medcurve, dmedian
+- Ophthalmology median functions: oph.*.commedian, oph.*.comMedAE
+- Utilities: WMW2med, runstest.med, exmed
 - Successfully sourced and validated with all dependencies
+- **Note**: Added missing pb2gen and pb2genMC to two-sample.R (dependency fix)
 
 ### Next Steps
-1. Continue with remaining Week 3 modules (medians.R, plotting.R, etc.)
-2. Extract remaining modules (effect-size.R, power.R, winsorize.R, parallel.R, classification.R, special.R)
+1. Continue with remaining Week 3 modules (plotting.R, effect-size.R, etc.)
+2. Extract remaining modules (power.R, winsorize.R, parallel.R, classification.R, special.R)
 3. End-of-phase validation when all 20 modules extracted
 
 ### ✅ Phase 0: Preparation (COMPLETED - 2025-12-30)
@@ -136,7 +134,7 @@ All preparation tasks completed successfully:
 | location.R | ✅ | 74 | 3,242 | 86.5 KB | mest, mom, hd, tmean, onestep |
 | outliers.R | ✅ | 64 | 2,713 | 67.4 KB | outpro, out, outbox, depth |
 | bootstrap.R | ✅ | 30 | 915 | 21.9 KB | bootdpci, onesampb, trimcibt |
-| two-sample.R | ✅ | 103 | 5,186 | 138.5 KB | yuen, yuend, wmw, pb2gen, cid |
+| two-sample.R | ✅ | 103 | 5,251 | 142 KB | yuen, yuend, wmw, pb2gen, cid |
 | anova.R | ✅ | 57 | 3,547 | 99.8 KB | t1way, t2way, t3way, bwtrim |
 | correlation.R | ✅ | 108 | 5,045 | 162.0 KB | pbcor, scor, tau, wincor, mscor |
 | ancova.R | ✅ | 149 | 11,014 | 286.1 KB | ancova, Dancova, ancES, ancGLOB |
@@ -144,7 +142,8 @@ All preparation tasks completed successfully:
 | regression-advanced.R | ✅ | 75 | 3,433 | 95.2 KB | qhdsm, smean, logreg, mlrreg, KNNreg |
 | covariance.R | ✅ | 43 | 1,034 | 27 KB | covogk, wincov, skipcov, dcov, covmba |
 | mcp.R | ✅ | 106 | 9,046 | 255 KB | con1way, linconb, pairdepb, rmmcp, mcppb |
-| **TOTAL** | **12/20** | **961** | **53,062** | **1.5 MB** | **48.8% of functions** |
+| medians.R | ✅ | 42 | 2,474 | 69 KB | msmed, med2g, medpb, MEDanova, med.effect |
+| **TOTAL** | **13/20** | **1,003** | **55,601** | **1.6 MB** | **50.9% of functions** |
 
 ### Target Module Structure (20 Files)
 
@@ -161,8 +160,8 @@ All preparation tasks completed successfully:
 | regression.R | ~85 | Regression methods ✅ |
 | regression-advanced.R | ~60 | Quantile regression, etc. ✅ |
 | covariance.R | ~50 | Covariance estimation ✅ |
-| mcp.R | ~55 | Multiple comparisons |
-| medians.R | ~40 | Median-based methods |
+| mcp.R | ~55 | Multiple comparisons ✅ |
+| medians.R | ~40 | Median-based methods ✅ |
 | plotting.R | ~50 | Visualization |
 | effect-size.R | ~35 | Effect sizes |
 | power.R | ~25 | Power analysis |
@@ -215,11 +214,12 @@ All preparation tasks completed successfully:
 
 #### ✅ Week 2: Main Analysis Modules (COMPLETED 2025-12-30)
 - [x] Extract two-sample.R (~60 functions)
-  - **COMPLETED**: 103 functions extracted (5,186 lines, 138.5 KB)
-  - Includes: yuen, yuend, wmw, pb2gen, cid, qcomhd, trimpb2
+  - **COMPLETED**: 103 functions extracted (5,251 lines, 142 KB)
+  - Includes: yuen, yuend, wmw, pb2gen, pb2genMC, cid, qcomhd, trimpb2
   - Bootstrap methods, quantile comparisons, effect sizes
   - Successfully sourced and tested
   - **NOTE**: Excluded mulwmwv2 (brace mismatch in original source)
+  - **UPDATE 2025-12-30**: Added pb2gen and pb2genMC (were initially missed)
 - [x] Extract anova.R (~90 functions)
   - **COMPLETED**: 57 functions extracted (3,547 lines, 99.8 KB)
   - Includes: t1way, t2way, t3way, bwtrim, rmanova, pbanova
@@ -277,7 +277,16 @@ All preparation tasks completed successfully:
   - Specialized: stepmcp, signmcp, discmcp, sintmcp, anctsmcp, skmcp
   - P-value adjustment: mcpPV, mcpKadjp
   - Successfully sourced and validated
-- [ ] Extract medians.R
+- [x] Extract medians.R
+  - **COMPLETED**: 42 functions extracted (2,474 lines, 69 KB)
+  - Includes: msmed, msmedse, msmedci, msmedsub
+  - Two-group comparisons: med2g, medhd2g, medpb, medpb2, dmedpb
+  - ANOVA: med1way, med2way, MEDanova, med2mcp
+  - Effect sizes: med.effect, MED.ES, medpb.es
+  - Specialized: medind, dlinmed, wwmed, medcurve, dmedian
+  - Ophthalmology: oph.*.commedian, oph.*.comMedAE
+  - Successfully sourced and validated
+  - **Note**: Fixed missing pb2gen/pb2genMC in two-sample.R
 - [ ] Extract plotting.R, effect-size.R, power.R, winsorize.R, parallel.R
 - [ ] Extract classification.R, special.R
 - [ ] Extract zzz-internal.R (last)
@@ -611,4 +620,4 @@ When resuming work:
 
 ---
 
-*Last updated: 2025-12-30 - Phase 1, Week 3 In Progress (961 functions extracted across 12 modules, mcp.R completed)*
+*Last updated: 2025-12-30 - Phase 1, Week 3 In Progress (1,003 functions extracted across 13 modules, medians.R completed)*
