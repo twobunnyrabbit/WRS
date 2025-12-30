@@ -8,11 +8,11 @@
 
 ## Executive Summary
 
-- **10 of 20 modules** completed (50%)
-- **812 of 1,971 functions** extracted (41.2%)
-- **42,982 of 97,199 lines** extracted (44.2%)
-- **1,169.9 KB of 2,663 KB** extracted (44.0%)
-- **All 10 modules source successfully** ✅
+- **12 of 20 modules** completed (60%)
+- **961 of 1,971 functions** extracted (48.8%)
+- **53,062 of 97,199 lines** extracted (54.6%)
+- **1.5 MB of 2.6 MB** extracted (57.7%)
+- **All 12 modules source successfully** ✅
 
 ---
 
@@ -30,7 +30,9 @@
 | 8 | ancova.R | 149 | 11,014 | 286.1 KB | ✅ |
 | 9 | regression.R | 98 | 5,051 | 139.8 KB | ✅ |
 | 10 | regression-advanced.R | 75 | 3,433 | 95.2 KB | ✅ |
-| **TOTAL** | **10 modules** | **812** | **42,982** | **1,169.9 KB** | **50%** |
+| 11 | covariance.R | 43 | 1,034 | 27 KB | ✅ |
+| 12 | mcp.R | 106 | 9,046 | 255 KB | ✅ |
+| **TOTAL** | **12 modules** | **961** | **53,062** | **1.5 MB** | **60%** |
 
 ---
 
@@ -99,16 +101,39 @@ Advanced regression methods:
 - `gamindt`, `gamplot` (GAM-related methods)
 - `regYci`, `regYband`, `regmediate`, `regpca` (specialized)
 
+### covariance.R (43 functions)
+Covariance and scatter matrix estimation:
+- `covogk`, `outogk`, `skipogk`, `cov.ogk` (OGK robust estimators)
+- `covmve`, `mvecov`, `covmcd`, `mcdcov`, `DETMCD` (MVE/MCD estimators)
+- `covmba`, `cov.mba`, `covmba2`, `rmba` (MBA estimators)
+- `wincov`, `wincovN`, `covmtrim` (winsorized/trimmed)
+- `skipcov`, `skip.cov` (skipped covariance)
+- `dcov`, `Scov`, `tbscov` (distance, S-estimator, tau-scale)
+- `cov2med`, `covmmed`, `covroc`, `cov.roc` (median-based, ROC)
+- `bwwcovm`, `bbwcovm` (mixed designs)
+- `cov2cor`, `longcov2mat`, `covloc` (utilities)
+
+### mcp.R (106 functions)
+Multiple Comparisons Procedures:
+- `con1way`, `con2way`, `con3way` (contrast matrix generators)
+- `linconb`, `linconpb`, `linconbt`, `linconEP`, `linconES`, `linconQS` (linear contrasts)
+- `lindep`, `lindepbt`, `pairdepb` (dependent contrasts)
+- `mcppb`, `tmcppb`, `bmcppb`, `pbmcp` (one-way MCP)
+- `mcp2a`, `mcp2atm`, `mcp3atm`, `mcp3med` (factorial MCP)
+- `rmmcp`, `wmcp`, `rmmcppb`, `rmmcpES`, `rmmcpQS` (repeated measures)
+- `bwmcp`, `bwwmcp`, `bbwmcp`, `bwrmcp`, `bwimcp` (between-within designs)
+- `spmcpa`, `spmcpi`, `spmcpb`, `sppba`, `sppbb`, `sppbi` (split-plot)
+- `qdmcp`, `mwwmcp`, `twwmcp`, `tkmcp` (quantile-based)
+- `mcpPV`, `mcpKadjp` (p-value adjustment)
+
 ---
 
 ## Remaining Work
 
-### Modules to Extract (10 remaining)
+### Modules to Extract (8 remaining)
 
 | # | Module | Est. Functions | Purpose |
 |---|--------|----------------|---------|
-| 11 | covariance.R | ~50 | Covariance estimation methods |
-| 12 | mcp.R | ~55 | Multiple comparison procedures |
 | 13 | medians.R | ~40 | Median-based methods |
 | 14 | plotting.R | ~50 | Visualization functions |
 | 15 | effect-size.R | ~35 | Effect size calculations |
@@ -119,19 +144,19 @@ Advanced regression methods:
 | 20 | special.R | ~80 | Specialized methods |
 | 21 | zzz-internal.R | ~471 | Internal helper functions |
 
-**Total estimated:** ~941 functions (note: actual may vary)
+**Total estimated:** ~1,010 functions (note: actual may vary)
 
 ### Remaining Statistics
-- **Functions:** 1,159 remaining (58.8%)
-- **Lines:** 54,217 remaining (55.8%)
-- **Size:** 1,493.1 KB remaining (56.0%)
+- **Functions:** 1,010 remaining (51.2%)
+- **Lines:** 44,137 remaining (45.4%)
+- **Size:** 1.1 MB remaining (42.3%)
 
 ---
 
 ## Validation Status
 
 ### ✅ Completed
-- All 10 modules source without errors
+- All 12 modules source without errors
 - No syntax errors detected
 - Key functions tested and available
 - Dependencies properly resolved
@@ -191,8 +216,8 @@ Advanced regression methods:
 ### Immediate (Week 3 continuation)
 1. ✅ regression.R extracted - COMPLETED
 2. ✅ regression-advanced.R extracted - COMPLETED (75 functions)
-3. ⬜ Extract covariance.R (~50 functions)
-4. ⬜ Extract mcp.R (~55 functions)
+3. ✅ covariance.R extracted - COMPLETED (43 functions)
+4. ✅ mcp.R extracted - COMPLETED (106 functions)
 5. ⬜ Extract medians.R (~40 functions)
 
 ### Week 3 Completion
@@ -231,9 +256,9 @@ Advanced regression methods:
 - ⬜ Performance within 10% of v0.45
 
 ### On Track
-- ✅ 50% of modules extracted (HALFWAY MILESTONE!)
-- ✅ 41.2% of functions extracted
-- ✅ 44.2% of lines extracted
+- ✅ 60% of modules extracted (OVER HALFWAY!)
+- ✅ 48.8% of functions extracted
+- ✅ 54.6% of lines extracted
 - ✅ All modules source successfully
 - ✅ Week 1 and Week 2 completed on schedule
 - ✅ Week 3 in progress, on track

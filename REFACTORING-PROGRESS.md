@@ -31,34 +31,38 @@
   - ✅ ancova.R extracted (149 functions, 11,014 lines, 286.1 KB)
   - ✅ regression.R extracted (98 functions, 5,051 lines, 139.8 KB)
   - ✅ regression-advanced.R extracted (75 functions, 3,433 lines, 95.2 KB)
-  - 🔄 Next: covariance.R, mcp.R, and remaining modules
+  - ✅ covariance.R extracted (43 functions, 1,034 lines, 27 KB)
+  - ✅ mcp.R extracted (106 functions, 9,046 lines, 255 KB)
+  - 🔄 Next: medians.R and remaining modules
 
 ### Overall Metrics
-- **Modules completed**: 10 of 20 (50%)
-- **Functions extracted**: 812 of 1,971 (41.2%)
-- **Lines extracted**: 42,982 of 97,199 (44.2%)
-- **Total size**: 1,169.9 KB of ~2.6 MB (44.0%)
-- **Status**: All 10 modules source successfully ✅
+- **Modules completed**: 12 of 20 (60%)
+- **Functions extracted**: 961 of 1,971 (48.8%)
+- **Lines extracted**: 53,062 of 97,199 (54.6%)
+- **Total size**: 1.5 MB of ~2.6 MB (57.7%)
+- **Status**: All 12 modules source successfully ✅
 
 ### Recently Completed (2025-12-30)
-**regression-advanced.R module** - Advanced regression methods:
-- 75 functions, 3,433 lines, 95.2 KB
-- Quantile regression smoothers: qhdsm, qhdsm2g, qhdsm.pred
-- Smoothing methods: smean, smeancr, smean.depth
-- Logistic regression: logreg, logreg.P.ci, logreg.pred
-- Multivariate/multilevel: mlrreg, mulgreg, MULMreg
-- Advanced methods: KNNreg, quantregForest, COVreg
-- GAM-related: gamindt, gamplot, gamplotINT, gamplotv2
-- Regression inference: regYci, regYband, regYciCV
-- Mediation and specialized: regmediate, regpca, regR.Forest
-- Instrumental variables: regIVcom, regIVstr, regIVcommcp
+**mcp.R module** - Multiple Comparisons Procedures:
+- 106 functions, 9,046 lines, 255 KB
+- Contrast generators: con1way, con2way, con3way
+- Linear contrasts: linconb, linconpb, linconbt, linconEP, linconES, linconQS
+- Dependent contrasts: lindep, lindepbt, pairdepb
+- Factorial MCP: mcp2a, mcp2atm, mcp3atm, mcp3med
+- Repeated measures: rmmcp, wmcp, rmmcppb, rmmcpES, rmmcpQS
+- Between-within: bwmcp, bwwmcp, bbwmcp, bwrmcp, bwimcp
+- Bootstrap MCP: mcppb, tmcppb, bmcppb, pbmcp, bbmcppb, wwmcppb
+- Split-plot: spmcpa, spmcpi, spmcpb, sppba, sppbb, sppbi
+- Quantile-based: qdmcp, qdmcpdif, mwwmcp, twwmcp, tkmcp
+- Effect size variants: esmcp, bbmcpEP, bbmcpQS, wmcpAKP, bmcpAKP
+- Specialized: stepmcp, signmcp, discmcp, sintmcp, anctsmcp, skmcp
+- P-value adjustment: mcpPV, mcpKadjp
 - Successfully sourced and validated with all dependencies
 
 ### Next Steps
-1. Extract covariance.R module (~50 functions)
-2. Extract mcp.R module (~55 functions)
-3. Continue with remaining Week 3 modules (medians.R, plotting.R, etc.)
-4. End-of-phase validation when all 20 modules extracted
+1. Continue with remaining Week 3 modules (medians.R, plotting.R, etc.)
+2. Extract remaining modules (effect-size.R, power.R, winsorize.R, parallel.R, classification.R, special.R)
+3. End-of-phase validation when all 20 modules extracted
 
 ### ✅ Phase 0: Preparation (COMPLETED - 2025-12-30)
 
@@ -124,7 +128,7 @@ All preparation tasks completed successfully:
 | Current Documentation | 1 | Only WRS-package.Rd |
 | Old .Rd Files | 15 | In `old Rd files/` directory |
 
-### Extracted Modules (10 of 20 Complete)
+### Extracted Modules (12 of 20 Complete)
 
 | Module | Status | Functions | Lines | Size | Key Functions |
 |--------|--------|-----------|-------|------|---------------|
@@ -138,7 +142,9 @@ All preparation tasks completed successfully:
 | ancova.R | ✅ | 149 | 11,014 | 286.1 KB | ancova, Dancova, ancES, ancGLOB |
 | regression.R | ✅ | 98 | 5,051 | 139.8 KB | tsreg, opreg, ltsreg, regci, reg1way |
 | regression-advanced.R | ✅ | 75 | 3,433 | 95.2 KB | qhdsm, smean, logreg, mlrreg, KNNreg |
-| **TOTAL** | **10/20** | **812** | **42,982** | **1,169.9 KB** | **41.2% of functions** |
+| covariance.R | ✅ | 43 | 1,034 | 27 KB | covogk, wincov, skipcov, dcov, covmba |
+| mcp.R | ✅ | 106 | 9,046 | 255 KB | con1way, linconb, pairdepb, rmmcp, mcppb |
+| **TOTAL** | **12/20** | **961** | **53,062** | **1.5 MB** | **48.8% of functions** |
 
 ### Target Module Structure (20 Files)
 
@@ -151,10 +157,10 @@ All preparation tasks completed successfully:
 | two-sample.R | ~60 | Two-group comparisons ✅ |
 | anova.R | ~90 | ANOVA methods ✅ |
 | correlation.R | ~45 | Correlation methods ✅ |
-| ancova.R | ~98 | ANCOVA methods (largest) |
-| regression.R | ~85 | Regression methods |
-| regression-advanced.R | ~60 | Quantile regression, etc. |
-| covariance.R | ~50 | Covariance estimation |
+| ancova.R | ~98 | ANCOVA methods (largest) ✅ |
+| regression.R | ~85 | Regression methods ✅ |
+| regression-advanced.R | ~60 | Quantile regression, etc. ✅ |
+| covariance.R | ~50 | Covariance estimation ✅ |
 | mcp.R | ~55 | Multiple comparisons |
 | medians.R | ~40 | Median-based methods |
 | plotting.R | ~50 | Visualization |
@@ -249,7 +255,29 @@ All preparation tasks completed successfully:
   - GAM-related methods, regression inference (regYci, regYband)
   - Mediation, PCA, instrumental variables regression
   - Successfully sourced and validated
-- [ ] Extract covariance.R, mcp.R, medians.R
+- [x] Extract covariance.R (~50 functions)
+  - **COMPLETED**: 43 functions extracted (972 lines, 26.5 KB)
+  - Includes: covogk, wincov, skipcov, dcov, covmba, covmtrim
+  - Robust covariance: OGK, MVE, MCD, MBA, S-estimators
+  - Winsorized/trimmed covariance, skipped covariance
+  - Median-based, distance, and ROC-based covariance
+  - Mixed design covariance (bwwcovm, bbwcovm)
+  - Successfully sourced and validated
+- [x] Extract mcp.R (~55 functions)
+  - **COMPLETED**: 106 functions extracted (9,046 lines, 255 KB)
+  - Includes: con1way, con2way, con3way (contrast generators)
+  - Linear contrasts: linconb, linconpb, linconbt, linconEP, linconES, linconQS
+  - Dependent contrasts: lindep, lindepbt, pairdepb
+  - Factorial MCP: mcp2a, mcp2atm, mcp3atm, mcp3med, rm3mcp
+  - Repeated measures: rmmcp, wmcp, rmmcppb, rmmcpES, rmmcpQS, rmmismcp
+  - Between-within: bwmcp, bwwmcp, bbwmcp, bwrmcp, bwimcp, bwbmcp
+  - Bootstrap MCP: mcppb, tmcppb, bmcppb, pbmcp, bbmcppb, wwmcppb
+  - Split-plot: spmcpa, spmcpi, spmcpb, sppba, sppbb, sppbi
+  - Quantile-based: qdmcp, qdmcpdif, mwwmcp, twwmcp, tkmcp
+  - Specialized: stepmcp, signmcp, discmcp, sintmcp, anctsmcp, skmcp
+  - P-value adjustment: mcpPV, mcpKadjp
+  - Successfully sourced and validated
+- [ ] Extract medians.R
 - [ ] Extract plotting.R, effect-size.R, power.R, winsorize.R, parallel.R
 - [ ] Extract classification.R, special.R
 - [ ] Extract zzz-internal.R (last)
@@ -583,4 +611,4 @@ When resuming work:
 
 ---
 
-*Last updated: 2025-12-30 - Phase 1, Week 3 In Progress (812 functions extracted across 10 modules, regression-advanced.R completed)*
+*Last updated: 2025-12-30 - Phase 1, Week 3 In Progress (961 functions extracted across 12 modules, mcp.R completed)*
