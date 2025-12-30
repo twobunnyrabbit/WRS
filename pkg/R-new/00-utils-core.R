@@ -2753,40 +2753,6 @@ list(output=output,con=con,num.sig=num.sig)
 }
 
 
-pbos<-function(x,beta=.2){
-#
-#    Compute the one-step percentage bend measure of location
-#
-#
-temp<-sort(abs(x-median(x)))
-omhatx<-temp[floor((1-beta)*length(x))]
-psi<-(x-median(x))/omhatx
-i1<-length(psi[psi<(-1)])
-i2<-length(psi[psi>1])
-sx<-ifelse(psi<(-1),0,x)
-sx<-ifelse(psi>1,0,sx)
-pbos<-(sum(sx)+omhatx*(i2-i1))/(length(x)-i1-i2)
-pbos
-}
-
-pbos<-function(x,beta=.2){
-#
-#    Compute the one-step percentage bend measure of location
-#
-#
-temp<-sort(abs(x-median(x)))
-omhatx<-temp[floor((1-beta)*length(x))]
-psi<-(x-median(x))/omhatx
-i1<-length(psi[psi<(-1)])
-i2<-length(psi[psi>1])
-sx<-ifelse(psi<(-1),0,x)
-sx<-ifelse(psi>1,0,sx)
-pbos<-(sum(sx)+omhatx*(i2-i1))/(length(x)-i1-i2)
-pbos
-}
-
-
-# winval
 winval<-function(x,tr=.2){
 #
 #  Winsorize the data in the vector x.
@@ -2824,3 +2790,20 @@ pbvar<-(n*wcov(x,w,beta)/(2*(n-m-1)))
 pbvar<-pbvar[1,1]
 pbvar
 }
+
+pbos<-function(x,beta=.2){
+#
+#    Compute the one-step percentage bend measure of location
+#
+#
+temp<-sort(abs(x-median(x)))
+omhatx<-temp[floor((1-beta)*length(x))]
+psi<-(x-median(x))/omhatx
+i1<-length(psi[psi<(-1)])
+i2<-length(psi[psi>1])
+sx<-ifelse(psi<(-1),0,x)
+sx<-ifelse(psi>1,0,sx)
+pbos<-(sum(sx)+omhatx*(i2-i1))/(length(x)-i1-i2)
+pbos
+}
+

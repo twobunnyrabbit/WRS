@@ -263,21 +263,6 @@ list(coef=rbind(Ahat,Bhat),residuals=resL)
 # ============================================================================
 # mregdepth
 # ============================================================================
-mregdepth<-function(X,RES){
-X=as.matrix(X)
-XRES=elimna(cbind(X,RES))
-p=ncol(X)
-p1=p+1
-vals=NA
-for(j in 1:p)vals[j]=resdepth(XRES[,j],XRES[,p1])
-mdepthappr=min(vals)
-mdepthappr
-}
-
-
-# ============================================================================
-# regpord.sub
-# ============================================================================
 regpord.sub<-function(isub,x,y,cov.fun){
 xmat<-matrix(x[isub,],nrow(x),ncol(x))
 vals<-regvarp(xmat,y[isub],cov.fun=cov.fun)
@@ -1502,33 +1487,6 @@ list(test.stat=test,p.value=pval,est=est)
 # ============================================================================
 # regpecv
 # ============================================================================
-regpecv<-function(x,y,regfun=tsreg,varfun=pbvar,...){
-#
-# Estimate prediction error via leave-one-out cross-validation
-#
-# regfun defaults to Theil-Sen estimator
-# function returns measure of prediction error: robust measure of variation
-# applied to the n differences y_i-y_{-i}, i=1,...,n
-# where y_{-1} is estimate of y when ith vector of observations is omitted.
-#
-xy=elimna(cbind(x,y))
-x=as.matrix(x)
-px=ncol(x)
-px1=px+1
-n=nrow(xy)
-vals=NA
-for(i in 1:n){
-est=regfun(xy[-i,1:px],xy[-i,px1])$coef
-vals[i]=xy[i,px1]-(est[1]+sum(est[2:px1]*xy[i,1:px]))
-}
-pe=varfun(vals)
-pe
-}
-
-
-# ============================================================================
-# qhdplotsm
-# ============================================================================
 qhdplotsm<-function(x,y,q=.5,xlab="X",ylab="Y",pc=".",
 xout=FALSE,outfun=out,nboot=40,fr=1,...){
 #
@@ -2551,22 +2509,6 @@ output
 # ============================================================================
 # regcor
 # ============================================================================
-regcor<-function(x,y,regfun=winreg,corfun=wincor,xout=FALSE,outfun=outpro,
-plotit=FALSE,xlab='Y',ylab='Y.hat',...){
-#
-# Estimate strength of association based on some robust regression
-# estimator
-#
-yhat=regYhat(x,y,regfun=regfun,xout=xout,outfun=outfun,,...)
-est=corfun(yhat,y)
-if(plotit)plot(y,yhat,xlab=xlab,ylab=ylab)
-list(cor=est$cor,cor.sq=est$cor^2)
-}
-
-
-# ============================================================================
-# regstr
-# ============================================================================
 regstr<-function(x,y,varfun=winvar,regfun=tsreg,xout=FALSE,outfun=outpro,...){
 #
 # Exlanatory strength of association; similar to R^2.
@@ -2996,154 +2938,6 @@ e
 
 # ============================================================================
 # smean.depth
-# ============================================================================
-smean.depth<-function(m){
-#
-#  Skipped estimator based on projection for removing outliers.
-#  Uses random projections
-#
-m=elimna(m)
-id=outpro.depth(m)$keep
-val=apply(m[id,],2,mean)
-val
-}
-
-
-# ============================================================================
-# smeancr.cord.oph
-# ============================================================================
-smeancr.cord.oph<-function(m,nullv=rep(0,ncol(m)),cop=3,MM=FALSE,SEED=TRUE,
-nboot=500,plotit=TRUE,MC=FALSE,xlab="VAR 1",ylab="VAR 2",STAND=TRUE){
-#
-# m is an n by p matrix
-#
-# Test hypothesis that multivariate skipped estimators
-# are all equal to the null value, which defaults to zero.
-# The level of the test is .05.
-#
-# Eliminate outliers using a projection method
-# That is, determine center of data using:
-#
-# cop=1 Donoho-Gasko median,
-# cop=2 MCD,
-# cop=3 marginal medians.
-# cop=4 MVE
-#
-# For each point
-# consider the line between it and the center
-# project all points onto this line, and
-# check for outliers using
-#
-# MM=F, a boxplot rule.
-# MM=T, rule based on MAD and median
-#
-# Repeat this for all points. A point is declared
-# an outlier if for any projection it is an outlier
-# using a modification of the usual boxplot rule.
-#
-# Eliminate any outliers and compute means
-#  using remaining data.
-#
-if(SEED)set.seed(2)
-m<-elimna(m)
-n<-nrow(m)
-est=smean(m,MC=MC,cop=cop,STAND=STAND)
-crit.level<-.05
-if(n<=120)crit.level<-.045
-if(n<=80)crit.level<-.04
-if(n<=60)crit.level<-.035
-if(n<=40)crit.level<-.03
-if(n<=30)crit.level<-.025
-if(n<=20)crit.level<-.02
-data<-matrix(sample(n,size=n*nboot,replace=TRUE),nrow=nboot)
-val<-matrix(NA,ncol=ncol(m),nrow=nboot)
-for(j in 1: nboot){
-mm<-m[data[j,],]
-val[j,]<-smean(mm,MC=MC,cop=cop,STAND=STAND)
-}
-if(!MC)temp<-pdis(rbind(val,nullv),center=est)
-if(MC)temp<-pdisMC(rbind(val,nullv),center=est)
-sig.level<-sum(temp[nboot+1]<temp[1:nboot])/nboot
-list(p.value=sig.level,boot.vals=val,center=est)
-}
-
-
-# ============================================================================
-# smeancr.cord
-# ============================================================================
-smeancr.cord<-function(m,nullv=rep(0,ncol(m)),cop=3,MM=FALSE,SEED=TRUE,
-nboot=500,plotit=TRUE,MC=FALSE,xlab="VAR 1",ylab="VAR 2",STAND=TRUE){
-#
-# m is an n by p matrix
-#
-# Test hypothesis that multivariate skipped estimators
-# are all equal to the null value, which defaults to zero.
-# The level of the test is .05.
-#
-# Eliminate outliers using a projection method
-# That is, determine center of data using:
-#
-# cop=1 Donoho-Gasko median,
-# cop=2 MCD,
-# cop=3 marginal medians.
-# cop=4 MVE
-#
-# For each point
-# consider the line between it and the center
-# project all points onto this line, and
-# check for outliers using
-#
-# MM=F, a boxplot rule.
-# MM=T, rule based on MAD and median
-#
-# Repeat this for all points. A point is declared
-# an outlier if for any projection it is an outlier
-# using a modification of the usual boxplot rule.
-#
-# Eliminate any outliers and compute means
-#  using remaining data.
-#
-if(SEED)set.seed(2)
-m<-elimna(m)
-n<-nrow(m)
-est=smean(m,MC=MC,cop=cop,STAND=STAND)
-crit.level<-.05
-if(n<=120)crit.level<-.045
-if(n<=80)crit.level<-.04
-if(n<=60)crit.level<-.035
-if(n<=40)crit.level<-.03
-if(n<=30)crit.level<-.025
-if(n<=20)crit.level<-.02
-data<-matrix(sample(n,size=n*nboot,replace=TRUE),nrow=nboot)
-val<-matrix(NA,ncol=ncol(m),nrow=nboot)
-for(j in 1: nboot){
-mm<-m[data[j,],]
-val[j,]<-smean(mm,MC=MC,cop=cop,STAND=STAND)
-}
-if(!MC)temp<-pdis(rbind(val,nullv),center=est)
-if(MC)temp<-pdisMC(rbind(val,nullv),center=est)
-sig.level<-sum(temp[nboot+1]<temp[1:nboot])/nboot
-if(ncol(m)==2 && plotit){
-plot(val[,1],val[,2],xlab=xlab,ylab=ylab)
-temp3<-est
-points(temp3[1],temp3[2],pch="+")
-ic<-round((1-crit.level)*nboot)
-if(!MC)temp<-pdis(val,center=est)
-if(MC)temp<-pdisMC(val,center=est)
-temp.dis<-order(temp)
-xx<-val[temp.dis[1:ic],]
-xord<-order(xx[,1])
-xx<-xx[xord,]
-temp<-chull(xx)
-lines(xx[temp,])
-lines(xx[c(temp[1],temp[length(temp)]),])
-}
-list(p.value=sig.level)
-}
-
-
-# ============================================================================
-# reg.resid
 # ============================================================================
 reg.resid<-function(x,y,regfun=tsreg,xout=FALSE,outfun=outpro,...){
 #

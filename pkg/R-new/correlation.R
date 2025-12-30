@@ -15,54 +15,6 @@
 # Functions: 96
 # ==============================================================================
 
-wincor<-function(x,y=NULL,tr=.2){
-#   Compute the Winsorized correlation between x and y.
-#
-#   tr is the amount of Winsorization
-#   This function also returns the Winsorized covariance
-#
-#    Pairwise deletion of missing values is performed.
-#
-#   x is a vector, or it can be a matrix with two columns when y=NULL
-#
-
-if(!is.null(y[1])){
-m=cbind(x,y)
-}
-else m=x
-m<-elimna(m)
-nval=nrow(m)
-if(ncol(m)==2){
-a=wincor.sub(m[,1],m[,2],tr=tr)
-wcor=a$cor
-wcov=a$cov
-sig=a$p.value
-}
-if(ncol(m)>2){
-#if(is.data.frame(m))m=as.matrix(m)
-if(!is.matrix(m))stop("The data must be stored in a n by p matrix")
-wcor<-matrix(1,ncol(m),ncol(m))
-wcov<-matrix(0,ncol(m),ncol(m))
-siglevel<-matrix(NA,ncol(m),ncol(m))
-for (i in 1:ncol(m)){
-ip<-i
-for (j in ip:ncol(m)){
-val<-wincor.sub(m[,i],m[,j],tr)
-wcor[i,j]<-val$cor
-wcor[j,i]<-wcor[i,j]
-if(i==j)wcor[i,j]<-1
-wcov[i,j]<-val$cov
-wcov[j,i]<-wcov[i,j]
-if(i!=j){
-siglevel[i,j]<-val$p.value
-siglevel[j,i]<-siglevel[i,j]
-}
-}}
-sig=siglevel
-}
-list(n=nval,cor=wcor,cov=wcov,p.value=sig)
-}
-
 wincor.sub<-function(x,y,tr=tr){
 sig<-NA
 g<-floor(tr*length(x))
@@ -363,74 +315,6 @@ val[1]<-tauloc(x)
 val
 }
 
-erho.bt <- function(p,c1,M)
-#   expectation of rho(d) under chi-squared p
-    return(chi.int(p,2,M)/2
-        +(M^2/2+c1*(5*c1+16*M)/30)*chi.int2(p,0,M+c1)
-        +(M^2/2-M^2*(M^4-5*M^2*c1^2+15*c1^4)/(30*c1^4))*(
-chi.int(p,0,M+c1)-chi.int(p,0,M))
-        +(1/2+M^4/(2*c1^4)-M^2/c1^2)*(chi.int(p,2,M+c1)-chi.int(p,2,M))
-        +(4*M/(3*c1^2)-4*M^3/(3*c1^4))*(chi.int(p,3,M+c1)-chi.int(p,3,M))
-        +(3*M^2/(2*c1^4)-1/(2*c1^2))*(chi.int(p,4,M+c1)-chi.int(p,4,M))
-        -(4*M/(5*c1^4))*(chi.int(p,5,M+c1)-chi.int(p,5,M))
-        +(1/(6*c1^4))*(chi.int(p,6,M+c1)-chi.int(p,6,M)))
-chi.int <- function(p,a,c1)
-#   partial expectation d in (0,c1) of d^a under chi-squared p
-  return( exp(lgamma((p+a)/2)-lgamma(p/2))*2^{a/2}*pchisq(c1^2,p+a) )
-
-erho.bt.lim <- function(p,c1)
-#   expectation of rho(d) under chi-squared p
-  return(chi.int(p,2,c1)+c1^2*chi.int2(p,0,c1))
-erho.bt.lim.p <- function(p,c1)
-#   derivative of erho.bt.lim wrt c1
-  return(chi.int.p(p,2,c1)+c1^2*chi.int2.p(p,0,c1)+2*c1*chi.int2(p,0,c1))
-
-
-rejpt.bt.lim <- function(p,r){
-#   find p-value of translated biweight limit c
-#   that gives a specified breakdown
-    c1 <- 2*p
-    iter <- 1
-    crit <- 100
-    eps <- 1e-5
-    while ((crit > eps)&(iter<100))
-    {
-        c1.old <- c1
-        fc <- erho.bt.lim(p,c1) - c1^2*r
-        fcp <- erho.bt.lim.p(p,c1) - 2*c1*r
-        c1 <- c1 - fc/fcp
-        if (c1 < 0)  c1 <- c1.old/2
-        crit <- abs(fc)
-        iter <- iter+1
-    }
-    return(c(c1,pchisq(c1^2,p),log10(1-pchisq(c1^2,p))))
-}
-
-erho.bt.lim.p <- function(p,c1)
-#   derivative of erho.bt.lim wrt c1
-  return(chi.int.p(p,2,c1)+c1^2*chi.int2.p(p,0,c1)+2*c1*chi.int2(p,0,c1))
-
-
-rejpt.bt.lim <- function(p,r){
-#   find p-value of translated biweight limit c
-#   that gives a specified breakdown
-    c1 <- 2*p
-    iter <- 1
-    crit <- 100
-    eps <- 1e-5
-    while ((crit > eps)&(iter<100))
-    {
-        c1.old <- c1
-        fc <- erho.bt.lim(p,c1) - c1^2*r
-        fcp <- erho.bt.lim.p(p,c1) - 2*c1*r
-        c1 <- c1 - fc/fcp
-        if (c1 < 0)  c1 <- c1.old/2
-        crit <- abs(fc)
-        iter <- iter+1
-    }
-    return(c(c1,pchisq(c1^2,p),log10(1-pchisq(c1^2,p))))
-}
-
 ecor<-function(x,y,pcor=FALSE,regfun=tsreg,corfun=pbcor,outkeep=FALSE,outfun=outmgvf){
 #
 # Estimate the explanatory correlation between x and y
@@ -692,142 +576,6 @@ crit<-58.55/n+2.80
 if(test>=crit)p.value<-c("Less than .01")
 }
 list(cor=val,test.stat=test,p.value=p.value)
-}
-
-erho.bt <- function(p,c1,M)
-#   expectation of rho(d) under chi-squared p
-    return(chi.int(p,2,M)/2
-        +(M^2/2+c1*(5*c1+16*M)/30)*chi.int2(p,0,M+c1)
-        +(M^2/2-M^2*(M^4-5*M^2*c1^2+15*c1^4)/(30*c1^4))*(
-chi.int(p,0,M+c1)-chi.int(p,0,M))
-        +(1/2+M^4/(2*c1^4)-M^2/c1^2)*(chi.int(p,2,M+c1)-chi.int(p,2,M))
-        +(4*M/(3*c1^2)-4*M^3/(3*c1^4))*(chi.int(p,3,M+c1)-chi.int(p,3,M))
-        +(3*M^2/(2*c1^4)-1/(2*c1^2))*(chi.int(p,4,M+c1)-chi.int(p,4,M))
-        -(4*M/(5*c1^4))*(chi.int(p,5,M+c1)-chi.int(p,5,M))
-        +(1/(6*c1^4))*(chi.int(p,6,M+c1)-chi.int(p,6,M)))
-chi.int <- function(p,a,c1)
-#   partial expectation d in (0,c1) of d^a under chi-squared p
-  return( exp(lgamma((p+a)/2)-lgamma(p/2))*2^{a/2}*pchisq(c1^2,p+a) )
-
-erho.bt.lim <- function(p,c1)
-#   expectation of rho(d) under chi-squared p
-  return(chi.int(p,2,c1)+c1^2*chi.int2(p,0,c1))
-erho.bt.lim.p <- function(p,c1)
-#   derivative of erho.bt.lim wrt c1
-  return(chi.int.p(p,2,c1)+c1^2*chi.int2.p(p,0,c1)+2*c1*chi.int2(p,0,c1))
-
-
-rejpt.bt.lim <- function(p,r){
-#   find p-value of translated biweight limit c
-#   that gives a specified breakdown
-    c1 <- 2*p
-    iter <- 1
-    crit <- 100
-    eps <- 1e-5
-    while ((crit > eps)&(iter<100))
-    {
-        c1.old <- c1
-        fc <- erho.bt.lim(p,c1) - c1^2*r
-        fcp <- erho.bt.lim.p(p,c1) - 2*c1*r
-        c1 <- c1 - fc/fcp
-        if (c1 < 0)  c1 <- c1.old/2
-        crit <- abs(fc)
-        iter <- iter+1
-    }
-    return(c(c1,pchisq(c1^2,p),log10(1-pchisq(c1^2,p))))
-}
-
-erho.bt.lim.p <- function(p,c1)
-#   derivative of erho.bt.lim wrt c1
-  return(chi.int.p(p,2,c1)+c1^2*chi.int2.p(p,0,c1)+2*c1*chi.int2(p,0,c1))
-
-
-rejpt.bt.lim <- function(p,r){
-#   find p-value of translated biweight limit c
-#   that gives a specified breakdown
-    c1 <- 2*p
-    iter <- 1
-    crit <- 100
-    eps <- 1e-5
-    while ((crit > eps)&(iter<100))
-    {
-        c1.old <- c1
-        fc <- erho.bt.lim(p,c1) - c1^2*r
-        fcp <- erho.bt.lim.p(p,c1) - 2*c1*r
-        c1 <- c1 - fc/fcp
-        if (c1 < 0)  c1 <- c1.old/2
-        crit <- abs(fc)
-        iter <- iter+1
-    }
-    return(c(c1,pchisq(c1^2,p),log10(1-pchisq(c1^2,p))))
-}
-
-erho.bt <- function(p,c1,M)
-#   expectation of rho(d) under chi-squared p
-    return(chi.int(p,2,M)/2
-        +(M^2/2+c1*(5*c1+16*M)/30)*chi.int2(p,0,M+c1)
-        +(M^2/2-M^2*(M^4-5*M^2*c1^2+15*c1^4)/(30*c1^4))*(
-chi.int(p,0,M+c1)-chi.int(p,0,M))
-        +(1/2+M^4/(2*c1^4)-M^2/c1^2)*(chi.int(p,2,M+c1)-chi.int(p,2,M))
-        +(4*M/(3*c1^2)-4*M^3/(3*c1^4))*(chi.int(p,3,M+c1)-chi.int(p,3,M))
-        +(3*M^2/(2*c1^4)-1/(2*c1^2))*(chi.int(p,4,M+c1)-chi.int(p,4,M))
-        -(4*M/(5*c1^4))*(chi.int(p,5,M+c1)-chi.int(p,5,M))
-        +(1/(6*c1^4))*(chi.int(p,6,M+c1)-chi.int(p,6,M)))
-chi.int <- function(p,a,c1)
-#   partial expectation d in (0,c1) of d^a under chi-squared p
-  return( exp(lgamma((p+a)/2)-lgamma(p/2))*2^{a/2}*pchisq(c1^2,p+a) )
-
-erho.bt.lim <- function(p,c1)
-#   expectation of rho(d) under chi-squared p
-  return(chi.int(p,2,c1)+c1^2*chi.int2(p,0,c1))
-erho.bt.lim.p <- function(p,c1)
-#   derivative of erho.bt.lim wrt c1
-  return(chi.int.p(p,2,c1)+c1^2*chi.int2.p(p,0,c1)+2*c1*chi.int2(p,0,c1))
-
-
-rejpt.bt.lim <- function(p,r){
-#   find p-value of translated biweight limit c
-#   that gives a specified breakdown
-    c1 <- 2*p
-    iter <- 1
-    crit <- 100
-    eps <- 1e-5
-    while ((crit > eps)&(iter<100))
-    {
-        c1.old <- c1
-        fc <- erho.bt.lim(p,c1) - c1^2*r
-        fcp <- erho.bt.lim.p(p,c1) - 2*c1*r
-        c1 <- c1 - fc/fcp
-        if (c1 < 0)  c1 <- c1.old/2
-        crit <- abs(fc)
-        iter <- iter+1
-    }
-    return(c(c1,pchisq(c1^2,p),log10(1-pchisq(c1^2,p))))
-}
-
-erho.bt.lim.p <- function(p,c1)
-#   derivative of erho.bt.lim wrt c1
-  return(chi.int.p(p,2,c1)+c1^2*chi.int2.p(p,0,c1)+2*c1*chi.int2(p,0,c1))
-
-
-rejpt.bt.lim <- function(p,r){
-#   find p-value of translated biweight limit c
-#   that gives a specified breakdown
-    c1 <- 2*p
-    iter <- 1
-    crit <- 100
-    eps <- 1e-5
-    while ((crit > eps)&(iter<100))
-    {
-        c1.old <- c1
-        fc <- erho.bt.lim(p,c1) - c1^2*r
-        fcp <- erho.bt.lim.p(p,c1) - 2*c1*r
-        c1 <- c1 - fc/fcp
-        if (c1 < 0)  c1 <- c1.old/2
-        crit <- abs(fc)
-        iter <- iter+1
-    }
-    return(c(c1,pchisq(c1^2,p),log10(1-pchisq(c1^2,p))))
 }
 
 scor<-function(x,y=NULL,corfun=pcor,gval=NA,plotit=FALSE,op=TRUE,MM=FALSE,cop=3,xlab='VAR 1',
@@ -2156,37 +1904,6 @@ e[j,4]=v$cor.est
 }
 dimnames(e)=list(NULL,c('ci.low','ci.hi','p-value','est'))
 e
-}
-
-perm.rho<-function(x,y,alpha=.05,nboot=1000,SEED=TRUE){
-#
-# Do a  permutation test based on Pearson's correlation
-# Diciccio--Romano version of a permuation test (JASA, 2017, 112, 1211-1220)
-#
-
-# The default number of permutations is nboot=1000
-#
-if(SEED)set.seed(2)
-xx<-cbind(x,y)
-xx=elimna(xx)
-x=xx[,1]
-y=xx[,2]
-n=length(x)
-tval<-perm.rho.sub(x,y)
-vec<-c(1:length(xx))
-v1<-length(x)+1
-difb<-NA
-tv<-NA
-for(i in 1:nboot){
-id=sample(n,n)
-tv[i]<-perm.rho.sub(x,y[id])
-}
-tv<-sort(tv)
-icl<-floor((alpha/2)*nboot+.5)
-icu<-floor((1-alpha/2)*nboot+.5)
-reject<-0
-if(tval>=tv[icu] || tval <=tv[icl])reject<-1
-list(teststat=tval,lower.crit=tv[icl],upper.crit=tv[icu],reject=reject)
 }
 
 rhohc4bt<-function(X1,Y1,alpha=.05,nboot=2999,SEED=TRUE){
@@ -4582,63 +4299,6 @@ lines(xx[c(temp[1],temp[length(temp)]),])
 list(p.value=sig.level)
 }
 
-meancr.cord.oph<-function(m,nullv=rep(0,ncol(m)),cop=3,MM=FALSE,SEED=TRUE,tr=0,
-nboot=500,plotit=TRUE,MC=FALSE,xlab="VAR 1",ylab="VAR 2",STAND=TRUE){
-#
-# m is an n by p matrix
-#
-# Test hypothesis that the means
-# are all equal to the null value, which defaults to zero.
-# The level of the test is .05.
-#
-# Eliminate outliers using a projection method
-# That is, determine center of data using:
-#
-# cop=1 Donoho-Gasko median,
-# cop=2 MCD,
-# cop=3 marginal medians.
-# cop=4 MVE
-#
-# For each point
-# consider the line between it and the center
-# project all points onto this line, and
-# check for outliers using
-#
-# MM=F, a boxplot rule.
-# MM=T, rule based on MAD and median
-#
-# Repeat this for all points. A point is declared
-# an outlier if for any projection it is an outlier
-# using a modification of the usual boxplot rule.
-#
-# Eliminate any outliers and compute means
-#  using remaining data.
-#
-if(SEED)set.seed(2)
-m<-elimna(m)
-n<-nrow(m)
-#est=smean(m,MC=MC,cop=cop,STAND=STAND)
-est=apply(m,2,mean,tr=tr)
-crit.level<-.05
-if(n<=120)crit.level<-.045
-if(n<=80)crit.level<-.04
-if(n<=60)crit.level<-.035
-if(n<=40)crit.level<-.03
-if(n<=30)crit.level<-.025
-if(n<=20)crit.level<-.02
-data<-matrix(sample(n,size=n*nboot,replace=TRUE),nrow=nboot)
-val<-matrix(NA,ncol=ncol(m),nrow=nboot)
-for(j in 1: nboot){
-mm<-m[data[j,],]
-#val[j,]<-smean(mm,MC=MC,cop=cop,STAND=STAND)
-val[j,]=apply(mm,2,mean)
-}
-if(!MC)temp<-pdis(rbind(val,nullv),center=est)
-if(MC)temp<-pdisMC(rbind(val,nullv),center=est)
-sig.level<-sum(temp[nboot+1]<temp[1:nboot])/nboot
-list(p.value=sig.level,boot.vals=val,center=est)
-}
-
 part.cor<-function(x,y,z,corfun=wincor,regfun=MMreg,plotit=FALSE,xout=FALSE,GEN=TRUE,BOOT=TRUE,SEED=TRUE,nboot=599,
 XOUT.blp=TRUE,plot.out=FALSE,
 outfun=outpro,plotfun=plot,xlab='Res 1',ylab='Res 2',...){
@@ -4780,27 +4440,6 @@ ci=max(ci,-1)
 ci[2]=est$cor+crit*se
 ci[2]=min(ci[2],1)
 list(cor=est$cor,test=test,p.value=sig,ci=ci)
-}
-
-corblp.bca.C<-function(x,y,regfun=tsreg,varfun=pbvar,nboot=1000,alpha=.05,outfun=outpro.depth,SEED=TRUE,
-plotit=FALSE,...){
-#
-# Correlation based on a robust regression estimator with bad
-# leverage points removes
-
-library(bcaboot)
-if(SEED)set.seed(2)
-xy=elimna(cbind(x,y))
-p1=ncol(xy)
-p=p1-1
-if(p!=1)stop('Only a single independent variable is allowed')
-x=xy[,1]
-y=xy[,2]
-n=length(y)
-est=corblp(x,y,regfun=regfun,varfun=varfun)$cor
-a=bcajack2(xy,1000,corblp.sub,alpha=alpha/2,regfun=regfun,varfun=varfun)
-ci=c(a$lims[1,1],a$lims[3,1])
-list(cor=est,ci=ci)
 }
 
 corblppb<-function(x,y,regfun=tsreg,varfun=pbvar,nboot=1000,alpha=.05,outfun=outpro.depth,SEED=TRUE,

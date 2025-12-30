@@ -462,26 +462,6 @@ list(output=mat,crit=test$crit)
 
 
 # bca.mean
-bca.mean<-function(x,alpha=.05,SEED=TRUE){
-#
-# BCA confidence interval for the mean
-#
-# Not recommended, commonly used, but provided only to illustrate
-# situations where it fails.
-#
-library(bcaboot)
-if(SEED)set.seed(2)
-x=elimna(x)
-x=as.matrix(x)
-a=bcajack2(x,1000,mean,alpha=alpha/2)
-ci=c(a$lims[1,1],a$lims[3,1])
-be=a$stats[1,1]
-sd=a$stats[1,2]
-list(Est=be,SD=sd, CI=ci)
-}
-
-
-# wmw.bca
 wmw.bca<-function(x,y,alpha=.05,nboot=1000,SEED=TRUE,...){
 #
 #  BCA confidence interval for P(X<Y), X and Y independent
@@ -805,66 +785,6 @@ S
 
 
 # bwdepth.perm
-bwdepth.perm<-function(x,y,reps=500,
-fun=prodepth,alpha=.05,SEED=TRUE){
-#
-# Permutation test of F=G, two independent multivariate distributions
-#
-#
-if(SEED)set.seed(2)
-x=elimna(x)
-y=elimna(y)
-x=as.matrix(x)
-y=as.matrix(y)
-n1=nrow(x)
-np1=n1+1
-n2=nrow(y)
-n=n1+n2
-d=bwdepth(x,y)$e
-xy=rbind(x,y)
-print(dim(xy))
-v=NA
-for(i in 1:reps){
-ip=sample(n,replace=FALSE)
-z=xy[ip,]
-v[i]=bwdepth(z[1:n1,],z[np1:n,])$e
-}
-v=sort(v)
-il=round(alpha*reps/2)
-iu=reps-il
-list(Est=d,Lower.crit=v[il],Upper.crit=v[iu])
-}
-
-
-# outproMC.sub
-outproMC.sub<-function(B,Amat){
-dis<-NA
-bot<-sum(B^2)
-Bmat=matrix(rep(B,nrow(Amat)),ncol=ncol(Amat),byrow=TRUE)
-temp<-apply(Bmat*Amat,1,sum)
-temp=matrix(rep(temp,ncol(Amat)),ncol=ncol(Amat))
-temp=temp*Bmat/bot
-temp=temp^2
-dis=apply(temp,1,sum)
-dis<-sqrt(dis)
-flag=(dis==Inf)
-dis[flag]=NA
-dis
-}
-
-# outproMC.sub2
-outproMC.sub2<-function(dis,MM,gval){
-temp<-idealf(dis)
-if(!MM)cu<-median(dis)+gval*(temp$qu-temp$ql)
-if(MM)cu<-median(dis)+gval*mad(dis)
-outid<-NA
-temp2<-(dis> cu)
-flag<-rep(0,length(dis))
-flag[temp2]<-1
-flag
-}
-
-# linWMWMC.sub
 linWMWMC.sub<-function(M,con){
 L=apply(t(con*t(M)),1,sum)
 L

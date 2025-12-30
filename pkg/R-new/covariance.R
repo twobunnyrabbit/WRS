@@ -140,27 +140,6 @@ covest[k,j]<-covest[j,k]
 covest
 }
 
-bootcov<-function(x,est=median,nboot=100,pr=TRUE,SEED=FALSE,...){
-#
-# For multivariate data, determine the squared standard errors
-# and covariances when using the estimator
-# est.
-#
-# SEED=TRUE, sets the seed of the random number generator.
-#
-if(SEED)set.seed(2)
-if(is.list(x))x<-matl(x)
-x<-elimna(x)
-bvec<-matrix(NA,ncol=ncol(x),nrow=nboot)
-if(pr)print("Taking Bootstrap Samples. Please wait.")
-for(i in 1:nboot){
-data<-sample(nrow(x),size=nrow(x),replace=TRUE)
-bvec[i,]<-apply(x[data,],2,FUN=est,...)
-}
-covmat<-var(bvec)
-covmat
-}
-
 covroc<-function(x){
 #
 # compute Rocke's TBS covariance matrix
@@ -169,53 +148,6 @@ covroc<-function(x){
 temp<-covRob(x,estim="M")
 val<-temp[2]$cov
 val
-}
-
-covmtrim<-function(x,tr=.2,p=length(x),grp=c(1:p)){
-#
-#  Estimate the covariance matrix for the sample trimmed means corresponding
-#  to the data in the R variable x,
-#  which is assumed to be stored in list mode or a matrix.
-# (x[[1]] contains the data for group 1, x[[2]] the data for group 2, etc.)
-#  The function returns a p by p matrix of covariances, the diagonal
-#  elements being equal to the squared standard error of the sample
-#  trimmed means, where p is the number of groups to be included.
-#  By default, all the groups in x are used, but a subset of
-#  the groups can be used via grp.  For example, if
-#  the goal is to estimate the covariances between the sample trimmed
-#  means for groups 1, 2, and 5, use the command grp<-c(1,2,5)
-#  before calling this function.
-#
-#  The default amount of trimming is 20%
-#
-#  Missing values (values stored as NA) are not allowed.
-#
-#  This function uses winvar from chapter 2.
-#
-if(is.list(x))x=matl(x)
-x=elimna(x)
-x=listm(x)
-if(!is.list(x))stop("The data are not stored in list mode or a matrix.")
-p<-length(grp)
-pm1<-p-1
-for (i in 1:pm1){
-ip<-i+1
-if(length(x[[grp[ip]]])!=length(x[[grp[i]]]))stop("The number of observations in each group must be equal")
-}
-n<-length(x[[grp[1]]])
-h<-length(x[[grp[1]]])-2*floor(tr*length(x[[grp[1]]]))
-covest<-matrix(0,p,p)
-covest[1,1]<-(n-1)*winvar(x[[grp[1]]],tr)/(h*(h-1))
-for (j in 2:p){
-jk<-j-1
-covest[j,j]<-(n-1)*winvar(x[[grp[j]]],tr)/(h*(h-1))
-for (k in 1:jk){
-covest[j,k]<-(n-1)*wincor(x[[grp[j]]],x[[grp[k]]],tr)$cov/(h*(h-1))
-covest[k,j]<-covest[j,k]
-}
-}
-covmtrim<-covest
-covmtrim
 }
 
 bwwcovm<-function(J,K,L,x,tr=.2){
@@ -348,54 +280,6 @@ if(!is.matrix(x))stop("x should be a matrix")
 x<-elimna(x)  # remove any rows with missing data
 temp<-ogk.pairwise(x,sigmamu=sigmamu,v=v,n.iter=n.iter,beta=beta,...)$wcovmat
 temp
-}
-
-outogk<-function(x,sigmamu=taulc,v=gkcov,op=TRUE,SEED=FALSE,
-beta=max(c(.95,min(c(.99,1/nrow(x)+.94)))),n.iter=1,plotit=TRUE,...){
-#
-# Use the ogk estimator to
-# determine which points are outliers
-#
-#  op=T uses robust Mahalanobis distance based on
-#  the OGK estimator with  beta adjusted so that
-#  the outside rate per observation is approximately .05
-#  under normality.
-#  op=F returns the outliers based on the distances used
-#  by the OGK estimator
-#  (Currently, op=T seems best for detecting outliers.)
-#
-if(!is.matrix(x))stop("x should be a matrix")
-x<-elimna(x)
-if(!op){
-temp<-ogk.pairwise(x,sigmamu=sigmamu,v=v,beta=beta,n.iter=n.iter,...)
-vals<-hard.rejection(temp$distances,p=ncol(x),beta=beta,...)
-flag<-(vals==1)
-vals<-c(1:nrow(x))
-outid<-vals[!flag]
-keep<-vals[flag]
-if(is.matrix(x)){
-if(ncol(x)==2 && plotit){
-plot(x[,1],x[,2],xlab="X", ylab="Y",type="n")
-points(x[flag,1],x[flag,2])
-if(sum(!flag)>0)points(x[!flag,1],x[!flag,2],pch="o")
-}}}
-if(op){
-temp<-out(x,cov.fun=ogk,beta=beta,plotit=plotit,SEED=SEED)
-outid<-temp$out.id
-keep<-temp$keep
-}
-list(out.id=outid,keep=keep,distances=temp$dis)
-}
-
-outcov<-function(x,y=NA,outfun=outogk,plotit=FALSE){
-#
-# Remove outliers and compute covariances
-#
-if(!is.na(y[1]))x<-cbind(x,y)
-keep<-outfun(x,plotit=plotit)$keep
-val<-var(x[keep,])
-if(ncol(val)==2)val<-val[1,2]
-list(cov=val)
 }
 
 covout<-function(x,y=NA,outfun=outogk,plotit=FALSE){
@@ -818,15 +702,6 @@ z=res@cov
 list(center=center,cov=z)
 }
 
-covloc<-function(x){
-#
-# Return mean and covarinace matrix
-#
-loc=apply(x,2,mean)
-mcov=cov(x)
-list(center=loc,cov=mcov)
-}
-
 cov.ogk<-function(x,y=NA,n.iter=1,sigmamu=taulc,v=gkcov,beta=.9,...){
 #
 # Compute robust (weighted) covariance matrix in Maronna and Zamar
@@ -954,75 +829,5 @@ if(tr==0)cterm=1
 else cterm=area(dnormvar,qnorm(tr),qnorm(1-tr))+2*(qnorm(tr)^2)*tr
 e=e/cterm
 e
-}
-
-outDETMCD<-function(x,cov.fun=DETMCD,xlab='X',ylab='Y',qval=.975,
-crit=NULL,KS=TRUE,plotit=FALSE,...){
-#
-#  Search for outliers using robust measures of location and scatter,
-#  which are used to compute robust analogs of Mahalanobis distance.
-#
-#  x is an n by p matrix or a vector of data.
-#
-#  The function returns the values flagged as an outlier plus
-#  the (row) number where the data point is stored.
-#  If x is a vector, out.id=4 indicates that the fourth observation
-#  is an outlier and outval=123 indicates that 123 is the value.
-#  If x is a matrix, out.id=4 indicates that the fourth row of
-#  the matrix is an outlier and outval reports the corresponding
-#  values.
-#
-#  The function also returns the distance of the
-#  points identified as outliers
-#  in the variable dis.
-#
-#  For bivariate data, if plotit=TRUE, plot points and circle outliers.
-#
-#  cov.fun determines how the measure of scatter is estimated.
-# The default is covDETMCD
-#  Possible choices are
-#  cov.mve (the MVE estimate)
-#  cov.mcd (the MCD estimate)
-#  covmba2 (the MBA or median ball algorithm)
-#  rmba  (an adjustment of MBA suggested by D. Olive)
-#  cov.roc (Rockes TBS estimator)
-#
-#  plotit=FALSE used to avoid problems when other functions in WRS call
-#  this function
-#
-#  KS=TRUE: keep  the seed that was used
-#
-if(is.data.frame(x))x=as.matrix(x)
-if(is.list(x))stop('Data cannot be stored in list mode')
-nrem=nrow(as.matrix(x))
-if(!is.matrix(x)){
-dis<-(x-median(x,na.rm=TRUE))^2/mad(x,na.rm=TRUE)^2
-if(is.null(crit))crit<-sqrt(qchisq(.975,1))
-vec<-c(1:length(x))
-}
-if(is.matrix(x)){
-mve<-cov.fun(elimna(x))
-dis<-mahalanobis(x,mve$center,mve$cov)
-if(is.null(crit))crit<-sqrt(qchisq(.975,ncol(x)))
-vec<-c(1:nrow(x))
-}
-dis[is.na(dis)]=0
-dis<-sqrt(dis)
-chk<-ifelse(dis>crit,1,0)
-id<-vec[chk==1]
-keep<-vec[chk==0]
-if(is.matrix(x)){
-if(ncol(x)==2 && plotit){
-plot(x[,1],x[,2],xlab=xlab,ylab=ylab,type='n')
-flag<-rep(TRUE,nrow(x))
-flag[id]<-FALSE
-points(x[flag,1],x[flag,2])
-if(sum(!flag)>0)points(x[!flag,1],x[!flag,2],pch='*')
-}}
-if(!is.matrix(x))outval<-x[id]
-if(is.matrix(x))outval<-x[id,]
-n=nrow(as.matrix(x))
-n.out=length(id)
-list(n=n,n.out=n.out,out.val=outval,out.id=id,keep=keep,dis=dis,crit=crit)
 }
 

@@ -12,59 +12,6 @@
 # Power Analysis Functions (10 functions)
 # ============================================================================
 
-ancmg1.power<-function(n,del=.2,alpha=.05,iter=100,SEED=TRUE,ADJ=FALSE){
-#
-# n sample sizes, length of n indicates number of groups
-#. Estimate power with no data
-# Simulate assuming standard normal distributions but first group has a mean del
-#
-#
-J=length(n)
-x=list()
-y=list()
-chk=0
-if(SEED)set.seed(2)
-for(i in 1:iter){
-for(j in 1:J){
-x[[j]]=rnorm(n[j])
-y[[j]]=rnorm(n[j])
-}
-y[[1]]=y[[1]]+del
-a=ancmg1(x,y,pr=FALSE)
-pv=NA
-K=length(a$points)
-for(k in 1:K){
-if(!ADJ)pv[k]=min(a$point[[k]][,3])
-else
-pv[k]=min(a$point[[k]][,7])
-}
-if(min(pv)<=alpha)chk=chk+1
-}
-chk/iter
-}
-
-anova_power<-function(groups=NULL,n=NULL,delta=NULL,sig.level=0.05,power=NULL){
-#
-# Determine sample sizes or power when using the ANOVA F test.
-#
-#  groups is the number of groups and must be specified.
-#
-#  delta is Cohen's effect size: the sum of the
-#  squared devaitions among the means divided by the within group variance.
-#
-#  Excluding groups, all but one of the NULL arguments must be specified.
-#  The function determines the value for the one argument that is NULL
-#
-#library(stats)
-if(is.null(groups))stop("Need to specify the number of groups")
-within.var=1
-between.var=delta/(groups-1)
-res=power.anova.test(groups=groups,n=n, between.var=between.var,
-within.var=within.var,sig.level=sig.level,power=power)
-list(groups=res[1]$groups,n=res[2]$n,delta=delta,
-sig.level=res[5]$sig.level,power=res[6]$power)
-}
-
 epow<-function(x,y,pcor=FALSE,regfun=tsreg,corfun=pbcor,outkeep=FALSE,outfun=outmgvf,varfun=pbvar,op=TRUE){
 #
 # Estimate the explanatory power between x and y

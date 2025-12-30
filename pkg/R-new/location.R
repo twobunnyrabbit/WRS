@@ -881,48 +881,6 @@ list(q=q,n=n,Est1=est1,Est2=est2,sum=est1+est2,ci=ci,p.value=p)
 }
 
 # trimci
-trimci<-function(x,tr=.2,alpha=.05,null.value=0,pr=TRUE,nullval=NULL){
-#
-#  Compute a 1-alpha confidence interval for the trimmed mean
-#
-#  The default amount of trimming is tr=.2
-#
-if(pr){
-print("The p-value returned by this function is based on the")
-print("null value specified by the argument null.value, which defaults to 0")
-print('To get a measure of effect size using a Winsorized measure of scale,  use trimciv2')
-}
-if(!is.null(nullval))null.value=nullval
-x<-elimna(x)
-se<-sqrt(winvar(x,tr))/((1-2*tr)*sqrt(length(x)))
-trimci<-vector(mode="numeric",length=2)
-df<-length(x)-2*floor(tr*length(x))-1
-trimci[1]<-mean(x,tr)-qt(1-alpha/2,df)*se
-trimci[2]<-mean(x,tr)+qt(1-alpha/2,df)*se
-test<-(mean(x,tr)-null.value)/se
-sig<-2*(1-pt(abs(test),df))
-list(estimate=mean(x,tr),ci=trimci,test.stat=test,se=se,p.value=sig,n=length(x))
-}
-
-
-# ghtrim
-ghtrim<-function(tr=.2,g=0,h=0){
-#
-#  Compute trimmed mean of a g-and-h distribution.
-#
-#
-if(g==0)val=0
-if(g>0){
-low=qnorm(tr)
-up=-1*low
-val=integrate(ftrim,low,up,tr=tr,g=g,h=h)$value
-val=val/(1-2*tr)
-}
-val
-}
-
-
-# ftrim
 ftrim<-function(z,tr,g,h){
 gz=(exp(g*z)-1)*exp(h*z^2/2)/g
 res=dnorm(z)*gz
@@ -1889,23 +1847,6 @@ p.value=mt$p.value,Q.effect=Q$Q.effect,sym.test=sym)
 
 
 # ghtrim
-ghtrim<-function(tr=.2,g=0,h=0){
-#
-#  Compute trimmed mean of a g-and-h distribution.
-#
-#
-if(g==0)val=0
-if(g>0){
-low=qnorm(tr)
-up=-1*low
-val=integrate(ftrim,low,up,tr=tr,g=g,h=h)$value
-val=val/(1-2*tr)
-}
-val
-}
-
-
-# bbtrimQS
 bbtrimQS<-function(J,K,x, con = 0, tr = 0.2,
 alpha = 0.05, pr = TRUE, crit = NA, SEED = TRUE, INT = FALSE, locfun = tmean){
 if(pr){

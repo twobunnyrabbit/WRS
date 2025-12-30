@@ -613,22 +613,6 @@ list(A=A,B=B)
 }
 
 
-twowayESM<-function(J,K,x,fun=ES.summary,...){
-#
-# For each level of Factor A, pool data over levels of Factor B, compute
-# measures of effect size.
-#
-# Do the same for Factor B
-#
-#  argument fun, see the function IND.PAIR.ES
-#
-a=twoway.pool(J,K,x)
-A=IND.PAIR.ES(a$A,fun=fun,...)
-B=IND.PAIR.ES(a$B,fun=fun,...)
-list(Factor.A=A,Factor.B=B)
-}
-
-
 inter.ES<-function(x,method='EP',iter=5,SEED=TRUE,tr=.2,pr=FALSE){
 #
 #
@@ -1228,45 +1212,6 @@ if(!CI)AB[[k]]=ES.summary(dif1,dif2)
 if(CI)AB[[k]]=ES.summary.CI(dif1,dif2)
 }
 list(Factor.A=A,Factor.B=B,INT=AB,conA=con.all.pairs(J),conB=con.all.pairs(K),AB=MAT)
-}
-
-
-t1way.EXES.ci<-function(x,alpha=.05,tr=0,nboot=500,SEED=TRUE,ITER=5,adj=TRUE,...){
-#
-# Confidence interval for explanatory measure of effect size
-#
-#  ITER:  yuenv2, for unequal sample sizes.  iterates to get estimate
-#
-if(is.data.frame(x))x=as.matrix(x)
-if(is.matrix(x))x=listm(x)
-J=length(x)
-n=lapply(x,length)
-if(SEED)set.seed(2)
-chk=t1wayv2(x,tr=tr,SEED=FALSE)
-v=list()
-val=NA
-x=elimna(x)
-for(i in 1:nboot){
-for(j in 1:J)v[[j]]=sample(x[[j]],replace=TRUE)
-val[i]=t1wayv2(v,tr=tr,nboot=ITER,SEED=FALSE)$Effect.Size
-}
-ilow<-round((alpha/2) * nboot)
-ihi<-nboot - ilow
-ilow<-ilow+1
-val=sort(val)
-ci=val[ilow]
-ci[2]=val[ihi]
-if(chk$p.value>alpha)ci[1]=0
-if(adj){
-fix=c(1, 1.268757, 1.467181, 1.628221, 1.763191, 1.856621, 1.993326)
-if(J>8)print('No adjustment available when J>8')
-J1=J-1
-if(j<=8){
-chk$Effect.Size=fix[J1]*chk$Effect.Size
-ci=fix[J1]*ci
-}
-}
-list(Effect.Size=chk$Effect.Size,ci=ci)
 }
 
 
