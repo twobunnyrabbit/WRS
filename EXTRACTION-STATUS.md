@@ -8,11 +8,11 @@
 
 ## Executive Summary
 
-- **9 of 20 modules** completed (45%)
-- **737 of 1,971 functions** extracted (37.4%)
-- **39,549 of 97,199 lines** extracted (40.7%)
-- **1,074.7 KB of 2,663 KB** extracted (40.4%)
-- **All 9 modules source successfully** ✅
+- **10 of 20 modules** completed (50%)
+- **812 of 1,971 functions** extracted (41.2%)
+- **42,982 of 97,199 lines** extracted (44.2%)
+- **1,169.9 KB of 2,663 KB** extracted (44.0%)
+- **All 10 modules source successfully** ✅
 
 ---
 
@@ -29,7 +29,8 @@
 | 7 | correlation.R | 108 | 5,045 | 162.0 KB | ✅ |
 | 8 | ancova.R | 149 | 11,014 | 286.1 KB | ✅ |
 | 9 | regression.R | 98 | 5,051 | 139.8 KB | ✅ |
-| **TOTAL** | **9 modules** | **737** | **39,549** | **1,074.7 KB** | **45%** |
+| 10 | regression-advanced.R | 75 | 3,433 | 95.2 KB | ✅ |
+| **TOTAL** | **10 modules** | **812** | **42,982** | **1,169.9 KB** | **50%** |
 
 ---
 
@@ -89,15 +90,23 @@ Core regression methods:
 - `difreg`, `reg2ci`, `DregG`, `reg1way`
 - Theil-Sen, LTS, M-regression, outlier-pruned methods
 
+### regression-advanced.R (75 functions)
+Advanced regression methods:
+- `qhdsm`, `qhdsm2g`, `smean`, `smeancr` (quantile smoothers, smoothing)
+- `logreg`, `logreg.P.ci`, `logreg.pred` (logistic regression)
+- `mlrreg`, `mulgreg`, `MULMreg` (multivariate/multilevel)
+- `KNNreg`, `quantregForest`, `regR.Forest` (machine learning)
+- `gamindt`, `gamplot` (GAM-related methods)
+- `regYci`, `regYband`, `regmediate`, `regpca` (specialized)
+
 ---
 
 ## Remaining Work
 
-### Modules to Extract (11 remaining)
+### Modules to Extract (10 remaining)
 
 | # | Module | Est. Functions | Purpose |
 |---|--------|----------------|---------|
-| 10 | regression-advanced.R | ~60 | Advanced regression (mediation, logistic, Y-value) |
 | 11 | covariance.R | ~50 | Covariance estimation methods |
 | 12 | mcp.R | ~55 | Multiple comparison procedures |
 | 13 | medians.R | ~40 | Median-based methods |
@@ -110,19 +119,19 @@ Core regression methods:
 | 20 | special.R | ~80 | Specialized methods |
 | 21 | zzz-internal.R | ~471 | Internal helper functions |
 
-**Total estimated:** ~1,016 functions (note: actual may vary)
+**Total estimated:** ~941 functions (note: actual may vary)
 
 ### Remaining Statistics
-- **Functions:** 1,234 remaining (62.6%)
-- **Lines:** 57,650 remaining (59.3%)
-- **Size:** 1,588.3 KB remaining (59.6%)
+- **Functions:** 1,159 remaining (58.8%)
+- **Lines:** 54,217 remaining (55.8%)
+- **Size:** 1,493.1 KB remaining (56.0%)
 
 ---
 
 ## Validation Status
 
 ### ✅ Completed
-- All 9 modules source without errors
+- All 10 modules source without errors
 - No syntax errors detected
 - Key functions tested and available
 - Dependencies properly resolved
@@ -154,7 +163,7 @@ Core regression methods:
 ## Files Generated
 
 ### Core Refactoring Files
-- `pkg/R-new/*.R` - 9 extracted module files
+- `pkg/R-new/*.R` - 10 extracted module files
 - `Rallfun-v45.R.ORIGINAL` - Backup of original file (2.6 MB)
 - `all-functions.txt` - Inventory of all 1,971 functions
 - `reference-outputs.rds` - Baseline test data (2.4 KB)
@@ -181,7 +190,7 @@ Core regression methods:
 
 ### Immediate (Week 3 continuation)
 1. ✅ regression.R extracted - COMPLETED
-2. ⬜ Extract regression-advanced.R (~60 functions)
+2. ✅ regression-advanced.R extracted - COMPLETED (75 functions)
 3. ⬜ Extract covariance.R (~50 functions)
 4. ⬜ Extract mcp.R (~55 functions)
 5. ⬜ Extract medians.R (~40 functions)
@@ -222,9 +231,9 @@ Core regression methods:
 - ⬜ Performance within 10% of v0.45
 
 ### On Track
-- ✅ 45% of modules extracted
-- ✅ 37.4% of functions extracted
-- ✅ 40.7% of lines extracted
+- ✅ 50% of modules extracted (HALFWAY MILESTONE!)
+- ✅ 41.2% of functions extracted
+- ✅ 44.2% of lines extracted
 - ✅ All modules source successfully
 - ✅ Week 1 and Week 2 completed on schedule
 - ✅ Week 3 in progress, on track
