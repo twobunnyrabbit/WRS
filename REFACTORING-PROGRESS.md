@@ -37,29 +37,30 @@
   - ✅ plotting.R extracted (97 functions, 4,519 lines, 119 KB)
   - ✅ effect-size.R extracted (41 functions, 1,516 lines, 43 KB)
   - ✅ power.R extracted (10 functions, 292 lines, 7.3 KB)
-  - 🔄 Next: winsorize.R, parallel.R, and remaining modules
+  - ✅ winsorize.R extracted (10 functions, 138 lines, 3.2 KB)
+  - 🔄 Next: parallel.R, classification.R, special.R, zzz-internal.R
 
 ### Overall Metrics
-- **Modules completed**: 16 of 20 (80%)
-- **Functions extracted**: 1,151 of 1,971 (58.4%)
-- **Lines extracted**: 61,928 of 97,199 (63.7%)
-- **Total size**: 1.77 MB of ~2.6 MB (68.1%)
-- **Status**: All 16 modules source successfully ✅
+- **Modules completed**: 17 of 20 (85%)
+- **Functions extracted**: 1,161 of 1,971 (58.9%)
+- **Lines extracted**: 62,066 of 97,199 (63.8%)
+- **Total size**: 1.78 MB of ~2.6 MB (68.5%)
+- **Status**: All 17 modules source successfully ✅
 
 ### Recently Completed (2025-12-30)
-**power.R module** - Power Analysis Functions:
-- 10 functions, 292 lines, 7.3 KB
-- One-sample power: pow1, powt1est, powt1an
-- Two-sample power: pow2an, powest
-- ANOVA power: anova_power, ancmg1.power
-- General tests: z.power, power.chisq.test
-- Regression explanatory power: epow
+**winsorize.R module** - Winsorization Methods:
+- 10 functions, 138 lines, 3.2 KB
+- Core winsorization: win, winmean, winse, winci
+- Winsorized standard deviations: winsd, winsd05, winsdN
+- Normalized variance: winvarN
+- General winsorization: winsorized
+- Convenience function: WINCOR
 - Successfully sourced and validated with all dependencies
 
 ### Next Steps
-1. Continue with remaining Week 3 modules (winsorize.R)
-2. Extract final modules (parallel.R, classification.R, special.R, zzz-internal.R)
-3. End-of-phase validation when all 20 modules extracted
+1. Extract final modules (parallel.R, classification.R, special.R, zzz-internal.R)
+2. End-of-phase validation when all 20 modules extracted
+3. Begin Phase 2: Optimization (remove library() calls, fix duplicates)
 
 ### ✅ Phase 0: Preparation (COMPLETED - 2025-12-30)
 
@@ -125,7 +126,7 @@ All preparation tasks completed successfully:
 | Current Documentation | 1 | Only WRS-package.Rd |
 | Old .Rd Files | 15 | In `old Rd files/` directory |
 
-### Extracted Modules (15 of 20 Complete)
+### Extracted Modules (17 of 20 Complete)
 
 | Module | Status | Functions | Lines | Size | Key Functions |
 |--------|--------|-----------|-------|------|---------------|
@@ -145,7 +146,8 @@ All preparation tasks completed successfully:
 | plotting.R | ✅ | 97 | 4,519 | 119 KB | rplot, lplot, g2plot, gamplot, Bagplot, fbplot |
 | effect-size.R | ✅ | 41 | 1,516 | 43 KB | qhat, ES.summary, akp.effect, dep.ES.summary |
 | power.R | ✅ | 10 | 292 | 7.3 KB | pow1, powt1est, pow2an, anova_power, epow |
-| **TOTAL** | **16/20** | **1,151** | **61,928** | **1.77 MB** | **58.4% of functions** |
+| winsorize.R | ✅ | 10 | 138 | 3.2 KB | win, winmean, winse, winci, winsd, winsdN |
+| **TOTAL** | **17/20** | **1,161** | **62,066** | **1.78 MB** | **58.9% of functions** |
 
 ### Target Module Structure (20 Files)
 
@@ -307,9 +309,16 @@ All preparation tasks completed successfully:
   - Includes: pow1, powt1est, powt1an, pow2an, powest, anova_power, ancmg1.power
   - One-sample power, two-sample power, ANOVA power, regression power
   - Successfully sourced and validated
-- [ ] Extract winsorize.R, parallel.R
-- [ ] Extract classification.R, special.R
-- [ ] Extract zzz-internal.R (last)
+- [x] Extract winsorize.R
+  - **COMPLETED**: 10 functions extracted (138 lines, 3.2 KB)
+  - Includes: win, winmean, winse, winci, winsd, winsd05, winsdN, winvarN, winsorized, WINCOR
+  - Core winsorization, standard errors/CIs, standard deviations, normalized variance
+  - Successfully sourced and validated
+  - **Note**: Core utilities (winvar, winval, winall) remain in 00-utils-core.R
+- [ ] Extract parallel.R (~80 functions with *MC suffix)
+- [ ] Extract classification.R (~40 functions)
+- [ ] Extract special.R (~80 specialized functions)
+- [ ] Extract zzz-internal.R (~471 internal helpers - last)
 - [ ] **End-of-phase validation**: Replace R/ with R-new/, build & check package
 
 ### 📋 Phase 2: Optimization (Weeks 4-5)
@@ -640,4 +649,4 @@ When resuming work:
 
 ---
 
-*Last updated: 2025-12-30 - Phase 1, Week 3 In Progress (1,151 functions extracted across 16 modules, power.R completed)*
+*Last updated: 2025-12-30 - Phase 1, Week 3 In Progress (1,161 functions extracted across 17 modules, winsorize.R completed)*
