@@ -1,0 +1,119 @@
+EFFECT SIZE MODULE EXTRACTION SUMMARY
+=====================================
+
+Date: 2025-12-30
+Module: pkg/R-new/effect-size.R
+Source: pkg/R/Rallfun-v45.R
+
+EXTRACTION STATISTICS
+---------------------
+Functions Extracted: 41
+Total Lines: 1,516 lines
+File Size: 43 KB (43,336 bytes)
+
+FUNCTIONS EXTRACTED (in order by original line number)
+-------------------------------------------------------
+
+1.  shiftdhd            (lines 1394-1459)   - 66 lines - Shift function for deciles with CI
+2.  qhatds1             (lines 4246-4254)   - 9 lines  - Helper for qhat bootstrap
+3.  qhatd               (lines 4255-4283)   - 29 lines - Q statistic for dependent groups
+4.  qhat                (lines 7138-7189)   - 52 lines - Q statistic (nonparametric effect size)
+5.  akp.effect          (lines 29303-29325) - 23 lines - AKP robust effect size
+6.  akp.effect.ci       (lines 29327-29353) - 27 lines - AKP effect size with CI
+7.  qhatDEP             (lines 64252-64264) - 13 lines - Depth-based Q for dependent groups
+8.  qhatdepPB           (lines 64265-64288) - 24 lines - Depth-based Q with percentile bootstrap
+9.  lin.ES              (lines 68134-68199) - 66 lines - Linear combination effect sizes
+10. linES.sub           (lines 68201-68205) - 5 lines  - Helper for lin.ES
+11. rmlinES             (lines 68208-68236) - 29 lines - Repeated measures linear ES
+12. ES.sum.REL.MAG      (lines 74099-74117) - 19 lines - ES summary relative magnitude
+13. ES.summary          (lines 74119-74171) - 53 lines - General effect size summary
+14. ES.summary.CI       (lines 74174-74244) - 71 lines - ES summary with confidence intervals
+15. MUL.ES.sum          (lines 74760-74768) - 9 lines  - Multiple ES summary
+16. IND.PAIR.ES         (lines 75185-75229) - 45 lines - Independent pairwise ES
+17. RCES                (lines 75277-75301) - 25 lines - Row-column ES
+18. twowayESM           (lines 75303-75316) - 14 lines - Two-way ES matrix
+19. inter.ES            (lines 75329-75387) - 59 lines - Interaction effect size
+20. inter.TDES.sub      (lines 75389-75444) - 56 lines - Interaction TD ES helper
+21. interES.2by2        (lines 75477-75508) - 32 lines - 2x2 interaction ES
+22. interJK.ESmul       (lines 75510-75551) - 42 lines - Interaction JK ES multiple
+23. LCES                (lines 75583-75609) - 27 lines - Linear contrast ES
+24. qno.est             (lines 75611-75631) - 21 lines - Quantile estimator
+25. bw.es.A             (lines 75633-75677) - 45 lines - Between-within ES factor A
+26. dep.ES.summary      (lines 75679-75731) - 53 lines - Dependent groups ES summary
+27. dep.ES.summary.sub  (lines 75733-75747) - 15 lines - Dependent ES summary helper
+28. dep.ES.summary.CI   (lines 75750-75822) - 73 lines - Dependent ES summary with CI
+29. bw.es.B             (lines 75825-75882) - 58 lines - Between-within ES factor B
+30. bw.es.I             (lines 75885-75926) - 42 lines - Between-within ES interaction
+31. ww.es               (lines 75928-75980) - 53 lines - Within-within ES
+32. t1way.EXES.ci       (lines 79482-79518) - 37 lines - One-way ES with CI
+33. deplin.ES.summary.CI (lines 79745-79786) - 42 lines - Dependent linear ES summary CI
+34. DEP.PAIR.ES         (lines 79788-79812) - 25 lines - Dependent pairwise ES
+35. wwlin.es            (lines 79904-79916) - 13 lines - Within-within linear ES
+36. wwwlin.es           (lines 79918-79934) - 17 lines - Three-way within linear ES
+37. bwwA.es             (lines 79936-79955) - 20 lines - Between-within-within ES A
+38. bwwA.es.sub         (lines 79959-79984) - 26 lines - Between-within-within ES helper
+39. BEST.cell           (lines 80552-80601) - 50 lines - Best cell identification
+40. KMS.ES.M            (lines 84214-84239) - 26 lines - KMS robust effect size
+41. ES.summary.sub      (lines 87421-87427) - 7 lines  - ES summary helper
+
+FUNCTION CATEGORIES
+-------------------
+
+Core Q Statistic Functions (4):
+  - qhat, qhatd, qhatds1, qhatDEP, qhatdepPB
+  - Nonparametric effect size measures using kernel density estimation
+
+AKP Effect Size (2):
+  - akp.effect, akp.effect.ci
+  - Robust analog of Cohen's d
+
+Linear Combination ES (3):
+  - lin.ES, linES.sub, rmlinES
+  - Effect sizes for linear contrasts
+
+General ES Summary Functions (6):
+  - ES.summary, ES.summary.CI, ES.summary.sub
+  - ES.sum.REL.MAG, MUL.ES.sum
+  - KMS.ES.M
+  - Comprehensive effect size reporting across multiple measures
+
+Factorial/ANOVA ES Functions (15):
+  - IND.PAIR.ES, RCES, twowayESM
+  - inter.ES, inter.TDES.sub, interES.2by2, interJK.ESmul
+  - bw.es.A, bw.es.B, bw.es.I
+  - ww.es, wwlin.es, wwwlin.es
+  - bwwA.es, bwwA.es.sub
+
+Dependent Groups ES (5):
+  - dep.ES.summary, dep.ES.summary.sub, dep.ES.summary.CI
+  - DEP.PAIR.ES, deplin.ES.summary.CI
+
+Miscellaneous ES Functions (6):
+  - shiftdhd (shift function for deciles)
+  - LCES (linear contrast ES)
+  - qno.est (quantile estimator)
+  - t1way.EXES.ci (one-way ES)
+  - BEST.cell (best cell identification)
+
+DEPENDENCIES
+------------
+The effect-size module depends on functions from:
+  - utils-core: elimna, deciles, winval
+  - location: tmean, hd (Harrell-Davis), onestep, mest
+  - bootstrap: disker, idb
+  - variance: pbvar, winvar
+  - regression: various robust regression functions
+  - comparison: ESfun, cell.com, cell.com.pv, best.cell.crit
+
+NOTES
+-----
+- All functions preserve original comments and formatting
+- Functions are ordered by their original line numbers in Rallfun-v45.R
+- Module includes comprehensive header with documentation
+- No modifications to function logic or structure
+- Functions excluded: ancES, linconES, rmmcpES (in ancova/mcp), medpb.es (in medians)
+
+VALIDATION
+----------
+All 41 requested functions were successfully extracted with complete function bodies.
+No parsing errors or incomplete extractions detected.

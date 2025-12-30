@@ -35,34 +35,32 @@
   - ✅ mcp.R extracted (106 functions, 9,046 lines, 255 KB)
   - ✅ medians.R extracted (42 functions, 2,474 lines, 69 KB)
   - ✅ plotting.R extracted (97 functions, 4,519 lines, 119 KB)
-  - 🔄 Next: effect-size.R and remaining modules
+  - ✅ effect-size.R extracted (41 functions, 1,516 lines, 43 KB)
+  - 🔄 Next: power.R, winsorize.R, and remaining modules
 
 ### Overall Metrics
-- **Modules completed**: 14 of 20 (70%)
-- **Functions extracted**: 1,100 of 1,971 (55.8%)
-- **Lines extracted**: 60,120 of 97,199 (61.8%)
-- **Total size**: 1.72 MB of ~2.6 MB (66.2%)
-- **Status**: All 14 modules source successfully ✅
+- **Modules completed**: 15 of 20 (75%)
+- **Functions extracted**: 1,141 of 1,971 (57.9%)
+- **Lines extracted**: 61,636 of 97,199 (63.4%)
+- **Total size**: 1.76 MB of ~2.6 MB (67.7%)
+- **Status**: All 15 modules source successfully ✅
 
 ### Recently Completed (2025-12-30)
-**plotting.R module** - Visualization and Plotting Functions:
-- 97 functions, 4,519 lines, 119 KB
-- Regression plots: rplot, regplot, rplotCI, rplotpbCI, qplotreg, qregplots, reg2plot
-- Lowess/loess: lplot, lplotv2, lplotCI, lplotse, lplotcom2, lplotcomBCI
-- ANCOVA plots: ancdifplot, anclinQS.plot, ancova.KMS.plot, wmw.anc.plot
-- Group comparisons: g2plot, g5plot, gplot, loc2plot, sumplot2g
-- GAM plots: gamplot, gamplotv2, gamplotINT
-- Functional data: fbplot, Flplot, FQplot, func.plot, spag.plot
-- Interaction plots: interplot, Qinterplot, plot.inter, reg.plot.inter
-- Error bars/boxes: ebarplot, ebarplot.med, box_plot1, STRIPchart
-- Distribution/density: splot, splotg5, kdplot, piplot
-- Depth-based: Bagplot, rdplot, rd2plot
-- Specialized: plot3D, plot_robpca, logreg.plot, longreg.plot
+**effect-size.R module** - Effect Size Functions:
+- 41 functions, 1,516 lines, 43 KB
+- Q statistics: qhat, qhatd, qhatds1, qhatDEP, qhatdepPB, shiftdhd
+- AKP robust effect size: akp.effect, akp.effect.ci
+- General ES summaries: ES.summary, ES.summary.CI, ES.summary.sub, ES.sum.REL.MAG
+- Dependent groups ES: dep.ES.summary, dep.ES.summary.CI, dep.ES.summary.sub, DEP.PAIR.ES
+- Factorial/ANOVA ES: IND.PAIR.ES, RCES, twowayESM, bw.es.A, bw.es.B, bw.es.I, ww.es
+- Interaction ES: inter.ES, inter.TDES.sub, interES.2by2, interJK.ESmul
+- Linear combination ES: lin.ES, linES.sub, rmlinES, LCES, deplin.ES.summary.CI
+- Mixed design ES: wwlin.es, wwwlin.es, bwwA.es, bwwA.es.sub
+- Miscellaneous: qno.est, t1way.EXES.ci, MUL.ES.sum, BEST.cell, KMS.ES.M
 - Successfully sourced and validated with all dependencies
-- **Note**: Duplicate linplot at line 68059 was excluded (kept line 28226 version only)
 
 ### Next Steps
-1. Continue with remaining Week 3 modules (effect-size.R, power.R, winsorize.R)
+1. Continue with remaining Week 3 modules (power.R, winsorize.R)
 2. Extract final modules (parallel.R, classification.R, special.R, zzz-internal.R)
 3. End-of-phase validation when all 20 modules extracted
 
@@ -130,7 +128,7 @@ All preparation tasks completed successfully:
 | Current Documentation | 1 | Only WRS-package.Rd |
 | Old .Rd Files | 15 | In `old Rd files/` directory |
 
-### Extracted Modules (14 of 20 Complete)
+### Extracted Modules (15 of 20 Complete)
 
 | Module | Status | Functions | Lines | Size | Key Functions |
 |--------|--------|-----------|-------|------|---------------|
@@ -148,7 +146,8 @@ All preparation tasks completed successfully:
 | mcp.R | ✅ | 106 | 9,046 | 255 KB | con1way, linconb, pairdepb, rmmcp, mcppb |
 | medians.R | ✅ | 42 | 2,474 | 69 KB | msmed, med2g, medpb, MEDanova, med.effect |
 | plotting.R | ✅ | 97 | 4,519 | 119 KB | rplot, lplot, g2plot, gamplot, Bagplot, fbplot |
-| **TOTAL** | **14/20** | **1,100** | **60,120** | **1.72 MB** | **55.8% of functions** |
+| effect-size.R | ✅ | 41 | 1,516 | 43 KB | qhat, ES.summary, akp.effect, dep.ES.summary |
+| **TOTAL** | **15/20** | **1,141** | **61,636** | **1.76 MB** | **57.9% of functions** |
 
 ### Target Module Structure (20 Files)
 
@@ -299,7 +298,13 @@ All preparation tasks completed successfully:
   - GAM plots, functional data plots, interaction plots
   - Successfully sourced and validated
   - **Note**: Duplicate linplot at line 68059 excluded (kept line 28226 version)
-- [ ] Extract effect-size.R, power.R, winsorize.R, parallel.R
+- [x] Extract effect-size.R
+  - **COMPLETED**: 41 functions extracted (1,516 lines, 43 KB)
+  - Includes: qhat, qhatd, ES.summary, ES.summary.CI, akp.effect, dep.ES.summary
+  - Q statistics, AKP robust effect sizes, general ES summaries
+  - Factorial/ANOVA ES, interaction ES, linear combination ES
+  - Successfully sourced and validated
+- [ ] Extract power.R, winsorize.R, parallel.R
 - [ ] Extract classification.R, special.R
 - [ ] Extract zzz-internal.R (last)
 - [ ] **End-of-phase validation**: Replace R/ with R-new/, build & check package
@@ -632,4 +637,4 @@ When resuming work:
 
 ---
 
-*Last updated: 2025-12-30 - Phase 1, Week 3 In Progress (1,100 functions extracted across 14 modules, plotting.R completed)*
+*Last updated: 2025-12-30 - Phase 1, Week 3 In Progress (1,141 functions extracted across 15 modules, effect-size.R completed)*
