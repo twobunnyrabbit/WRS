@@ -12,7 +12,41 @@
 # These functions MUST be loaded before other modules.
 
 
-# elimna
+#' Remove Missing Values from Data
+#'
+#' @description
+#' Removes any rows of data containing missing (NA) values. Works with vectors,
+#' matrices, data frames, and lists.
+#'
+#' @param m A numeric vector, matrix, data frame, or list. Can also be a list
+#'   of matrices or vectors.
+#'
+#' @return The data with rows containing missing values removed. The return type
+#'   matches the input type (vector, matrix, or list).
+#'
+#' @details
+#' This is the most frequently called function in the WRS package (used by
+#' 928 functions, 47% of the package). It handles multiple data structures:
+#' \itemize{
+#'   \item For vectors/matrices: removes rows with any NA values
+#'   \item For lists of matrices: applies na.omit to each matrix element
+#'   \item For lists of vectors: applies na.omit to each vector element
+#' }
+#'
+#' @examples
+#' # Vector with missing values
+#' x <- c(1, 2, NA, 4, 5)
+#' elimna(x)
+#'
+#' # Matrix with missing values
+#' m <- matrix(c(1, 2, NA, 4, 5, 6), ncol = 2)
+#' elimna(m)
+#'
+#' # List of vectors
+#' lst <- list(c(1, NA, 3), c(4, 5, NA))
+#' elimna(lst)
+#'
+#' @export
 elimna<-function(m){
 #
 # remove any rows of data having missing values
@@ -45,7 +79,32 @@ e
 }
 
 
-# listm
+#' Convert Matrix to List
+#'
+#' @description
+#' Converts a matrix or data frame to list format, where each column becomes
+#' a separate list element.
+#'
+#' @param x A matrix or data frame.
+#'
+#' @return A list where the j-th element contains the j-th column of x.
+#'   For example, column 1 is stored in y[[1]], column 2 in y[[2]], etc.
+#'
+#' @details
+#' This is one of the most frequently called functions in the WRS package
+#' (used by 327 functions). It's particularly useful for converting data
+#' to the list format required by many WRS functions.
+#'
+#' @examples
+#' # Convert matrix to list
+#' m <- matrix(1:12, ncol = 3)
+#' listm(m)
+#'
+#' # Convert data frame to list
+#' df <- data.frame(x = 1:5, y = 6:10, z = 11:15)
+#' listm(df)
+#'
+#' @export
 listm<-function(x){
 #
 # Store the data in a matrix or data frame in a new
@@ -58,12 +117,43 @@ for(j in 1:ncol(x))y[[j]]<-x[,j]
 y
 }
 
+#' @rdname listm
+#' @export
 m2l=listm
 
+#' @rdname listm
+#' @export
 matrix2list=listm
 
 
-# matl
+#' Convert List to Matrix
+#'
+#' @description
+#' Converts a list to matrix format, where each list element becomes a column
+#' in the resulting matrix.
+#'
+#' @param x A list where each element is a numeric vector.
+#'
+#' @return A matrix where the j-th column contains the j-th list element.
+#'   If list elements have different lengths, shorter vectors are padded with
+#'   NA values to match the longest vector.
+#'
+#' @details
+#' This is one of the most frequently called functions in the WRS package
+#' (used by 219 functions). It's the inverse operation of \code{\link{listm}}.
+#' When list elements have unequal lengths, the resulting matrix has as many
+#' rows as the longest list element, with NA values filling shorter columns.
+#'
+#' @examples
+#' # Convert list to matrix (equal lengths)
+#' lst <- list(c(1, 2, 3), c(4, 5, 6), c(7, 8, 9))
+#' matl(lst)
+#'
+#' # Convert list with unequal lengths
+#' lst2 <- list(c(1, 2), c(3, 4, 5, 6), c(7, 8, 9))
+#' matl(lst2)
+#'
+#' @export
 matl<-function(x){
 #
 # take data in list mode and store it in a matrix
@@ -76,10 +166,37 @@ for(j in 1:J)temp[1:nval[j],j]<-x[[j]]
 temp
 }
 
+#' @rdname matl
+#' @export
 list2mat=matl
 
 
-# near
+#' Identify Values Near a Point
+#'
+#' @description
+#' Determines which values in a vector are near a specified point based on
+#' a robust measure of scale (MAD or other dispersion measure).
+#'
+#' @param x A numeric vector.
+#' @param pt The point to compare against (numeric scalar).
+#' @param fr Fractional multiplier for the dispersion measure (default: 1).
+#'   Values within \code{fr * MAD} of \code{pt} are considered "near".
+#'
+#' @return A logical vector of the same length as x, where TRUE indicates
+#'   values that are near pt (within \code{fr * dispersion}).
+#'
+#' @details
+#' The function uses MAD (median absolute deviation) as the primary measure
+#' of dispersion. If MAD is zero, it falls back to the ideal fourths, and
+#' if that's also zero, it uses winsorized variance. The function stops
+#' with an error if all measures of dispersion are zero.
+#'
+#' @examples
+#' x <- c(1, 2, 3, 10, 11, 12)
+#' near(x, pt = 2, fr = 1)  # Values near 2
+#' near(x, pt = 11, fr = 2)  # Values within 2*MAD of 11
+#'
+#' @export
 near<-function(x,pt,fr=1){
 # determine which values in x are near pt
 # based on fr * mad
@@ -97,7 +214,41 @@ dflag
 }
 
 
-# hd
+#' Harrell-Davis Quantile Estimator
+#'
+#' @description
+#' Computes the Harrell-Davis estimate of the qth quantile using a weighted
+#' average of all order statistics.
+#'
+#' @inheritParams common-params
+#'
+#' @param STAND Internal parameter (not typically used by users).
+#' @param tr Logical. If TRUE, uses trimmed Harrell-Davis estimator via
+#'   \code{thd()} function (default: FALSE).
+#'
+#' @return A numeric scalar representing the estimated quantile.
+#'
+#' @details
+#' The Harrell-Davis estimator uses a weighted average of all order statistics,
+#' with weights based on the beta distribution. Unlike conventional quantile
+#' estimators that use one or two order statistics, the Harrell-Davis estimator
+#' is more efficient and has better small-sample properties.
+#'
+#' The weights are computed as:
+#' \deqn{w_i = F(i/n; m_1, m_2) - F((i-1)/n; m_1, m_2)}
+#' where \eqn{m_1 = (n+1)q}, \eqn{m_2 = (n+1)(1-q)}, and F is the beta CDF.
+#'
+#' @examples
+#' x <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+#' hd(x, q = 0.5)  # Median
+#' hd(x, q = 0.25) # First quartile
+#' hd(x, q = 0.75) # Third quartile
+#'
+#' @references
+#' Harrell, F. E., & Davis, C. E. (1982). A new distribution-free quantile
+#' estimator. Biometrika, 69(3), 635-640.
+#'
+#' @export
 hd<-function(x,q=.5,na.rm=TRUE,STAND=NULL,tr=FALSE){
 #
 #  Compute the Harrell-Davis estimate of the qth quantile
@@ -121,7 +272,35 @@ e
 }
 
 
-# winvar
+#' Winsorized Variance
+#'
+#' @description
+#' Computes the gamma Winsorized variance, a robust measure of variability
+#' that limits the influence of extreme values.
+#'
+#' @inheritParams common-params
+#'
+#' @param STAND Internal parameter (not typically used by users).
+#'
+#' @return A numeric scalar representing the Winsorized variance. Returns NA
+#'   if \code{na.rm = FALSE} and missing values are present.
+#'
+#' @details
+#' Winsorization replaces extreme values with less extreme values before
+#' computing variance. With \code{tr = 0.2}, the lowest 20% and highest 20%
+#' of values are replaced with the values at the 20th and 80th percentiles,
+#' respectively. The variance is then computed on these Winsorized values.
+#'
+#' This provides a robust measure of variability that is less sensitive to
+#' outliers than the standard variance.
+#'
+#' @examples
+#' x <- c(1, 2, 3, 4, 5, 100)  # Last value is an outlier
+#' var(x)        # Standard variance (heavily influenced by outlier)
+#' winvar(x)     # Winsorized variance (20% trimming)
+#' winvar(x, tr = 0.1)  # Less trimming
+#'
+#' @export
 winvar<-function(x,tr=.2,na.rm=FALSE,STAND=NULL){
 #
 #  Compute the gamma Winsorized variance for the data in the vector x.
@@ -143,7 +322,74 @@ wv
 }
 
 
-# lplot
+#' Plot Regression Surface Using LOESS
+#'
+#' @description
+#' Plots a regression surface using LOESS (locally weighted scatterplot smoothing)
+#' for up to four predictors. Also computes a measure of association strength.
+#'
+#' @inheritParams common-params
+#'
+#' @param low.span Span parameter for lowess when there is one predictor
+#'   (default: 2/3).
+#' @param span Span parameter for loess when there are two or more predictors
+#'   (default: 0.75).
+#' @param pyhat Logical. If TRUE, returns fitted Y values (default: FALSE).
+#' @param varfun Function to compute variance for strength of association
+#'   (default: pbvar).
+#' @param cor.op Logical. If TRUE, uses correlation-based measure of association
+#'   (default: FALSE).
+#' @param cor.fun Correlation function to use when cor.op = TRUE
+#'   (default: pbcor).
+#' @param STR Logical. If TRUE, computes strength of association (default: TRUE).
+#' @param ZLIM Logical. Internal parameter for setting zlim in persp plots
+#'   (default: FALSE).
+#' @param pch Plotting character (default: "*").
+#' @param scale Logical. If TRUE, scales variables in persp plot (default: TRUE).
+#' @param xlab,ylab,zlab Axis labels for plots.
+#' @param theta,phi Angles for 3D perspective plot (defaults: 50, 25).
+#' @param family Family parameter for loess ("gaussian" or "symmetric",
+#'   default: "gaussian").
+#' @param duplicate How to handle duplicate x values in 3D plots
+#'   (default: "error"). Set to "strip" if duplicates occur.
+#' @param pc Alternative to pch for plotting character (default: "*").
+#' @param ticktype Type of tick marks for persp plot (default: "simple").
+#' @param frame Logical. If TRUE, draws frame around 2D plot (default: TRUE).
+#'
+#' @return A list with components:
+#'   \item{Strength.Assoc}{Square root of explanatory power}
+#'   \item{Explanatory.power}{Measure of association strength (R-squared analog)}
+#'   \item{yhat.values}{Fitted values (NULL unless pyhat = TRUE)}
+#'   \item{n}{Original sample size}
+#'   \item{n.keep}{Sample size after outlier removal}
+#'
+#' @details
+#' For one predictor, uses lowess smoothing and plots a 2D scatterplot with
+#' smooth curve. For two predictors, creates a 3D perspective plot. Supports
+#' up to four predictors (though visualization is only for 1-2 predictors).
+#'
+#' The function can eliminate outliers before fitting via \code{eout} (outliers
+#' in both x and y) or \code{xout} (outliers in x only).
+#'
+#' For confidence bands with a single predictor, use \code{lplotCI} instead.
+#' For p-values based on the strength of association, use \code{lplotPV}.
+#'
+#' @note
+#' When using two predictors with duplicate values, you may need to set
+#' \code{duplicate = "strip"}.
+#'
+#' @examples
+#' # Simple example with one predictor
+#' x <- rnorm(50)
+#' y <- 2*x + rnorm(50)
+#' lplot(x, y)
+#'
+#' # Two predictors (creates 3D plot)
+#' x <- matrix(rnorm(100), ncol = 2)
+#' y <- x[,1] + x[,2] + rnorm(50)
+#' lplot(x, y)
+#'
+#' @export
 lplot<-function(x,y,low.span=2/3,span=.75,pyhat=FALSE,eout=FALSE,xout=FALSE,outfun=outpro,plotit=TRUE,
 expand=.5,varfun=pbvar,cor.op=FALSE,cor.fun=pbcor,pr=TRUE,STR=TRUE,ZLIM=FALSE,pch=NULL,
 scale=TRUE,xlab="X",ylab="Y",zlab="",theta=50,phi=25,family="gaussian",
@@ -277,7 +523,30 @@ list(Strength.Assoc=sqrt(E.power),Explanatory.power=E.power,yhat.values=last,n=n
 n.keep=n.keep)
 }
 
-# qest
+#' Quantile Estimate Using Single Order Statistic
+#'
+#' @description
+#' Computes an estimate of the qth quantile using a single order statistic,
+#' which is simpler than the Harrell-Davis estimator.
+#'
+#' @inheritParams common-params
+#'
+#' @return A numeric scalar representing the estimated quantile, or NA if the
+#'   computed index is out of bounds.
+#'
+#' @details
+#' This function computes the quantile by selecting the order statistic at
+#' position \code{floor(q * n + 0.5)}, where n is the sample size. This is
+#' a simpler alternative to weighted quantile estimators like Harrell-Davis.
+#'
+#' @examples
+#' x <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+#' qest(x, q = 0.5)  # Median
+#' qest(x, q = 0.25) # First quartile
+#'
+#' @seealso \code{\link{hd}} for the Harrell-Davis quantile estimator
+#'
+#' @export
 qest<-function(x,q=.5,na.rm=TRUE){
 #
 # Compute an estimate of qth quantile
@@ -293,7 +562,22 @@ if(iq>0 || iq<=n)qest<-xsort[iq]
 qest
 }
 
-# pool.a.list
+#' Pool Data from List into Single Vector
+#'
+#' @description
+#' Combines all elements of a list into a single numeric vector by concatenating
+#' all list elements.
+#'
+#' @param x A list where each element is a numeric vector.
+#'
+#' @return A numeric vector containing all values from all list elements
+#'   concatenated together.
+#'
+#' @examples
+#' lst <- list(c(1, 2, 3), c(4, 5), c(6, 7, 8, 9))
+#' pool.a.list(lst)  # Returns c(1, 2, 3, 4, 5, 6, 7, 8, 9)
+#'
+#' @export
 pool.a.list<-function(x){
 #
 # x has list mode. Pool all of the data into a single R variable.
@@ -305,7 +589,40 @@ pts
 }
 
 
-# con2way
+#' Create Contrast Coefficients for Two-Way ANOVA
+#'
+#' @description
+#' Creates contrast coefficient matrices for performing all pairwise comparisons
+#' of main effects and interactions in a J x K two-way ANOVA design.
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#'
+#' @return A list with three components:
+#'   \item{conA}{Matrix of contrast coefficients for Factor A main effects
+#'     (J*K rows, J(J-1)/2 columns)}
+#'   \item{conB}{Matrix of contrast coefficients for Factor B main effects
+#'     (J*K rows, K(K-1)/2 columns)}
+#'   \item{conAB}{Matrix of contrast coefficients for interactions
+#'     (J*K rows, J(J-1)*K(K-1)/4 columns)}
+#'
+#' @details
+#' For a J x K factorial ANOVA design, this function generates all contrast
+#' matrices needed for pairwise comparisons. Each column in a contrast matrix
+#' represents one pairwise comparison using coefficients of +1 and -1.
+#'
+#' @examples
+#' # 2x3 design
+#' con2way(2, 3)
+#'
+#' # 3x3 design
+#' contrasts <- con2way(3, 3)
+#' dim(contrasts$conA)  # 9 x 3 (3 comparisons for 3 levels of A)
+#' dim(contrasts$conB)  # 9 x 3 (3 comparisons for 3 levels of B)
+#'
+#' @seealso \code{\link{con3way}} for three-way ANOVA designs
+#'
+#' @export
 con2way<-function(J,K){
 #
 # For a  J by K ANOVA design
@@ -360,7 +677,64 @@ list(conA=conA,conB=conB,conAB=conAB)
 }
 
 
-# rmul
+#' Generate Multivariate Data with Specified Correlation
+#'
+#' @description
+#' Generates n observations from a p-variate distribution with specified
+#' correlation structure. Can generate data from normal or g-and-h distributions.
+#'
+#' @param n Number of observations to generate.
+#' @param p Number of variables (dimensions) (default: 2).
+#' @param cmat Optional correlation matrix. If NULL, uses common correlation rho.
+#' @param rho Common correlation for all pairs of variables when cmat is NULL
+#'   (default: 0). Ignored if cmat is specified.
+#' @param mar.fun Function to generate marginal distributions (default: ghdist).
+#' @param OP Logical. If TRUE, uses Cholesky decomposition method; if FALSE,
+#'   uses mvrnorm then transforms (default: FALSE).
+#' @param g Parameter for g-and-h distribution (default: 0, which gives normal).
+#' @param h Parameter for g-and-h distribution (default: 0, which gives normal).
+#' @param ... Additional arguments passed to mar.fun.
+#'
+#' @return An n x p matrix of generated data with the specified correlation structure.
+#'
+#' @details
+#' This function generates multivariate data with flexible marginal distributions
+#' and correlation structure. Two methods are available:
+#'
+#' \itemize{
+#'   \item \code{OP = FALSE} (default): Uses \code{mvrnorm} to generate correlated
+#'     normal data, then transforms to g-and-h distribution if g > 0 or h > 0.
+#'   \item \code{OP = TRUE}: Generates independent marginals using \code{mar.fun},
+#'     then applies Cholesky decomposition to induce correlation structure
+#'     (Browne, 1968).
+#' }
+#'
+#' When g = 0 and h = 0, generates multivariate normal data. The g-and-h
+#' distribution allows for skewness (g) and heavy tails (h).
+#'
+#' @note
+#' To adjust rho so that Pearson correlation equals rho after transformation,
+#' use the \code{rngh} function instead.
+#'
+#' @examples
+#' # Bivariate normal with correlation 0.5
+#' x <- rmul(100, p = 2, rho = 0.5)
+#' cor(x)
+#'
+#' # Four variables with g-and-h marginals
+#' x <- rmul(100, p = 4, rho = 0.3, g = 0.5, h = 0.2)
+#'
+#' # Custom correlation matrix
+#' cmat <- matrix(c(1, 0.5, 0.3,
+#'                  0.5, 1, 0.6,
+#'                  0.3, 0.6, 1), 3, 3)
+#' x <- rmul(100, p = 3, cmat = cmat)
+#'
+#' @references
+#' Browne, M. W. (1968). A comparison of factor analytic techniques.
+#' Psychometrika, 33, 267-334.
+#'
+#' @export
 rmul<-function(n,p=2,cmat=NULL,rho=0,
 mar.fun=ghdist,OP=FALSE,g=0,h=0,...){
 #
@@ -417,7 +791,50 @@ x
 
 
 
-# regYhat
+#' Predict Y Values Using Robust Regression
+#'
+#' @description
+#' Computes predicted Y values at specified X points using a robust regression
+#' function. A convenience wrapper for obtaining predictions from various
+#' regression methods.
+#'
+#' @inheritParams common-params
+#'
+#' @param xr Matrix or vector of X values at which to predict Y (default: x).
+#' @param regfun Regression function to use for fitting (default: tsreg for
+#'   Theil-Sen regression).
+#' @param pr Logical. If TRUE, prints progress messages (default: FALSE).
+#' @param plot.pts Logical. If TRUE, plots the predicted points (default: FALSE).
+#' @param pts Alternative to xr for specifying prediction points. If not NULL,
+#'   overrides xr.
+#'
+#' @return A vector of predicted Y values at the specified X points.
+#'
+#' @details
+#' This function fits a robust regression using \code{regfun}, then computes
+#' predicted values at the points specified by \code{xr} (or \code{pts}). The
+#' regression function must return a list with a \code{coef} component containing
+#' the regression coefficients.
+#'
+#' If \code{xout = TRUE}, outliers in X are removed before fitting the regression.
+#'
+#' @examples
+#' x <- rnorm(50)
+#' y <- 2 + 3*x + rnorm(50)
+#'
+#' # Predict at original X values
+#' yhat <- regYhat(x, y)
+#'
+#' # Predict at new X values
+#' xnew <- seq(-2, 2, length.out = 10)
+#' yhat_new <- regYhat(x, y, xr = xnew)
+#'
+#' # Use different regression method
+#' yhat_ols <- regYhat(x, y, regfun = ols)
+#'
+#' @seealso \code{\link{tsreg}}, \code{\link{ols}}
+#'
+#' @export
 regYhat<-function(x,y,xr=x,regfun=tsreg,xout=FALSE,outfun=outpro,pr=FALSE,plot.pts=FALSE,pts=NULL,...){
 #
 #  For convenience, return estimate of Y based on data in xr (or pts) using
@@ -450,10 +867,53 @@ if(plot.pts)points(xr,yhat)
 yhat
 }
 
+#' @rdname regYhat
+#' @export
 reg.pred<-regYhat
 
 
-# pdis
+#' Projection Distance
+#'
+#' @description
+#' Computes projection distances for points relative to a reference data set.
+#' Used for outlier detection and robust multivariate analysis.
+#'
+#' @param m Reference data matrix (n x p).
+#' @param pts Points at which to compute projection distances (default: m).
+#' @inheritParams common-params
+#'
+#' @param MM Logical. If FALSE, scales distances using interquartile range;
+#'   if TRUE, uses MAD (default: FALSE).
+#' @param cop Center option (1-5):
+#'   \itemize{
+#'     \item 1: Donoho-Gasko median
+#'     \item 2: MCD center
+#'     \item 3: Median of marginal distributions (default)
+#'     \item 4: MVE center
+#'     \item 5: Skipped mean
+#'   }
+#' @param dop Depth option for cop = 1 (default: 1).
+#' @param center Optional pre-specified center. If NA, computed based on cop.
+#'
+#' @return A vector of projection distances for each point in pts.
+#'
+#' @details
+#' Projection distance is a robust measure of outlyingness based on projecting
+#' multivariate data onto all possible one-dimensional subspaces. For each
+#' point, the maximum standardized distance across all projections is computed.
+#'
+#' For univariate data (ncol(m) = 1), simply computes absolute distances from
+#' the center, scaled appropriately.
+#'
+#' @examples
+#' # Bivariate example
+#' m <- matrix(rnorm(100), ncol = 2)
+#' pd <- pdis(m)
+#' plot(m, cex = pd)  # Point size indicates projection distance
+#'
+#' @seealso \code{\link{outpro}} for outlier detection using projection distances
+#'
+#' @export
 pdis<-function(m,pts=m,MM=FALSE,cop=3,dop=1,center=NA,na.rm=TRUE){
 #
 # Compute projection distances for points in pts relative to points in m
@@ -529,7 +989,56 @@ pdis=pdis[np1:nrow(mp)]
 pdis
 }
 
-# yuen
+#' Yuen's Test for Trimmed Means (Independent Groups)
+#'
+#' @description
+#' Performs Yuen's test for comparing trimmed means between two independent
+#' groups. This is a robust alternative to the independent samples t-test.
+#'
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{n1, n2}{Sample sizes for groups 1 and 2}
+#'   \item{est.1, est.2}{Trimmed means for groups 1 and 2}
+#'   \item{ci}{Confidence interval for the difference in trimmed means}
+#'   \item{p.value}{Two-sided p-value}
+#'   \item{dif}{Difference in trimmed means (est.1 - est.2)}
+#'   \item{se}{Standard error of the difference}
+#'   \item{teststat}{Test statistic}
+#'   \item{crit}{Critical value}
+#'   \item{df}{Degrees of freedom}
+#'
+#' @details
+#' Yuen's test compares trimmed means using a heteroscedastic test statistic.
+#' It's more robust than the t-test when distributions are skewed or have
+#' heavy tails. The test uses Winsorized variances and Welch's degrees of
+#' freedom adjustment.
+#'
+#' The inputs can be provided as:
+#' \itemize{
+#'   \item Two separate vectors: \code{yuen(x, y)}
+#'   \item A matrix or data frame: \code{yuen(data)} uses columns 1 and 2
+#'   \item A list: \code{yuen(list(x, y))}
+#' }
+#'
+#' @note
+#' Using \code{tr = 0.5} is not allowed; use a median-based method instead.
+#' With \code{tr > 0.25}, Type I error control may be poor.
+#'
+#' @examples
+#' set.seed(123)
+#' x <- rnorm(20, mean = 0)
+#' y <- rnorm(25, mean = 0.5)
+#' yuen(x, y, tr = 0.2)
+#'
+#' # Using matrix input
+#' data <- cbind(x[1:20], y[1:20])
+#' yuen(data)
+#'
+#' @seealso \code{\link{yuend}} for dependent groups, \code{\link{t1way}} for
+#'   more than two groups
+#'
+#' @export
 yuen<-function(x,y=NULL,tr=.2,alpha=.05){
 #
 #  Perform Yuen's test for trimmed means on the data in x and y.
@@ -579,7 +1088,57 @@ list(n1=length(x),n2=length(y),est.1=mean(x,tr),est.2=mean(y,tr),ci=c(low,up),p.
 }
 
 
-# akerd
+#' Adaptive Kernel Density Estimate
+#'
+#' @description
+#' Computes an adaptive kernel density estimate where the bandwidth varies
+#' locally based on the density. Implements the method described in Silverman (1986).
+#'
+#' @param xx Numeric vector or matrix containing the data.
+#' @param hval Bandwidth parameter. If NA, computed automatically (default: NA).
+#' @param aval Sensitivity parameter for local bandwidth adaptation (default: 0.5).
+#' @param op Initial density estimate option:
+#'   \itemize{
+#'     \item 1: Use expected frequency (default)
+#'     \item 2: Use normal kernel (univariate only)
+#'   }
+#' @param fr Fraction parameter for computing expected frequency (default: 0.8).
+#' @inheritParams common-params
+#' @param pts Points at which to estimate density. If NA, uses data points.
+#' @param xlab,ylab,zlab Axis labels for plots.
+#' @param theta,phi Angles for 3D plots (defaults: 50, 25).
+#' @param expand,scale Parameters for persp plots.
+#' @param ticktype Type of tick marks for plots (default: "simple").
+#' @param color Color for plotting (default: 'black').
+#'
+#' @return For univariate data, a list with:
+#'   \item{fhat.vals}{Density estimates at pts (or x values)}
+#'   \item{x.values}{X values where density was estimated}
+#'   For multivariate data, returns result from \code{akerdmul}.
+#'
+#' @details
+#' Adaptive kernel density estimation allows the bandwidth to vary across
+#' the range of the data, using narrower bandwidths in high-density regions
+#' and wider bandwidths in sparse regions.
+#'
+#' The local bandwidth at each point is \eqn{h \lambda_i}, where h is the
+#' global bandwidth and \eqn{\lambda_i} depends on the pilot density estimate.
+#'
+#' When \code{pyhat = TRUE}, returns density estimates at the points in pts
+#' (after sorting them in ascending order).
+#'
+#' @references
+#' Silverman, B. W. (1986). Density Estimation for Statistics and Data Analysis.
+#' Chapman & Hall/CRC.
+#'
+#' @examples
+#' x <- c(rnorm(50), rnorm(50, mean = 5))
+#' akerd(x)
+#'
+#' # Get density estimates at specific points
+#' akerd(x, pts = seq(0, 6, by = 0.5), pyhat = TRUE, plotit = FALSE)
+#'
+#' @export
 akerd<-function(xx,hval=NA,aval=.5,op=1,fr=.8,pyhat=FALSE,pts=NA,plotit=TRUE,
 xlab="",ylab="",zlab="",theta=50,phi=25,expand=.5,scale=TRUE,ticktype="simple",color='black'){
 #
@@ -652,12 +1211,87 @@ fval
 
 
 
-# chi.int2
+#' Partial Expectation Under Chi-Squared Distribution
+#'
+#' @description
+#' Internal helper function that computes the partial expectation of d^a over
+#' the interval (c1, infinity) under a chi-squared distribution with p degrees
+#' of freedom.
+#'
+#' @param p Degrees of freedom for chi-squared distribution.
+#' @param a Power parameter.
+#' @param c1 Lower bound for integration.
+#'
+#' @return Numeric scalar representing the partial expectation.
+#'
+#' @keywords internal
 chi.int2 <- function(p,a,c1)
 #   partial expectation d in (c1,\infty) of d^a under chi-squared p
  return( exp(lgamma((p+a)/2)-lgamma(p/2))*2^{a/2}*(1-pchisq(c1^2,p+a)))
 
-# outpro
+#' Outlier Detection Using Projection Method
+#'
+#' @description
+#' Detects outliers using a modification of the Stahel-Donoho projection method.
+#' Projects data onto lines connecting each point with the center, then identifies
+#' outliers based on projection distances.
+#'
+#' @param m Data matrix (n x p) or vector.
+#' @param gval Critical value for declaring outliers. If NA, computed automatically
+#'   (default: NA).
+#' @param center Optional pre-specified center. If NA, computed based on cop.
+#' @inheritParams common-params
+#' @param op Logical. If TRUE, plots 0.5 depth contour after removing outliers;
+#'   if FALSE, plots without removing outliers (default: TRUE).
+#' @param MM Logical. If FALSE, uses interquartile range; if TRUE, uses MAD
+#'   (default: FALSE).
+#' @param cop Center option:
+#'   \itemize{
+#'     \item 2: MCD center
+#'     \item 3: Median of marginal distributions (default)
+#'     \item 4: MVE center
+#'     \item 5: TBS
+#'     \item 6: RMBA (Olive's median ball algorithm)
+#'     \item 7: Spatial (L1) median
+#'   }
+#' @param xlab,ylab Labels for x and y axes in plots.
+#' @param STAND Logical. If TRUE, standardizes marginal distributions before
+#'   outlier detection (default: TRUE).
+#'
+#' @return A list with components:
+#'   \item{out.id}{Indices of outliers}
+#'   \item{keep}{Logical vector indicating non-outliers}
+#'   \item{outval}{Data values for outliers}
+#'   \item{dis}{Projection distances for all points}
+#'   \item{crit}{Critical value used}
+#'   \item{n}{Sample size}
+#'   \item{n.out}{Number of outliers}
+#'
+#' @details
+#' The projection method connects each data point with the center of the data
+#' cloud, projects all points onto this line, and examines distances between
+#' projected points. Outliers are identified using a boxplot-based method on
+#' the projection distances.
+#'
+#' For bivariate data with \code{plotit = TRUE}, creates a scatterplot showing
+#' outliers and the depth contour. The Donoho-Gasko (Tukey) median is marked
+#' with a cross (+).
+#'
+#' Default critical value is sqrt(qchisq(0.975, p)) for cop = 2, 3, or 4.
+#'
+#' @note
+#' Parameters \code{tr} and \code{q} are not used by this function but are
+#' included for compatibility with smoothing functions.
+#'
+#' @examples
+#' # Bivariate example
+#' set.seed(123)
+#' m <- matrix(rnorm(100), ncol = 2)
+#' m <- rbind(m, c(5, 5))  # Add an outlier
+#' result <- outpro(m)
+#' result$out.id  # Index of outlier(s)
+#'
+#' @export
 outpro<-function(m,gval=NA,center=NA,plotit=TRUE,op=TRUE,MM=FALSE,cop=3,
 xlab="VAR 1",ylab="VAR 2",STAND=TRUE,tr=.2,q=.5,pr=TRUE,...){
 #
@@ -816,7 +1450,29 @@ list(n=nv,n.out=length(outid),out.id=outid,keep=keep)
 }
 
 
-# idealf
+#' Ideal Fourths (Quartiles)
+#'
+#' @description
+#' Computes the ideal fourths (lower and upper quartiles) using the
+#' recommended definition for quantiles.
+#'
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{ql}{Lower fourth (first quartile)}
+#'   \item{qu}{Upper fourth (third quartile)}
+#'
+#' @details
+#' The ideal fourths are computed using linear interpolation between order
+#' statistics, following the definition recommended in statistical literature.
+#' This method provides better properties than simple order statistics,
+#' especially for small samples.
+#'
+#' @examples
+#' x <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+#' idealf(x)
+#'
+#' @export
 idealf<-function(x,na.rm=FALSE){
 #
 # Compute the ideal fourths for data in x
@@ -832,7 +1488,43 @@ list(ql=ql,qu=qu)
 }
 
 
-# runmean2g
+#' Running Interval Smoother Plot for Two Groups
+#'
+#' @description
+#' Creates a plot comparing running interval smoothers for two independent groups,
+#' allowing visual comparison of regression patterns between groups.
+#'
+#' @param x1,y1 Numeric vectors for group 1 (predictor and response).
+#' @param x2,y2 Numeric vectors for group 2 (predictor and response).
+#' @param fr Fraction controlling amount of smoothing (default: 0.8).
+#' @inheritParams common-params
+#' @param xlab,ylab Axis labels for the plot.
+#' @param SCAT Logical. If TRUE, includes scatterplot points (default: TRUE).
+#' @param sm Logical. If TRUE, uses bootstrap bagging for smoothing (default: FALSE).
+#' @param LP Logical. If TRUE, uses linear pooling (default: FALSE).
+#' @param pch1,pch2 Plotting characters for groups 1 and 2 (defaults: '*', '+').
+#'
+#' @return Invisibly returns NULL. Function is called for its side effect of creating a plot.
+#'
+#' @details
+#' The function fits running interval smoothers to both groups and plots them
+#' for comparison (group 1 with solid line, group 2 with dashed line). The
+#' smoother uses a robust estimator (default: trimmed mean) within moving
+#' windows controlled by \code{fr}.
+#'
+#' When \code{sm = TRUE}, bootstrap bagging is used with \code{nboot} samples.
+#' Missing values are automatically removed. Outliers can be removed via
+#' \code{eout} or \code{xout}.
+#'
+#' @examples
+#' set.seed(123)
+#' x1 <- rnorm(50)
+#' y1 <- 2*x1 + rnorm(50)
+#' x2 <- rnorm(50)
+#' y2 <- 3*x2 + rnorm(50)
+#' runmean2g(x1, y1, x2, y2)
+#'
+#' @export
 runmean2g<-function(x1,y1,x2,y2,fr=.8,est=tmean,xlab="X",ylab="Y",SCAT=TRUE,
 sm=FALSE,nboot=40,SEED=TRUE,eout=FALSE,xout=FALSE,outfun=out,LP=FALSE,pch1='*',pch2='+',...){
 #
@@ -915,7 +1607,24 @@ lines(sx1,sysm1)
 lines(sx2,sysm2,lty=2)
 }
 
-# smmcrit
+#' Critical Value for Studentized Maximum Modulus Distribution
+#'
+#' @description
+#' Internal function that determines the 0.95 quantile of the C-variate
+#' Studentized maximum modulus distribution using linear interpolation.
+#'
+#' @param nuhat Degrees of freedom (must be >= 2).
+#' @param C Number of contrasts (must be an integer between 1 and 28).
+#'
+#' @return Critical value for the Studentized maximum modulus distribution.
+#'   If C = 1, returns the 0.975 quantile of Student's t distribution.
+#'
+#' @details
+#' This function uses linear interpolation on inverse degrees of freedom
+#' to determine critical values from tabled values. Used internally for
+#' multiple comparison procedures.
+#'
+#' @keywords internal
 smmcrit<-function(nuhat,C){
 #
 #  Determine the .95 quantile of the C-variate Studentized maximum
@@ -1015,7 +1724,31 @@ smmcrit
 }
 
 
-# depth
+#' Halfspace Depth for Bivariate Data
+#'
+#' @description
+#' Computes the halfspace depth of a point (U, V) relative to a bivariate
+#' data cloud. Halfspace depth is a robust measure of centrality.
+#'
+#' @param U X-coordinate of the point.
+#' @param V Y-coordinate of the point.
+#' @param m An n x 2 matrix of bivariate data points.
+#'
+#' @return A numeric value representing the halfspace depth, ranging from 0 to 1.
+#'   Higher values indicate greater centrality.
+#'
+#' @details
+#' Halfspace depth (also known as Tukey depth) measures how central a point
+#' is within a data cloud by counting the minimum proportion of points in
+#' any closed halfspace containing the point. Points at the center have
+#' higher depth values.
+#'
+#' @examples
+#' m <- matrix(rnorm(100), ncol = 2)
+#' depth(0, 0, m)  # Depth of origin
+#' depth(5, 5, m)  # Depth of outlying point
+#'
+#' @export
 depth<-function(U,V,m){
 #
 #  Compute the halfspace depth of the point (u,v) for the pairs of points
@@ -1174,6 +1907,36 @@ depths1(NT,3)
 
 
 # lplot.pred
+#' Predict Values Using LOESS
+#'
+#' @description
+#' Computes predicted Y values at specified X points using LOESS (locally
+#' weighted scatterplot smoothing).
+#'
+#' @inheritParams common-params
+#' @param pts Points at which to predict Y values. If NULL, uses x (default: NULL).
+#' @param span Span parameter for loess (default: 2/3).
+#' @param family Family for loess ('gaussian' or 'symmetric', default: 'gaussian').
+#'
+#' @return A list with components:
+#'   \item{n}{Original sample size}
+#'   \item{n.keep}{Sample size after outlier removal}
+#'   \item{x.used}{X values used for fitting}
+#'   \item{yhat}{Predicted Y values at pts}
+#'
+#' @details
+#' This function fits a LOESS smooth to the data and computes predictions
+#' at the points specified in pts. If \code{xout = TRUE}, outliers in X
+#' are removed before fitting.
+#'
+#' @examples
+#' x <- rnorm(50)
+#' y <- 2*x + rnorm(50)
+#' result <- lplot.pred(x, y)
+#' plot(x, y)
+#' points(x, result$yhat, col = "red", pch = 19)
+#'
+#' @export
 lplot.pred<-function(x,y,pts=NULL,xout=FALSE,outfun=outpro,span=2/3,family='gaussian',...){
 #
 #  Using loess, compute predicted values based on the data in  pts
@@ -1198,7 +1961,36 @@ list(n=n.orig,n.keep=n.keep,x.used=x,yhat=pred)
 }
 
 
-# trimci
+#' Confidence Interval for Trimmed Mean
+#'
+#' @description
+#' Computes a confidence interval and performs a hypothesis test for a single
+#' trimmed mean.
+#'
+#' @inheritParams common-params
+#' @param nullval Alternative name for null.value (for backward compatibility).
+#'
+#' @return A list with components:
+#'   \item{estimate}{Trimmed mean}
+#'   \item{ci}{Confidence interval}
+#'   \item{test.stat}{Test statistic for H0: mu = null.value}
+#'   \item{se}{Standard error of the trimmed mean}
+#'   \item{p.value}{Two-sided p-value}
+#'   \item{n}{Sample size}
+#'
+#' @details
+#' Uses Winsorized variance to compute standard errors for the trimmed mean.
+#' The confidence interval and test are based on Student's t distribution
+#' with degrees of freedom adjusted for trimming.
+#'
+#' For a Winsorized measure of effect size, use \code{trimciv2} instead.
+#'
+#' @examples
+#' x <- rnorm(50, mean = 5)
+#' trimci(x)
+#' trimci(x, null.value = 5)  # Test H0: mu = 5
+#'
+#' @export
 trimci<-function(x,tr=.2,alpha=.05,null.value=0,pr=TRUE,nullval=NULL){
 #
 #  Compute a 1-alpha confidence interval for the trimmed mean
@@ -1223,7 +2015,27 @@ list(estimate=mean(x,tr),ci=trimci,test.stat=test,se=se,p.value=sig,n=length(x))
 }
 
 
-# standm
+#' Standardize a Matrix
+#'
+#' @description
+#' Standardizes each column of a matrix by subtracting a location measure
+#' and dividing by a scale measure.
+#'
+#' @inheritParams common-params
+#' @param locfun Function to compute location for each column (default: lloc).
+#' @param scat Function to compute scale for each column (default: var).
+#'
+#' @return Standardized matrix with same dimensions as x.
+#'
+#' @details
+#' Each column is transformed to (x - location) / sqrt(scale). Missing values
+#' are removed before standardization.
+#'
+#' @examples
+#' m <- matrix(rnorm(100, mean = c(5, 10)), ncol = 2)
+#' standm(m)  # Standardized matrix
+#'
+#' @export
 standm<-function(x,locfun=lloc,est=mean,scat=var,...){
 # standardize a matrix x
 #
@@ -1237,7 +2049,32 @@ x
 }
 
 
-# con3way
+#' Create Contrast Coefficients for Three-Way ANOVA
+#'
+#' @description
+#' Generates all contrast coefficient matrices for performing pairwise comparisons
+#' of main effects and interactions in a J x K x L three-way ANOVA design.
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param L Number of levels for Factor C.
+#'
+#' @return A list with seven components for all effects:
+#'   \item{conA, conB, conC}{Main effect contrasts for factors A, B, C}
+#'   \item{conAB, conAC, conBC}{Two-way interaction contrasts}
+#'   \item{conABC}{Three-way interaction contrasts}
+#'
+#' @details
+#' For a J x K x L factorial ANOVA, this function generates all necessary
+#' contrast matrices for testing main effects and all possible interactions.
+#'
+#' @examples
+#' # 2x2x2 design
+#' con3way(2, 2, 2)
+#'
+#' @seealso \code{\link{con2way}} for two-way designs
+#'
+#' @export
 con3way<-function(J,K,L){
 #
 # Generate all contrast coefficients for 3-way design.
@@ -1262,7 +2099,32 @@ conBC=t(conBC),conABC=t(conABC))
 
 
 
-# binmat
+#' Extract Matrix Rows Based on Column Value Range
+#'
+#' @description
+#' Extracts rows from a matrix where values in a specified column fall within
+#' a given range.
+#'
+#' @param m A matrix or vector.
+#' @param col Column number to check (ignored if m is a vector).
+#' @param lower Lower bound of the range.
+#' @param upper Upper bound of the range.
+#' @param INC Logical. If TRUE, uses inclusive bounds (<=, >=); if FALSE,
+#'   uses exclusive bounds (<, >) (default: TRUE).
+#'
+#' @return A matrix containing only rows where m[, col] is within [lower, upper]
+#'   (or (lower, upper) if INC = FALSE).
+#'
+#' @details
+#' This function is useful for filtering data based on the values in a specific
+#' column. The built-in function \code{findInterval} could also be used for
+#' similar purposes.
+#'
+#' @examples
+#' m <- matrix(1:20, ncol = 4)
+#' binmat(m, 2, 3, 7)  # Rows where column 2 is between 3 and 7
+#'
+#' @export
 binmat<-function(m,col,lower, upper,INC=TRUE){
 #
 # pull out the rows of the matrix m based on the values in the column
@@ -1292,6 +2154,29 @@ m[flag,]
 
 
 # near3d
+#' Identify Points Near a Point in Multidimensional Space
+#'
+#' @description
+#' Determines which observations in a multivariate dataset are near a specified
+#' point using Mahalanobis distance based on MVE covariance.
+#'
+#' @param x An n x p data matrix.
+#' @param pt A vector of length p (a point in p-dimensional space).
+#' @param fr Fraction multiplier for distance threshold (default: 0.8).
+#' @param m Result from \code{cov.mve(x)}, typically computed by \code{runm3d}.
+#'
+#' @return A logical vector indicating which rows of x are near pt.
+#'
+#' @details
+#' Uses Mahalanobis distance with MVE (minimum volume ellipsoid) covariance
+#' estimate. Points with distance < fr are considered "near".
+#'
+#' @examples
+#' x <- matrix(rnorm(100), ncol = 2)
+#' m <- MASS::cov.mve(x)
+#' near3d(x, c(0, 0), fr = 0.8, m)
+#'
+#' @export
 near3d<-function(x,pt,fr=.8,m){
 # determine which values in x are near pt
 # based on fr * cov.mve
@@ -1307,7 +2192,26 @@ dflag
 }
 
 
-# kron
+#' Kronecker Product of Two Matrices
+#'
+#' @description
+#' Computes the Kronecker product of two matrices.
+#'
+#' @param m1 First matrix (vectors are converted to column matrices).
+#' @param m2 Second matrix (vectors are converted to column matrices).
+#'
+#' @return The Kronecker product m1 %x% m2.
+#'
+#' @details
+#' Computes the Kronecker (tensor) product of two matrices. For matrices A (m x n)
+#' and B (p x q), the result is an (mp) x (nq) matrix.
+#'
+#' @examples
+#' m1 <- matrix(1:4, ncol = 2)
+#' m2 <- matrix(c(0, 1, 1, 0), ncol = 2)
+#' kron(m1, m2)
+#'
+#' @export
 kron<-function(m1,m2){
 #  compute the Kronecker product of the two matrices m1 and m2.
 #
@@ -1324,7 +2228,30 @@ kron
 }
 
 
-# fac2list
+#' Convert Factor Design Data to List Format
+#'
+#' @description
+#' Sorts data into groups based on factorial design levels and stores the
+#' result in list format. Supports up to 4 factors.
+#'
+#' @inheritParams common-params
+#' @param g Factor grouping information (vector, data frame, or matrix with
+#'   up to 4 columns).
+#'
+#' @return A list where each element contains the data for one group combination.
+#'   Also prints group level information unless pr = FALSE.
+#'
+#' @details
+#' This function is useful for converting data from wide format to the list
+#' format required by many WRS functions. Each unique combination of factor
+#' levels becomes a list element.
+#'
+#' @examples
+#' x <- rnorm(20)
+#' g <- rep(1:4, each = 5)
+#' fac2list(x, g, pr = FALSE)
+#'
+#' @export
 fac2list<-function(x,g,pr=TRUE){
 #
 # data are stored in x
@@ -1370,7 +2297,21 @@ res
 }
 
 
-# smmcrit01
+#' Critical Value for Studentized Maximum Modulus Distribution (0.99 Level)
+#'
+#' @description
+#' Internal function that determines the 0.99 quantile of the C-variate
+#' Studentized maximum modulus distribution.
+#'
+#' @param nuhat Degrees of freedom (must be >= 2).
+#' @param C Number of contrasts (must be an integer between 1 and 28).
+#'
+#' @return Critical value. If C = 1, returns the 0.995 quantile of Student's t.
+#'
+#' @details
+#' Similar to \code{\link{smmcrit}} but for 0.99 confidence level instead of 0.95.
+#'
+#' @keywords internal
 smmcrit01<-function(nuhat,C){
 #
 #  Determine the .99 quantile of the C-variate Studentized maximum
@@ -1470,12 +2411,35 @@ smmcrit01
 }
 
 
-# chi.int
+#' Partial Expectation Under Chi-Squared Distribution (Lower Tail)
+#'
+#' @description
+#' Internal helper function for computing partial expectation of d^a over
+#' interval (0, c1) under chi-squared distribution.
+#'
+#' @param p Degrees of freedom.
+#' @param a Power parameter.
+#' @param c1 Upper bound for integration.
+#'
+#' @return Numeric scalar representing the partial expectation.
+#'
+#' @keywords internal
 chi.int <- function(p,a,c1)
 #   partial expectation d in (0,c1) of d^a under chi-squared p
   return( exp(lgamma((p+a)/2)-lgamma(p/2))*2^{a/2}*pchisq(c1^2,p+a) )
 
-# psi.bt
+#' Biweight Psi Function
+#'
+#' @description
+#' Internal helper function implementing the biweight psi function.
+#'
+#' @param x Data values.
+#' @param c1 Tuning constant.
+#' @param M Location parameter.
+#'
+#' @return Transformed values according to biweight psi function.
+#'
+#' @keywords internal
 psi.bt <- function(x,c1,M)
 {
     x1 <- (x-M)/c1
@@ -1484,7 +2448,33 @@ psi.bt <- function(x,c1,M)
     return(ivec1*x+(1-ivec1-ivec2)*x*(1-x1^2)^2)
 }
 
-# rdplot
+#' Running Interval (Expected Frequency) Density Plot
+#'
+#' @description
+#' Computes and plots an expected frequency curve (robust density estimate)
+#' for univariate or bivariate data.
+#'
+#' @inheritParams common-params
+#' @param fr Fraction controlling amount of smoothing (default: 0.8 for univariate,
+#'   0.6 for multivariate data).
+#' @param theta,phi Angles for 3D perspective plot (defaults: 50, 25).
+#' @param expand Expansion factor for persp plot (default: 0.5).
+#' @param pts Points at which to estimate density. If NA, uses data points.
+#' @param xlab,ylab Axis labels for plot.
+#' @param ticktype Type of tick marks (default: "simple").
+#'
+#' @return A vector of density estimates at the specified points (or data points).
+#'
+#' @details
+#' For univariate data, uses a running interval smoother based on robust
+#' scale (MAD). For bivariate data, creates a 3D perspective plot of the
+#' density surface.
+#'
+#' @examples
+#' x <- rnorm(100)
+#' rdplot(x)
+#'
+#' @export
 rdplot<-function(x,fr=NA,plotit=TRUE,theta=50,phi=25,expand=.5,pyhat=FALSE,pts=NA,
 xlab="X",ylab="",ticktype="simple"){
 #
@@ -1611,7 +2601,36 @@ list(test=test)
 }
 
 
-# binom.conf
+#' Confidence Interval for Binomial Probability
+#'
+#' @description
+#' Computes confidence intervals for a binomial probability using various methods.
+#'
+#' @param x Number of successes (default: sum(y)).
+#' @param nn Sample size (default: length(y)).
+#' @param AUTO Logical. If TRUE, automatically selects method based on sample size
+#'   (default: TRUE).
+#' @inheritParams common-params
+#' @param method Character string specifying the method:
+#'   \itemize{
+#'     \item 'P': Pratt's method
+#'     \item 'AC': Agresti-Coull
+#'     \item 'CP': Clopper-Pearson
+#'     \item 'KMS': Kulinskaya et al. (2008)
+#'     \item 'WIL': Wilson
+#'     \item 'SD': Schilling-Doi (default for n < 35)
+#'   }
+#' @param y Optional vector of binary data (0/1).
+#' @param n Deprecated parameter for sample size.
+#'
+#' @return A list with the confidence interval and other details.
+#'
+#' @note For the sign test, use the \code{signt} function instead.
+#'
+#' @examples
+#' binom.conf(x = 30, nn = 100)
+#'
+#' @export
 binom.conf<-function(x = sum(y), nn = length(y),AUTO=TRUE,pr=TRUE,
 method=c('AC','P','CP','KMS','WIL','SD'), y = NULL, n = NA, alpha = 0.05){
 #
@@ -1640,6 +2659,24 @@ switch(type,
 
 
 # pdisMC
+#' Projection Distance with Parallel Processing
+#'
+#' @description
+#' Computes projection distances using parallel processing via mclapply.
+#' Faster version of \code{\link{pdis}} for large datasets.
+#'
+#' @param m Data matrix (n x p).
+#' @inheritParams pdis
+#'
+#' @return A vector of projection distances.
+#'
+#' @details
+#' Uses parallel processing to speed up projection distance computations.
+#' Otherwise identical to \code{\link{pdis}}.
+#'
+#' @seealso \code{\link{pdis}}
+#'
+#' @export
 pdisMC<-function(m,MM=FALSE,cop=3,dop=1,center=NA){
 #
 # Compute projection distances for points in m
@@ -1690,7 +2727,30 @@ pdis<-apply(matl(dmat),1,max,na.rm=TRUE)
 pdis
 }
 
-# wincor
+#' Winsorized Correlation
+#'
+#' @description
+#' Computes the Winsorized correlation and covariance between two variables
+#' or a correlation matrix for multiple variables.
+#'
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{n}{Sample size}
+#'   \item{cor}{Winsorized correlation (scalar or matrix)}
+#'   \item{cov}{Winsorized covariance (scalar or matrix)}
+#'   \item{p.value}{Two-sided p-value(s) for testing zero correlation}
+#'
+#' @details
+#' Winsorized correlation is more robust than Pearson correlation.
+#' For matrices, pairwise deletion of missing values is performed.
+#'
+#' @examples
+#' x <- rnorm(50)
+#' y <- 0.5*x + rnorm(50)
+#' wincor(x, y)
+#'
+#' @export
 wincor<-function(x,y=NULL,tr=.2){
 #   Compute the Winsorized correlation between x and y.
 #
@@ -1740,7 +2800,26 @@ list(n=nval,cor=wcor,cov=wcov,p.value=sig)
 }
 
 
-# winall
+#' Winsorized Correlation and Covariance Matrix
+#'
+#' @description
+#' Computes the complete Winsorized correlation and covariance matrix for
+#' multivariate data, including p-values.
+#'
+#' @param m An n x p data matrix.
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{cor}{Winsorized correlation matrix}
+#'   \item{cov}{Winsorized covariance matrix}
+#'   \item{center}{Trimmed means}
+#'   \item{p.values}{Matrix of two-sided p-values}
+#'
+#' @examples
+#' m <- matrix(rnorm(100), ncol = 4)
+#' winall(m)
+#'
+#' @export
 winall<-function(m,tr=.2){
 #
 #    Compute the Winsorized correlation and covariance matrix for the
@@ -1775,7 +2854,19 @@ list(cor=wcor,cov=wcov,center=cent,p.values=siglevel)
 
 
 
-# erho.bt
+#' Expectation of Biweight Rho Function
+#'
+#' @description
+#' Internal helper function computing expectation of rho function under
+#' chi-squared distribution.
+#'
+#' @param p Degrees of freedom.
+#' @param c1 Tuning constant.
+#' @param M Location parameter.
+#'
+#' @return Expected value.
+#'
+#' @keywords internal
 erho.bt <- function(p,c1,M)
 #   expectation of rho(d) under chi-squared p
     return(chi.int(p,2,M)/2
@@ -1788,7 +2879,34 @@ chi.int(p,0,M+c1)-chi.int(p,0,M))
         -(4*M/(5*c1^4))*(chi.int(p,5,M+c1)-chi.int(p,5,M))
         +(1/(6*c1^4))*(chi.int(p,6,M+c1)-chi.int(p,6,M)))
 
-# yuend
+#' Yuen's Test for Trimmed Means (Dependent Groups)
+#'
+#' @description
+#' Performs Yuen's test for comparing trimmed means of two dependent (paired)
+#' samples. This is a robust alternative to the paired t-test.
+#'
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{test}{Test statistic}
+#'   \item{se}{Standard error of the difference}
+#'   \item{ci}{Confidence interval for the difference}
+#'   \item{p.value}{Two-sided p-value}
+#'   \item{dif}{Difference in trimmed means}
+#'   \item{n}{Number of pairs}
+#'
+#' @details
+#' Pairs with missing values are eliminated. For methods that allow
+#' missing values, use \code{rm2miss}.
+#'
+#' @examples
+#' x <- rnorm(30, mean = 0)
+#' y <- x + rnorm(30, mean = 0.5)
+#' yuend(x, y)
+#'
+#' @seealso \code{\link{yuen}} for independent groups
+#'
+#' @export
 yuend<-function(x,y,tr=.2,alpha=.05){
 #
 #  Compare the trimmed means of two dependent random variables
@@ -1827,6 +2945,41 @@ list(ci=c(low,up),p.value=yuend,est1=mean(x,tr),est2=mean(y,tr),dif=dif,se=se,te
 
 
 # fdepth
+#' Projection-Based Depth
+#'
+#' @description
+#' Computes projection-based depth of points relative to a data cloud.
+#' Depth is the minimum depth across all projection directions.
+#'
+#' @param m Data matrix (n x p) or vector.
+#' @param pts Points at which to compute depth. If NA, computes depth for all
+#'   points in m (default: NA).
+#' @inheritParams common-params
+#' @param cop Center option (2, 3, or 4):
+#'   \itemize{
+#'     \item 2: MCD center
+#'     \item 3: Median of marginals (default)
+#'     \item 4: MVE center
+#'   }
+#' @param center Optional pre-specified center.
+#' @param xlab,ylab Axis labels for plots.
+#'
+#' @return A vector of depth values. For bivariate data with pts=NA, also
+#'   creates a scatterplot if plotit=TRUE.
+#'
+#' @details
+#' For each point, draws a line connecting it with the center, projects all
+#' points onto this line, and determines depth of the projected points.
+#' The final depth is the minimum across all projections.
+#'
+#' For bivariate data, the center is marked with a cross (+) in plots.
+#'
+#' @examples
+#' m <- matrix(rnorm(100), ncol = 2)
+#' depths <- fdepth(m, plotit = FALSE)
+#' plot(m, cex = depths * 2)  # Size points by depth
+#'
+#' @export
 fdepth<-function(m,pts=NA,plotit=TRUE,cop=3,center=NA,xlab="VAR 1",
 ylab="VAR 2"){
 #
@@ -1946,7 +3099,36 @@ dep
 }
 
 
-# ols
+#' Ordinary Least Squares Regression
+#'
+#' @description
+#' Performs OLS regression with optional outlier removal and visualization.
+#'
+#' @inheritParams common-params
+#' @param xlab,ylab,zlab Axis labels for plots.
+#' @param RES Logical. If TRUE, returns residuals (default: TRUE).
+#'
+#' @return A list with components:
+#'   \item{n}{Original sample size}
+#'   \item{n.keep}{Sample size after outlier removal}
+#'   \item{summary}{Summary table with estimates, SE, t, p-values, and CIs}
+#'   \item{coef}{Regression coefficients}
+#'   \item{F.test}{F-statistic for overall model}
+#'   \item{Ftest.p.value}{P-value for F-test}
+#'   \item{F.test.degrees.of.freedom}{DF for F-test}
+#'   \item{R.squared}{R-squared value}
+#'   \item{residuals}{Residuals (if RES = TRUE)}
+#'
+#' @details
+#' Wraps R's built-in lm() function with added functionality for outlier
+#' removal and plotting. If xout = TRUE, removes leverage points before fitting.
+#'
+#' @examples
+#' x <- rnorm(50)
+#' y <- 2 + 3*x + rnorm(50)
+#' ols(x, y)
+#'
+#' @export
 ols<-function(x,y,xout=FALSE,outfun=outpro,alpha=.05,plotit=FALSE,xlab='X',ylab='Y',zlab='Z',RES=TRUE,...){
 #
 # Performs OLS regression calling built-in R function.
@@ -1997,7 +3179,44 @@ F.test.degrees.of.freedom=temp[10]$fstatistic[2:3],R.squared=Rval,residuals=as.v
 }
 
 
-# rplot
+#' Running Interval Smoother Plot
+#'
+#' @description
+#' Creates a plot of a running interval smoother using a robust estimator,
+#' with options for outlier removal and strength of association computation.
+#'
+#' @inheritParams common-params
+#' @param scat Logical. If TRUE, includes scatterplot (default: TRUE).
+#' @param fr Fraction for smoothing window (default: 0.8 for 1D, NA otherwise).
+#' @param pyhat Logical. If TRUE, returns fitted values (default: FALSE).
+#' @param efr Span for computing explanatory strength (default: 0.5).
+#' @param theta,phi Angles for 3D plots (defaults: 50, 25).
+#' @param scale,expand Parameters for persp plots.
+#' @param varfun Variance function for strength computation (default: pbvar).
+#' @param nmin Minimum sample size (default: 0).
+#' @param out,eout Deprecated. Use xout and eout instead.
+#' @param xlab,ylab,zlab Axis labels.
+#' @param zscale Logical. If TRUE, standardizes y for 2D plots (default: FALSE).
+#' @param duplicate How to handle duplicates in 3D (default: 'error').
+#' @param ticktype Tick type for persp (default: 'simple').
+#' @param LP Logical. If TRUE, further smooths via lplot (default: TRUE).
+#' @param OLD Logical. Use old strength estimate if TRUE (default: FALSE).
+#' @param pch Plotting character (default: '.').
+#' @param prm Logical. Print messages (default: TRUE).
+#'
+#' @return A list with fitted values and strength of association measures.
+#'
+#' @details
+#' Uses running interval smoothing with a robust estimator. For 1 predictor,
+#' creates 2D plot; for 2 predictors, creates 3D perspective plot. Supports
+#' up to 4 predictors.
+#'
+#' @examples
+#' x <- rnorm(50)
+#' y <- 2*x + rnorm(50)
+#' rplot(x, y)
+#'
+#' @export
 rplot<-function(x,y,est=tmean,scat=TRUE,fr=NA,plotit=TRUE,pyhat=FALSE,efr=.5,
 theta=50,phi=25,scale=TRUE,expand=.5,SEED=TRUE,varfun=pbvar,outfun=outpro,
 nmin=0,xout=FALSE,out=FALSE,eout=FALSE,xlab='X',ylab='Y',zscale=FALSE,
@@ -2089,7 +3308,43 @@ list(n=n,n.keep=n.keep,Strength.Assoc=stra,Explanatory.Power = E.power,  xvals=x
 }
 
 
-# out
+#' Outlier Detection Using Robust Mahalanobis Distance
+#'
+#' @description
+#' Identifies outliers using robust measures of location and scatter to
+#' compute robust Mahalanobis distances.
+#'
+#' @param x Data vector or matrix (n x p).
+#' @param cov.fun Covariance function. Options: cov.mve, cov.mcd, covmba2,
+#'   rmba, cov.roc (default: cov.mve).
+#' @param xlab,ylab Axis labels for plots.
+#' @param qval Quantile for default critical value (default: 0.975).
+#' @param crit Optional critical value. If NULL, uses sqrt(qchisq(qval, p)).
+#' @param KS Logical. If TRUE, preserves random seed (default: TRUE).
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{n}{Sample size}
+#'   \item{n.out}{Number of outliers}
+#'   \item{out.val}{Values of outliers}
+#'   \item{out.id}{Row numbers (indices) of outliers}
+#'   \item{keep}{Indices of non-outliers}
+#'   \item{dis}{Mahalanobis distances}
+#'   \item{crit}{Critical value used}
+#'
+#' @details
+#' For univariate data, uses median and MAD. For multivariate data, uses
+#' robust location and scatter estimates. Points with distance > crit are
+#' flagged as outliers.
+#'
+#' For bivariate data with plotit=TRUE, creates a scatterplot marking outliers
+#' with asterisks.
+#'
+#' @examples
+#' x <- c(rnorm(50), 10, -10)  # Two outliers
+#' out(x)
+#'
+#' @export
 out<-function(x,cov.fun=cov.mve,xlab="X",ylab="Y",qval=.975,
 crit=NULL,KS=TRUE,plotit=FALSE,...){
 #
@@ -2163,7 +3418,43 @@ list(n=n,n.out=n.out,out.val=outval,out.id=id,keep=keep,dis=dis,crit=crit)
 }
 
 
-# bmp
+#' Brunner-Munzel Test
+#'
+#' @description
+#' Performs the Brunner-Munzel (2000) heteroscedastic analog of the
+#' Wilcoxon-Mann-Whitney test for comparing two independent groups.
+#'
+#' @inheritParams common-params
+#' @param crit Optional critical value (default: NA, uses t-distribution).
+#' @param pop Deprecated parameter (default: 0).
+#' @param fr Fraction parameter (default: 0.8).
+#' @param xlab,ylab Labels for optional plot.
+#'
+#' @return A list with components:
+#'   \item{test}{Test statistic}
+#'   \item{p.value}{Two-sided p-value}
+#'   \item{phat}{P(X > Y) estimate}
+#'   \item{ci}{Confidence interval for phat}
+#'   \item{dhat}{1 - 2*phat (effect size)}
+#'   \item{df}{Degrees of freedom}
+#'   \item{n1, n2}{Sample sizes}
+#'   \item{probs}{P(X<Y), P(X=Y), P(X>Y)}
+#'
+#' @details
+#' Unlike the WMW test, the Brunner-Munzel test does not assume equal
+#' variances and provides better Type I error control when variances differ.
+#' The test is based on ranks and computes P(X > Y).
+#'
+#' @references
+#' Brunner, E., & Munzel, U. (2000). The nonparametric Behrens-Fisher problem.
+#' Journal of Statistical Planning and Inference, 92, 1-10.
+#'
+#' @examples
+#' x <- rnorm(20, mean = 0, sd = 1)
+#' y <- rnorm(25, mean = 0.5, sd = 2)
+#' bmp(x, y)
+#'
+#' @export
 bmp<-function(x,y,alpha=.05,crit=NA,plotit=FALSE,pop=0,fr=.8,xlab='',ylab=''){
 #
 # Brunner and Munzel (2000) heteroscedastic analog of WMW test.
@@ -2236,7 +3527,26 @@ list(n1=n1,n2=n2,test.stat=bmtest,phat=phat,dhat=dhat,s.e.=se/N,p.value=sig,ci.p
 }
 
 
-# trimse
+#' Standard Error of Trimmed Mean
+#'
+#' @description
+#' Computes the standard error of the gamma trimmed mean for a sample.
+#'
+#' @inheritParams common-params
+#'
+#' @return Numeric value: the standard error of the trimmed mean.
+#'
+#' @details
+#' The standard error is computed using the Winsorized variance and is
+#' adjusted for the effective sample size after trimming. The formula is:
+#' sqrt(winvar(x,tr)) / ((1-2*tr)*sqrt(n))
+#'
+#' @examples
+#' x <- rnorm(100, mean = 5, sd = 2)
+#' trimse(x, tr = 0.2)
+#'
+#' @seealso \code{\link{trimci}}, \code{\link{winvar}}
+#' @export
 trimse<-function(x,tr=.2,na.rm=FALSE){
 #
 #  Estimate the standard error of the gamma trimmed mean
@@ -2248,7 +3558,46 @@ trimse
 }
 
 
-# ancova
+#' ANCOVA with Running Interval Smoother
+#'
+#' @description
+#' Compares two independent groups using ANCOVA with a single covariate.
+#' Uses a running interval smoother instead of parametric regression assumptions.
+#'
+#' @inheritParams common-params
+#' @param x1 Covariate values for group 1.
+#' @param y1 Response values for group 1.
+#' @param x2 Covariate values for group 2.
+#' @param y2 Response values for group 2.
+#' @param fr1 Span for group 1 smoother (default: 1).
+#' @param fr2 Span for group 2 smoother (default: 1).
+#' @param pts Design points where regression lines are compared (default: NA uses quantiles).
+#' @param sm Logical: use bootstrap bagging for smooths (default: FALSE).
+#' @param method Effect size measure: "EP" (explanatory, default), "QS" (quantile shift),
+#'   "AKP" (trimmed mean analog of Cohen's d), or "WMW" (P(X<Y)).
+#' @param LP Logical: use linear programming (default: FALSE).
+#' @param SCAT Logical: show scatter plot (default: TRUE).
+#' @param pch1,pch2 Plot characters for groups 1 and 2.
+#' @param skip.crit Logical: skip computational checks in ancdet.pv (default: FALSE).
+#' @param nmin Minimum sample size (default: 12).
+#' @param crit.val Critical value threshold (default: 1.09).
+#' @param ... Additional arguments passed to plotting functions.
+#'
+#' @return A list with component:
+#'   \item{output}{Matrix of test results at each design point}
+#'
+#' @details
+#' This function makes no parametric assumptions about the regression form.
+#' It uses a running interval smoother to compare regression lines at specified
+#' design points. Multiple effect size measures are available via the method argument.
+#'
+#' @examples
+#' set.seed(123)
+#' x1 <- rnorm(30); y1 <- 2*x1 + rnorm(30)
+#' x2 <- rnorm(35); y2 <- 1.5*x2 + rnorm(35, sd = 1.5)
+#' ancova(x1, y1, x2, y2, plotit = FALSE)
+#'
+#' @export
 ancova<-function(x1,y1,x2,y2,fr1=1,fr2=1,tr=.2,alpha=.05,plotit=TRUE,pts=NA,sm=FALSE,method="EP",SEED=TRUE,
 pr=TRUE,xout=FALSE,outfun=out,LP=FALSE,SCAT=TRUE,xlab='X',ylab='Y',pch1='*',pch2='+',
 skip.crit=FALSE,nmin=12,crit.val=1.09,...){
@@ -2403,7 +3752,33 @@ SCAT=SCAT,xlab=xlab,ylab=ylab,pch1=pch1,pch2=pch2,...)
 list(output=mat)
 }
 
-# covmtrim
+#' Covariance Matrix for Trimmed Means
+#'
+#' @description
+#' Estimates the covariance matrix for sample trimmed means from multiple groups
+#' with equal sample sizes.
+#'
+#' @inheritParams common-params
+#' @param p Number of groups (default: length(x)).
+#' @param grp Subset of groups to include (default: all groups 1:p).
+#'
+#' @return A p x p covariance matrix where diagonal elements are squared standard
+#'   errors of trimmed means and off-diagonal elements are covariances between
+#'   trimmed means.
+#'
+#' @details
+#' Data can be in list mode or matrix form. All groups must have equal sample sizes.
+#' Missing values are not allowed. The covariance matrix is used for inference
+#' about linear contrasts of trimmed means in repeated measures designs.
+#'
+#' @examples
+#' # Three groups with n=20 each
+#' set.seed(123)
+#' x <- list(rnorm(20), rnorm(20, 1), rnorm(20, 2))
+#' covmtrim(x, tr = 0.2)
+#'
+#' @seealso \code{\link{wincor}}, \code{\link{winvar}}
+#' @export
 covmtrim<-function(x,tr=.2,p=length(x),grp=c(1:p)){
 #
 #  Estimate the covariance matrix for the sample trimmed means corresponding
@@ -2451,7 +3826,39 @@ covmtrim<-covest
 covmtrim
 }
 
-# olshc4
+#' OLS Regression with HC4 or HC3 Confidence Intervals
+#'
+#' @description
+#' Performs ordinary least squares regression with heteroscedasticity-consistent
+#' standard errors (HC4 or HC3) for confidence intervals and tests.
+#'
+#' @inheritParams common-params
+#' @param CN Logical: use Cribari-Neto adjustment (default: FALSE).
+#' @param HC3 Logical: use HC3 instead of HC4 (default: FALSE).
+#' @param xlab,ylab,zlab Axis labels for optional plot.
+#' @param ... Additional arguments passed to plotting functions.
+#'
+#' @return A list with components:
+#'   \item{n}{Sample size after outlier removal}
+#'   \item{Explanatory.Power}{R-squared value}
+#'   \item{ci}{Confidence intervals for coefficients}
+#'   \item{p.values}{P-values for coefficients}
+#'   \item{Estimates}{Coefficient estimates}
+#'   \item{res}{Residuals}
+#'   \item{Stederr}{Standard errors}
+#'
+#' @details
+#' HC4 standard errors provide better small-sample properties than HC3,
+#' particularly with high-leverage points. This function allows outlier
+#' detection before fitting via the outfun parameter.
+#'
+#' @examples
+#' x <- rnorm(50)
+#' y <- 2*x + rnorm(50)
+#' olshc4(x, y, plotit = FALSE)
+#'
+#' @seealso \code{\link{ols}}
+#' @export
 olshc4<-function(x,y,alpha=.05,CN=FALSE,
 xout=FALSE,outfun=outpro,HC3=FALSE,plotit=FALSE,xlab = "X", ylab = "Y", zlab = "Z",...){
 #
@@ -2528,10 +3935,36 @@ regp2plot(x[,-1],y,regfun=ols,xlab=xlab,ylab=ylab,zlab=zlab)
 list(n=nrem,n.keep=n.keep,ci=ci, cov=hc4, test.stat=test,R.squared=rsq)
 }
 
+#' @rdname olshc4
+#' @export
 olsci<-olshc4
 
 
-# con.all.pairs
+#' Generate Contrast Coefficients for All Pairwise Comparisons
+#'
+#' @description
+#' Creates a contrast matrix for performing all pairwise comparisons among J groups.
+#'
+#' @param J Number of groups (must be >= 2).
+#'
+#' @return A J x C matrix of contrast coefficients, where C = J(J-1)/2 is the
+#'   number of pairwise comparisons. Each column represents one pairwise comparison
+#'   with coefficients +1 and -1 for the two groups being compared, and 0 for others.
+#'
+#' @details
+#' For J groups, this generates C = J(J-1)/2 contrasts. Each contrast compares
+#' two groups using coefficients +1 and -1. For example, with J=3, you get 3
+#' contrasts: group 1 vs 2, group 1 vs 3, and group 2 vs 3.
+#'
+#' @examples
+#' # Generate contrasts for 4 groups (6 pairwise comparisons)
+#' con.all.pairs(4)
+#'
+#' # Use with 3 groups
+#' contrasts <- con.all.pairs(3)
+#' contrasts  # 3x3 matrix with contrasts for groups 1vs2, 1vs3, 2vs3
+#'
+#' @export
 con.all.pairs<-function(J){
 #
 # Compute contrast coefficients	 for doing all pairwise comparisons
@@ -2550,7 +3983,44 @@ con
 }
 
 
-# rmmcppb
+#' Repeated Measures Comparisons via Percentile Bootstrap
+#'
+#' @description
+#' Performs percentile bootstrap comparisons for dependent groups (repeated measures).
+#' Computes confidence intervals for linear contrasts with control of family-wise
+#' error rate.
+#'
+#' @inheritParams common-params
+#' @param con J x C contrast matrix (default: 0 performs all pairwise comparisons).
+#' @param est Measure of location (default: onestep). Use onestep or mom for method SR.
+#' @param dif Logical: if TRUE (default), analyze difference scores; if FALSE,
+#'   analyze marginal distributions.
+#' @param BA Logical: when dif=FALSE, use correction term for p-values (default: FALSE).
+#' @param hoch Logical: use Hochberg's method (default: FALSE, uses method SR).
+#' @param xlab,ylab Labels for optional plot.
+#' @param SR Logical: use sequentially rejective method SR (default: FALSE).
+#'   Only valid when est=onestep or est=mom.
+#' @param ... Additional arguments passed to est function.
+#'
+#' @return A list with components:
+#'   \item{output}{Matrix with contrast results, estimates, and confidence intervals}
+#'   \item{con}{Contrast matrix used}
+#'   \item{num.sig}{Number of significant contrasts}
+#'
+#' @details
+#' For two groups, data can be in x and y. Otherwise, x should be an n x J matrix
+#' or list with J groups. Method SR controls family-wise error rate using a
+#' sequentially rejective procedure. With dif=FALSE and M-estimators or MOM,
+#' suggest using BA=TRUE and hoch=TRUE.
+#'
+#' @examples
+#' # Repeated measures with 3 conditions (n=20)
+#' set.seed(123)
+#' x <- matrix(rnorm(60), ncol = 3)
+#' x[,2] <- x[,2] + 0.5  # Add effect to condition 2
+#' rmmcppb(x, nboot = 500)
+#'
+#' @export
 rmmcppb<-function(x,y=NULL,alpha=.05,
 con=0,est=onestep,plotit=FALSE,dif=TRUE,grp=NA,nboot=NA,BA=FALSE,hoch=FALSE,xlab="Group 1",ylab="Group 2",pr=TRUE,SEED=TRUE,SR=FALSE,...){
 #
@@ -2753,6 +4223,28 @@ list(output=output,con=con,num.sig=num.sig)
 }
 
 
+#' Winsorize Data Values
+#'
+#' @description
+#' Winsorizes data by replacing extreme values with less extreme percentile values.
+#'
+#' @inheritParams common-params
+#'
+#' @return A vector of Winsorized values with the same length as x.
+#'
+#' @details
+#' Winsorization replaces values below the (tr*n)th smallest observation with that
+#' observation, and values above the (1-tr)*n)th largest with that observation.
+#' With tr=0.2 (default), the lowest 20% and highest 20% are replaced by the
+#' corresponding percentile values. This is a core function used by many other
+#' functions in the package.
+#'
+#' @examples
+#' x <- c(1, 2, 3, 4, 5, 100)  # 100 is an outlier
+#' winval(x, tr = 0.2)  # Replaces 100 with a less extreme value
+#'
+#' @seealso \code{\link{winvar}}, \code{\link{wincor}}
+#' @export
 winval<-function(x,tr=.2){
 #
 #  Winsorize the data in the vector x.
@@ -2771,7 +4263,30 @@ winval<-ifelse(winval>=xtop,xtop,winval)
 winval
 }
 
-# pbvar
+#' Percentage Bend Midvariance
+#'
+#' @description
+#' Computes the percentage bend midvariance, a robust measure of scale.
+#'
+#' @inheritParams common-params
+#' @param beta Bending constant (default: 0.2). Controls the amount of downweighting
+#'   of extreme values.
+#'
+#' @return Numeric value: the percentage bend midvariance estimate.
+#'
+#' @details
+#' The percentage bend midvariance is a robust alternative to variance that
+#' downweights extreme values. Multiple values for beta can be reasonable
+#' depending on the application. Smaller beta provides more robustness but
+#' less efficiency.
+#'
+#' @examples
+#' x <- c(rnorm(50), 10, -10)  # Normal data with outliers
+#' pbvar(x, beta = 0.2)
+#' var(x)  # Compare to regular variance
+#'
+#' @seealso \code{\link{pbos}}, \code{\link{winvar}}
+#' @export
 pbvar<-function(x,beta=.2){
 #
 #  Compute percentage bend midvariance
@@ -2791,6 +4306,33 @@ pbvar<-pbvar[1,1]
 pbvar
 }
 
+#' One-Step Percentage Bend Measure of Location
+#'
+#' @description
+#' Computes the one-step percentage bend estimator, a robust measure of central
+#' tendency that combines the median with a weighted mean.
+#'
+#' @inheritParams common-params
+#' @param beta Bending constant (default: 0.2). Controls the amount of downweighting
+#'   of extreme values.
+#'
+#' @return Numeric value: the one-step percentage bend location estimate.
+#'
+#' @details
+#' This estimator starts with the median and takes one step toward a weighted mean,
+#' where weights decrease for observations far from the median. It provides a
+#' balance between robustness (like the median) and efficiency (like the mean).
+#' The beta parameter controls the amount of bending; smaller values provide more
+#' robustness.
+#'
+#' @examples
+#' x <- c(rnorm(50, mean = 5), 100)  # Normal data with one outlier
+#' pbos(x, beta = 0.2)
+#' median(x)  # Compare to median
+#' mean(x)    # Compare to mean
+#'
+#' @seealso \code{\link{pbvar}}
+#' @export
 pbos<-function(x,beta=.2){
 #
 #    Compute the one-step percentage bend measure of location

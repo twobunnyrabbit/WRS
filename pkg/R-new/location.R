@@ -11,7 +11,51 @@
 # See: Wilcox (2022), Introduction to Robust Estimation
 
 
-# mest
+#' M-Estimator of Location Using Huber's Psi
+#'
+#' @description
+#' Computes the M-estimator of location using Huber's Psi function. This is
+#' a robust measure of central tendency that is resistant to outliers.
+#'
+#' @param x A numeric vector of data values.
+#' @param bend Bending constant for Huber's Psi function (default: 1.28).
+#'   Smaller values provide more robustness but less efficiency.
+#' @inheritParams common-params
+#'
+#' @return A single numeric value representing the M-estimate of location.
+#'
+#' @details
+#' The M-estimator is computed iteratively starting from the median, using
+#' Huber's Psi function with the specified bending constant. The MAD (median
+#' absolute deviation) is used as the scale estimate. Iteration continues
+#' until the estimate changes by less than 0.0001.
+#'
+#' If MAD equals zero, the function stops with an error as the M-estimator
+#' cannot be computed.
+#'
+#' @references
+#' Huber, P. J. (1981). Robust Statistics. Wiley.
+#'
+#' Wilcox, R. R. (2022). Introduction to Robust Estimation and Hypothesis
+#' Testing (5th ed.). Academic Press.
+#'
+#' @seealso
+#' \code{\link{mestci}} for confidence intervals,
+#' \code{\link{mestse}} for standard errors,
+#' \code{\link{mom}} for modified one-step M-estimator,
+#' \code{\link{onestep}} for one-step M-estimator
+#'
+#' @examples
+#' # Basic usage
+#' x <- c(1, 2, 3, 4, 5, 100)
+#' mest(x)
+#'
+#' # Compare with mean and median
+#' mean(x)   # Affected by outlier
+#' median(x) # Robust
+#' mest(x)   # Robust
+#'
+#' @export
 mest<-function(x,bend=1.28,na.rm=FALSE){
 #
 #  Compute M-estimator of location using Huber's Psi.
@@ -35,8 +79,40 @@ mest
 }
 
 
-
-# mestci
+#' Bootstrap Confidence Interval for M-Estimator
+#'
+#' @description
+#' Computes a bootstrap confidence interval for the M-estimator of location
+#' using Huber's Psi function.
+#'
+#' @param x A numeric vector of data values.
+#' @param bend Bending constant for Huber's Psi function (default: 1.28).
+#' @param os Logical. If \code{TRUE}, uses the one-step M-estimator instead
+#'   of the fully iterated M-estimator (default: \code{FALSE}).
+#' @inheritParams common-params
+#'
+#' @return A list with one component:
+#'   \item{ci}{A vector of length 2 containing the lower and upper confidence
+#'     limits.}
+#'
+#' @details
+#' The function generates \code{nboot} bootstrap samples and computes the
+#' M-estimator for each sample. The confidence interval is constructed using
+#' the percentile method. A fixed seed is used for reproducibility.
+#'
+#' For small sample sizes (n < 20), the function prints a warning that it
+#' might fail due to division by zero issues in the \code{hpsi} function.
+#'
+#' @seealso
+#' \code{\link{mest}} for the M-estimator,
+#' \code{\link{mestse}} for standard errors,
+#' \code{\link{onestep}} for one-step M-estimator
+#'
+#' @examples
+#' x <- rnorm(50)
+#' mestci(x, nboot = 1000)
+#'
+#' @export
 mestci<-function(x,alpha=.05,nboot=4000,bend=1.28,os=FALSE,pr=TRUE){
 #
 #   Compute a bootstrap, .95 confidence interval for the
@@ -69,8 +145,35 @@ list(ci=c(bvec[low],bvec[up]))
 }
 
 
-
-# mestse
+#' Standard Error of M-Estimator
+#'
+#' @description
+#' Estimates the standard error of the M-estimator using Huber's Psi function
+#' based on an estimate of the influence function.
+#'
+#' @param x A numeric vector of data values.
+#' @param bend Bending constant for Huber's Psi function (default: 1.28).
+#' @param op Parameter for outlier handling in influence function estimation
+#'   (default: 2).
+#'
+#' @return A single numeric value representing the estimated standard error
+#'   of the M-estimator.
+#'
+#' @details
+#' The standard error is estimated using the influence function approach,
+#' which provides an asymptotic approximation to the variability of the
+#' M-estimator.
+#'
+#' @seealso
+#' \code{\link{mest}} for the M-estimator,
+#' \code{\link{mestseb}} for bootstrap standard error,
+#' \code{\link{mestci}} for confidence intervals
+#'
+#' @examples
+#' x <- rnorm(50)
+#' mestse(x)
+#'
+#' @export
 mestse<-function(x,bend=1.28,op=2){
 #
 #   Estimate the standard error of M-estimator using Huber's Psi
@@ -82,7 +185,34 @@ mestse
 }
 
 
-# mestseb
+#' Bootstrap Standard Error of M-Estimator
+#'
+#' @description
+#' Computes a bootstrap estimate of the standard error of the M-estimator
+#' using Huber's Psi function.
+#'
+#' @param x A numeric vector of data values.
+#' @param bend Bending constant for Huber's Psi function (default: 1.28).
+#' @inheritParams common-params
+#'
+#' @return A single numeric value representing the bootstrap estimate of the
+#'   standard error.
+#'
+#' @details
+#' The function generates \code{nboot} bootstrap samples, computes the
+#' M-estimator for each, and calculates the standard deviation of the
+#' bootstrap estimates.
+#'
+#' @seealso
+#' \code{\link{mest}} for the M-estimator,
+#' \code{\link{mestse}} for influence function-based standard error,
+#' \code{\link{mestci}} for confidence intervals
+#'
+#' @examples
+#' x <- rnorm(50)
+#' mestseb(x, nboot = 500)
+#'
+#' @export
 mestseb<-function(x,nboot=1000,bend=1.28,SEED=TRUE){
 #
 #   Compute bootstrap estimate of the standard error of the
@@ -99,7 +229,47 @@ mestseb
 }
 
 
-# mom
+#' Modified One-Step M-Estimator (MOM)
+#'
+#' @description
+#' Computes the modified one-step M-estimator of location. This estimator
+#' is obtained by trimming observations beyond a certain number of MADs from
+#' the median, then computing the mean of the remaining values.
+#'
+#' @param x A numeric vector of data values.
+#' @param bend Bending constant expressed in MAD units (default: 2.24).
+#'   Observations beyond median ± bend * MAD are excluded.
+#' @inheritParams common-params
+#'
+#' @return A single numeric value representing the MOM estimate of location.
+#'
+#' @details
+#' The MOM estimator provides a compromise between efficiency and robustness.
+#' It removes observations that are more than \code{bend} MADs away from the
+#' median, then computes the mean of the remaining observations.
+#'
+#' The default bending constant of 2.24 provides good efficiency while
+#' maintaining robustness to outliers.
+#'
+#' @references
+#' Wilcox, R. R. (2022). Introduction to Robust Estimation and Hypothesis
+#' Testing (5th ed.). Academic Press.
+#'
+#' @seealso
+#' \code{\link{momci}} for confidence intervals,
+#' \code{\link{mest}} for fully iterated M-estimator,
+#' \code{\link{onestep}} for one-step M-estimator
+#'
+#' @examples
+#' x <- c(1, 2, 3, 4, 5, 100)
+#' mom(x)
+#'
+#' # Compare with mean and median
+#' mean(x)   # Affected by outlier
+#' median(x) # Robust but less efficient
+#' mom(x)    # Balance of robustness and efficiency
+#'
+#' @export
 mom<-function(x,bend=2.24,na.rm=TRUE){
 #
 #  Compute MOM-estimator of location.
@@ -116,8 +286,36 @@ mom
 }
 
 
-
-# momci
+#' Bootstrap Confidence Interval for MOM Estimator
+#'
+#' @description
+#' Computes a bootstrap confidence interval for the modified one-step
+#' M-estimator (MOM) of location.
+#'
+#' @param x A numeric vector of data values.
+#' @param bend Bending constant for MOM estimator (default: 2.24).
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{ci}{A vector of length 2 containing the lower and upper confidence
+#'     limits.}
+#'   \item{p.value}{Two-sided p-value for testing H0: location = null.value.}
+#'   \item{est.mom}{The MOM estimate of location.}
+#'
+#' @details
+#' The function generates \code{nboot} bootstrap samples and computes the MOM
+#' estimator for each. The confidence interval uses the percentile method,
+#' and a p-value is computed for testing the null hypothesis.
+#'
+#' @seealso
+#' \code{\link{mom}} for the MOM estimator,
+#' \code{\link{mestci}} for M-estimator confidence intervals
+#'
+#' @examples
+#' x <- rnorm(50)
+#' momci(x, nboot = 1000)
+#'
+#' @export
 momci<-function(x,alpha=.05,nboot=2000,bend=2.24,SEED=TRUE,null.value=0){
 #
 #   Compute a bootstrap, .95 confidence interval for the
@@ -140,8 +338,46 @@ list(ci=c(bvec[low],bvec[up]),p.value=pv,est.mom=est)
 }
 
 
-
-# onestep
+#' One-Step M-Estimator of Location
+#'
+#' @description
+#' Computes a one-step M-estimator of location using Huber's Psi function.
+#' This is a computationally efficient alternative to the fully iterated
+#' M-estimator.
+#'
+#' @param x A numeric vector of data values.
+#' @param bend Bending constant for Huber's Psi function (default: 1.28).
+#' @param MED Logical. If \code{TRUE}, uses the median as the initial estimate;
+#'   if \code{FALSE}, uses the MOM estimator (default: \code{TRUE}).
+#' @inheritParams common-params
+#'
+#' @return A single numeric value representing the one-step M-estimate.
+#'
+#' @details
+#' Unlike the fully iterated M-estimator (\code{\link{mest}}), this function
+#' performs only one iteration starting from an initial location estimate.
+#' When \code{MED=TRUE}, the initial estimate is the median; when
+#' \code{MED=FALSE}, the MOM estimator is used as the starting point.
+#'
+#' This estimator is faster to compute than the fully iterated version and
+#' often performs nearly as well in practice.
+#'
+#' @seealso
+#' \code{\link{mest}} for fully iterated M-estimator,
+#' \code{\link{mom}} for MOM estimator,
+#' \code{\link{mestci}} for confidence intervals
+#'
+#' @examples
+#' x <- c(1, 2, 3, 4, 5, 100)
+#' onestep(x)
+#'
+#' # Compare different estimators
+#' median(x)
+#' onestep(x, MED = TRUE)
+#' onestep(x, MED = FALSE)
+#' mest(x)
+#'
+#' @export
 onestep<-function(x,bend=1.28,na.rm=FALSE,MED=TRUE){
 #
 #  Compute one-step M-estimator of location using Huber's Psi.
@@ -161,8 +397,49 @@ onestep
 }
 
 
-
-# tmean
+#' Trimmed Mean
+#'
+#' @description
+#' Computes the trimmed mean, a robust measure of central tendency that
+#' removes a specified proportion of extreme values from each tail before
+#' computing the mean.
+#'
+#' @param x A numeric vector of data values.
+#' @param STAND Parameter for standardization (currently unused, reserved
+#'   for future implementation).
+#' @inheritParams common-params
+#'
+#' @return A single numeric value representing the trimmed mean.
+#'
+#' @details
+#' The trimmed mean removes the smallest \code{tr} proportion and largest
+#' \code{tr} proportion of observations, then computes the mean of the
+#' remaining values. The default trimming proportion of 0.2 (20%) provides
+#' a good balance between efficiency and robustness.
+#'
+#' This is one of the most widely used robust location estimators and is
+#' particularly effective when data contain symmetric contamination.
+#'
+#' @references
+#' Wilcox, R. R. (2022). Introduction to Robust Estimation and Hypothesis
+#' Testing (5th ed.). Academic Press.
+#'
+#' @seealso
+#' \code{\link{mean}} for ordinary mean,
+#' \code{\link{winmean}} for winsorized mean,
+#' \code{\link{trimse}} for trimmed mean with standard error
+#'
+#' @examples
+#' x <- c(1, 2, 3, 4, 5, 100)
+#' tmean(x, tr = 0.2)
+#'
+#' # Compare with mean and median
+#' mean(x)
+#' median(x)
+#' tmean(x, tr = 0.1)
+#' tmean(x, tr = 0.2)
+#'
+#' @export
 tmean<-function(x,tr=.2,na.rm=FALSE,STAND=NULL){
 if(na.rm)x<-x[!is.na(x)]
 val<-mean(x,tr)
@@ -170,7 +447,52 @@ val
 }
 
 
-# hdci
+#' Confidence Interval for Harrell-Davis Quantile Estimator
+#'
+#' @description
+#' Computes a confidence interval for a quantile using the Harrell-Davis
+#' estimator in conjunction with a bootstrap estimate of the standard error
+#' and sample-size dependent critical values.
+#'
+#' @param x A numeric vector of data values.
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{ci}{A vector of length 2 containing the lower and upper confidence
+#'     limits.}
+#'   \item{crit}{The critical value used for the confidence interval.}
+#'   \item{se}{The bootstrap estimate of the standard error.}
+#'
+#' @details
+#' This function uses sample-size dependent critical values that have been
+#' determined through simulation studies. The critical values vary based on
+#' the quantile being estimated and the sample size, providing better coverage
+#' for extreme quantiles and small samples.
+#'
+#' For alpha != 0.05, use \code{\link{hdpb}} instead, which uses the percentile
+#' bootstrap method.
+#'
+#' If duplicate values are detected, \code{\link{hdpb}} is recommended as it
+#' tends to perform better in that case.
+#'
+#' @references
+#' Harrell, F. E., & Davis, C. E. (1982). A new distribution-free quantile
+#' estimator. Biometrika, 69, 635-640.
+#'
+#' Wilcox, R. R. (2022). Introduction to Robust Estimation and Hypothesis
+#' Testing (5th ed.). Academic Press.
+#'
+#' @seealso
+#' \code{\link{hd}} for the Harrell-Davis estimator,
+#' \code{\link{hdpb}} for percentile bootstrap CI,
+#' \code{\link{hdseb}} for bootstrap standard error
+#'
+#' @examples
+#' x <- rnorm(50)
+#' hdci(x, q = 0.5, nboot = 200)
+#' hdci(x, q = 0.25, nboot = 200)
+#'
+#' @export
 hdci<-function(x,q=.5,alpha=.05,nboot=100,SEED=TRUE,pr=TRUE){
 #
 #   Compute a 1-alpha confidence for qth quantile using the
@@ -203,7 +525,40 @@ list(ci=c(low,hi),crit=crit,se=se)
 }
 
 
-# hdpb
+#' Percentile Bootstrap Confidence Interval for Location Estimator
+#'
+#' @description
+#' Computes a percentile bootstrap confidence interval for a location estimator.
+#' By default, uses the Harrell-Davis median estimator.
+#'
+#' @param x A numeric vector of data values.
+#' @param nv Null value for computing a p-value (default: 0).
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to the estimator function.
+#'
+#' @return A list with components:
+#'   \item{ci}{A vector of length 2 containing the lower and upper confidence
+#'     limits.}
+#'   \item{n}{Sample size after removing missing values.}
+#'   \item{estimate}{The estimated value using the specified estimator.}
+#'   \item{p.value}{Two-sided p-value for testing H0: location = nv.}
+#'
+#' @details
+#' This function is similar to \code{\link{onesampb}} but defaults to using
+#' the Harrell-Davis estimator for the median. It works well for any alpha
+#' level and handles duplicate values better than \code{\link{hdci}}.
+#'
+#' @seealso
+#' \code{\link{hd}} for Harrell-Davis estimator,
+#' \code{\link{hdci}} for HD-specific CI with special critical values,
+#' \code{\link{onesampb}} for general one-sample bootstrap
+#'
+#' @examples
+#' x <- rnorm(50)
+#' hdpb(x, nboot = 1000)
+#' hdpb(x, est = hd, q = 0.25, nboot = 1000)
+#'
+#' @export
 hdpb<-function(x,est=hd,alpha=.05,nboot=2000,SEED=TRUE,nv=0,...){
 #
 #   Compute a bootstrap, .95 confidence interval for the
@@ -235,7 +590,33 @@ list(ci=c(bvec[low],bvec[up]),n=length(x),estimate=estimate,p.value=pv)
 }
 
 
-# hdseb
+#' Bootstrap Standard Error for Harrell-Davis Estimator
+#'
+#' @description
+#' Computes a bootstrap estimate of the standard error of the Harrell-Davis
+#' estimator for a specified quantile.
+#'
+#' @param x A numeric vector of data values.
+#' @inheritParams common-params
+#'
+#' @return A single numeric value representing the bootstrap standard error.
+#'
+#' @details
+#' The function generates \code{nboot} bootstrap samples and computes the
+#' Harrell-Davis estimator for each, then returns the standard deviation
+#' of these estimates.
+#'
+#' @seealso
+#' \code{\link{hd}} for the Harrell-Davis estimator,
+#' \code{\link{hdci}} for confidence intervals,
+#' \code{\link{hdpb}} for percentile bootstrap CI
+#'
+#' @examples
+#' x <- rnorm(50)
+#' hdseb(x, q = 0.5, nboot = 200)
+#' hdseb(x, q = 0.25, nboot = 200)
+#'
+#' @export
 hdseb<-function(x,q=.5,nboot=100,SEED=TRUE){
 #
 #   Compute bootstrap estimate of the standard error of the
@@ -252,7 +633,39 @@ hdseb
 }
 
 
-# hdno
+#' Hybrid Harrell-Davis and Navruz-Ozdemir Quantile Estimator
+#'
+#' @description
+#' Uses the Harrell-Davis estimator for central quantiles (0.1 < q < 0.9)
+#' and switches to the Navruz-Ozdemir estimator for extreme quantiles.
+#'
+#' @param x A numeric vector of data values.
+#' @inheritParams common-params
+#'
+#' @return A single numeric value representing the estimated quantile.
+#'
+#' @details
+#' The Harrell-Davis estimator works well for central quantiles but can
+#' have poor finite-sample properties for extreme quantiles. This function
+#' automatically switches to the Navruz-Ozdemir estimator when q <= 0.1 or
+#' q >= 0.9, which performs better in those regions.
+#'
+#' @references
+#' Navruz, G., & Ozdemir, A. F. (2020). A new quantile estimator with
+#' weights based on a subsampling approach. British Journal of Mathematical
+#' and Statistical Psychology, 73, 506-521.
+#'
+#' @seealso
+#' \code{\link{hd}} for Harrell-Davis estimator,
+#' \code{\link{qno.est}} for Navruz-Ozdemir estimator
+#'
+#' @examples
+#' x <- rnorm(100)
+#' hdno(x, q = 0.5)   # Uses HD
+#' hdno(x, q = 0.05)  # Uses Navruz-Ozdemir
+#' hdno(x, q = 0.95)  # Uses Navruz-Ozdemir
+#'
+#' @export
 hdno<-function(x,q=.5){
 #
 # Use hd when .1<1<.9,
@@ -266,7 +679,35 @@ e
 }
 
 
-# hdmq
+#' Multiple Quantile Estimation Using Harrell-Davis Estimator
+#'
+#' @description
+#' Estimates one or more quantiles using either the standard Harrell-Davis
+#' estimator or a trimmed version.
+#'
+#' @param x A numeric vector of data values.
+#' @param q Numeric vector of quantiles to estimate (default: 0.5).
+#' @param tr Logical. If \code{TRUE}, uses the trimmed Harrell-Davis estimator;
+#'   if \code{FALSE}, uses the standard HD estimator (default: \code{FALSE}).
+#'
+#' @return A numeric vector of the same length as \code{q} containing the
+#'   estimated quantiles.
+#'
+#' @details
+#' This is a convenience function for estimating multiple quantiles in a
+#' single call. When \code{tr=TRUE}, the trimmed HD estimator (\code{thd})
+#' is used, which can provide better performance in some situations.
+#'
+#' @seealso
+#' \code{\link{hd}} for single quantile HD estimator,
+#' \code{\link{thd}} for trimmed HD estimator
+#'
+#' @examples
+#' x <- rnorm(100)
+#' hdmq(x, q = c(0.25, 0.5, 0.75))
+#' hdmq(x, q = seq(0.1, 0.9, 0.1))
+#'
+#' @export
 hdmq<-function(x,q=.5,tr=FALSE){
 #
 #
@@ -279,7 +720,61 @@ e
 }
 
 
-# hdep
+#' Halfspace Depth of a Point
+#'
+#' @description
+#' Computes the halfspace depth of a point relative to a multivariate data
+#' set. Halfspace depth is a measure of the centrality of a point with respect
+#' to a data cloud.
+#'
+#' @param PNT A numeric vector representing a point in p-dimensional space.
+#'   Must have the same length as the number of columns in X.
+#' @param X A numeric matrix with N rows and p columns representing the data
+#'   cloud.
+#' @param NDIR Number of random directions to sample for depth computation
+#'   (default: 100).
+#' @param EPS Precision parameter for numerical comparisons (default: 10E-7).
+#' @param SEED If specified, sets the seed of the random number generator for
+#'   reproducibility. Use \code{NA} for random seed (default: \code{NA}).
+#' @param PRINT Logical. If \code{TRUE}, prints warning messages during
+#'   computation (default: \code{FALSE}).
+#'
+#' @return A single numeric value between 0 and 1 representing the halfspace
+#'   depth of the point. Higher values indicate the point is more central to
+#'   the data cloud.
+#'
+#' @details
+#' Halfspace depth (also called Tukey depth) measures how central a point is
+#' by computing the minimum number of data points in any closed halfspace
+#' containing the point. The algorithm:
+#' \enumerate{
+#'   \item Samples random directions through the point
+#'   \item Projects all data onto each direction
+#'   \item Computes one-dimensional depth for each projection
+#'   \item Returns the minimum depth across all directions
+#' }
+#'
+#' The function handles dimension reduction automatically when the data lie
+#' in a lower-dimensional subspace.
+#'
+#' @references
+#' Tukey, J. W. (1975). Mathematics and the picturing of data. Proceedings
+#' of the International Congress of Mathematicians, 2, 523-531.
+#'
+#' Rousseeuw, P. J., & Ruts, I. (1996). Algorithm AS 307: Bivariate location
+#' depth. Journal of the Royal Statistical Society: Series C, 45, 516-526.
+#'
+#' @seealso
+#' \code{\link{dmean}} for depth-based mean,
+#' \code{\link{Doplot}} for depth-based outlier detection
+#'
+#' @examples
+#' # Bivariate example
+#' X <- matrix(rnorm(100), ncol = 2)
+#' pnt <- c(0, 0)
+#' hdep(pnt, X, NDIR = 50)
+#'
+#' @export
 hdep <- function(PNT, X, NDIR=100, EPS=10E-7, SEED=NA, PRINT=F )
 {
 #========================
@@ -533,16 +1028,68 @@ stop("INDEPENDENT\n\n" )
 }
 
 
-
-
-# IQRhd
+#' Interquartile Range Using Harrell-Davis Estimator
+#'
+#' @description
+#' Computes the interquartile range (IQR) using the Harrell-Davis estimator
+#' for the quartiles.
+#'
+#' @param x A numeric vector of data values.
+#'
+#' @return A single numeric value representing the IQR (difference between
+#'   the 75th and 25th percentiles).
+#'
+#' @details
+#' This function uses the Harrell-Davis estimator to compute the 75th and
+#' 25th percentiles, then returns their difference. This provides a more
+#' stable estimate of the IQR compared to the standard sample quantiles,
+#' especially for small samples.
+#'
+#' @seealso
+#' \code{\link{hd}} for Harrell-Davis quantile estimator,
+#' \code{\link{IQR}} for standard IQR,
+#' \code{\link{idealf}} for ideal fourths
+#'
+#' @examples
+#' x <- rnorm(50)
+#' IQRhd(x)
+#' IQR(x)  # Compare with standard IQR
+#'
+#' @export
 IQRhd<-function(x){
 e=hd(x,.75)-hd(x,.25)
 e
 }
 
 
-# medhd2g
+#' Compare Medians of Two Independent Groups Using Harrell-Davis Estimator
+#'
+#' @description
+#' Compares the medians of two independent groups using the Harrell-Davis
+#' estimator and percentile bootstrap.
+#'
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to \code{\link{pb2gen}}.
+#'
+#' @return A list containing the results from \code{\link{pb2gen}}, including
+#'   confidence intervals and p-values for the comparison.
+#'
+#' @details
+#' This is a convenience wrapper for \code{\link{pb2gen}} that defaults to
+#' using the Harrell-Davis median estimator for comparing two independent
+#' groups.
+#'
+#' @seealso
+#' \code{\link{pb2gen}} for the underlying implementation,
+#' \code{\link{hd}} for Harrell-Davis estimator,
+#' \code{\link{Dqcomhd}} for dependent groups
+#'
+#' @examples
+#' x <- rnorm(30)
+#' y <- rnorm(30, mean = 0.5)
+#' medhd2g(x, y, nboot = 1000)
+#'
+#' @export
 medhd2g<-function(x, y, alpha = 0.05, nboot = 2000,SEED=TRUE,pr=TRUE, ...){
 #
 # Compare medians via the Harrell-Davis estimator
@@ -552,7 +1099,53 @@ res
 }
 
 
-# Dqcihd
+#' Confidence Intervals for Quantiles of Difference Scores (Independent Groups)
+#'
+#' @description
+#' Computes confidence intervals for quantiles of the distribution D = X - Y,
+#' where X and Y are independent random variables. Uses the Harrell-Davis
+#' estimator.
+#'
+#' @param pop Type of plot to create when \code{plotit=TRUE}:
+#'   \itemize{
+#'     \item 0: Adaptive kernel density estimate
+#'     \item 1: Expected frequency curve
+#'     \item 2: Kernel density estimate (Rosenblatt)
+#'     \item 3: Boxplot
+#'     \item 4: Stem-and-leaf
+#'     \item 5: Histogram
+#'   }
+#' @param fr Span parameter for expected frequency curve (default: 0.8).
+#' @param rval Parameter for kernel density estimate (default: 15).
+#' @param xlab,ylab Axis labels for plots.
+#' @inheritParams common-params
+#'
+#' @return A matrix with columns:
+#'   \itemize{
+#'     \item Quantile: The quantile being estimated
+#'     \item Estimates: The HD estimate
+#'     \item ci.low, ci.up: Confidence interval bounds
+#'     \item p-value: Two-sided p-value for testing H0: quantile = 0
+#'   }
+#'
+#' @details
+#' For each quantile in \code{q}, the function computes all n1 × n2 pairwise
+#' differences, estimates the quantile using the Harrell-Davis estimator,
+#' and constructs a bootstrap confidence interval.
+#'
+#' If X and Y have identical distributions, then D = X - Y is symmetric about
+#' zero, so the quantiles can be used to test for distributional equality.
+#'
+#' @seealso
+#' \code{\link{Dqcomhd}} for dependent groups,
+#' \code{\link{qcomhd}} for general quantile comparisons
+#'
+#' @examples
+#' x <- rnorm(25)
+#' y <- rnorm(25, mean = 0.5)
+#' Dqcihd(x, y, q = c(0.25, 0.5, 0.75), nboot = 500)
+#'
+#' @export
 Dqcihd<-function(x,y,alpha=.05,q=c(1:9/10),
 plotit=FALSE,pop=0,fr=.8,rval=15,xlab="",ylab="",nboot=600,SEED=TRUE){
 #
@@ -620,7 +1213,49 @@ dimnames(output)=list(NULL,c("Quantile","Estimates","ci.low","ci.up","p-value"))
 output
 }
 
-# Dqcomhd
+
+#' Compare Quantiles of Two Dependent Groups Using Harrell-Davis Estimator
+#'
+#' @description
+#' Compares quantiles of the marginal distributions for two dependent groups
+#' using the Harrell-Davis estimator (or variants). Handles tied values.
+#'
+#' @param xlab,ylab Axis labels for optional plot.
+#' @inheritParams common-params
+#'
+#' @return A matrix with columns:
+#'   \itemize{
+#'     \item q: Quantile being compared
+#'     \item n1, n2: Sample sizes
+#'     \item est.1, est.2: Quantile estimates for each group
+#'     \item est.1_minus_est.2: Difference in estimates
+#'     \item ci.low, ci.up: Confidence interval bounds
+#'     \item p-value: Unadjusted p-value
+#'     \item adj.p.value: Hochberg-adjusted p-value
+#'   }
+#'
+#' @details
+#' This function compares multiple quantiles between two dependent groups.
+#' The confidence intervals are not adjusted for simultaneous coverage (a
+#' warning is printed). P-values are adjusted using Hochberg's method.
+#'
+#' When \code{est=thd}, the trimmed Harrell-Davis estimator is used.
+#'
+#' @references
+#' Wilcox, R. R. (2022). Introduction to Robust Estimation and Hypothesis
+#' Testing (5th ed.). Academic Press.
+#'
+#' @seealso
+#' \code{\link{Dqcihd}} for independent groups,
+#' \code{\link{bootdpci}} for single quantile comparison,
+#' \code{\link{hd}} for Harrell-Davis estimator
+#'
+#' @examples
+#' x <- rnorm(30)
+#' y <- x + rnorm(30, sd = 0.5)
+#' Dqcomhd(x, y, q = c(0.25, 0.5, 0.75), nboot = 500)
+#'
+#' @export
 Dqcomhd<-function(x,y,est=hd,q=c(1:9)/10,nboot=2000,pr=TRUE,
 plotit=FALSE,SEED=TRUE,xlab='Group 1',
 ylab='Est.1-Est.2',na.rm=TRUE,alpha=rep(.05,length(q))){
@@ -687,9 +1322,40 @@ output
 }
 
 
-
-
-# cbmhd
+#' CI for Sum of Symmetric Quantiles of Difference (Independent Groups)
+#'
+#' @description
+#' Computes a confidence interval for the sum of the qth and (1-q)th quantiles
+#' of D = X - Y for independent groups. Tests symmetry about zero.
+#'
+#' @param qest Quantile estimator function (default: \code{hd}).
+#' @param pop,fr,rval,xlab,ylab Plot parameters (see \code{\link{Dqcihd}}).
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item q: The quantile used
+#'     \item Est1, Est2: The qth and (1-q)th quantile estimates
+#'     \item sum: Sum of Est1 and Est2
+#'     \item ci: Confidence interval for the sum
+#'     \item p.value: P-value for testing H0: sum = 0
+#'   }
+#'
+#' @details
+#' If X and Y have identical distributions, D = X - Y is symmetric about zero,
+#' so the qth and (1-q)th quantiles should sum to zero. This provides a test
+#' of distributional equality based on specific quantiles.
+#'
+#' @seealso
+#' \code{\link{cbmhdMC}} for parallel version,
+#' \code{\link{Dcbmhd}} for dependent groups
+#'
+#' @examples
+#' x <- rnorm(30)
+#' y <- rnorm(30)
+#' cbmhd(x, y, q = 0.25, nboot = 500)
+#'
+#' @export
 cbmhd<-function(x,y,qest=hd,alpha=.05,q=.25,plotit=FALSE,pop=0,fr=.8,rval=15,xlab="",ylab="",nboot=600,SEED=TRUE){
 #
 #  Compute a confidence interval for the sum of the qth and (1-q)th quantiles
@@ -753,7 +1419,32 @@ list(q=q,Est1=est1,Est2=est2,sum=est1+est2,ci=ci,p.value=p)
 }
 
 
-# cbmhdMC
+#' CI for Sum of Symmetric Quantiles (Independent Groups, Parallel)
+#'
+#' @description
+#' Parallel processing version of \code{\link{cbmhd}} using \code{mclapply}.
+#' Computes CI for sum of qth and (1-q)th quantiles of D = X - Y.
+#'
+#' @param pop,fr,rval,xlab,ylab Plot parameters.
+#' @inheritParams common-params
+#'
+#' @return Same as \code{\link{cbmhd}}.
+#'
+#' @details
+#' This function is identical to \code{\link{cbmhd}} but uses parallel
+#' processing via \code{mclapply} for faster computation with large bootstrap
+#' samples. May not work on all systems.
+#'
+#' @seealso \code{\link{cbmhd}} for sequential version
+#'
+#' @examples
+#' \dontrun{
+#' x <- rnorm(30)
+#' y <- rnorm(30)
+#' cbmhdMC(x, y, q = 0.25, nboot = 2000)
+#' }
+#'
+#' @export
 cbmhdMC<-function(x,y,alpha=.05,q=.25,plotit=FALSE,pop=0,fr=.8,rval=15,xlab="",ylab="",nboot=600,SEED=TRUE){
 #
 #  Compute a confidence interval for the sum of the qth and (1-q)th quantiles
@@ -817,7 +1508,34 @@ list(q=q,Est1=est1,Est2=est2,sum=est1+est2,ci=ci,p.value=p)
 }
 
 
-# Dcbmhd
+#' CI for Sum of Symmetric Quantiles of Difference (Dependent Groups)
+#'
+#' @description
+#' Computes a confidence interval for the sum of the qth and (1-q)th quantiles
+#' of D = X - Y for dependent (paired) groups.
+#'
+#' @param d Optional vector of pre-computed differences. If \code{NULL},
+#'   computed as x - y.
+#' @param qest,pop,fr,rval,xlab,ylab See \code{\link{cbmhd}}.
+#' @inheritParams common-params
+#'
+#' @return Same as \code{\link{cbmhd}} plus component \code{n} (sample size).
+#'
+#' @details
+#' For dependent groups, this function works with the difference scores
+#' directly. If the distribution of X - Y is symmetric about zero, the sum
+#' of symmetric quantiles should be zero.
+#'
+#' @seealso
+#' \code{\link{cbmhd}} for independent groups,
+#' \code{\link{Dqcomhd}} for comparing multiple quantiles
+#'
+#' @examples
+#' x <- rnorm(30)
+#' y <- x + rnorm(30, sd = 0.5)
+#' Dcbmhd(x, y, q = 0.25, nboot = 500)
+#'
+#' @export
 Dcbmhd<-function(x=NULL,y=NULL,d=NULL,qest=hd,alpha=.05,q=.25,plotit=FALSE,pop=0,
 fr=.8,rval=15,xlab='',ylab='',nboot=600,SEED=TRUE){
 #
@@ -880,7 +1598,20 @@ if(pop==6)skerd(MM)
 list(q=q,n=n,Est1=est1,Est2=est2,sum=est1+est2,ci=ci,p.value=p)
 }
 
-# trimci
+
+#' Transformation Function for Trimmed Mean
+#'
+#' @description
+#' Internal helper function used in trimmed mean calculations with g-and-h
+#' distributions.
+#'
+#' @param z A numeric value or vector.
+#' @param tr Trimming proportion.
+#' @param g,h Parameters for g-and-h transformation.
+#'
+#' @return Transformed value(s).
+#'
+#' @keywords internal
 ftrim<-function(z,tr,g,h){
 gz=(exp(g*z)-1)*exp(h*z^2/2)/g
 res=dnorm(z)*gz
@@ -888,7 +1619,46 @@ res
 }
 
 
-# btrim
+#' Bootstrap-t Test for Equal Trimmed Means (Independent Groups)
+#'
+#' @description
+#' Tests the hypothesis of equal trimmed means for J independent groups using
+#' a bootstrap-t method.
+#'
+#' @param g If specified, column number in x containing the grouping factor.
+#' @param dp If g is specified, column number containing the dependent variable.
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item test: The test statistic
+#'     \item p.value: Bootstrap p-value
+#'     \item Explanatory.Power: Explanatory effect size
+#'     \item Effect.Size: Same as Explanatory.Power
+#'   }
+#'
+#' @details
+#' Data can be in matrix form (columns = groups), list mode (each element =
+#' group), or in a data frame with a grouping factor. The bootstrap-t method
+#' provides better small-sample performance than the percentile bootstrap.
+#'
+#' The test statistic is based on a heteroscedastic one-way ANOVA using
+#' trimmed means. Bootstrap samples are generated by resampling centered
+#' observations within each group.
+#'
+#' @references
+#' Wilcox, R. R. (2022). Introduction to Robust Estimation and Hypothesis
+#' Testing (5th ed.). Academic Press.
+#'
+#' @seealso
+#' \code{\link{t1way}} for one-way ANOVA with trimmed means,
+#' \code{\link{bbtrim}} for two-way designs
+#'
+#' @examples
+#' x <- list(rnorm(20), rnorm(20, mean = 0.5), rnorm(20))
+#' btrim(x, nboot = 500)
+#'
+#' @export
 btrim<-function(x,tr=.2,grp=NA,g=NULL,dp=NULL,nboot=599,SEED=TRUE){
 #
 #   Test the hypothesis of equal trimmed means, corresponding to J independent
@@ -965,8 +1735,31 @@ Effect.Size=e.pow)
 }
 
 
-
-# bbtrim
+#' Bootstrap-t Two-Way ANOVA with Trimmed Means
+#'
+#' @description
+#' Performs J x K factorial ANOVA using trimmed means and bootstrap-t method
+#' for independent groups.
+#'
+#' @param J Number of levels for first factor.
+#' @param K Number of levels for second factor.
+#' @param p Total number of groups (default: J*K).
+#' @inheritParams common-params
+#'
+#' @return List with test statistics and p-values for main effects and
+#'   interaction.
+#'
+#' @seealso
+#' \code{\link{btrim}} for one-way design,
+#' \code{\link{t2way}} for heteroscedastic two-way ANOVA
+#'
+#' @examples
+#' # 2x3 design
+#' x <- list(rnorm(20), rnorm(20), rnorm(20),
+#'           rnorm(20, 0.5), rnorm(20, 0.5), rnorm(20, 0.5))
+#' bbtrim(2, 3, x, nboot = 500)
+#'
+#' @export
 bbtrim<-function(J,K,x,grp=c(1:p),p=J*K,tr=.2,nboot=600,alpha=.05,pr=FALSE){
 #
 #  Perform a J by K anova using trimmed means with
@@ -1012,7 +1805,42 @@ list(Factor.A=Factor.A,Factor.B=Factor.B,Factor.AB=Factor.AB,pr=pr)
 }
 
 
-# bwtrim
+#' Bootstrap Two-Way Repeated Measures ANOVA with Trimmed Means
+#'
+#' @description
+#' Performs J x K split-plot ANOVA: first factor is between-subjects (independent
+#' groups), second factor is within-subjects (repeated measures).
+#'
+#' @param J Number of levels for the between-subjects factor.
+#' @param K Number of levels for the within-subjects factor.
+#' @param data Data in list mode, matrix, or data frame.
+#' @param MAT Logical. If \code{TRUE}, data is assumed to be in matrix format
+#'   (default: \code{FALSE}).
+#' @param grpc Column number containing group labels if MAT=\code{FALSE}.
+#' @param coln Column numbers containing the data if MAT=\code{FALSE}.
+#' @inheritParams common-params
+#'
+#' @return A list with components containing test statistics and p-values for
+#'   main effects and interaction.
+#'
+#' @details
+#' This function implements a split-plot (mixed) design where one factor varies
+#' between subjects and the other within subjects. The bootstrap-t method is
+#' used for inference with trimmed means.
+#'
+#' @seealso
+#' \code{\link{bbtrim}} for fully between-subjects design,
+#' \code{\link{bbwtrim}} for three-way mixed design,
+#' \code{\link{rmanova}} for repeated measures ANOVA
+#'
+#' @examples
+#' # 2x3 split-plot design
+#' set.seed(123)
+#' data_list <- list()
+#' for(i in 1:6) data_list[[i]] <- rnorm(20)
+#' bwtrim(2, 3, data_list, nboot = 500)
+#'
+#' @export
 bwtrim<-function(J,K,data,tr=.2,grp=c(1:p),p=J*K,MAT=FALSE,grpc=1,coln=c(2:3)){
 #  Perform a J-by-K anova on trimmed means with
 #  repeated measures on the second factor. That is, a split-plot design
@@ -1100,8 +1928,38 @@ Qab=Qab$teststat,Qab.p.value=Qab$p.value)
 }
 
 
-
-# bbwtrim
+#' Bootstrap Three-Way ANOVA (One Between, Two Within)
+#'
+#' @description
+#' Performs J x K x L three-way ANOVA where the first factor is between-subjects
+#' and the second and third factors are within-subjects (repeated measures).
+#'
+#' @param J Number of levels for the between-subjects factor.
+#' @param K Number of levels for the first within-subjects factor.
+#' @param L Number of levels for the second within-subjects factor.
+#' @param data Data in list mode containing JK groups with L measurements each.
+#' @inheritParams common-params
+#'
+#' @return A list with test statistics and p-values for all main effects and
+#'   interactions (A, B, C, AB, AC, BC, ABC).
+#'
+#' @details
+#' This function analyzes a three-way mixed design with one between-subjects
+#' factor and two within-subjects factors using trimmed means and bootstrap
+#' methodology.
+#'
+#' @seealso
+#' \code{\link{bwtrim}} for two-way mixed design,
+#' \code{\link{bwwtrim}} for fully within-subjects three-way,
+#' \code{\link{bbwtrimbt}} for contrasts
+#'
+#' @examples
+#' # Generate 2x2x3 data
+#' set.seed(123)
+#' data_list <- lapply(1:12, function(i) rnorm(15))
+#' bbwtrim(2, 2, 3, data_list)
+#'
+#' @export
 bbwtrim<-function(J,K,L,data,tr=.2,alpha=.05,p=J*K*L){
 #  Perform a between-between-within (three-way) anova on trimmed means where
 #
@@ -1191,8 +2049,19 @@ Qabc=Qabc,Qabc.p.value=Qabc.siglevel)
 }
 
 
-
-# bwtrimbt
+#' Bootstrap Two-Way Within-Subjects ANOVA with Contrasts
+#'
+#' @description
+#' Performs J x K fully within-subjects ANOVA with post-hoc linear contrasts using trimmed means and bootstrap.
+#'
+#' @param JK Total number of groups (default: J*K).
+#' @param monitor Logical. If \code{TRUE}, prints progress messages.
+#' @inheritParams common-params
+#'
+#' @return List with test statistics, CIs, and p-values for specified contrasts.
+#'
+#' @seealso \code{\link{bwtrim}}, \code{\link{lincon}}, \code{\link{bbwtrimbt}}
+#' @export
 bwtrimbt<-function(J,K,x,tr=.2,alpha=.05,JK=J*K,grp=c(1:JK),nboot=599,
 SEED=TRUE,monitor=FALSE){
 #
@@ -1279,7 +2148,20 @@ temp4<-tsplit(J,K,x,tr=tr)
 list(Qa=temp4$Qa,Qb=temp4$Qb,Qab=temp4$Qab,crit.Qa=crit.Qa,crit.Qb=crit.Qb,crit.Qab=crit.Qab)
 }
 
-# bbwtrimbt
+
+#' Bootstrap Three-Way Within-Subjects ANOVA with Contrasts
+#'
+#' @description
+#' Performs J x K x L fully within-subjects ANOVA with linear contrasts using trimmed means and bootstrap.
+#'
+#' @param JKL Total number of cells (default: J*K*L).
+#' @param con Contrast matrix or 0 for omnibus tests.
+#' @inheritParams common-params
+#'
+#' @return List with test results for specified contrasts.
+#'
+#' @seealso \code{\link{bwwtrim}}, \code{\link{bwtrimbt}}
+#' @export
 bbwtrimbt<-function(J, K, L, x, tr = 0.2, JKL = J * K*L, con = 0,
  alpha = 0.05, grp =c(1:JKL), nboot = 599, SEED = TRUE, ...)
 {
@@ -1399,7 +2281,17 @@ list(p.value.A=pbA,p.value.B=pbB,p.value.C=pbC,p.value.AB=pbAB,
 p.value.AC=pbAC,p.value.BC=pbBC,p.value.ABC=pbABC)
 }
 
-# bwwtrim
+
+#' Bootstrap Three-Way Within-Subjects ANOVA
+#'
+#' @description
+#' Performs J x K x L fully within-subjects factorial ANOVA using trimmed means and bootstrap.
+#'
+#' @inheritParams bbwtrim
+#' @return List with omnibus tests for all main effects and interactions.
+#'
+#' @seealso \code{\link{bbwtrim}}, \code{\link{bwtrim}}, \code{\link{bwwtrimbt}}
+#' @export
 bwwtrim<-function(J,K,L,data,tr=.2,grp=c(1:p),alpha=.05,p=J*K*L){
 #  Perform a between by within by within (three-way) anova
 #  on trimmed means where
@@ -1489,8 +2381,16 @@ Qabc=Qabc,Qabc.p.value=Qabc.siglevel)
 }
 
 
-
-# bwwtrimbt
+#' Bootstrap Three-Way Within ANOVA with Post-hoc
+#'
+#' @description
+#' J x K x L fully within-subjects design with contrast-based post-hoc tests.
+#'
+#' @inheritParams bbwtrimbt
+#' @return List with contrast test results.
+#'
+#' @seealso \code{\link{bwwtrim}}
+#' @export
 bwwtrimbt<-function(J, K, L, x, tr = 0.2, JKL = J * K*L, con = 0,
  alpha = 0.05, grp =c(1:JKL), nboot = 599, SEED = TRUE, ...)
 {
@@ -1591,7 +2491,24 @@ p.value.AC=pbAC,p.value.BC=pbBC,p.value.ABC=pbABC)
 
 }
 
-# dtrimpb
+
+#' Percentile Bootstrap Multiple Comparisons with Trimmed Means
+#'
+#' @description
+#' Compares all pairs or tests specified contrasts using trimmed means and percentile bootstrap.
+#'
+#' @param con Contrast matrix or 0 for all pairwise comparisons.
+#' @param dif Logical. If TRUE, uses difference scores (dependent groups).
+#' @param hoch Logical. If TRUE, applies Hochberg p-value adjustment.
+#' @param BA Logical. For Brunner-Munzel-type adjustment.
+#' @param PCI Logical. For projection-based CI.
+#' @param xlab,ylab,ylab.ebar Axis labels.
+#' @inheritParams common-params
+#'
+#' @return Matrix with estimates, CIs, and p-values for each comparison/contrast.
+#'
+#' @seealso \code{\link{lincon}}, \code{\link{btrim}}, \code{\link{mcppb20}}
+#' @export
 dtrimpb<-function(x,y=NULL,alpha=.05,con=0,est=tmean,plotit=TRUE,dif=TRUE,grp=NA,
 hoch=TRUE,nboot=NA,xlab="Group 1",ylab="Group 2",
 pr=TRUE,SEED=TRUE,BA=FALSE,PCI=FALSE,ylab.ebar=NULL,...){
@@ -1788,7 +2705,17 @@ num.sig<-sum(output[,3]<=output[,4])
 list(output=output,con=con,num.sig=num.sig)
 }
 
-# dtrimQS
+
+#' Quantile Shift Function for Trimmed Mean Differences
+#'
+#' @description
+#' Estimates quantiles of the distribution of pairwise trimmed mean differences.
+#'
+#' @inheritParams common-params
+#' @return Matrix of quantile estimates and shift measure.
+#'
+#' @seealso \code{\link{qwmwhd}}, \code{\link{dtrimpb}}
+#' @export
 dtrimQS<-function(x,y=NULL,tr=.2,pr=TRUE){
 #
 #  Trimmed mean based on difference scores
@@ -1808,7 +2735,22 @@ list(ci=output$ci,estimate=output$estimate,test=output$test.stat,
 se=output$se,p.value=output$p.value,n=output$n,Q.effect=ef$Q.effect)
 }
 
-# dlintrim
+
+#' Linear Contrasts for Trimmed Means with Symmetry Test
+#'
+#' @description
+#' Tests linear contrasts among trimmed means with optional symmetry testing.
+#'
+#' @param con Contrast matrix.
+#' @param sym.test Logical. Test for symmetry if TRUE.
+#' @param PB Logical. Use percentile bootstrap if TRUE.
+#' @param xlab,ylab Axis labels.
+#' @inheritParams common-params
+#'
+#' @return List with estimates, CIs, and test results.
+#'
+#' @seealso \code{\link{dtrimpb}}, \code{\link{lincon}}
+#' @export
 dlintrim<-function(x,con,SEED=TRUE,xlab='DV',ylab='',sym.test=FALSE,
 plotit=TRUE,tr=.2,PB=FALSE){
 #
@@ -1846,7 +2788,20 @@ p.value=mt$p.value,Q.effect=Q$Q.effect,sym.test=sym)
 }
 
 
-# ghtrim
+#' Quantile Shift Function for Two-Way Design
+#'
+#' @description
+#' Quantile-based analysis for J x K factorial design.
+#'
+#' @param INT Logical. For interaction contrasts.
+#' @param locfun Location function.
+#' @param crit Critical value.
+#' @inheritParams bbtrim
+#'
+#' @return Test results based on quantile shifts.
+#'
+#' @seealso \code{\link{dtrimQS}}, \code{\link{bbtrim}}
+#' @export
 bbtrimQS<-function(J,K,x, con = 0, tr = 0.2,
 alpha = 0.05, pr = TRUE, crit = NA, SEED = TRUE, INT = FALSE, locfun = tmean){
 if(pr){

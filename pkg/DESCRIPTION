@@ -2,8 +2,8 @@ Encoding: UTF-8
 Package: WRS
 Type: Package
 Title: A Package of R.R. Wilcox' Robust Statistics Functions
-Version: 0.45
-Date: 2025-10-29
+Version: 0.46
+Date: 2025-12-30
 Author: Rand R. Wilcox <rwilcox@usc.edu>
 Maintainer: Felix Schönbrodt <felix@nicebread.de>
 URL: https://github.com/nicebread/WRS/
@@ -61,3 +61,5 @@ Description: This is a packaged version of the robust statistic functions
     provided by R. R. Wilcox (http://dornsife.usc.edu/labs/rwilcox/software/).
 License: file LICENSE
 LazyLoad: yes
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
