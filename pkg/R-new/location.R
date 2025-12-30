@@ -2819,6 +2819,25 @@ list(A=A,B=B,AB=AB)
 }
 
 
+#' Biweight Measure of Location
+#'
+#' @description
+#' Computes the biweight (bisquare) measure of location, a robust M-estimator.
+#'
+#' @param x Numeric vector.
+#'
+#' @return Numeric value representing the biweight location estimate.
+#'
+#' @details
+#' Uses the biweight (bisquare) estimator with MAD-based scaling.
+#' The tuning constant is set to 9*MAD*qnorm(0.75).
+#' Used internally by \code{relplot}.
+#'
+#' @references
+#' Mosteller, F., & Tukey, J. W. (1977). Data Analysis and Regression. Addison-Wesley.
+#'
+#' @seealso \code{\link{mest}}, \code{\link{mom}}
+#' @export
 # biloc
 biloc<-function(x){
 #
@@ -2834,7 +2853,16 @@ bi
 }
 
 
-# dep.loc.summary
+#' Summary of Location Estimates for Dependent Groups
+#'
+#' @description
+#' Computes multiple location estimates for X, Y, and their difference X-Y.
+#'
+#' @inheritParams common-params
+#' @return Matrix with various location estimates (mean, trimmed mean, median, M-estimator, Mdif) for each variable.
+#'
+#' @seealso \code{\link{loc.dif.summary}}, \code{\link{loc2dif}}
+#' @export
 dep.loc.summary<-function(x,y){
 #
 # Estimate the measures of location based on difference scores:
@@ -2862,9 +2890,18 @@ output
 }
 
 
-
-
-# loc2dif
+#' Plot Location Estimates of X-Y versus X
+#'
+#' @description
+#' Creates a shift function-like plot showing how location of X-Y changes as a function of X values.
+#'
+#' @param xlab,ylab Axis labels.
+#' @inheritParams common-params
+#'
+#' @return Plot and invisibly returns the location estimate.
+#'
+#' @seealso \code{\link{loc2difpb}}, \code{\link{shifthd}}
+#' @export
 loc2dif<-function(x,y=NULL,est=median,na.rm=TRUE,plotit=FALSE,xlab="",ylab="",...){
 #
 # Compute a measure of location associated with the
@@ -2894,7 +2931,16 @@ val
 }
 
 
-# loc2difpb
+#' Bootstrap Confidence Intervals for Location Difference Function
+#'
+#' @description
+#' Bootstrap inference for the function relating location of X-Y to values of X.
+#'
+#' @inheritParams loc2dif
+#' @return List with CI and p-value for the location of pairwise differences.
+#'
+#' @seealso \code{\link{loc2dif}}, \code{\link{shifthd}}
+#' @export
 loc2difpb<-function(x,y,est=median,alpha=.05,nboot=2000,SEED=TRUE){
 #
 # A percentile bootstrap
@@ -2923,7 +2969,16 @@ list(ci=ci,p.value=pv)
 }
 
 
-# loc2gmulpb
+#' Bootstrap Test for Multiplicative Location Effect
+#'
+#' @description
+#' Tests the ratio of location estimates between two groups using bootstrap.
+#'
+#' @inheritParams common-params
+#' @return List with ratio estimates, CIs, and p-values for each dimension.
+#'
+#' @seealso \code{\link{pb2gen}}, \code{\link{yuenv2}}
+#' @export
 loc2gmulpb<-function(x,y,est=tmean,nboot=2000,alpha = 0.05,SEED=TRUE,...){
 #
 # For two independent  p-variate distributions,  apply yuen to each column of data
@@ -2969,8 +3024,19 @@ list(n=c(nrow(x),nrow(y)),test=test,psihat=psihat,num.sig=num.sig)
 }
 
 
-
-# loc2plot
+#' Plot Two Location Estimates
+#'
+#' @description
+#' Creates side-by-side plots of location estimates for two groups/variables.
+#'
+#' @param plotfun Plotting function (default: \code{akerd}).
+#' @param xlab,ylab Axis labels.
+#' @inheritParams common-params
+#'
+#' @return Plots (no return value).
+#'
+#' @seealso \code{\link{loc2dif}}, \code{\link{akerd}}
+#' @export
 loc2plot<-function(x,y,plotfun=akerd,xlab='X',ylab='',...){
 #
 # Plot an estimate of the distribution of X-Y
@@ -2991,7 +3057,18 @@ temp=temp=as.vector(outer(x,y,FUN='-'))
 plotfun(temp,xlab=xlab,ylab=ylab,...)
 }
 
-# mdifloc
+
+#' Multivariate Location Difference
+#'
+#' @description
+#' Computes location estimate of X-Y for multivariate (paired) data.
+#'
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to the location estimator.
+#' @return Vector of location estimates for each dimension.
+#'
+#' @seealso \code{\link{Dmul.loc2g}}, \code{\link{mul.loc2g}}
+#' @export
 mdifloc<-function(x,y,est=tukmed,...){
 #
 # Compute multivariate measure of location associated
@@ -3014,7 +3091,21 @@ val<-est(mat,...)
 val
 }
 
-# M2m.loc
+
+#' Compute Location Estimates from Matrix by Groups
+#'
+#' @description
+#' Internal function to compute location for subsets of matrix columns based on grouping factors.
+#'
+#' @param m Matrix or data frame.
+#' @param grpc Column number(s) containing group indicators (up to 4 factors).
+#' @param col.dat Column number containing the outcome measure.
+#' @param locfun Location estimator function (default: \code{tmean}).
+#' @param ... Additional arguments passed to locfun.
+#'
+#' @return Matrix of location estimates for each combination of factor levels.
+#'
+#' @keywords internal
 M2m.loc<-function(m,grpc,col.dat,locfun=tmean,...){
 #
 # m is a matrix or data frame.
@@ -3111,7 +3202,22 @@ if(flagit)M=M[,c(1,3)]
 M
 }
 
-# mul.loc2g
+
+#' Compare Multivariate Location for Two Independent Groups
+#'
+#' @description
+#' Bootstrap test for equality of multivariate location between two independent groups.
+#'
+#' @param m1,m2 Matrices for the two groups (rows = observations, columns = variables).
+#' @param nullv Null hypothesis vector (default: vector of zeros).
+#' @param locfun Location estimator function (default: \code{smean}).
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to locfun.
+#'
+#' @return List with location estimates for each group, CI matrix, and p-values for each variable.
+#'
+#' @seealso \code{\link{Dmul.loc2g}}, \code{\link{pbad2g}}
+#' @export
 mul.loc2g<-function(m1,m2,nullv=rep(0,ncol(m1)),locfun=smean,alpha=.05,SEED=TRUE,
 nboot=500,...){
 #
@@ -3174,7 +3280,18 @@ list(est1=est1,est2=est2,ci=ci,p.value=pv)
 }
 
 
-# Dmul.loc2g
+#' Compare Multivariate Location for Two Dependent Groups
+#'
+#' @description
+#' Paired (dependent) multivariate location test using percentile bootstrap.
+#'
+#' @param m2 Second group matrix (if NULL, tests single distribution against nullv).
+#' @inheritParams mul.loc2g
+#'
+#' @return List with location estimates, CI matrix, and p-values.
+#'
+#' @seealso \code{\link{mul.loc2g}}, \code{\link{mdifloc}}
+#' @export
 Dmul.loc2g<-function(m1,m2=NULL,nullv=rep(0,ncol(m1)),locfun=smean,alpha=.05,SEED=TRUE,
 nboot=500,...){
 #
@@ -3248,8 +3365,16 @@ list(est=est,ci=ci,p.values=pv,adjusted.p.value=pad)
 }
 
 
-
-# loc.dif.summary
+#' Summary of Location Estimates for Difference Scores
+#'
+#' @description
+#' Computes multiple location estimates specifically for the difference X-Y.
+#'
+#' @inheritParams common-params
+#' @return Matrix of various location estimates (mean, 20% trimmed mean, median, M-estimator, Mdif) for the differences.
+#'
+#' @seealso \code{\link{dep.loc.summary}}
+#' @export
 loc.dif.summary<-function(x,y){
 #
 # Estimate the difference between a collection of measures of location::
@@ -3272,8 +3397,29 @@ output
 }
 
 
-
-# L1median
+#' L1 Median (Spatial Median, Geometric Median)
+#'
+#' @description
+#' Computes the multivariate L1 median, which minimizes the sum of Euclidean distances to all data points.
+#'
+#' @param X Matrix with rows as observations and columns as variables.
+#' @param tol Convergence tolerance (default: 1e-08).
+#' @param maxit Maximum number of iterations (default: 200).
+#' @param m.init Initial estimate vector (default: column medians).
+#' @param trace Logical. If \code{TRUE}, prints iteration progress.
+#'
+#' @return Vector representing the L1 median.
+#'
+#' @details
+#' The L1 median is a multivariate generalization of the univariate median with breakdown point 0.5.
+#' It is highly robust to outliers.
+#'
+#' @references
+#' Hossjer, O., & Croux, C. (1995). Generalizing univariate signed rank statistics for
+#' testing and estimating a multivariate location parameter. Nonparametric Statistics, 4, 293-308.
+#'
+#' @seealso \code{\link{covloc}}, \code{\link{dmean}}
+#' @export
 L1median <- function(X, tol = 1e-08, maxit = 200, m.init = apply(X, 2, median),
                      trace = FALSE)
 {
@@ -3351,6 +3497,22 @@ L1median <- function(X, tol = 1e-08, maxit = 200, m.init = apply(X, 2, median),
   return(m)
 }
 
+#' Boxplot-Based Skipped Mean
+#'
+#' @description
+#' Computes a skipped estimator of location by removing outliers identified via boxplot rule.
+#'
+#' @param x Numeric vector.
+#' @param na.rm Logical. If \code{TRUE}, remove missing values (default: TRUE).
+#'
+#' @return Numeric value representing the mean of non-outlier values.
+#'
+#' @details
+#' Uses \code{\link{outbox}} to flag outliers based on the boxplot rule (values beyond 1.5*IQR from quartiles),
+#' then computes the mean of the remaining values.
+#'
+#' @seealso \code{\link{outbox}}, \code{\link{tmean}}
+#' @export
 # bmean
 bmean<-function(x,na.rm=TRUE){
 #
@@ -3364,6 +3526,28 @@ es
 }
 
 
+#' Donoho-Gasko Multivariate Depth-Based Location Estimator
+#'
+#' @description
+#' Computes a multivariate measure of location using the Donoho-Gasko depth-based method.
+#'
+#' @param m Matrix (rows = observations, columns = variables) or list.
+#' @param tr Trimming proportion (default: 0.2). For univariate case, if tr = 0.5, uses median.
+#' @param dop Depth computation option: 1 = \code{fdepth}, 2 = \code{fdepthv2} (default: 1).
+#' @param cop Covariance option for \code{fdepth}: 2 = MCD (default), 3 = marginal medians, 4 = MVE.
+#'
+#' @return Vector representing the multivariate location estimate.
+#'
+#' @details
+#' For bivariate data, uses exact depth. For higher dimensions, uses approximate depth.
+#' Returns the mean of points with depth >= tr, or the deepest point(s) if tr = 0.5.
+#'
+#' @references
+#' Donoho, D. L., & Gasko, M. (1992). Breakdown properties of location estimates based on
+#' halfspace depth and projected outlyingness. Annals of Statistics, 20, 1803-1827.
+#'
+#' @seealso \code{\link{fdepth}}, \code{\link{fdepthv2}}, \code{\link{depth}}
+#' @export
 # dmean
 dmean<-function(m,tr=.2,dop=1,cop=2){
 #
@@ -3414,6 +3598,22 @@ val
 }
 
 
+#' Marginal Location Estimates
+#'
+#' @description
+#' Computes location estimates for each column/element of a matrix or list.
+#'
+#' @param x Matrix or list of numeric vectors.
+#' @param est Location estimator function (default: \code{tmean}).
+#' @param ... Additional arguments passed to \code{est}.
+#'
+#' @return Vector or list of location estimates.
+#'
+#' @details
+#' Applies the specified estimator to each column (if matrix) or each element (if list).
+#'
+#' @seealso \code{\link{tmean}}, \code{\link{lloc}}
+#' @export
 # mmean
 mmean<-function(x,est=tmean,...){
 center<-NA
@@ -3424,6 +3624,31 @@ center
 
 
 
+#' Mean and Variance of g-and-h Distribution
+#'
+#' @description
+#' Computes the theoretical mean and variance of a g-and-h distribution.
+#'
+#' @param g Shape parameter (g >= 0).
+#' @param h Tail weight parameter (h >= 0).
+#'
+#' @return List with components:
+#' \itemize{
+#'   \item \code{mean} - Theoretical mean.
+#'   \item \code{variance} - Theoretical variance (NA if h >= 0.5).
+#' }
+#'
+#' @details
+#' The g-and-h distribution is a flexible family controlled by parameters g (skewness) and h (tail weight).
+#' When g = 0 and h = 0, reduces to standard normal.
+#'
+#' @references
+#' Headrick, T. C., Kowalchuk, R. K., & Sheng, Y. (2008). Parametric probability densities
+#' and distribution functions for Tukey g-and-h transformations and their use for fitting data.
+#' Applied Mathematical Sciences, 2, 449-462.
+#'
+#' @seealso \code{\link{ghdist}}
+#' @export
 # ghmean
 ghmean<-function(g,h){
 #
@@ -3453,6 +3678,24 @@ list(mean=val,variance=val2)
 }
 
 
+#' Multivariate Skipped Mean Using MGV Method
+#'
+#' @description
+#' Computes a multivariate skipped measure of location by eliminating outliers using the MGV method.
+#'
+#' @param m n-by-p matrix of observations.
+#' @param op Distance option: 0 = pairwise distances (default), 1 = MVE, 2 = MCD.
+#' @param outfun Outlier detection function applied to MGV distances (default: \code{outbox}).
+#' @param se Logical (not currently used).
+#'
+#' @return Vector of column means after removing outliers.
+#'
+#' @details
+#' Uses \code{\link{outmgv}} to identify outliers based on MGV (Minimum Generalized Variance) distances,
+#' then computes means using the remaining data.
+#'
+#' @seealso \code{\link{outmgv}}, \code{\link{outbox}}, \code{\link{bmean}}
+#' @export
 # mgvmean
 mgvmean<-function(m,op=0,outfun=outbox,se=TRUE){
 #
@@ -3481,6 +3724,19 @@ val
 }
 
 
+#' Harmonic Mean
+#'
+#' @description
+#' Computes the harmonic mean of a numeric vector.
+#'
+#' @param x Numeric vector (all values must be positive).
+#'
+#' @return Numeric value representing the harmonic mean.
+#'
+#' @details
+#' The harmonic mean is the reciprocal of the arithmetic mean of reciprocals: 1 / mean(1/x).
+#'
+#' @export
 # harmonic.mean
 harmonic.mean<-function(x)1/mean(1/x)
 
@@ -3610,10 +3866,40 @@ list(n=n,n.keep=n.keep,xvals=xvals,yhat = val)
 }
 
 
+#' Mean of Lognormal Distribution
+#'
+#' @description
+#' Computes the theoretical mean of a lognormal distribution.
+#'
+#' @param mu Mean of the underlying normal distribution (default: 0).
+#' @param sig.sq Variance of the underlying normal distribution (default: 1).
+#'
+#' @return Numeric value representing the mean: exp(mu + sig.sq/2).
+#'
+#' @seealso \code{\link{lognormal.mom}}
+#' @export
 # lognormal.mean
 lognormal.mean<-function(mu=0,sig.sq=1)exp(mu+sig.sq/2)
 
 
+#' Moments of Lognormal Distribution
+#'
+#' @description
+#' Computes the theoretical mean, variance, skewness, and kurtosis of a lognormal distribution.
+#'
+#' @param mu Mean of the underlying normal distribution (default: 0).
+#' @param sig.sq Variance of the underlying normal distribution (default: 1).
+#'
+#' @return List with components:
+#' \itemize{
+#'   \item \code{mean} - Theoretical mean.
+#'   \item \code{var} - Theoretical variance.
+#'   \item \code{skew} - Theoretical skewness.
+#'   \item \code{kurtosis} - Theoretical kurtosis.
+#' }
+#'
+#' @seealso \code{\link{lognormal.mean}}
+#' @export
 # lognormal.mom
 lognormal.mom<-function(mu=0,sig.sq=1){
 me=lognormal.mean(mu,sig.sq)
@@ -3624,6 +3910,31 @@ list(mean=me,var=V,skew=sk,kurtosis=ku)
 }
 
 
+#' BCA Confidence Interval for the Mean
+#'
+#' @description
+#' Computes a bias-corrected and accelerated (BCA) confidence interval for the mean.
+#'
+#' @param x Numeric vector.
+#' @param alpha Significance level (default: 0.05).
+#' @param SEED Logical. If \code{TRUE}, set random seed for reproducibility (default: TRUE).
+#'
+#' @return List with components:
+#' \itemize{
+#'   \item \code{Est} - Mean estimate.
+#'   \item \code{SD} - Standard deviation.
+#'   \item \code{CI} - Confidence interval.
+#' }
+#'
+#' @details
+#' Uses the bcaboot package. Note: This method is not recommended for the mean;
+#' it is provided only to illustrate situations where BCA can fail.
+#'
+#' @references
+#' Efron, B., & Tibshirani, R. J. (1993). An Introduction to the Bootstrap. Chapman & Hall.
+#'
+#' @seealso \code{\link{trimci}}
+#' @export
 # bca.mean
 bca.mean<-function(x,alpha=.05,SEED=TRUE){
 #
@@ -3644,6 +3955,22 @@ list(Est=be,SD=sd, CI=ci)
 }
 
 
+#' Bootstrap Trimmed Mean Helper for Dependent Groups
+#'
+#' @description
+#' Internal function to compute trimmed means from bootstrap samples for dependent group comparisons.
+#'
+#' @param isub Bootstrap sample indices (vector of length n).
+#' @param x Numeric vector of data.
+#' @param tr Trimming proportion.
+#'
+#' @return Numeric value representing the trimmed mean of x[isub].
+#'
+#' @details
+#' This is a helper function used by \code{\link{bptd}} for bootstrap resampling in dependent groups.
+#'
+#' @seealso \code{\link{bptd}}
+#' @keywords internal
 # bptdmean
 bptdmean<-function(isub,x,tr){
 #
@@ -3662,6 +3989,22 @@ bptdmean
 
 
 
+#' Center a Matrix by Subtracting Location Estimates
+#'
+#' @description
+#' Centers each column of a matrix by subtracting a specified location estimate.
+#'
+#' @param x Matrix of numeric values.
+#' @param est Location estimator function (default: \code{tmean}).
+#' @param ... Additional arguments passed to \code{est}.
+#'
+#' @return Centered matrix with location removed from each column.
+#'
+#' @details
+#' Computes location estimates using \code{\link{lloc}}, then subtracts them from each column.
+#'
+#' @seealso \code{\link{lloc}}, \code{\link{tmean}}
+#' @export
 # center.m
 center.m<-function(x,est=tmean,...){
 x=elimna(x)
@@ -3675,6 +4018,31 @@ x
 
 
 
+#' Functional Data Location Estimates with Confidence Intervals
+#'
+#' @description
+#' Computes location estimates and confidence intervals at specified time points for functional data.
+#'
+#' @param x n-by-p matrix (rows = curves, columns = time points).
+#' @inheritParams common-params
+#' @param pts Specific time points for estimation (default: NULL uses evenly spaced points).
+#' @param npts Number of evenly spaced points to use if pts = NULL (default: 25).
+#' @param plotit Logical. If \code{TRUE}, create plot.
+#' @param nv Null values for hypothesis testing (default: zero vector).
+#' @param xlab X-axis label (default: 'T').
+#' @param ylab Y-axis label (default: 'Est.').
+#' @param FBP Logical. If \code{TRUE}, create functional boxplot; if \code{FALSE}, plot estimates with CIs.
+#' @param method Multiple comparison adjustment method (default: 'hochberg').
+#' @param COLOR Logical. If \code{TRUE}, use color in functional boxplot.
+#'
+#' @return Matrix with columns: pts, est., s.e., p.value, adjust.p.value, ci.low, ci.hi.
+#'
+#' @details
+#' Designed for functional data where each row is a curve measured at p time points.
+#' Computes trimmed mean estimates and confidence intervals, with p-value adjustments for multiple comparisons.
+#'
+#' @seealso \code{\link{funlocpb}}, \code{\link{trimci}}, \code{\link{FBplot}}
+#' @export
 # funloc
 funloc<-function(x,tr=.2,pts=NULL,npts=25,plotit=TRUE,alpha=.05,nv=rep(0,ncol(x)),
 xlab='T',ylab='Est.',FBP=TRUE,method='hochberg',COLOR=TRUE){
@@ -3734,6 +4102,33 @@ op
 
 
 
+#' Functional Data Location with Percentile Bootstrap
+#'
+#' @description
+#' Computes location estimates and bootstrap confidence intervals at specified time points for functional data.
+#'
+#' @param x n-by-p matrix (rows = curves, columns = time points).
+#' @param est Location estimator function (default: \code{tmean}).
+#' @inheritParams common-params
+#' @param pts Specific time points for estimation (default: NULL uses evenly spaced points).
+#' @param npts Number of evenly spaced points to use if pts = NULL (default: 25).
+#' @param plotit Logical. If \code{TRUE}, create plot.
+#' @param nv Null values for hypothesis testing (default: zero vector).
+#' @param xlab X-axis label (default: 'T').
+#' @param ylab Y-axis label (default: 'Est.').
+#' @param FBP Logical. If \code{TRUE}, create functional boxplot; if \code{FALSE}, plot estimates with CIs.
+#' @param method Multiple comparison adjustment method (default: 'hochberg').
+#' @param COLOR Logical. If \code{TRUE}, use color in functional boxplot.
+#' @param ... Additional arguments passed to \code{est}.
+#'
+#' @return Matrix with columns: pts, est., p.value, adjust.p.value, ci.low, ci.hi.
+#'
+#' @details
+#' Similar to \code{\link{funloc}} but uses percentile bootstrap instead of Student's t.
+#' Allows flexible choice of location estimator.
+#'
+#' @seealso \code{\link{funloc}}, \code{\link{onesampb}}
+#' @export
 # funlocpb
 funlocpb<-function(x,est=tmean,nboot=2000,SEED=TRUE,
 pts=NULL,npts=25,plotit=TRUE,alpha=.05,nv=rep(0,ncol(x)),
@@ -3795,6 +4190,31 @@ op
 
 
 
+#' Prediction Error for Location Estimator (.632 Method)
+#'
+#' @description
+#' Estimates prediction error using a location estimator via the .632 bootstrap method.
+#'
+#' @param y Numeric vector.
+#' @param est Location estimator function (default: \code{mean}).
+#' @param error Error function (default: \code{sqfun} for squared error).
+#' @inheritParams common-params
+#' @param pr Logical. If \code{TRUE}, print progress.
+#' @param mval Number of observations to resample for each bootstrap sample (default: 5*log(n)).
+#'
+#' @return Numeric value representing the .632 prediction error estimate.
+#'
+#' @details
+#' Uses the .632 method from Efron & Tibshirani (1993). The default mval is based on
+#' Shao (1996) to ensure consistency in model selection.
+#'
+#' @references
+#' Efron, B., & Tibshirani, R. J. (1993). An Introduction to the Bootstrap. Chapman & Hall, pp. 252-254.
+#'
+#' Shao, J. (1996). Bootstrap model selection. Journal of the American Statistical Association, 91, 655-665.
+#'
+#' @seealso \code{\link{locpres1}}
+#' @export
 # locpre
 locpre<-function(y,est=mean,error=sqfun,nboot=100,SEED=TRUE,pr=TRUE,mval=round(5*log(length(y)))){
 #
@@ -3838,6 +4258,23 @@ val
 
 
 
+#' Bootstrap Location Estimate Helper for Prediction Error
+#'
+#' @description
+#' Internal function to compute location estimates from bootstrap samples for prediction error estimation.
+#'
+#' @param isub Bootstrap sample indices (vector of length mval < n).
+#' @param x Numeric vector of data.
+#' @param est Location estimator function.
+#'
+#' @return Location estimate computed from x[isub].
+#'
+#' @details
+#' Helper function used by \code{\link{locpre}} for computing bootstrap estimates.
+#' Uses mval < n for consistency in model selection.
+#'
+#' @seealso \code{\link{locpre}}
+#' @keywords internal
 # locpres1
 locpres1<-function(isub,x,est){
 #
@@ -3858,6 +4295,34 @@ regboot
 }
 
 
+#' Local Weighted Regression with Epanechnikov Kernel
+#'
+#' @description
+#' Computes local weighted regression using the Epanechnikov kernel.
+#'
+#' @inheritParams common-params
+#' @param pyhat Logical. If \code{TRUE}, return predicted values.
+#' @param pts Points at which to evaluate the smooth (default: NA uses all x or evenly spaced points).
+#' @param np Number of evenly spaced evaluation points (default: 100). If 0, uses all x values.
+#' @param plotit Logical. If \code{TRUE}, create plot.
+#' @param eout Logical. If \code{TRUE}, remove outliers before smoothing.
+#' @param outfun Outlier detection function (default: \code{out}).
+#' @param xlab X-axis label.
+#' @param ylab Y-axis label.
+#' @param pch Plotting character.
+#'
+#' @return If pyhat = TRUE, returns predicted y values; otherwise returns "Done".
+#'
+#' @details
+#' Implements Fan's local linear regression with Epanechnikov kernel.
+#' When np = 100, plots using middle 80% of x values.
+#'
+#' @references
+#' Fan, J. (1993). Local linear regression smoothers and their minimax efficiencies.
+#' Annals of Statistics, 21, 196-217.
+#'
+#' @seealso \code{\link{locvar}}, \code{\link{runmean}}
+#' @export
 # locreg
 locreg<-function(x,y,pyhat=FALSE,pts=NA,np=100,plotit=TRUE,eout=FALSE,outfun=out,
 xlab="X",ylab="Y",pch='.'){
@@ -3926,6 +4391,28 @@ m
 }
 
 
+#' Estimate Conditional Variance VAR(Y|X)
+#'
+#' @description
+#' Estimates the conditional variance VAR(Y|X) using Fan's kernel regression method.
+#'
+#' @inheritParams common-params
+#' @param pyhat Logical. If \code{TRUE}, return variance estimates.
+#' @param pts Points at which to estimate variance (default: x values).
+#' @param plotit Logical. If \code{TRUE}, create plot.
+#'
+#' @return Variance estimates at specified points (if pyhat = TRUE).
+#'
+#' @details
+#' Uses the method of Bjerve & Doksum: first computes residuals from \code{\link{locreg}},
+#' then applies \code{\link{locreg}} to squared residuals.
+#'
+#' @references
+#' Bjerve, S., & Doksum, K. A. (1993). Correlation curves: Measures of association as functions
+#' of covariate values. Annals of Statistics, 21, 890-902.
+#'
+#' @seealso \code{\link{locreg}}, \code{\link{locvarsm}}
+#' @export
 # locvar
 locvar<-function(x,y,pyhat=FALSE,pts=x,plotit=TRUE){
 #
@@ -3939,6 +4426,34 @@ val
 }
 
 
+#' Estimate Conditional Variance with Bootstrap Bagging
+#'
+#' @description
+#' Estimates conditional variance VAR(Y|X) using bootstrap bagging for improved stability.
+#'
+#' @inheritParams common-params
+#' @param pyhat Logical. If \code{TRUE}, return variance estimates.
+#' @param pts Points at which to estimate variance (default: x values).
+#' @param plotit Logical. If \code{TRUE}, create plot.
+#' @param RNA Logical. Passed to \code{runmbo}.
+#' @param xlab X-axis label.
+#' @param ylab Y-axis label.
+#' @param op Method option: 1 = Fan's kernel + bagging, 2 = running interval + bagging (default: 2).
+#' @param xout Logical. If \code{TRUE}, eliminate outliers among x values (op = 2 only).
+#' @param eout Logical. If \code{TRUE}, eliminate outliers in the full data cloud.
+#' @param pr Logical. If \code{TRUE}, print method information.
+#' @param fr Span parameter for running interval smoother (default: 0.6).
+#' @param scat Logical. Passed to \code{runmbo}.
+#' @param outfun Outlier detection function (default: \code{out}).
+#'
+#' @return Variance estimates at specified points (if pyhat = TRUE).
+#'
+#' @details
+#' Combines smoothing methods with bootstrap bagging to estimate conditional variance.
+#' Option 1 uses \code{\link{locvar}} with bagging; option 2 uses \code{\link{runmbo}} with variance estimator.
+#'
+#' @seealso \code{\link{locvar}}, \code{\link{runmbo}}
+#' @export
 # locvarsm
 locvarsm<-function(x,y,pyhat=FALSE,pts=x,plotit=TRUE,nboot=40,RNA=TRUE,xlab="X",
 ylab="VAR(Y|X)",op=2,xout=TRUE,eout=FALSE,pr=TRUE,fr=.6,scat=TRUE,outfun=out,SEED=TRUE){
@@ -3995,6 +4510,24 @@ output
 }
 
 
+#' Cross-Validated Variance of Location Estimator
+#'
+#' @description
+#' Computes cross-validated variance estimate for a location estimator using leave-one-out.
+#'
+#' @param y Numeric vector.
+#' @param varfun Variance estimator function (default: \code{pbvar}).
+#' @param locfun Location estimator function (default: \code{median}).
+#' @param ... Additional arguments passed to \code{locfun}.
+#'
+#' @return Variance estimate based on leave-one-out prediction errors.
+#'
+#' @details
+#' For each observation i, computes prediction error as y[i] - locfun(y[-i]),
+#' then estimates variance of these errors using varfun.
+#'
+#' @seealso \code{\link{pbvar}}, \code{\link{locpre}}
+#' @export
 # locCV
 locCV<-function(y,varfun=pbvar,locfun=median,...){
 vals=NA
@@ -4007,6 +4540,23 @@ res
 
 
 
+#' Location Estimates for Multiple Groups
+#'
+#' @description
+#' Computes location estimates for data organized as a vector, list, or matrix.
+#'
+#' @param x Vector, list, or matrix of numeric data.
+#' @param est Location estimator function (default: \code{median}).
+#' @param ... Additional arguments passed to \code{est}.
+#'
+#' @return List with component \code{center} containing location estimate(s).
+#'
+#' @details
+#' For vectors, computes single estimate. For lists, computes estimate for each element.
+#' For matrices, computes estimate for each column.
+#'
+#' @seealso \code{\link{mmean}}, \code{\link{lloc}}
+#' @export
 # llocv2
 llocv2<-function(x,est=median,...){
 if(!is.list(x))val<-est(x,...)
@@ -4018,6 +4568,24 @@ if(is.matrix(x))val<-apply(x,2,est,...)
 list(center=val)
 }
 
+#' Classical Mean and Covariance Matrix
+#'
+#' @description
+#' Returns the classical mean vector and covariance matrix.
+#'
+#' @param x Matrix (rows = observations, columns = variables).
+#'
+#' @return List with components:
+#' \itemize{
+#'   \item \code{center} - Mean vector.
+#'   \item \code{cov} - Covariance matrix.
+#' }
+#'
+#' @details
+#' Simple wrapper providing mean and covariance in the same format as robust alternatives.
+#'
+#' @seealso \code{\link{ogk.center}}, \code{\link{dmean}}
+#' @export
 # covloc
 covloc<-function(x){
 #
@@ -4028,6 +4596,27 @@ mcov=cov(x)
 list(center=loc,cov=mcov)
 }
 
+#' OGK Multivariate Location Estimator
+#'
+#' @description
+#' Computes the OGK (Orthogonalized Gnanadesikan-Kettenring) multivariate location estimate.
+#'
+#' @param x Matrix (rows = observations, columns = variables).
+#' @param beta Efficiency parameter (default: 0.9).
+#' @param ... Additional arguments passed to \code{ogk}.
+#'
+#' @return Vector representing the OGK location estimate.
+#'
+#' @details
+#' Extracts the center component from \code{\link[rrcov]{ogk}} in the rrcov package.
+#' OGK is a robust multivariate location and scatter estimator.
+#'
+#' @references
+#' Maronna, R. A., & Zamar, R. H. (2002). Robust estimates of location and dispersion
+#' for high-dimensional datasets. Technometrics, 44, 307-317.
+#'
+#' @seealso \code{\link{dmean}}, \code{\link{covloc}}
+#' @export
 # ogk.center
 ogk.center<-function(x,beta=.9,...){
 #
@@ -4037,6 +4626,23 @@ center=ogk(x,beta=beta,...)$center
 center
 }
 
+#' Generate Random Samples from g-and-h Distribution
+#'
+#' @description
+#' Generates random observations from a g-and-h distribution.
+#'
+#' @param n Number of observations to generate.
+#' @param g Shape parameter (default: 0).
+#' @param h Tail weight parameter (default: 0).
+#'
+#' @return Vector of n random observations from the g-and-h distribution.
+#'
+#' @details
+#' The g-and-h distribution is a flexible family for modeling skewness (g) and tail weight (h).
+#' When g = h = 0, reduces to standard normal.
+#'
+#' @seealso \code{\link{ghmean}}
+#' @export
 # ghdist
 ghdist<-function(n,g=0,h=0){
 #
@@ -4052,6 +4658,31 @@ ghdist
 
 
 
+#' Multivariate Test for Mean with Outlier Projection Method
+#'
+#' @description
+#' Tests whether multivariate means equal specified null values, using outlier projection and bootstrap.
+#'
+#' @param m n-by-p matrix.
+#' @param nullv Null value vector (default: zero vector).
+#' @param cop Center option: 1 = Donoho-Gasko, 2 = MCD, 3 = marginal medians (default), 4 = MVE.
+#' @param MM Logical. If \code{FALSE}, use boxplot rule; if \code{TRUE}, use MAD-based rule.
+#' @inheritParams common-params
+#' @param plotit Logical. If \code{TRUE}, create plot (bivariate only).
+#' @param MC Logical (not currently used).
+#' @param xlab X-axis label.
+#' @param ylab Y-axis label.
+#' @param STAND Logical (not currently used).
+#'
+#' @return List with test results, confidence regions, and outlier information.
+#'
+#' @details
+#' Eliminates outliers using projection method: for each point, projects all data onto the line
+#' from that point to the center, checks for outliers along that projection.
+#' Uses sample-size adjusted critical values and bootstrap for inference.
+#'
+#' @seealso \code{\link{smean}}, \code{\link{outpro}}
+#' @export
 # meancr.cord.oph
 meancr.cord.oph<-function(m,nullv=rep(0,ncol(m)),cop=3,MM=FALSE,SEED=TRUE,tr=0,
 nboot=500,plotit=TRUE,MC=FALSE,xlab="VAR 1",ylab="VAR 2",STAND=TRUE){
@@ -4113,6 +4744,25 @@ list(p.value=sig.level,boot.vals=val,center=est)
 
 
 # hpsi
+#' Huber's Psi Function
+#'
+#' @description
+#' Evaluates Huber's psi function for robust M-estimation.
+#'
+#' @param x Numeric vector.
+#' @param bend Bending constant (default: 1.28).
+#'
+#' @return Vector of psi(x) values: x if |x| <= bend, bend*sign(x) otherwise.
+#'
+#' @details
+#' Huber's psi function is used in M-estimation. It equals x for small values
+#' and is constant (bounded) for large values, providing robustness against outliers.
+#'
+#' @references
+#' Huber, P. J. (1981). Robust Statistics. Wiley.
+#'
+#' @seealso \code{\link{mest}}, \code{\link{mom}}, \code{\link{onestep}}
+#' @export
 hpsi<-function(x,bend=1.28){
 #
 #   Evaluate Huber`s Psi function for each value in the vector x

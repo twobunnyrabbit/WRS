@@ -11,7 +11,57 @@
 # See: Wilcox (2022), Chapter on outlier detection
 
 
-# outproMC
+#' Projection-Based Outlier Detection (Multicore Version)
+#'
+#' Detects outliers using a modification of the Stahel-Donoho projection method
+#' with parallel processing for improved performance. Projects data points onto
+#' lines connecting each point to the center, then uses boxplot-based detection
+#' on the projected distances.
+#'
+#' @param m A numeric matrix where rows represent observations and columns
+#'   represent variables.
+#' @param gval Critical value for outlier detection. Default is
+#'   `sqrt(qchisq(0.975, p))` for most centers, or `sqrt(qchisq(0.95, p))` for
+#'   cop=1, where p is the number of columns.
+#' @param center Optional center point. If NA, computed based on `cop` argument.
+#' @inheritParams common-params
+#' @param op Logical. If `TRUE`, plots the 0.5 depth contour based on data with
+#'   outliers removed. If `FALSE`, plots depth contour without removing outliers.
+#' @param MM Logical. If `TRUE`, uses MAD for dispersion. If `FALSE`, uses
+#'   interquartile range for outlier detection.
+#' @param cop Integer (1-7) specifying method to compute center of data cloud:
+#'   \itemize{
+#'     \item 1: Deepest point (Tukey median)
+#'     \item 2: MCD (Minimum Covariance Determinant) center
+#'     \item 3: Coordinate-wise median (default)
+#'     \item 4: MVE (Minimum Volume Ellipsoid) center
+#'     \item 5: TBS center
+#'     \item 6: RMBA (Olive's median ball algorithm)
+#'     \item 7: Spatial (L1) median
+#'   }
+#' @param xlab Label for x-axis in bivariate plots.
+#' @param ylab Label for y-axis in bivariate plots.
+#' @param STAND Logical. If `TRUE`, standardizes marginal distributions before
+#'   checking for outliers (recommended when variables are on different scales).
+#' @inheritParams common-params
+#' @param ... Additional arguments (not currently used).
+#'
+#' @return A list with components:
+#'   \item{out.id}{Vector of row indices identified as outliers.}
+#'   \item{keep}{Vector of row indices for non-outliers.}
+#'
+#' @details
+#' This function is the parallel processing version of `outpro()`, using
+#' `mclapply()` for improved performance on multicore systems. For bivariate
+#' data with `plotit=TRUE`, creates a scatterplot marking outliers with "o" and
+#' non-outliers with "*", and plots the 0.5 depth contour. The Donoho-Gasko
+#' (Tukey) median is marked with "+".
+#'
+#' When using STAND=FALSE with variables on different scales, a warning is
+#' printed suggesting STAND=TRUE may be more appropriate.
+#'
+#' @seealso \code{\link{outpro}}, \code{\link{outproad}}, \code{\link{outproadMC}}
+#' @export
 outproMC<-function(m,gval=NA,center=NA,plotit=TRUE,op=TRUE,MM=FALSE,cop=3,
 xlab="VAR 1",ylab="VAR 2",STAND=TRUE,tr=.2,q=.5,pr=TRUE,...){
 #
@@ -163,7 +213,13 @@ list(out.id=outid,keep=keep)
 
 
 
-# outproMC.sub
+#' Helper Function for outproMC - Compute Projection Distances
+#'
+#' @param B Numeric vector representing a direction for projection.
+#' @param Amat Matrix of centered data points.
+#'
+#' @return Vector of projection distances.
+#' @keywords internal
 outproMC.sub<-function(B,Amat){
 dis<-NA
 bot<-sum(B^2)
@@ -179,7 +235,14 @@ dis[flag]=NA
 dis
 }
 
-# outproMC.sub2
+#' Helper Function for outproMC - Identify Outliers from Distances
+#'
+#' @param dis Vector of projection distances.
+#' @param MM Logical. If TRUE, uses MAD; if FALSE, uses IQR.
+#' @param gval Critical value multiplier.
+#'
+#' @return Binary vector indicating outliers (1) and non-outliers (0).
+#' @keywords internal
 outproMC.sub2<-function(dis,MM,gval){
 temp<-idealf(dis)
 if(!MM)cu<-median(dis)+gval*(temp$qu-temp$ql)
@@ -191,19 +254,43 @@ flag[temp2]<-1
 flag
 }
 
-# outproad
+#' Projection Outlier Detection with Adjusted Critical Value
+#'
+#' Adjusts the critical value used by `outpro()` so that the expected proportion
+#' of points declared outliers under multivariate normality equals a specified
+#' rate. This adjustment is particularly crucial for high-dimensional data (p>9).
+#'
+#' @param m A numeric matrix where rows are observations and columns are variables.
+#' @param center Optional center point. If NA, computed based on `cop`.
+#' @inheritParams common-params
+#' @param op Logical. If TRUE, plots depth contour with outliers removed.
+#' @param MM Logical. If TRUE, uses MAD; if FALSE, uses IQR.
+#' @param cop Integer (1-7) specifying center computation method (see outproMC).
+#' @param xlab Label for x-axis.
+#' @param ylab Label for y-axis.
+#' @param rate Target false positive rate under normality (default: 0.05).
+#' @param iter Number of iterations for simulation to adjust critical value
+#'   (default: 100).
+#' @param ip Number of quantile values to try when adjusting (default: 6).
+#' @inheritParams common-params
+#' @param STAND Logical. If TRUE, standardizes marginal distributions.
+#'
+#' @return A list with components:
+#'   \item{n}{Sample size.}
+#'   \item{n.out}{Number of outliers detected.}
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'   \item{used.gval}{Adjusted critical value used.}
+#'
+#' @details
+#' The function simulates multivariate normal data and iteratively adjusts the
+#' critical value `gval` until the empirical outlier rate matches the target
+#' `rate`. This ensures appropriate Type I error control under normality.
+#'
+#' @seealso \code{\link{outpro}}, \code{\link{outproMC}}, \code{\link{outproadMC}}
+#' @export
 outproad<-function(m,center=NA,plotit=TRUE,op=TRUE,MM=TRUE,cop=3,
 xlab="VAR 1",ylab="VAR 2",rate=.05,iter=100,ip=6,pr=TRUE,SEED=TRUE,STAND=TRUE){
-#
-# Adjusts the critical value, gval used by outpro,
-# so that the outside rate per observation, under normality
-# is approximatley equal to the value given by the argument
-# rate, which defaults to .05.
-# That is, expected proportion of points declared outliers under normality
-# is intended to be rate=.05
-#
-# When dealing with p-variate data, p>9, this adjustment can be crucial
-#
 m=elimna(m)
 m=as.matrix(m)
 n=nrow(m)
@@ -236,19 +323,28 @@ res=outpro(m,gval=newgval,center=center,plotit=TRUE,op=op,MM=MM,
 
 # FOLLOWING CODE IS NO LONGER NEEDED but is retained in case it is desired to use the original version of rdepth
 
-# outproadMC
+#' Projection Outlier Detection with Adjusted Critical Value (Multicore)
+#'
+#' Multicore version of `outproad()` that adjusts the critical value for
+#' outlier detection to achieve a target false positive rate under normality.
+#'
+#' @inheritParams outproad
+#'
+#' @return A list with components:
+#'   \item{n}{Sample size.}
+#'   \item{n.out}{Number of outliers detected.}
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'   \item{used.gval}{Adjusted critical value used.}
+#'
+#' @details
+#' This function uses `outproMC()` instead of `outpro()` for parallel processing.
+#' Otherwise identical to `outproad()`.
+#'
+#' @seealso \code{\link{outproad}}, \code{\link{outproMC}}
+#' @export
 outproadMC<-function(m,center=NA,plotit=TRUE,op=TRUE,MM=TRUE,cop=3,
 xlab="VAR 1",ylab="VAR 2",rate=.05,iter=100,ip=6,pr=TRUE,SEED=TRUE){
-#
-# Adjusts the critical value, gval used by outpro,
-# so that the outside rate per observation, under normality
-# is approximatley equal to the value given by the argument
-# rate, which defaults to .05.
-# That is, expected proportion of points declared outliers under normality
-# is intended to be rate=.05
-#
-# When dealing with p-variate data, p>9, this adjustment can be crucial
-#
 m=elimna(m)
 m=as.matrix(m)
 n=nrow(m)
@@ -283,12 +379,33 @@ res=outproMC(m,gval=newgval,center=center,plotit=TRUE,op=op,MM=MM,
 
 
 
-# outpro.depth
+#' Projection-Based Outlier Detection Using Depth
+#'
+#' Detects outliers using projection depth. For multivariate data, computes
+#' projection depth for each point and identifies outliers based on inverse depth.
+#' Designed to handle large sample sizes efficiently.
+#'
+#' @inheritParams common-params
+#' @param ndir Number of random projections to use for computing depth
+#'   (default: 1000).
+#' @param MM Logical. If TRUE, uses MAD for dispersion in outlier detection.
+#' @inheritParams common-params
+#' @param xlab Label for x-axis in plots.
+#' @param ylab Label for y-axis in plots.
+#'
+#' @return A list with the same structure as `outpro()`:
+#'   \item{out.id}{Indices of detected outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'
+#' @details
+#' For univariate data, simply calls `outpro()`. For multivariate data, computes
+#' projection depth using `prodepth()`, then applies outlier detection to the
+#' inverse depths. For bivariate data with `plotit=TRUE`, creates a scatterplot
+#' with outliers marked and the median depth contour plotted.
+#'
+#' @seealso \code{\link{outpro}}, \code{\link{prodepth}}
+#' @export
 outpro.depth<-function(x,ndir=1000,MM=FALSE,SEED=TRUE,plotit=FALSE,xlab='X',ylab='Y'){
-#
-#  Use projection distances to detect outliers.
-# This function can handle large sample sizes
-#
 x=elimna(x)
 x=as.matrix(x)
 if(ncol(x)==1)a=outpro(x)
@@ -318,16 +435,42 @@ a
 }
 
 
-# outbox
+#' Boxplot-Based Outlier Detection
+#'
+#' Detects outliers using the boxplot rule with ideal fourths for quartile
+#' estimation. Optionally uses Carling's (2000) modified boxplot rule that
+#' adjusts for sample size.
+#'
+#' @inheritParams common-params
+#' @param mbox Logical. If TRUE, uses Carling's (2000) modified boxplot rule
+#'   with sample-size-adjusted multiplier. If FALSE, uses standard 1.5*IQR rule.
+#' @param gval Multiplier for the IQR. If NA, uses 1.5 for standard boxplot or
+#'   Carling's formula for modified boxplot.
+#' @inheritParams common-params
+#' @param STAND Logical. Currently not used in this function.
+#'
+#' @return A list with components:
+#'   \item{out.val}{Values of detected outliers.}
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'   \item{n}{Sample size.}
+#'   \item{n.out}{Number of outliers.}
+#'   \item{cl}{Lower critical value.}
+#'   \item{cu}{Upper critical value.}
+#'
+#' @details
+#' Unlike R's `boxplot()`, this function uses ideal fourths (via `idealf()`)
+#' to estimate quartiles. The modified boxplot (mbox=TRUE) uses the multiplier
+#' `(17.63*n - 23.64)/(7.74*n - 3.71)` from Carling (2000), which provides
+#' better control of the outlier detection rate for finite samples.
+#'
+#' @references
+#' Carling, K. (2000). Resistant outlier rules and the non-Gaussian case.
+#' Computational Statistics & Data Analysis, 33, 249-258.
+#'
+#' @seealso \code{\link{idealf}}, \code{\link{outpro}}
+#' @export
 outbox<-function(x,mbox=FALSE,gval=NA,plotit=FALSE,STAND=FALSE){
-#
-# This function detects outliers using the
-# boxplot rule, but unlike the R function boxplot,
-# the ideal fourths are used to estimate the quartiles.
-#
-# Setting mbox=TRUE results in using the modification
-# of the boxplot rule suggested by Carling (2000).
-#
 x<-x[!is.na(x)] # Remove missing values
 if(plotit)boxplot(x)
 n<-length(x)
@@ -357,25 +500,35 @@ list(out.val=outval,out.id=outid,keep=keep,n=n,n.out=n.out,cl=cl,cu=cu)
 }
 
 
-# out3d
+#' 3D Scatterplot with Outlier Highlighting
+#'
+#' Creates a 3D scatterplot and highlights outliers detected using a specified
+#' outlier detection function. Optionally adds a regression plane.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param xlab Label for x-axis (default: "Var 1").
+#' @param ylab Label for y-axis (default: "Var 2").
+#' @param zlab Label for z-axis (default: "Var 3").
+#' @param reg.plane Logical. If TRUE, adds a regression plane where the first
+#'   two columns of `x` are predictors and the third column is the outcome.
+#' @param regfun Regression function to use for fitting the plane (default: tsreg).
+#' @param COLOR Logical. If TRUE, outliers are shown in red; if FALSE, outliers
+#'   are shown with "*" symbol.
+#' @param tick.marks Logical. If TRUE, shows tick marks on axes.
+#' @param ... Additional arguments passed to `outfun` and `regfun`.
+#'
+#' @return Invisibly returns NULL. Used for plotting side effects.
+#'
+#' @details
+#' Requires the `scatterplot3d` package. Data must be a matrix or data frame
+#' with exactly 3 columns. Outliers are detected using `outfun` and highlighted
+#' either in color or with a special symbol.
+#'
+#' @seealso \code{\link{outpro}}, \code{\link[scatterplot3d]{scatterplot3d}}
+#' @export
 out3d<-function(x,outfun=outpro,xlab="Var 1",ylab="Var 2",zlab="Var 3",
 reg.plane=FALSE,regfun=tsreg,COLOR=FALSE,tick.marks=TRUE,...){
-#
-# Create a 3D plot of points and indicate outliers with red dots.
-#
-#  Assumes that the package scatterplot3d has been installed.
-#  If not, use the command install.packages("scatterplot3d")
-#  assuming you are connected to the web.
-#
-# To add a regression plane, set
-#  reg.plane=T.The regression method used is specified with the argument
-#  regfun.
-# First two columns are taken to be predictors and third column is the outcome
-#
-#  Package scatterplot3d is required. To install it, use the command
-#  install.packages("scatterplot3d")
-#  while connected to the web
-#
 if(!is.matrix(x) && !is.data.frame(x))stop("Data must be stored in a matrix
 or data frame with 3 columns.")
 if(ncol(x)!=3)stop("Data must be stored in a matrix with 3 columns.")
@@ -402,12 +555,28 @@ if(!COLOR)temp$plane(vals)
 }
 
 
-# outbag
+#' Bagplot-Based Outlier Detection
+#'
+#' Detects outliers using the bagplot method for bivariate data. The bagplot
+#' is a bivariate generalization of the boxplot based on halfspace depth.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{n}{Sample size.}
+#'   \item{n.out}{Number of outliers detected.}
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'
+#' @details
+#' Requires the `mrfDepth` package. Only works with bivariate data (2 columns).
+#' Uses `compBagplot()` from mrfDepth to identify outliers as points falling
+#' outside the bagplot fence.
+#'
+#' @seealso \code{\link[mrfDepth]{compBagplot}}
+#' @export
 outbag<-function(x,plotit=FALSE){
-#
-#  Search for outliers using bagplot
-#  bivariate data only.
-#
 library(mrfDepth)
 x=elimna(x)
 n=nrow(x)
@@ -442,15 +611,35 @@ a
 
 
 
-# outmah
+#' Mahalanobis Distance Outlier Detection
+#'
+#' Detects outliers using classical Mahalanobis distance. **For demonstration
+#' purposes only** - subject to masking effects. Use robust methods like
+#' `outpro()` or `outmve()` for actual analysis.
+#'
+#' @inheritParams common-params
+#' @param qval Quantile for chi-squared critical value (default: pnorm(3) ≈ 0.9987,
+#'   corresponding to 3 standard deviations in univariate case).
+#' @inheritParams common-params
+#' @param xlab Label for x-axis in bivariate plots.
+#' @param ylab Label for y-axis in bivariate plots.
+#'
+#' @return A list with components:
+#'   \item{out.val}{Values of detected outliers.}
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'   \item{dis}{Mahalanobis distances for all points.}
+#'   \item{crit}{Critical value used.}
+#'
+#' @details
+#' Uses classical mean and covariance matrix, making it vulnerable to masking
+#' (outliers affecting the center/scatter estimates so they aren't detected).
+#' For bivariate data with `plotit=TRUE`, creates a scatterplot with outliers
+#' marked with "*".
+#'
+#' @seealso \code{\link{outmve}}, \code{\link{outpro}}, \code{\link{outDETMCD}}
+#' @export
 outmah<-function(x,qval=pnorm(3),plotit=TRUE,xlab="VAR 1",ylab="VAR 2"){
-#
-#  detect outliers using Mahalanobis Distance
-#   For demonstration purposes only. Suggest
-#   using a method that avoids masking.
-#
-#  In univariate case, default strategy is to use 3 standard deviation rule
-#
 x=elimna(x)
 x=as.matrix(x)
 m=apply(x,2,mean)
@@ -477,22 +666,37 @@ list(out.val=outval,out.id=id,keep=keep,dis=dis,crit=crit)
 }
 
 
-# outmve
+#' MVE/MCD-Based Outlier Detection
+#'
+#' Detects outliers using robust Mahalanobis distance based on either the
+#' Minimum Volume Ellipsoid (MVE) or Minimum Covariance Determinant (MCD)
+#' estimator of location and scatter.
+#'
+#' @inheritParams common-params
+#' @param mve.flag Logical. If TRUE, uses MVE estimator; if FALSE, uses MCD
+#'   estimator (default: TRUE).
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param outsym Symbol to use for plotting outliers (default: '*').
+#'
+#' @return A list with components:
+#'   \item{out.id}{Indices of detected outliers.}
+#'   \item{keep.id}{Indices of non-outliers.}
+#'   \item{dis}{Robust Mahalanobis distances for all points.}
+#'   \item{crit}{Critical value used (sqrt of 0.975 quantile of chi-squared).}
+#'
+#' @details
+#' Uses `cov.mve()` or `cov.mcd()` from the MASS package to compute robust
+#' center and covariance estimates, then flags points with robust Mahalanobis
+#' distance exceeding the critical value. For bivariate data with `plotit=TRUE`,
+#' creates a scatterplot with outliers marked.
+#'
+#' The seed is controlled to ensure reproducibility, then restored.
+#'
+#' @seealso \code{\link[MASS]{cov.mve}}, \code{\link[MASS]{cov.mcd}},
+#'   \code{\link{outDETMCD}}, \code{\link{outpro}}
+#' @export
 outmve<-function(x,mve.flag=TRUE,plotit=TRUE,SEED=TRUE,outsym='*'){
-#
-#  Search for outliers using the minimum volume ellipsoid method.
-#
-#  x is an n by p matrix
-#
-#  The function returns the number of the rows in x that are identified
-#  as outliers. (The row numbers are stored in outliers.)
-#  It also returns the distance of the points identified as outliers
-#  in the variable dis.
-#
-#  If mve.flag=T, use the mve estimator, otherwise use the mcd
-#
-#  If plotit=TRUE, plot points and circle outliers.
-#
 if(SEED){
 oldSeed <- .Random.seed
 set.seed(12)
@@ -530,18 +734,45 @@ list(out.id=id,keep.id=keep,dis=dis,crit=crit)
 }
 
 
-# outmgv
+#' MGV-Based Outlier Detection
+#'
+#' Detects outliers using the MGV (Minimum Generalized Variance) method,
+#' which is based on detecting points that inflate the generalized variance.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param se Logical. If TRUE, standardizes variables using median and MAD
+#'   before computing MGV (default: TRUE).
+#' @inheritParams common-params
+#' @param ndir Number of random projections for computing depth when plotting
+#'   (default: 1000).
+#' @param cov.fun Covariance function to use for computing center (default: rmba).
+#' @param xlab Label for x-axis.
+#' @param ylab Label for y-axis.
+#' @inheritParams common-params
+#' @param STAND Included for compatibility when called by other functions (not used).
+#' @param ... Additional arguments passed to `outfun`.
+#'
+#' @return A list with components:
+#'   \item{n}{Sample size.}
+#'   \item{n.out}{Number of outliers detected.}
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'
+#' @details
+#' Computes MGV values using `mgvar()`, then applies `outfun` to detect outliers.
+#' For bivariate data with `plotit=TRUE`, creates a scatterplot with the median
+#' depth contour. For p>2, uses modified boxplot rule with adjusted critical value.
+#'
+#' **Note**: Results can be affected by rounding error in `eigen()` if columns
+#' are reordered.
+#'
+#' @seealso \code{\link{mgvar}}, \code{\link{outbox}}, \code{\link{outmgvad}}
+#' @export
 outmgv<-function(x,y=NULL,plotit=TRUE,outfun=outbox,se=TRUE,op=1,ndir=1000,
 cov.fun=rmba,xlab="X",ylab="Y",SEED=TRUE,STAND=FALSE,...){
-#
-# Check for outliers using mgv method
-#
-# NOTE: if columns of the input matrix are reordered, this can
-# have an effect on the results due to rounding error when calling
-# the R function eigen.
-#
-#  (Argument STAND is included simply to avoid programming issues when outmgv is called by other functions.)
-#
 if(is.null(y[1]))m<-x
 if(!is.null(y[1]))m<-cbind(x,y)
 m=elimna(m)
@@ -589,19 +820,40 @@ list(n=nv,n.out=nout,out.id=temp2$out.id,keep=temp2$keep)
 }
 
 
-# outmgvad
+#' MGV Outlier Detection with Adjusted Critical Value
+#'
+#' Adjusts the critical value used by `outmgv()` to achieve a target false
+#' positive rate under multivariate normality. Particularly important for
+#' high-dimensional data (p>9).
+#'
+#' @param m A numeric matrix where rows are observations and columns are variables.
+#' @param center Currently not used in the function.
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param xlab Label for x-axis.
+#' @param ylab Label for y-axis.
+#' @param rate Target false positive rate under normality (default: 0.05).
+#' @param iter Number of simulation iterations for adjusting critical value
+#'   (default: 100).
+#' @param ip Number of quantile values to try (default: 6).
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{n}{Sample size.}
+#'   \item{n.out}{Number of outliers detected.}
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'   \item{used.gval}{Adjusted critical value used.}
+#'
+#' @details
+#' Simulates multivariate normal data and iteratively adjusts the critical value
+#' until the empirical outlier rate matches the target `rate`. This provides
+#' better Type I error control under normality.
+#'
+#' @seealso \code{\link{outmgv}}, \code{\link{outmgv.v2}}
+#' @export
 outmgvad<-function(m,center=NA,plotit=TRUE,op=1,
 xlab="VAR 1",ylab="VAR 2",rate=.05,iter=100,ip=6,pr=TRUE){
-#
-# Adjusts the critical value, gval used by outmgv,
-# so that the outside rate per observation, under normality
-# is approximately equal to the value given by the argument
-# rate, which defaults to .05.
-# That is, expected proportion of points declared outliers under normality
-# is intended to be rate=.05
-#
-# When dealing with p-variate data, p>9, this adjustment can be crucial
-#
 m=elimna(m)
 n=nrow(m)
 newgval=sqrt(qchisq(.975,ncol(m)))
@@ -632,12 +884,37 @@ list(n=res$n,n.out=res$n.out,out.id=res$out.id,keep=res$keep,used.gval=newgval)
 
 
 
-# outmgvf
+#' Fast MGV Outlier Detection (Inward Method)
+#'
+#' Faster version of `outmgv()` using the inward MGV method. Computes generalized
+#' variance after removing each point, then applies outlier detection to these
+#' deletion diagnostics.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param se Logical. If TRUE, standardizes variables before analysis.
+#' @param ndir Number of random projections for depth computation in plots
+#'   (default: 1000).
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to `outfun`.
+#'
+#' @return A list with components:
+#'   \item{n}{Sample size.}
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'   \item{out.val}{Values of outliers.}
+#'   \item{depth.values}{Deletion diagnostic values for all points.}
+#'
+#' @details
+#' Computes generalized variance with each point deleted (via `gvar()`), then
+#' identifies outliers as points whose removal substantially changes the
+#' generalized variance. Faster than `outmgv()` but based on different diagnostic.
+#'
+#' @seealso \code{\link{outmgv}}, \code{\link{gvar}}
+#' @export
 outmgvf<-function(x,y=NA,plotit=TRUE,outfun=outbox,se=TRUE,ndir=1000,SEED=TRUE,...){
-#
-# Check for outliers using inward mgv method
-# This method is faster than outmgv.
-#
 if(is.na(y[1]))m<-x
 if(!is.na(y[1]))m<-cbind(x,y)
 m<-elimna(m) # eliminate any rows with missing values
@@ -674,13 +951,31 @@ list(n=temp2$n,out.id=temp2$out.id,keep=temp2$keep,out.val=m[temp2$out.id,],dept
 }
 
 
-# outmgv.v2
+#' MGV Outlier Detection (Version 2)
+#'
+#' Alternative version of MGV outlier detection with explicit control over the
+#' critical value. Used internally by `outmgvad()`.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param se Logical. If TRUE, standardizes variables.
+#' @inheritParams common-params
+#' @param gval Critical value (default: sqrt of 0.975 quantile of chi-squared
+#'   with p degrees of freedom).
+#' @param cov.fun Covariance function for computing center (default: rmba).
+#' @param xlab Label for x-axis.
+#' @param ylab Label for y-axis.
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to `outfun`.
+#'
+#' @return A list with components:
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'
+#' @keywords internal
 outmgv.v2<-function(x,outfun=outbox,se=TRUE,op=1,
 gval=sqrt(qchisq(.975,ncol(x))),
 cov.fun=rmba,xlab="X",ylab="Y",SEED=TRUE,...){
-#
-# Check for outliers using mgv method
-#
 m<-x
 m=elimna(m)
 temp<-mgvar(m,se=se,op=op,cov.fun=cov.fun,SEED=SEED)
@@ -696,7 +991,30 @@ list(out.id=temp2,keep=keep)
 }
 
 
-# outms
+#' Mean/SD-Based Outlier Detection
+#'
+#' Detects univariate outliers using the classical mean and standard deviation
+#' approach (z-scores). **For demonstration purposes only** - not robust to outliers.
+#'
+#' @inheritParams common-params
+#' @param crit Critical value for z-scores (default: 2, meaning points more than
+#'   2 standard deviations from the mean are flagged).
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{n}{Sample size.}
+#'   \item{n.out}{Number of outliers.}
+#'   \item{out.value}{Values of outliers.}
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'
+#' @details
+#' Only works with univariate data. Uses classical z-scores which are not robust
+#' (outliers affect the mean and SD). For robust univariate outlier detection,
+#' use `outbox()` or `outpro()`.
+#'
+#' @seealso \code{\link{outbox}}, \code{\link{outpro}}
+#' @export
 outms<-function(x,crit=2,plotit=FALSE){
 x=elimna(x)
 x=as.matrix(x)
@@ -712,21 +1030,36 @@ if(ncol(x)>1)stop('Use function	out with outfun=wmean.cov')
 list(n=length(x),n.out=n.out,out.value=x[flag],out.id=nums[flag],keep=keep)
 }
 
-# outogk
+#' OGK-Based Outlier Detection
+#'
+#' Detects outliers using the Orthogonalized Gnanadesikan-Kettenring (OGK)
+#' robust covariance estimator.
+#'
+#' @inheritParams common-params
+#' @param sigmamu Univariate scale estimator (default: taulc).
+#' @param v Bivariate covariance estimator (default: gkcov).
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param beta Consistency factor for OGK (default: max(0.95, min(0.99, 1/n+0.94))).
+#' @param n.iter Number of iterations for OGK (default: 1).
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to OGK functions.
+#'
+#' @return A list with components:
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'   \item{distances}{Robust Mahalanobis distances.}
+#'
+#' @details
+#' If `op=TRUE` (recommended), uses robust Mahalanobis distance with the OGK
+#' estimator and beta adjusted for approximately 5% outlier rate under normality.
+#' If `op=FALSE`, uses the distances from the OGK estimator directly. For
+#' bivariate data with `plotit=TRUE`, creates a scatterplot marking outliers.
+#'
+#' @seealso \code{\link{ogk.pairwise}}, \code{\link{out}}, \code{\link{outDETMCD}}
+#' @export
 outogk<-function(x,sigmamu=taulc,v=gkcov,op=TRUE,SEED=FALSE,
 beta=max(c(.95,min(c(.99,1/nrow(x)+.94)))),n.iter=1,plotit=TRUE,...){
-#
-# Use the ogk estimator to
-# determine which points are outliers
-#
-#  op=T uses robust Mahalanobis distance based on
-#  the OGK estimator with  beta adjusted so that
-#  the outside rate per observation is approximately .05
-#  under normality.
-#  op=F returns the outliers based on the distances used
-#  by the OGK estimator
-#  (Currently, op=T seems best for detecting outliers.)
-#
 if(!is.matrix(x))stop("x should be a matrix")
 x<-elimna(x)
 if(!op){
@@ -751,11 +1084,27 @@ list(out.id=outid,keep=keep,distances=temp$dis)
 }
 
 
-# outcov
+#' Compute Covariance After Removing Outliers
+#'
+#' Computes covariance (or covariance matrix) after removing outliers detected
+#' by a specified outlier detection function.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#'
+#' @return A list with component:
+#'   \item{cov}{Covariance (bivariate case) or covariance matrix (multivariate).}
+#'
+#' @details
+#' First applies `outfun` to detect and remove outliers, then computes the
+#' covariance matrix of the remaining data using `var()`. For bivariate data,
+#' returns the single covariance value.
+#'
+#' @seealso \code{\link{outogk}}, \code{\link{outpro}}
+#' @export
 outcov<-function(x,y=NA,outfun=outogk,plotit=FALSE){
-#
-# Remove outliers and compute covariances
-#
 if(!is.na(y[1]))x<-cbind(x,y)
 keep<-outfun(x,plotit=plotit)$keep
 val<-var(x[keep,])
@@ -764,12 +1113,30 @@ list(cov=val)
 }
 
 
-# outtbs
+#' TBS-Based Outlier Detection
+#'
+#' Detects outliers using the TBS (Tukey Bisquare Scale) robust covariance
+#' estimator.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param xlab Label for x-axis.
+#' @param ylab Label for y-axis.
+#' @param ... Additional arguments passed to `out()`.
+#'
+#' @return A list with components:
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'   \item{distances}{Robust Mahalanobis distances.}
+#'
+#' @details
+#' Calls `out()` with `cov.fun=tbs` to compute robust Mahalanobis distances
+#' based on the TBS covariance estimator, then identifies outliers.
+#'
+#' @seealso \code{\link{tbs}}, \code{\link{out}}, \code{\link{outDETMCD}}
+#' @export
 outtbs<-function(x,SEED=FALSE,plotit=TRUE,xlab="X",ylab="Y",...){
-#
-# Use the tbs estimator to
-# determine which points are outliers
-#
 if(!is.matrix(x))stop("x should be a matrix")
 x<-elimna(x)
 temp<-out(x,cov.fun=tbs,plotit=plotit,SEED=SEED,xlab=xlab,ylab=ylab)
@@ -779,43 +1146,48 @@ list(out.id=outid,keep=keep,distances=temp$dis)
 }
 
 
-# outDETMCD
+#' Robust Covariance-Based Outlier Detection
+#'
+#' Detects outliers using robust Mahalanobis distance based on a specified
+#' robust covariance estimator. Supports multiple robust methods including
+#' DETMCD, MVE, MCD, MBA, and TBS estimators.
+#'
+#' @inheritParams common-params
+#' @param cov.fun Covariance function to use. Options:
+#'   \itemize{
+#'     \item `DETMCD`: Deterministic MCD (default)
+#'     \item `cov.mve`: MVE estimate
+#'     \item `cov.mcd`: MCD estimate
+#'     \item `covmba2`: MBA (median ball algorithm)
+#'     \item `rmba`: Olive's adjustment of MBA
+#'     \item `cov.roc`: Rocke's TBS estimator
+#'   }
+#' @param xlab Label for x-axis in plots.
+#' @param ylab Label for y-axis in plots.
+#' @param qval Quantile for chi-squared critical value (default: 0.975).
+#' @param crit Custom critical value. If NULL, uses sqrt(qchisq(qval, p)).
+#' @param KS Logical. If TRUE, preserves the random seed (default: TRUE).
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to `cov.fun`.
+#'
+#' @return A list with components:
+#'   \item{n}{Sample size.}
+#'   \item{n.out}{Number of outliers detected.}
+#'   \item{out.val}{Values of detected outliers.}
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'   \item{dis}{Robust Mahalanobis distances for all points.}
+#'   \item{crit}{Critical value used.}
+#'
+#' @details
+#' Computes robust center and covariance using `cov.fun`, then flags points
+#' with robust Mahalanobis distance exceeding the critical value. For bivariate
+#' data with `plotit=TRUE`, creates a scatterplot with outliers marked with "*".
+#'
+#' @seealso \code{\link{outmve}}, \code{\link{outogk}}, \code{\link{outtbs}}
+#' @export
 outDETMCD<-function(x,cov.fun=DETMCD,xlab='X',ylab='Y',qval=.975,
 crit=NULL,KS=TRUE,plotit=FALSE,...){
-#
-#  Search for outliers using robust measures of location and scatter,
-#  which are used to compute robust analogs of Mahalanobis distance.
-#
-#  x is an n by p matrix or a vector of data.
-#
-#  The function returns the values flagged as an outlier plus
-#  the (row) number where the data point is stored.
-#  If x is a vector, out.id=4 indicates that the fourth observation
-#  is an outlier and outval=123 indicates that 123 is the value.
-#  If x is a matrix, out.id=4 indicates that the fourth row of
-#  the matrix is an outlier and outval reports the corresponding
-#  values.
-#
-#  The function also returns the distance of the
-#  points identified as outliers
-#  in the variable dis.
-#
-#  For bivariate data, if plotit=TRUE, plot points and circle outliers.
-#
-#  cov.fun determines how the measure of scatter is estimated.
-# The default is covDETMCD
-#  Possible choices are
-#  cov.mve (the MVE estimate)
-#  cov.mcd (the MCD estimate)
-#  covmba2 (the MBA or median ball algorithm)
-#  rmba  (an adjustment of MBA suggested by D. Olive)
-#  cov.roc (Rockes TBS estimator)
-#
-#  plotit=FALSE used to avoid problems when other functions in WRS call
-#  this function
-#
-#  KS=TRUE: keep  the seed that was used
-#
 if(is.data.frame(x))x=as.matrix(x)
 if(is.list(x))stop('Data cannot be stored in list mode')
 nrem=nrow(as.matrix(x))
@@ -851,18 +1223,34 @@ list(n=n,n.out=n.out,out.val=outval,out.id=id,keep=keep,dis=dis,crit=crit)
 }
 
 
-# outICS
+#' ICS-Based Outlier Detection
+#'
+#' Detects outliers using the Invariant Coordinate Selection (ICS) method.
+#' Requires the ICSOutlier package.
+#'
+#' @inheritParams common-params
+#' @param n.id Number of outliers expected (must be between 0 and n/2). If
+#'   NULL, prints ICS results without identifying specific outliers. Run twice:
+#'   first with n.id=NULL to see results, then with n.id set to the number
+#'   detected.
+#'
+#' @return A list with components:
+#'   \item{n}{Sample size.}
+#'   \item{out.id}{Indices of outliers (only if n.id is specified).}
+#'   \item{keep}{Indices of non-outliers (only if n.id is specified).}
+#'
+#' @details
+#' The ICS method finds invariant coordinates via generalized eigenvalue
+#' decomposition and detects outliers based on extreme distances in these
+#' coordinates. See Archimbaud et al. (CSDA) for details.
+#'
+#' @references
+#' Archimbaud, A., Nordhausen, K., & Ruiz-Gazen, A. (2018). ICS for
+#' multivariate outlier detection. Computational Statistics & Data Analysis, 128, 200-215.
+#'
+#' @seealso \code{\link[ICSOutlier]{ics.outlier}}, \code{\link{outpro}}
+#' @export
 outICS<-function(x,n.id=NULL){
-#
-#  Detect outliers using the ICS method in Archimbaud et al
-#  CSDA
-#
-# Assumes the R package ICSOutlier has been installed.
-#
-#  To id outliers, must run this function twice.
-#  First time, determine how many outliers were dectected
-#  Second time, set n.id = number of outliers
-#
 library(ICSOutlier)
 x=elimna(x)
 n=nrow(x)
@@ -881,12 +1269,33 @@ list(n=n,out.id=id,keep=j[-id])
 }
 
 
-# outmc
+#' Modified Carling Outlier Detection (Skewness-Adjusted)
+#'
+#' Detects univariate outliers using a modification of Carling's (2000) boxplot
+#' rule that adjusts for skewness. Uses asymmetric fences based on distances
+#' from median to quartiles.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{out.val}{Values of detected outliers.}
+#'   \item{out.id}{Indices of outliers.}
+#'   \item{keep}{Indices of non-outliers.}
+#'   \item{n}{Sample size.}
+#'   \item{n.out}{Number of outliers.}
+#'   \item{cl}{Lower critical value.}
+#'   \item{cu}{Upper critical value.}
+#'
+#' @details
+#' Uses Carling's sample-size-adjusted multiplier but with asymmetric fences
+#' to account for skewness: `cl = M - gval*2*(M-QL)` and `cu = M + gval*2*(QU-M)`,
+#' where M is the median, QL and QU are the ideal fourths, and gval is Carling's
+#' formula.
+#'
+#' @seealso \code{\link{outbox}}, \code{\link{idealf}}
+#' @export
 outmc<-function(x,plotit=FALSE){
-#
-#  Detect outliers using a modification of Carling's method
-#  that takes into account skewness
-#
 x=elimna(x)
 temp<-idealf(x)
 gval<-(17.63*n-23.64)/(7.74*n-3.71)
@@ -909,15 +1318,27 @@ list(out.val=outval,out.id=outid,keep=keep,n=n,n.out=n.out,cl=cl,cu=cu)
 }
 
 
-# out.dummy
+#' Outlier Detection with Dummy Variable Column Removal
+#'
+#' For regression with dummy coding, removes specified columns (typically dummy
+#' variables) before applying outlier detection.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param id Column index to remove before outlier detection (e.g., dummy variables).
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to `outfun`.
+#'
+#' @return Output from `outfun` (typically a list with `out.id` and `keep` components).
+#'
+#' @details
+#' Useful when checking for outliers in regression with categorical predictors
+#' coded as dummy variables. The dummy variable columns should be excluded from
+#' multivariate outlier detection.
+#'
+#' @seealso \code{\link{outpro}}, \code{\link{out.by.groups}}
+#' @export
 out.dummy<-function(x,outfun=outpro,id,plotit=FALSE,...){
-#
-#  When using dummy coding in regression
-#
-#  remove col indicated by
-#  id
-# then check for outliers using
-# outfun
 x=as.matrix(x)
 if(ncol(x)==1)stop(' Should have two or more columns')
 X=x[,-id]
@@ -926,14 +1347,31 @@ a
 }
 
 
-# out.by.groups
+#' Group-wise Outlier Detection
+#'
+#' Divides data into groups and identifies outliers within each group separately,
+#' then returns indices of outliers and non-outliers across all groups.
+#'
+#' @inheritParams common-params
+#' @param grp.col Column index indicating group membership.
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to `outfun`.
+#'
+#' @return A list with components:
+#'   \item{out.id}{Row indices of outliers across all groups.}
+#'   \item{keep}{Row indices of non-outliers across all groups.}
+#'
+#' @details
+#' Useful for identifying outliers when data contain multiple groups. Applies
+#' outlier detection within each group separately, which can be more appropriate
+#' than detecting outliers in the pooled data when groups have different
+#' distributions.
+#'
+#' @seealso \code{\link{outpro}}, \code{\link{fac2Mlist}}
+#' @export
 out.by.groups<-function(x,grp.col,outfun=outpro,pr=TRUE,plotit=FALSE,...){
-#
-# divide data into groups, id outliers in each group
-# return:
-# keep = id rows in x not outliers
-#  out.id =rows containing outliers
-#
 x=elimna(x)
 p=ncol(x)
 p1=p+1
@@ -957,7 +1395,36 @@ list(out.id=ou,keep=keep)
 
 
 
-# out.methods
+#' Wrapper for Multiple Outlier Detection Methods
+#'
+#' Provides a unified interface for calling different outlier detection methods
+#' by specifying a method name.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param regfun Regression function for BLP method (default: tsreg).
+#' @inheritParams common-params
+#' @param id Column index for DUM method (dummy variable to exclude).
+#' @param method Character string specifying the method:
+#'   \itemize{
+#'     \item `"PRO"`: Projection method (`outpro`)
+#'     \item `"PRO.R"`: Fast projection method (`outpro.depth`)
+#'     \item `"BLP"`: Bad leverage point detection (`outblp`)
+#'     \item `"DUM"`: Projection with dummy variable removal (`out.dummy`)
+#'     \item `"MCD"`: MCD-based detection (`outDETMCD`)
+#'     \item `"BOX"`: Boxplot method (`outbox`)
+#'   }
+#'
+#' @return Output from the selected method (typically a list with `out.id` and
+#'   `keep` components).
+#'
+#' @details
+#' This is a convenience function that dispatches to different outlier detection
+#' methods based on the `method` argument. Default method is `"PRO"`.
+#'
+#' @seealso \code{\link{outpro}}, \code{\link{outpro.depth}}, \code{\link{outblp}},
+#'   \code{\link{out.dummy}}, \code{\link{outDETMCD}}, \code{\link{outbox}}
+#' @export
 out.methods<-function(x,y, regfun = tsreg,plotit=FALSE,id,method=c('PRO','PRO.R','BLP','DUM','MCD','BOX')){
 type=match.arg(method)
 switch(type,
@@ -970,19 +1437,35 @@ switch(type,
 }
 
 
-# outblp.HH
+#' Bad Leverage Point Detection (Hybrid Method)
+#'
+#' Detects bad leverage points in regression using a blend of homoscedastic
+#' and heteroscedastic methods to control Type I error rates.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param regfun Regression function to use (default: tsreg).
+#' @param omit.col Column indices to omit when checking for bad leverage points
+#'   (e.g., dummy variables). If NULL, uses all columns.
+#' @inheritParams common-params
+#' @param xlab Label for x-axis.
+#' @param ylab Label for y-axis.
+#'
+#' @return A list with components:
+#'   \item{n}{Sample size.}
+#'   \item{n.out}{Number of bad leverage points detected.}
+#'   \item{bad.lev}{Indices of bad leverage points.}
+#'   \item{keep}{Indices of non-outliers.}
+#'
+#' @details
+#' Combines results from `reglev.gen()` (generalized leverage) and `regcon.out()`
+#' (regression outlier detection) to identify bad leverage points that affect
+#' regression fits. This hybrid approach helps avoid Type I errors in hypothesis
+#' testing.
+#'
+#' @seealso \code{\link{reglev.gen}}, \code{\link{regcon.out}}
+#' @export
 outblp.HH<-function(x,y,regfun=tsreg,omit.col=NULL,plotit=TRUE,xlab='X',ylab='Y'){
-#
-# indicates which points, if any, are bad leverage points
-# using a blend of a homoscedastic and heteroscedastic methods.
-#
-# This approach helps to avoid issues with Type I errors when testing hpotheses
-#
-# If for example
-# omit.col=c(1,3)
-# columns 1 and 3 of x are ignored when checking for bad leverage points.
-#   These columns might be, for example, dummy variables.
-#
 xy=elimna(cbind(x,y))
 n=nrow(xy)
 x=as.matrix(x)
@@ -1014,10 +1497,28 @@ list(n=n,n.out=n.out,bad.lev=out.id,keep=keep)
 
 
 
-# depth2
+#' Compute Exact Halfspace Depth for Bivariate Data
+#'
+#' Computes exact halfspace (Tukey) depth for bivariate data. For each point,
+#' calculates the minimum proportion of data in any closed halfspace containing
+#' that point.
+#'
+#' @inheritParams common-params
+#' @param pts Points for which to compute depth. If NA, uses `x` (default: NA).
+#' @inheritParams common-params
+#' @param xlab Label for x-axis.
+#' @param ylab Label for y-axis.
+#'
+#' @return Vector of depth values for each point in `pts`.
+#'
+#' @details
+#' Only works with bivariate data (2 columns). Uses the exact algorithm for
+#' halfspace depth. With `plotit=TRUE`, creates a scatterplot showing the
+#' deepest point (center) marked with "+" and the median depth contour.
+#'
+#' @seealso \code{\link{fdepthv2}}, \code{\link{prodepth}}
+#' @export
 depth2<-function(x,pts=NA,plotit=TRUE,xlab="VAR 1",ylab="VAR 2"){
-#
-#   Compute exact depths for bivariate data
 if(ncol(x)!=2)stop("x must be a matrix with 2 columns")
 x<-elimna(x)
 if(is.na(pts[1]))pts<-x
@@ -1050,7 +1551,17 @@ ndepth
 }
 
 
-# depthcom
+#' Compare Two Regression Models Using Depth
+#'
+#' Compares two regression models by examining the depth of residuals.
+#'
+#' @param x1,y1 Predictor and response for first model.
+#' @param x2,y2 Predictor and response for second model.
+#' @inheritParams common-params
+#' @param fr Span parameter for running interval smoother (default: 1).
+#'
+#' @return Depth-based comparison statistic.
+#' @keywords internal
 depthcom<-function(x1,y1,x2,y2,est=tmean,fr=1){
 temp1=depthcomsub(x1,y1,x2,y2,est=est,fr=fr)
 temp2=depthcomsub(x2,y2,x1,y1,est=est,fr=fr)
@@ -1058,7 +1569,8 @@ dep=max(c(abs(temp1$dep1-temp1$dep2),abs(temp2$dep1-temp2$dep2)))
 dep
 }
 
-# depthcomsub
+#' Helper Function for depthcom
+#' @keywords internal
 depthcomsub<-function(x1,y1,x2,y2,est=tmean,fr=1){
 x1=(x1-median(x1))/mad(x1)
 x2=(x2-median(x2))/mad(x2)
@@ -1073,19 +1585,35 @@ list(dep1=dep1,dep2=dep2)
 }
 
 
-# depthg2
+#' Compare Two Independent Groups Using Depth
+#'
+#' Compares two independent multivariate groups using data depth methods.
+#' Sensitive to differences in both location and scale.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param MD Logical. If TRUE, uses Mahalanobis depth; if FALSE, uses Tukey
+#'   depth (default: FALSE). Automatically set to TRUE if p>2.
+#' @inheritParams common-params
+#' @param op Logical. If TRUE, prints progress messages.
+#' @param fast Logical. If TRUE, uses faster algorithm (`lsqs2.for()`).
+#' @inheritParams common-params
+#' @param xlab,ylab Axis labels for bivariate plots.
+#'
+#' @return A list with component:
+#'   \item{difci}{Bootstrap confidence interval for depth difference.}
+#'
+#' @details
+#' Uses bootstrap to construct a confidence interval for the difference in
+#' depth-based locations. For bivariate data with `plotit=TRUE`, creates a
+#' scatterplot with median depth contours for each group.
+#'
+#' @seealso \code{\link{lsqs2}}, \code{\link{depth2}}
+#' @export
 depthg2<-function(x,y,alpha=.05,nboot=500,MD=FALSE,plotit=TRUE,op=FALSE,fast=FALSE,SEED=TRUE,
 xlab="VAR 1",ylab="VAR 2"){
-#
-#   Compare two independent groups based on p measures
-#   for each group.
-#
-#   The method is based on Tukey's depth if MD=F;
-#   otherwise the Mahalanobis depth is used.
-#   If p>2, then Mahalanobis depth is used automatically
-#
-#   The method is designed to be sensitive to differences in scale
-#
 if(SEED)set.seed(2) # set seed of random number generator so that
 #             results can be duplicated.
 x=elimna(x)
@@ -1274,7 +1802,8 @@ list(ci.mat=ci.mat,con=con)
 }
 
 
-# depths1
+#' Helper Function for Computing Depth Combinations
+#' @keywords internal
 depths1<-function(m,j){
 if(m < j)depths1<-0
 else{
@@ -1286,30 +1815,29 @@ depths1
 }
 
 
-# fdepthv2
+#' Compute Halfspace Depth (Version 2)
+#'
+#' Computes an approximation of halfspace depth by projecting onto lines
+#' connecting pairs of data points. More accurate than `fdepth()` and handles
+#' singular covariance matrices, but slower.
+#'
+#' @param m Data matrix (n x p).
+#' @param pts Points for which to compute depth (default: NA, uses `m`).
+#' @inheritParams common-params
+#'
+#' @return Vector of depth values for each point in `pts` (or `m` if pts=NA).
+#'
+#' @details
+#' Projects data onto lines connecting each pair of distinct points and computes
+#' univariate depth of projections. The final depth is the minimum across all
+#' projections. Requires O(n^2) space but handles data with singular covariance.
+#'
+#' For bivariate data with `plotit=TRUE`, creates a scatterplot with the median
+#' depth contour. The deepest point (center) is marked with "+".
+#'
+#' @seealso \code{\link{fdepth}}, \code{\link{depth2}}, \code{\link{prodepth}}
+#' @export
 fdepthv2<-function(m,pts=NA,plotit=TRUE){
-#
-# Determine depth of points in pts relative to
-# points in m
-#
-# Draw a line between each pair of distinct points
-# and determine depth of the projected points.
-# The final depth of a point is its minimum depth
-# among all projections.
-#
-# This function is slower than fdepth and requires
-# space for a nc by nc matrix, nc=(n^2-n)/2.
-# But it allows
-# data to have a singular covariance matrix
-# and it provides a more accurate approximation of
-# halfspace depth.
-#
-# plotit=TRUE creates a scatterplot when working with
-# bivariate data and pts=NA
-#
-#  When plotting,
-#  center is marked with a cross, +.
-#
 m<-elimna(m) # Remove missing values
 if(!is.na(pts[1]))remm<-m
 if(!is.matrix(m))dep<-unidepth(m)
@@ -1388,12 +1916,23 @@ dep
 }
 
 
-# indepth
+#' Compute Inward Depth Based on Generalized Variance
+#'
+#' Computes inward depth for each point based on how much the generalized
+#' variance decreases when the point is removed.
+#'
+#' @param m Data matrix (n x p).
+#'
+#' @return Vector of inward depth values.
+#'
+#' @details
+#' For each point, removes it from the dataset and computes the generalized
+#' variance of the remaining points. Higher values indicate points whose removal
+#' increases variance (i.e., central points).
+#'
+#' @seealso \code{\link{gvar}}, \code{\link{prodepth}}
+#' @export
 indepth<-function(m){
-#
-# Compute the inward depth of all points in m
-# based on the generalized variance.
-#
 m<-as.matrix(m)
 dep<-NA
 n<-nrow(m)
@@ -1407,36 +1946,54 @@ dep
 }
 
 
-# pdepth
+#' Compute Projection Depth
+#'
+#' Computes projection depth as 1/(1+d) where d is the projection distance
+#' from `pdis()`.
+#'
+#' @param m Data matrix (n x p).
+#' @param pts Points for which to compute depth (default: `m`).
+#' @param MM Logical. If TRUE, uses MAD; if FALSE, uses IQR.
+#' @param cop Integer specifying center computation method (see `outproMC`).
+#' @param dop Depth option parameter.
+#' @param center Optional center point.
+#' @inheritParams common-params
+#'
+#' @return Vector of projection depth values.
+#'
+#' @seealso \code{\link{pdis}}, \code{\link{prodepth}}, \code{\link{zoudepth}}
+#' @export
 pdepth<-function(m,pts=m,MM=FALSE,cop=3,dop=1,center=NA, SEED=TRUE){
-#
-# projection depth
-#
-#  SEED, included for convenience when this function is used with certain classification techniques.
-#
 v=pdis(m,pts=pts,MM=MM,cop=cop,dop=dop,center=center)
 v=1/(1+v)
 v
 }
 
-# prodepth
+#' Compute Projection Depth (Fast Approximation)
+#'
+#' Computes an approximation of projection depth using random projections via
+#' the DepthProc package. Much faster than `zoudepth()` but gives approximate
+#' results.
+#'
+#' @inheritParams common-params
+#' @param pts Points for which to compute depth (default: `x`).
+#' @param ndir Number of random projections to use (default: 1000). Higher
+#'   values give more accurate approximations but take longer.
+#' @inheritParams common-params
+#'
+#' @return Vector of projection depth values.
+#'
+#' @details
+#' Uses `depthProjection()` from the DepthProc package. Running the function
+#' twice on the same data may give slightly different results unless `SEED=TRUE`
+#' (default). This is the recommended depth function for most applications due
+#' to its speed.
+#'
+#' Requires the DepthProc package.
+#'
+#' @seealso \code{\link{zoudepth}}, \code{\link{pdepth}}, \code{\link[DepthProc]{depthProjection}}
+#' @export
 prodepth<-function(x,pts=x,ndir=1000,SEED=TRUE){
-#
-#  Determine an approximation of the projection depth of
-#  pts in
-#  x
-#  using the R package library(DepthProc)
-#
-#  ndir indicates how many randomly chosen projections will be used
-#
-#  Advantage over zoudepth, much faster execution time.
-#  Should be noted, however, that using the function twice on the same
-#  data generally results in different values for the depths.
-#  Setting
-#  SEED=TRUE
-#  avoids this.
-#
-#
 if(SEED){
 oldSeed <- .Random.seed
 set.seed(45)
@@ -1449,25 +2006,32 @@ if(SEED) {
 res
 }
 
-# rdepth.orig
+#' Compute Regression Depth of a Line
+#'
+#' Computes the regression depth of a line (specified by intercept and slope)
+#' relative to a bivariate dataset. Based on Rousseeuw and Hubert (1996).
+#'
+#' @param d Vector with two components: d[1] = intercept, d[2] = slope.
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param sortx Logical. If FALSE, assumes (x,y) is already sorted by x-coordinates.
+#'   Set to TRUE (default) to sort internally.
+#'
+#' @return Regression depth value (scalar).
+#'
+#' @details
+#' Regression depth measures how deep a regression line is within the bivariate
+#' data cloud. It counts the minimum number of points that must be removed to
+#' make the line non-fit. Higher values indicate more central lines.
+#'
+#' @references
+#' Rousseeuw, P.J. and Hubert, M. (1996). Regression Depth. Journal of the
+#' American Statistical Association, 91, 97-104.
+#'
+#' @seealso \code{\link{resdepth}}, \code{\link{mregdepth}}
+#' @export
 rdepth.orig<-function(d, x, y, sortx = TRUE)
 {
-##########################################################################
-# This function computes the regression depth of a line with coordinates d
-# relative to the bivariate data set (x,y).
-# The first component of the vector d indicates the intercept of the line,
-# the second component is the slope.
-#
-# Input : d          : vector with two components
-#         x,y        : vectors of equal length (data set)
-#         sortx      : logical, to set to F if the data set (x,y) is
-#                      already sorted by its x-coordinates
-#
-# Reference:
-#           Rousseeuw, P.J. and Hubert, M. (1996),
-#           Regression Depth, Technical report, University of Antwerp
-#           submitted for publication.
-##########################################################################
         if(!is.vector(x) || !is.vector(y)) stop("x and y should be vectors")
         n <- length(x)
         if(n < 2)
@@ -1490,20 +2054,31 @@ rdepth.orig<-function(d, x, y, sortx = TRUE)
 }
 
 
-# resdepth
+#' Compute Regression Depth from Residuals
+#'
+#' Computes regression depth of a fit based on its residuals. Works with any
+#' regression or smoothing method (parametric, nonparametric, etc.).
+#'
+#' @inheritParams common-params
+#' @param res Vector of residuals from a regression fit.
+#'
+#' @return Regression depth value (scalar).
+#'
+#' @details
+#' Based on a modification of Rousseeuw and Hubert (1996). Given residuals from
+#' any regression method, computes the depth of the implied fit. Higher values
+#' indicate fits that are more central to the data cloud.
+#'
+#' Missing values in residuals are removed before computation.
+#'
+#' @references
+#' Rousseeuw, P.J. and Hubert, M. (1996). Regression Depth. Technical Report,
+#' University of Antwerp.
+#'
+#' @seealso \code{\link{rdepth.orig}}, \code{\link{mregdepth}}
+#' @export
 resdepth<-function(x,res)
 {
-##########################################################################
-# This function computes the regression depth of a regression line based
-# on its residuals. The fit could be, for example, a nonparametric
-# regression or smooth.
-#
-# The algorithm is based on a simple modification of
-#
-#           Rousseeuw, P.J. and Hubert, M. (1996),
-#           Regression Depth, Technical report, University of Antwerp
-#
-##########################################################################
         if(!is.vector(x)) stop("x should be a vector")
         n <- length(x)
         if(n < 2)
@@ -1524,20 +2099,10 @@ res=res[xord]
         min(depth)
 }
 
-# resdepth.sub
+#' Helper Function for Regression Depth from Residuals
+#' @keywords internal
 resdepth.sub<-function(x,res)
 {
-##########################################################################
-# This function computes the regression depth of a regression line based
-# on its residuals. The fit could be, for example, a nonparmatric
-# regression or smooth.
-#
-# The algorithm is based on a simple modification of
-#
-#           Rousseeuw, P.J. and Hubert, M. (1996),
-#           Regression Depth, Technical report, University of Antwerp
-#
-##########################################################################
         if(!is.vector(x)) stop("x should be vectors")
         n <- length(x)
         if(n < 2)
@@ -1559,11 +2124,30 @@ res=res[xord]
 }
 
 
-# zdepth
+#' Compute Zuo's Projection Depth
+#'
+#' Computes projection depth using the method of Zuo (2003). Uses Nelder-Mead
+#' optimization to find the projection with maximum outlyingness.
+#'
+#' @param m Data matrix (n x p).
+#' @param pts Points for which to compute depth (default: `m`).
+#' @param zloc Location estimator for projections (default: median).
+#' @param zscale Scale estimator for projections (default: mad).
+#'
+#' @return Vector of (inverse) depth values. Lower values indicate greater depth.
+#'
+#' @details
+#' For each point, finds the projection direction that maximizes the standardized
+#' distance from the location. The depth is the inverse of this maximum distance.
+#' More computationally intensive than `prodepth()` but provides exact values.
+#'
+#' @references
+#' Zuo, Y. (2003). Projection-based depth functions and associated medians.
+#' The Annals of Statistics, 31, 1460-1490.
+#'
+#' @seealso \code{\link{zoudepth}}, \code{\link{prodepth}}, \code{\link{pdepth}}
+#' @export
 zdepth<-function(m,pts=m,zloc=median,zscale=mad){
-#
-# Compute depth of points as in Zuo, Annals, 2003
-#
 if(!is.matrix(m))stop("argument m should be a matrix")
 if(!is.matrix(pts))stop("argument pts should be a matrix")
 if(ncol(m)!=ncol(pts))stop("Number of columns for m and pts are not equal")
@@ -1583,7 +2167,8 @@ val
 }
 
 
-# zdepth.sub
+#' Helper Function for zdepth - Compute Projection Outlyingness
+#' @keywords internal
 zdepth.sub<-function(x,theta,zloc=median,zscale=mad,pts=NA){
 theta<-theta/sqrt(sum(theta^2))
 temp<-t(t(x)*theta)
@@ -1596,23 +2181,44 @@ val
 zdist=zdepth
 
 
-# zoudepth
+#' Compute Projection Depth Using Zuo's Method
+#'
+#' Wrapper for `zdepth()` that returns depth values (rather than inverse depth).
+#' Uses Nelder-Mead optimization to find projection depth.
+#'
+#' @inheritParams zdepth
+#' @inheritParams common-params
+#'
+#' @return Vector of projection depth values (higher = more central).
+#'
+#' @details
+#' Computes 1/(1 + zdepth()), converting Zuo's outlyingness measure to a depth
+#' measure. More computationally intensive than `prodepth()` but exact.
+#'
+#' @seealso \code{\link{zdepth}}, \code{\link{prodepth}}
+#' @export
 zoudepth<-function(x,pts=x, zloc = median, zscale = mad, SEED=TRUE){
-#
-#  Determine projection depth using the R function zdepth
-#  The Nelder--Mead method for finding the maximum of a function is used
-#
-#  SEED, included for convenience when this function is used with certain classification techniques.
-#
 res=1/(1+zdepth(x,pts,zloc,zscale))
 res
 }
 
-# unidepth
+#' Compute Univariate Depth
+#'
+#' Computes halfspace depth for univariate data. The depth of a point is the
+#' minimum of the proportions of data on either side of it.
+#'
+#' @inheritParams common-params
+#' @param pts Points for which to compute depth (default: NA, uses `x`).
+#'
+#' @return Vector of depth values (between 0 and 0.5).
+#'
+#' @details
+#' For univariate data, halfspace depth reduces to min(F(x), 1-F(x)), where F is
+#' the empirical CDF. The deepest point (median) has depth 0.5.
+#'
+#' @seealso \code{\link{depth2}}, \code{\link{prodepth}}
+#' @export
 unidepth<-function(x,pts=NA){
-#
-# Determine depth of points in the vector x
-#
 if(!is.vector(x))stop("x should be a vector")
 if(is.na(pts[1]))pts<-x
 pup<-apply(outer(pts,x,FUN="<="),1,sum)/length(x)
@@ -1624,12 +2230,28 @@ dep
 }
 
 
-# discdepth
+#' Depth-Based Classification (Discriminant Analysis)
+#'
+#' Classifies test data into two groups based on data depth. Assigns each test
+#' point to the group where it has greater depth.
+#'
+#' @param train Training data matrix (optional if `x1` and `x2` provided).
+#' @param test Test data matrix to classify.
+#' @inheritParams common-params
+#' @param x1,x2 Training data for groups 1 and 2 (alternative to `train`/`g`).
+#' @param depthfun Depth function to use (default: prodepth).
+#' @param ... Additional arguments passed to `depthfun`.
+#'
+#' @return Vector of predicted class labels (1 or 2) for each test observation.
+#'
+#' @details
+#' For each test point, computes its depth relative to each training group.
+#' Assigns the point to the group where it has higher depth. Can specify data
+#' via `train`/`g` or directly via `x1`/`x2`.
+#'
+#' @seealso \code{\link{Depth.class.bag}}, \code{\link{prodepth}}
+#' @export
 discdepth<-function(train=NULL,test=NULL,g,x1=NULL,x2=NULL,depthfun=prodepth,...){
-#
-# x1 and x2  contain the data for the two groups
-# Goal, classify the values in test using depths associated with the training data
-#
 if(!is.null(train)){
 if(is.null(g))stop('Argument g, group ids, must be specified')
 if(is.matrix(g)){
@@ -1666,7 +2288,23 @@ id
 }
 
 
-# mregdepth
+#' Compute Multiple Regression Depth
+#'
+#' Approximates regression depth for multiple regression by taking the minimum
+#' depth across marginal regressions.
+#'
+#' @param X Predictor matrix (n x p).
+#' @param RES Vector of residuals from a regression fit.
+#'
+#' @return Approximate regression depth (scalar).
+#'
+#' @details
+#' For each predictor, computes the regression depth of residuals against that
+#' predictor. Returns the minimum across all predictors as an approximation of
+#' the full multiple regression depth.
+#'
+#' @seealso \code{\link{resdepth}}
+#' @export
 mregdepth<-function(X,RES){
 X=as.matrix(X)
 XRES=elimna(cbind(X,RES))
@@ -1680,12 +2318,21 @@ mdepthappr
 
 
 
-# smean.depth
+#' Skipped Mean Based on Projection Depth
+#'
+#' Computes the mean after removing outliers detected using projection depth.
+#'
+#' @param m Data matrix (n x p).
+#'
+#' @return Vector of means (length p) after outlier removal.
+#'
+#' @details
+#' Uses `outpro.depth()` to identify outliers via projection depth, then computes
+#' the column means of the non-outlier data. A robust location estimator.
+#'
+#' @seealso \code{\link{outpro.depth}}, \code{\link{tmean}}
+#' @export
 smean.depth<-function(m){
-#
-#  Skipped estimator based on projection for removing outliers.
-#  Uses random projections
-#
 m=elimna(m)
 id=outpro.depth(m)$keep
 val=apply(m[id,],2,mean)
@@ -1693,43 +2340,45 @@ val
 }
 
 
-# pbadepth
+#' Bootstrap Test for Linear Contrasts Using Depth
+#'
+#' Tests whether specified linear contrasts among J independent groups equal
+#' zero, using bootstrap and data depth methods.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param con Contrast matrix (J x C) where J = number of groups and C = number
+#'   of contrasts. If 0, tests all pairwise comparisons (default).
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param allp Logical. If TRUE and con=0, tests all pairwise contrasts;
+#'   if FALSE, tests sequential contrasts (default: TRUE).
+#' @param MM Logical. If TRUE, uses MAD in projection distance computation.
+#' @inheritParams common-params
+#' @param cop Center computation option (see `outproMC`).
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to `est`.
+#'
+#' @return A list with components:
+#'   \item{p.value}{Bootstrap p-value for testing all contrasts equal zero.}
+#'   \item{psihat}{Estimated contrast values.}
+#'   \item{con}{Contrast matrix used.}
+#'   \item{n}{Sample sizes for each group.}
+#'
+#' @details
+#' Uses bootstrap to test joint hypothesis that all contrasts equal zero.
+#' Depth is measured via Mahalanobis distance (op=1), MCD-based Mahalanobis
+#' (op=2), or projection distance (op=3, default and recommended).
+#'
+#' Data can be in list mode or matrix mode (columns = groups).
+#'
+#' @seealso \code{\link{pdis}}, \code{\link{pdisMC}}
+#' @export
 pbadepth<-function(x,est=onestep,con=0,alpha=.05,nboot=2000,grp=NA,op=3,allp=TRUE,
 MM=FALSE,MC=FALSE,cop=3,SEED=TRUE,na.rm=FALSE,...){
-#
-#   Test the hypothesis that C linear contrasts all have a value of zero.
-#   By default, an M-estimator is used
-#
-#   Independent groups are assumed.
-#
-#   The data are assumed to be stored in x in list mode or in a matrix.
-#   If stored in list mode,
-#   x[[1]] contains the data for the first group, x[[2]] the data
-#   for the second group, etc. Length(x)=the number of groups = J, say.
-#   If stored in a matrix, columns correspond to groups.
-#
-#   By default, all pairwise differences are used, but contrasts
-#   can be specified with the argument con.
-#   The columns of con indicate the contrast coefficients.
-#   Con should have J rows, J=number of groups.
-#   For example, con[,1]=c(1,1,-1,-1,0,0) and con[,2]=c(,1,-1,0,0,1,-1)
-#   will test two contrasts: (1) the sum of the first
-#   two measures of location is
-#   equal to the sum of the second two, and (2) the difference between
-#   the first two is equal to the difference between the
-#   measures of location for groups 5 and 6.
-#
-#   The default number of bootstrap samples is nboot=2000
-#
-#   op controls how depth is measured
-#   op=1, Mahalanobis
-#   op=2, Mahalanobis based on MCD covariance matrix
-#   op=3, Projection distance
-#
-#   MC=TRUE, use a multicore processor when op=3
-#
-#   for arguments MM and cop, see pdis.
-#
 con<-as.matrix(con)
 if(is.matrix(x) || is.data.frame(x))x=listm(x)
 if(!is.list(x))stop("Data must be stored in list mode or in matrix mode.")
@@ -1809,7 +2458,8 @@ list(p.value=sig.level,psihat=tvec,con=con,n=nvec)
 }
 
 
-# Qdepthcom
+#' Compare Two Quantile Regression Models Using Depth
+#' @keywords internal
 Qdepthcom<-function(x1,y1,x2,y2,qval){
 temp1=Qdepthcomsub(x1,y1,x2,y2,qval)
 temp2=Qdepthcomsub(x2,y2,x1,y1,qval)
@@ -1817,7 +2467,8 @@ dep=max(c(abs(temp1$dep1-temp1$dep2),abs(temp2$dep1-temp2$dep2)))
 dep
 }
 
-# Qdepthcomsub
+#' Helper Function for Qdepthcom
+#' @keywords internal
 Qdepthcomsub<-function(x1,y1,x2,y2,qval){
 x1=(x1-median(x1))/mad(x1)
 x2=(x2-median(x2))/mad(x2)
@@ -1835,18 +2486,36 @@ list(dep1=dep1,dep2=dep2)
 
 
 
-# comdepthsvm
+#' Compare Two Distributions Using SVM and Depth
+#'
+#' Compares two independent multivariate distributions using Support Vector
+#' Machines with leave-one-out cross-validation.
+#'
+#' @param x1,x2 Data matrices for the two groups.
+#' @inheritParams common-params
+#' @param depthfun Depth function (default: prodepth). Not currently used in SVM.
+#' @inheritParams common-params
+#' @param kernel SVM kernel type (default: 'radial'). See `svm()` documentation.
+#' @param MISS Logical. If TRUE, returns misclassified vectors.
+#' @param TABLE Logical. If TRUE, returns classification confusion table.
+#' @param ... Additional arguments (not currently used).
+#'
+#' @return A list with components:
+#'   \item{est.prob}{Estimated probability of correct classification.}
+#'   \item{miss.class.vectors}{Matrix of misclassified vectors (if MISS=TRUE).}
+#'   \item{TABLE}{Confusion table (if TABLE=TRUE).}
+#'
+#' @details
+#' Uses leave-one-out cross-validation with SVM to estimate classification
+#' accuracy. Requires the e1071 package.
+#'
+#' @references
+#' Shao, J. (1993). Linear Model Selection by Cross-Validation. JASA, 88, 486-494.
+#'
+#' @seealso \code{\link[e1071]{svm}}
+#' @export
 comdepthsvm<-function(x1,x2,alpha=.05,depthfun=prodepth,
 plotit=FALSE,kernel='radial',MISS=FALSE,TABLE=FALSE,...){
-#
-# compare two independent multivariate distributions based
-# on a basic support vector machines method.
-#
-#  MISS=TRUE: returns the vectors misclassified.
-#
-# Leave-one-out cross validation is used, but see
-# Shao (1993). Linear Model Selection by Cross-Validation, JASA, 88, 486--494
-#
 library(e1071)
 x1=elimna(x1)
 x2=elimna(x2)
@@ -1893,26 +2562,36 @@ list(est.prob=mean(PCD),miss.class.vectors=MI,TABLE=tab)
 
 
 
-# aov2depth
+#' Two-by-K ANOVA Using Depth-Based Methods
+#'
+#' Tests for main effect of Factor A in a 2 x K design using depth of difference
+#' vectors. Accounts for the pattern of measures across Factor B levels.
+#'
+#' @param x1,x2 Data for the two levels of Factor A. Can be matrices (columns =
+#'   Factor B levels) or lists.
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param nmin Minimum sample size (default: 12).
+#' @param CR Logical. If TRUE, creates a critical region plot.
+#' @param xlab,ylab,zlab Axis labels for plotting (when K=2 or K=3).
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to `est`.
+#'
+#' @return A list with components:
+#'   \item{p.value}{Bootstrap p-value for testing no main effect of Factor A.}
+#'   \item{est1,est2}{Estimated locations for each group.}
+#'   \item{dif}{Estimated differences.}
+#'   \item{n1,n2}{Sample sizes.}
+#'
+#' @details
+#' For each bootstrap sample, computes the depth of the zero vector relative
+#' to the distribution of difference vectors. This tests whether Factor A has
+#' an effect while accounting for the multivariate pattern across Factor B levels.
+#'
+#' @export
 aov2depth<-function(x1,x2,est=tmean,nboot=500,SEED=TRUE,nmin=12,CR=FALSE,
 xlab=' DIF 1',ylab='DIF 2',zlab='DIF 3',alpha=.05,...){
-#
-# 2 by K ANOVA independent group (K levels not necessarily independent and
-#                                 not completely dependent
-#
-#   Main effect Factor A only
-#
-# Strategy: Use depth of zero based on estimated
-# differences for each column  of the K levels of Factor B
-# That is, testing no main effects for Factor A in
-# a manner that takes into account the pattern of the
-# measures of location rather then simply averaging
-# across columns.
-#
-#  x1 can be a matrix with K columns corrspoding to groups, ditto for x2
-#  Or x1 and x2 can have list mode.
-#   Assuming x1 and x2 contain data for indepedendent groups.
-#
 if(is.matrix(x1)||is.data.frame(x1))x1=listm(x1)
 if(is.matrix(x2)||is.data.frame(x2))x2=listm(x2)
 J=length(x1)
@@ -1965,15 +2644,27 @@ list(p.value=sig,est1=est1,est2=est2,dif=dif,n1=n1,n2=n2)
 }
 
 
-# bagdepth
+#' Compute Bagplot-Based Depth
+#'
+#' Computes depth based on bagdistance from the bagplot method. Requires the
+#' mrfDepth package.
+#'
+#' @inheritParams common-params
+#' @param pts Points for which to compute depth (default: NULL, uses `x`).
+#' @inheritParams common-params
+#'
+#' @return Vector of depth values (higher = more central).
+#'
+#' @details
+#' Uses the bagdistance from Rousseeuw's bagplot method. Depth is computed as
+#' 1/(bagdistance + 1). The bagplot is a bivariate generalization of the boxplot
+#' based on halfspace depth.
+#'
+#' Requires the mrfDepth package.
+#'
+#' @seealso \code{\link{outbag}}, \code{\link[mrfDepth]{bagdistance}}
+#' @export
 bagdepth<-function(x,pts=NULL,SEED=TRUE){
-#
-#  Compute depth of points based in their bagdistance.
-#
-# requires R package mrfDepth
-#
-#  SEED, included for convenience when this function is used with certain classification techniques.
-#
 library(mrfDepth)
 d=bagdistance(x,pts)$bagdistance
 d=1/(d+1)
@@ -1981,18 +2672,30 @@ d
 }
 
 
-# bwdepth
+#' Estimate Distribution Overlap Using Depth
+#'
+#' Estimates the extent of overlap between two independent distributions using
+#' data depth. Provides a nonparametric measure of effect size.
+#'
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param fun Depth function to use (default: prodepth).
+#' @inheritParams common-params
+#' @param xlab,ylab Axis labels for bivariate plots.
+#'
+#' @return A list with components:
+#'   \item{e}{Overall effect size estimate (0 = complete separation, 0.5 = identical distributions).}
+#'   \item{e1,e2}{Group-specific effect size estimates.}
+#'
+#' @details
+#' For identical distributions, effect size = 0.5. As distributions separate,
+#' effect size approaches 0. Complete separation yields effect size = 0.
+#'
+#' For bivariate data with `plotit=TRUE`, creates a scatterplot with both groups.
+#'
+#' @seealso \code{\link{bwdepthMC.ci}}, \code{\link{bwdepth.perm}}, \code{\link{prodepth}}
+#' @export
 bwdepth<-function(x,y,fun=prodepth,plotit=FALSE,xlab='V1',ylab='V2'){
-#
-# For two independent groups, let X and Y denote multivariate random variables
-# This function estimates the extent the distributions overlap using the notion
-# of projection distances. In effect, a nonparametric measure of effect size is
-# estimated
-# For identical distribution, effect size is .5. The more separated the distributions, the
-# closer is the effect size to zero. Complete separation means the effect size is equal to zero
-#
-#
-#
 x=elimna(x)
 y=elimna(y)
 x=as.matrix(x)
@@ -2037,10 +2740,29 @@ list(e=e,e1=e1,e2=e2)
 }
 
 
-# bwdepthMC.ci
+#' Bootstrap Confidence Interval for bwdepth Effect Size
+#'
+#' Computes bootstrap confidence interval for the depth-based effect size from
+#' `bwdepth()`.
+#'
+#' @inheritParams bwdepth
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{n1,n2}{Sample sizes.}
+#'   \item{Est}{Point estimate of effect size.}
+#'   \item{ci}{Bootstrap confidence interval.}
+#'   \item{p.value}{P-value for testing e = 0.5 (identical distributions).}
+#'
+#' @seealso \code{\link{bwdepth}}, \code{\link{bwdepth.perm}}
+#' @export
 bwdepthMC.ci<-function(x,y,fun=prodepth,nboot=100,alpha=.05,MC=TRUE,
 SEED=TRUE,plotit=FALSE,xlab='V1',ylab='V2'){
-#
 if(SEED)set.seed(2)
  crit=qnorm(1-alpha/2)
 if(identical(fun,prodepth))MC=FALSE # get odd error otherwise
@@ -2065,13 +2787,24 @@ list(n1=n1,n2=n2,Est=est$e,ci=c1,p.value=pv)
 }
 
 
-# bwdepth.perm
+#' Permutation Test for Two Distributions Using Depth
+#'
+#' Performs permutation test of H0: F = G (identical distributions) using
+#' depth-based effect size.
+#'
+#' @inheritParams bwdepth
+#' @param reps Number of permutation resamples (default: 500).
+#' @inheritParams common-params
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{Est}{Observed effect size.}
+#'   \item{Lower.crit,Upper.crit}{Critical values for the permutation distribution.}
+#'
+#' @seealso \code{\link{bwdepth}}, \code{\link{bwdepthMC.ci}}
+#' @export
 bwdepth.perm<-function(x,y,reps=500,
 fun=prodepth,alpha=.05,SEED=TRUE){
-#
-# Permutation test of F=G, two independent multivariate distributions
-#
-#
 if(SEED)set.seed(2)
 x=elimna(x)
 y=elimna(y)
@@ -2097,7 +2830,8 @@ list(Est=d,Lower.crit=v[il],Upper.crit=v[iu])
 }
 
 
-# bwdepth.sub
+#' Helper Function for bwdepthMC.ci
+#' @keywords internal
 bwdepth.sub<-function(id,x,y,n1,n2,fun){
 n=n1+n2
 np1=n1+1
@@ -2106,21 +2840,31 @@ e
 }
 
 
-# Depth.class.bag
+#' Bagged Depth-Based Classification
+#'
+#' Bootstrap aggregating (bagging) version of depth-based classification.
+#' Reduces bias when sample sizes differ between groups.
+#'
+#' @param train Training data matrix (optional if `x1` and `x2` provided).
+#' @param test Test data matrix to classify.
+#' @inheritParams common-params
+#' @param x1,x2 Training data for groups 1 and 2 (alternative to `train`/`g`).
+#' @param depthfun Depth function to use (default: prodepth).
+#' @param DIST Logical. If TRUE, uses distance-based classification.
+#' @inheritParams common-params
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to `depthfun`.
+#'
+#' @return Vector of predicted class labels (1 or 2) for test observations.
+#'
+#' @details
+#' Uses bootstrap bagging to reduce classification bias when n1 ≠ n2. For each
+#' bootstrap sample, draws equal-sized samples from both groups and classifies
+#' test data. Final classification is by majority vote across bootstrap samples.
+#'
+#' @seealso \code{\link{discdepth}}, \code{\link{KNNbag}}
+#' @export
 Depth.class.bag<-function(train=NULL,test=NULL,g=NULL,x1=NULL,x2=NULL,depthfun=prodepth,DIST=FALSE,nboot=100,SEED=TRUE,...){
-#
-#
-#  g=class id
-#  if there are two classes and the training data are stored in  separate variables, can enter
-#  the data for each class via the arguments
-#  x1 and x2.
-#  The function will then create appropriate labels and store them in g.
-#
-# KNN classification using data depths.
-# KNNdist uses data depths, for the n1!=n2 it can be a bit biased, meaning that
-# when there is no association, the probability of a correct classification will be less than .5
-#
-#
 if(SEED)set.seed(2)
 if(is.null(test))stop('test =NULL, no test data provided')
 if(!is.null(train)){
@@ -2165,21 +2909,21 @@ dec
 
 
 
-# dis.depth.bag
+#' Bagged Discriminant Depth Classification
+#'
+#' Bootstrap aggregating version of `discdepth()` for depth-based discrimination.
+#'
+#' @inheritParams Depth.class.bag
+#'
+#' @return Vector of predicted class labels (1 or 2) for test observations.
+#'
+#' @details
+#' Similar to `Depth.class.bag()` but uses `discdepth()` for classification.
+#' Bagging reduces bias when sample sizes differ.
+#'
+#' @seealso \code{\link{Depth.class.bag}}, \code{\link{discdepth}}
+#' @export
 dis.depth.bag<-function(train=NULL,test=NULL,g=NULL,x1=NULL,x2=NULL,depthfun=prodepth,nboot=100,SEED=TRUE,...){
-#
-#
-#  g=class id
-#  if there are two classes and the training data are stored in  separate variables, can enter
-#  the data for each class via the arguments
-#  x1 and x2.
-#  The function will then create appropriate labels and store them in g.
-#
-#  Uses data depths.
-# KNNdist uses data depths, for the n1!=n2 it can be a bit biased, meaning that
-# when there is no association, the probability of a correct classification will be less than .5
-#
-#
 if(is.null(test))stop('test =NULL, no test data provided')
 if(SEED)set.seed(2)
 if(!is.null(train)){
@@ -2225,22 +2969,28 @@ dec
 
 
 
-# pro.class.bag
+#' Bagged Projection-Based Classification
+#'
+#' Bootstrap aggregating version of `pro.class()` for projection-based
+#' classification. Handles unbalanced designs via bagging.
+#'
+#' @inheritParams Depth.class.bag
+#' @param kernel Kernel type for SVM (default: 'radial'). Not used in current implementation.
+#' @param nboot Number of bootstrap samples (default: 20).
+#' @param PR Logical. If TRUE, uses probability-based classification.
+#' @inheritParams common-params
+#' @param ... Additional arguments.
+#'
+#' @return Vector of predicted class labels (1 or 2) for test observations.
+#'
+#' @details
+#' Bagging version of `pro.class()`. Reduces bias when n1 ≠ n2 by drawing
+#' equal-sized bootstrap samples from each group.
+#'
+#' @seealso \code{\link{pro.class}}, \code{\link{Depth.class.bag}}
+#' @export
 pro.class.bag<-function(train=NULL,test=NULL,g=NULL,x1=NULL,x2=NULL,depthfun=prodepth,kernel='radial',nboot=20,
 PR=FALSE,SEED=TRUE,...){
-#
-#
-# pro.class: for n1!=n2 it can be a  biased, meaning that
-# when there is no association, the probability of a correct classification will be less than .5
-#
-#  This function deals with this via bootstrap bagging
-#  g=class labels
-#  if there are two classes and the training data are stored in  separate variables, can enter
-#  the data for each class via the arguments
-#  x1 and x2, which are assumed to be matrices or a data frame.
-#  The function will then create appropriate labels and store them in g.
-#
-#
 if(SEED)set.seed(2)
 if(is.null(train)){
 if(is.null(x1) || is.null(x2))stop('train is null and so are x1 and x2')
@@ -2299,19 +3049,21 @@ dec
 
 
 
-# pro.classPD.bag
+#' Bagged Projection Depth Classification
+#'
+#' Bootstrap aggregating version of `pro.classPD()` for projection depth-based
+#' classification.
+#'
+#' @inheritParams Depth.class.bag
+#' @param rule Classification rule (default: 1).
+#' @inheritParams common-params
+#' @param ... Additional arguments.
+#'
+#' @return Vector of predicted class labels (1 or 2) for test observations.
+#'
+#' @seealso \code{\link{pro.classPD}}, \code{\link{pro.class.bag}}
+#' @export
 pro.classPD.bag<-function(train=NULL,test=NULL,g=NULL,x1=NULL,x2=NULL,rule=1,nboot=100,SEED=TRUE,...){
-#
-#
-#  A bagged version of pro.classPD
-#
-#  g=class id
-#  if there are two classes and the training data are stored in  separate variables, can enter
-#  the data for each class via the arguments
-#  x1 and x2.
-#  The function will then create appropriate labels and store them in g.
-#
-#
 if(is.null(test))stop('Argument test is null, contains  no data')
 if(SEED)set.seed(2)
 if(!is.null(train)){
@@ -2358,8 +3110,26 @@ dec
 
 
 # KNNbag
+#' Bagged K-Nearest Neighbor Classification Using Depth
+#'
+#' Bootstrap aggregating version of K-nearest neighbor classification using data
+#' depths. Uses bootstrap sampling to address bias when group sizes differ.
+#'
+#' @inheritParams Depth.class.bag
+#' @param depthfun Depth function to use (default: `prodepth`).
+#' @inheritParams common-params
+#' @param ... Additional arguments.
+#'
+#' @return Vector of predicted class labels (1 or 2) for test observations.
+#'
+#' @details
+#' Performs KNN classification using data depths via `KNNdist()`. Bootstrap
+#' bagging is used to reduce bias when group sizes are unequal (n1 != n2).
+#' Each bootstrap sample uses balanced group sizes (min(n1,n2)).
+#'
+#' @seealso \code{\link{KNNdist}}, \code{\link{Depth.class.bag}}
+#' @export
 KNNbag<-function(train=NULL,test=NULL,g=NULL,x1=NULL,x2=NULL,depthfun=prodepth,nboot=100,SEED=TRUE,...){
-#
 #
 #  g=class id
 #  if there are two classes and the training data are stored in  separate variables, can enter
@@ -2418,10 +3188,28 @@ dec[idec]=2
 dec
 }
 
-# LSMbag
+#' Bagged Logistic Regression Classification
+#'
+#' Bootstrap aggregating version of logistic regression classification using
+#' smoothing and a decision rule.
+#'
+#' @inheritParams Depth.class.bag
+#' @param sm Logical. If TRUE, uses smoothing in logistic regression (default: TRUE).
+#' @param rule Decision threshold (default: 0.5).
+#' @inheritParams common-params
+#' @param ... Additional arguments.
+#'
+#' @return Vector of predicted class labels (1 or 2) for test observations.
+#'
+#' @details
+#' Performs logistic regression classification via `class.logR()` with bootstrap
+#' bagging. Each bootstrap sample uses balanced group sizes (min(n1,n2)) to
+#' reduce bias when group sizes differ.
+#'
+#' @seealso \code{\link{class.logR}}, \code{\link{Depth.class.bag}}
+#' @export
 LSMbag<-function(train=NULL,test=NULL,g=NULL,x1=NULL,x2=NULL,
 sm=TRUE,rule=.5,nboot=100,SEED=TRUE,...){
-#
 #
 #  g=class id
 #  if there are two classes and the training data are stored in  separate variables, can enter
@@ -2473,9 +3261,25 @@ dec
 
 
 
-# NNbag
+#' Bagged Nearest Neighbor Classification
+#'
+#' Bootstrap aggregating version of nearest neighbor classification. Uses bootstrap
+#' sampling to address bias when group sizes differ.
+#'
+#' @inheritParams Depth.class.bag
+#' @inheritParams common-params
+#' @param ... Additional arguments.
+#'
+#' @return Vector of predicted class labels (1 or 2) for test observations.
+#'
+#' @details
+#' Performs nearest neighbor classification via `NN.class()` with bootstrap
+#' bagging. Each bootstrap sample uses balanced group sizes (min(n1,n2)) to
+#' reduce bias when group sizes are unequal (n1 != n2).
+#'
+#' @seealso \code{\link{NN.class}}, \code{\link{Depth.class.bag}}
+#' @export
 NNbag<-function(train=NULL,test=NULL,g=NULL,x1=NULL,x2=NULL,nboot=100,SEED=TRUE,...){
-#
 #
 #  g=class id
 #  if there are two classes and the training data are stored in  separate variables, can enter
@@ -2530,6 +3334,26 @@ dec
 }
 
 
+#' Bagged AdaBoost Classification
+#'
+#' Bootstrap aggregating version of AdaBoost classification. Uses bootstrap
+#' sampling to address bias when group sizes differ (n1 != n2).
+#'
+#' @inheritParams Depth.class.bag
+#' @param baselearner Base learner for AdaBoost (default: 'bbs').
+#' @inheritParams common-params
+#' @param ... Additional arguments.
+#'
+#' @return Vector of predicted class labels (1 or 2) for test observations.
+#'
+#' @details
+#' Performs AdaBoost classification via `class.ada()` with bootstrap bagging.
+#' When group sizes are unequal (n1 != n2) and there is no association, the
+#' expected probability of correct classification can differ from 0.5. Bootstrap
+#' bagging addresses this bias by using balanced samples (min(n1,n2)).
+#'
+#' @seealso \code{\link{class.ada}}
+#' @keywords internal
  class.ada.bag<-function(train=NULL,test=NULL,g=NULL,x1=NULL,x2=NULL,nboot=100,
 SEED=TRUE,baselearner='bbs',...){
 #
@@ -2588,9 +3412,28 @@ dec
 }
 
 
-# RFbag
+#' Bagged Random Forest Classification
+#'
+#' Bootstrap aggregating version of random forest classification. Uses bootstrap
+#' sampling to address bias when group sizes differ.
+#'
+#' @inheritParams Depth.class.bag
+#' @param depthfun Depth function to use (default: `prodepth`).
+#' @param kernel Kernel type for classification (default: 'radial').
+#' @inheritParams common-params
+#' @param ... Additional arguments.
+#'
+#' @return Vector of predicted class labels (1 or 2) for test observations.
+#'
+#' @details
+#' Performs random forest classification via `class.forest()` with bootstrap
+#' bagging. When group sizes are unequal (n1 != n2) and there is no association,
+#' standard methods can have biased misclassification probabilities. Bootstrap
+#' bagging with balanced samples (min(n1,n2)) addresses this bias.
+#'
+#' @seealso \code{\link{class.forest}}, \code{\link{Depth.class.bag}}
+#' @export
 RFbag<-function(train=NULL,test=NULL,g=NULL,x1=NULL,x2=NULL,depthfun=prodepth,kernel='radial',nboot=100,SEED=TRUE,...){
-#
 #
 #  g=class id
 #  if there are two classes and the training data are stored in  separate variables, can enter
@@ -2647,9 +3490,29 @@ dec
 }
 
 
-# SVMbag
+#' Bagged Support Vector Machine Classification
+#'
+#' Bootstrap aggregating version of Support Vector Machine (SVM) classification.
+#' Addresses misclassification bias when group sizes differ substantially.
+#'
+#' @inheritParams Depth.class.bag
+#' @param depthfun Depth function to use (default: `prodepth`).
+#' @param kernel Kernel type for SVM (default: 'radial').
+#' @inheritParams common-params
+#' @param ... Additional arguments.
+#'
+#' @return Vector of predicted class labels (1 or 2) for test observations.
+#'
+#' @details
+#' Performs SVM classification via `SVM()` with bootstrap bagging. Unlike standard
+#' SVM, this function addresses a critical bias issue: when n1 != n2 and n2/n1 is
+#' small, standard SVM has a misclassification probability of approximately
+#' n2/(n1+n2) when there is no true association. This bagged version maintains
+#' a probability of 0.5 by using balanced bootstrap samples (min(n1,n2)).
+#'
+#' @seealso \code{\link{SVM}}, \code{\link{Depth.class.bag}}
+#' @export
 SVMbag<-function(train=NULL,test=NULL,g=NULL,x1=NULL,x2=NULL,depthfun=prodepth,kernel='radial',nboot=100,SEED=TRUE,...){
-#
 #
 #  g=class id
 #  if there are two classes and the training data are stored in  separate variables, can enter
