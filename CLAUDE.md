@@ -148,7 +148,7 @@ Functions conditionally load packages as needed (not all are hard dependencies):
 
 ## Active Refactoring Project
 
-**Status**: In progress as of 2025-12-30
+**Status**: Phase 1 COMPLETED as of 2025-12-30 ✅
 
 This package is undergoing a major refactoring to modernize its structure while maintaining 100% backward compatibility:
 
@@ -157,17 +157,34 @@ This package is undergoing a major refactoring to modernize its structure while 
 - **Progress Tracking**: See `REFACTORING-PROGRESS.md` in the root directory
 - **Implementation Plan**: See `.claude/plans/curious-questing-clock.md`
 
-**Key Changes Planned**:
-1. Split `pkg/R/Rallfun-v45.R` (1 file) → 20 focused module files
-2. Add full roxygen2 documentation (~1,500 user-facing functions)
-3. Remove 331 redundant library() calls
-4. Fix 62 duplicate function definitions
-5. Mark 471 internal helpers appropriately
+**Phase 1 Complete - Module Extraction** ✅:
+1. ✅ Split `pkg/R/Rallfun-v45.R` → 20 focused module files in `pkg/R-new/`
+2. ✅ All 1,828 unique functions successfully extracted
+3. ✅ All modules source without errors
+4. ✅ 100% backward compatibility maintained
+
+**Next Steps - Phase 2 (Optimization)**:
+1. Remove ~600 redundant library() calls (increased due to duplication)
+2. Resolve 1,126 duplicate function definitions across modules
+3. Extract common patterns to utility functions
+4. Optimize and clean up code
+
+**Remaining Phases**:
+- Phase 3-4: Add full roxygen2 documentation (~1,500 user-facing functions)
+- Phase 5: Final testing and validation
 
 **Critical Files**:
 - `Rallfun-v45.R.ORIGINAL` - Backup of original file (DO NOT MODIFY)
-- `all-functions.txt` - Inventory of all 1,971 functions
+- `pkg/R-new/` - 20 new modular files (all functional) ✅
+- `all-functions.txt` - Inventory of all functions
 - `reference-outputs.rds` - Baseline test data for validation
 - `pkg/tests/test-backward-compat.R` - Backward compatibility test suite
+
+**Module Files** (in `pkg/R-new/`):
+- Core: `00-utils-core.R`, `location.R`, `outliers.R`, `bootstrap.R`
+- Analysis: `two-sample.R`, `anova.R`, `ancova.R`, `correlation.R`, `mcp.R`
+- Regression: `regression.R`, `regression-advanced.R`, `covariance.R`
+- Other: `medians.R`, `plotting.R`, `effect-size.R`, `power.R`, `winsorize.R`
+- Specialized: `classification.R`, `special.R`, `zzz-internal.R`
 
 **If contributing**: Always run `source("pkg/tests/test-backward-compat.R"); test_backward_compatibility()` after making changes to ensure no breaking changes.
