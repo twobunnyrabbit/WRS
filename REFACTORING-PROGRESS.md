@@ -30,32 +30,35 @@
 - 🔄 **Week 3 IN PROGRESS**: Specialized modules
   - ✅ ancova.R extracted (149 functions, 11,014 lines, 286.1 KB)
   - ✅ regression.R extracted (98 functions, 5,051 lines, 139.8 KB)
-  - 🔄 Next: regression-advanced.R, covariance.R, mcp.R, and remaining modules
+  - ✅ regression-advanced.R extracted (75 functions, 3,433 lines, 95.2 KB)
+  - 🔄 Next: covariance.R, mcp.R, and remaining modules
 
 ### Overall Metrics
-- **Modules completed**: 9 of 20 (45%)
-- **Functions extracted**: 737 of 1,971 (37.4%)
-- **Lines extracted**: 39,549 of 97,199 (40.7%)
-- **Total size**: 1,074.7 KB of ~2.6 MB (40.4%)
-- **Status**: All 9 modules source successfully ✅
+- **Modules completed**: 10 of 20 (50%)
+- **Functions extracted**: 812 of 1,971 (41.2%)
+- **Lines extracted**: 42,982 of 97,199 (44.2%)
+- **Total size**: 1,169.9 KB of ~2.6 MB (44.0%)
+- **Status**: All 10 modules source successfully ✅
 
 ### Recently Completed (2025-12-30)
-**regression.R module** - Core regression methods:
-- 98 functions, 5,051 lines, 139.8 KB
-- Core functions: tsreg, tshdreg, opreg, ltsreg, qreg, regci, reg1way
-- Theil-Sen regression, LTS, M-regression, outlier-pruned regression
-- Regression inference: regci, regtest, lintest, lintestMC
-- Two-group comparisons: difreg, reg2ci, DregG
-- One-way regression ANOVA: reg1way variants
-- Correlation-based: scorreg, correg, taureg
+**regression-advanced.R module** - Advanced regression methods:
+- 75 functions, 3,433 lines, 95.2 KB
+- Quantile regression smoothers: qhdsm, qhdsm2g, qhdsm.pred
+- Smoothing methods: smean, smeancr, smean.depth
+- Logistic regression: logreg, logreg.P.ci, logreg.pred
+- Multivariate/multilevel: mlrreg, mulgreg, MULMreg
+- Advanced methods: KNNreg, quantregForest, COVreg
+- GAM-related: gamindt, gamplot, gamplotINT, gamplotv2
+- Regression inference: regYci, regYband, regYciCV
+- Mediation and specialized: regmediate, regpca, regR.Forest
+- Instrumental variables: regIVcom, regIVstr, regIVcommcp
 - Successfully sourced and validated with all dependencies
 
 ### Next Steps
-1. Extract regression-advanced.R module (~60 functions)
-2. Extract covariance.R module (~50 functions)
-3. Extract mcp.R module (~55 functions)
-4. Continue with remaining Week 3 modules
-5. End-of-phase validation when all 20 modules extracted
+1. Extract covariance.R module (~50 functions)
+2. Extract mcp.R module (~55 functions)
+3. Continue with remaining Week 3 modules (medians.R, plotting.R, etc.)
+4. End-of-phase validation when all 20 modules extracted
 
 ### ✅ Phase 0: Preparation (COMPLETED - 2025-12-30)
 
@@ -121,7 +124,7 @@ All preparation tasks completed successfully:
 | Current Documentation | 1 | Only WRS-package.Rd |
 | Old .Rd Files | 15 | In `old Rd files/` directory |
 
-### Extracted Modules (9 of 20 Complete)
+### Extracted Modules (10 of 20 Complete)
 
 | Module | Status | Functions | Lines | Size | Key Functions |
 |--------|--------|-----------|-------|------|---------------|
@@ -134,7 +137,8 @@ All preparation tasks completed successfully:
 | correlation.R | ✅ | 108 | 5,045 | 162.0 KB | pbcor, scor, tau, wincor, mscor |
 | ancova.R | ✅ | 149 | 11,014 | 286.1 KB | ancova, Dancova, ancES, ancGLOB |
 | regression.R | ✅ | 98 | 5,051 | 139.8 KB | tsreg, opreg, ltsreg, regci, reg1way |
-| **TOTAL** | **9/20** | **737** | **39,549** | **1,074.7 KB** | **37.4% of functions** |
+| regression-advanced.R | ✅ | 75 | 3,433 | 95.2 KB | qhdsm, smean, logreg, mlrreg, KNNreg |
+| **TOTAL** | **10/20** | **812** | **42,982** | **1,169.9 KB** | **41.2% of functions** |
 
 ### Target Module Structure (20 Files)
 
@@ -237,7 +241,14 @@ All preparation tasks completed successfully:
   - Two-group comparisons and one-way regression ANOVA
   - Correlation-based regression: scorreg, correg, taureg
   - Successfully sourced and validated
-- [ ] Extract regression-advanced.R (~60 functions)
+- [x] Extract regression-advanced.R (~60 functions)
+  - **COMPLETED**: 75 functions extracted (3,433 lines, 95.2 KB)
+  - Includes: qhdsm, qhdsm2g, smean, smeancr, logreg, mlrreg, mulgreg
+  - Quantile regression smoothers, smoothing methods, logistic regression
+  - Multivariate/multilevel regression, KNN, random forest
+  - GAM-related methods, regression inference (regYci, regYband)
+  - Mediation, PCA, instrumental variables regression
+  - Successfully sourced and validated
 - [ ] Extract covariance.R, mcp.R, medians.R
 - [ ] Extract plotting.R, effect-size.R, power.R, winsorize.R, parallel.R
 - [ ] Extract classification.R, special.R
@@ -572,4 +583,4 @@ When resuming work:
 
 ---
 
-*Last updated: 2025-12-30 - Phase 1, Week 3 In Progress (737 functions extracted across 9 modules, regression.R completed)*
+*Last updated: 2025-12-30 - Phase 1, Week 3 In Progress (812 functions extracted across 10 modules, regression-advanced.R completed)*
