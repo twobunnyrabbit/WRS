@@ -729,7 +729,6 @@ xy[[i]]=rmul(n)
 }
 if(!MC)pvals=lapply(xy,rplotCITAP.sub,npts=npts,tr=tr,fr=fr,alpha=alpha,nmin=nmin)
 if(MC){
-library(parallel)
 pvals=mclapply(xy,rplotCITAP.sub,npts=npts,tr=tr,fr=fr,alpha=alpha,nmin=nmin)
 }
 pvals=matl(pvals)
@@ -774,7 +773,6 @@ xy[[i]]=rmul(n)
 }
 if(!MC)pvals=lapply(xy,rplotCIv2.sub,tr=tr,fr=fr,nmin=nmin)
 if(MC){
-library(parallel)
 pvals=mclapply(xy,rplotCIv2.sub,tr=tr,fr=fr,nmin=nmin)
 }
 pvals=matl(pvals)
@@ -1339,7 +1337,6 @@ if(pr){
 if(!xout)print('Suggest also looking at result using xout=TRUE')
 }
 if(!is.null(pch))pc=pch
-library(stats)
 x<-as.matrix(x)
 m<-elimna(cbind(x,y))
 n.orig=nrow(m)
@@ -1347,7 +1344,6 @@ n.keep=n.orig
 if(!is.matrix(x))stop("x is not a matrix")
 d<-ncol(x)
 if(d>=2){
-library(akima)
 if(ncol(x)==2 & !scale){
 if(pr){
 print("scale=FALSE is specified.")
@@ -1473,12 +1469,10 @@ if(ADJ){
 if(SEED)set.seed(2)
 }
 si=1
-library(stats)
 x<-as.matrix(x)
 if(!is.matrix(x))stop("x is not a matrix")
 d<-ncol(x)
 if(d>=2){
-library(akima)
 if(ncol(x)==2 && !scale){
 if(pr){
 print("scale=F is specified.")
@@ -1809,7 +1803,6 @@ lplotcom2<-function(x,y,xout=FALSE,pts1=NULL,pts2=NULL,outfun=outpro,span=2/3,np
 #
 # For two independent variables, estimate their relative importance when using LOESS
 #
-library(stats)
 x<-as.matrix(x)
 m<-elimna(cbind(x,y))
 n.orig=nrow(m)
@@ -1853,7 +1846,6 @@ lplotcom2v2<-function(x,y,xout=FALSE,pts1=NULL,pts2=NULL,outfun=outpro,span=2/3,
 #
 # For two independent variables, estimate their relative importance when using LOESS
 #
-library(stats)
 x<-as.matrix(x)
 m<-elimna(cbind(x,y))
 n.orig=nrow(m)
@@ -1912,7 +1904,6 @@ MEDIAN=FALSE,Q1=FALSE,Q2=FALSE,alpha=.05,MC=FALSE,...){
 #  otherwise use alpha
 #
 if(SEED)set.seed(2)
-library(stats)
 x<-as.matrix(x)
 m<-elimna(cbind(x,y))
 n=nrow(m)
@@ -1985,7 +1976,6 @@ v1[i]=temp$mean.str1
 v2[i]=temp$mean.str2
 }}
 if(MC){
-library(parallel)
 data=listm(t(data))
 bvec<-mclapply(data,lplotCIMCv2,x,y,pts1=pts1,pts2=pts2,npts=npts,tr=tr,span=span)
 bvec=matl(bvec)  # a 2-by-nboot matrix.
@@ -2026,7 +2016,6 @@ p.crit=alpha
 if(ADJ.CI)print('Confidence intervals are based on the critical p-value')
 }
 if(SEED)set.seed(2)
-library(stats)
 x<-as.matrix(x)
 m<-elimna(cbind(x,y))
 n=nrow(m)
@@ -2061,7 +2050,6 @@ v1[i,j]=temp$mean.str1
 v2[i,j]=temp$mean.str2
 }}}
 if(MC){
-library(parallel)
 data=listm(t(data))
 for(j in 1:3){
 bvec<-mclapply(data,lplotCIMCv2,x,y,pts1=pts1[j],pts2=pts2[j],npts=npts,tr=tr,span=span)
@@ -2180,7 +2168,6 @@ xlab="X",ylab="",zlab="",theta=50,phi=25,expand=.5,scale=TRUE,ticktype="simple")
 # sop=F, use usual linear model y~x1+x2...
 # sop=T, use splines
 #
-library(akima)
 library(mgcv)
 x<-as.matrix(x)
 np<-ncol(x)
@@ -2257,7 +2244,6 @@ print("To get adjusted estimates of strength of association, use ADJ=T")
 print("The strength of association is estimated under independence")
 print(" and then rescaled")
 }}
-library(akima)
 library(mgcv)
 x<-as.matrix(x)
 np<-ncol(x)
@@ -2352,7 +2338,6 @@ SCALE=FALSE,zscale=TRUE,eout=FALSE,outfun=out,ticktype="simple",xlab = "X", ylab
 if(eout && xout)stop("Not allowed to have eout=xout=T")
 x<-as.matrix(x)
 if(ncol(x)!=2)stop("x must be an n by 2 matrix")
-library(akima)
 library(mgcv)
 np=ncol(x)
 np1=np+1
@@ -3710,7 +3695,6 @@ reg.plot.inter<-function(x,y, regfun=tsreg,
 #  usual product term
 #
 #   x is assumed to be a matrix with two columns (two predictors)
-library(akima)
 x<-as.matrix(x)
 xx<-cbind(x,y)
 xx<-elimna(xx)
@@ -3758,7 +3742,6 @@ ols.plot.inter<-function(x,y, pyhat = FALSE, eout = FALSE, xout = FALSE, outfun 
 #  usual product term
 #
 #   x is assumed to be a matrix with two columns (two predictors)
-library(akima)
 x<-as.matrix(x)
 xx<-cbind(x,y)
 xx<-elimna(xx)
@@ -3856,7 +3839,6 @@ if(!WARN)options(warn=0)
 }
 }
 if(p==2){
-library(akima)
 fitr=logreg.pred(x,y,x)
 if(is.null(xlab))v='X'
 if(is.null(ylab))v[2]='Y'
@@ -3961,7 +3943,6 @@ lines(sx,sysm)
 }}
 x<-as.matrix(x)
 if(ncol(x)>1){
-library(MASS)
 if(is.na(fr))fr<-.6
 m<-covmve(x)
 for(i in 1:nrow(x)){
@@ -3969,7 +3950,6 @@ rmd[i]<-sum(near3d(x,x[i,],fr,m))
 }
 rmd<-rmd/nrow(x)
 if(plotit && ncol(x)==2){
-library(akima)
 fitr<-rmd
 iout<-c(1:length(fitr))
 nm1<-length(fitr)-1
@@ -4272,7 +4252,6 @@ duplicate='error',pc='*',ticktype='simple',expand=.5){
 #
 x=as.matrix(x)
 if(ncol(x)!=2)stop('x should have two columns only')
-library(akima)
 fitr<-interp(x[,1],x[,2],y,duplicate=duplicate)
 persp(fitr,theta=theta,phi=phi,xlab=xlab,ylab=ylab,zlab=zlab,expand=expand,
 scale=scale,ticktype=ticktype)

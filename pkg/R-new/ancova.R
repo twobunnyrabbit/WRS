@@ -102,7 +102,6 @@ if(N>0)x[1:N,1:3]=NA
 data[[i]]=x
 }
 if(MC){
-library(parallel)
 res=mclapply(data,anc2COV.sub,FRAC=FRAC,TPM=TPM,tau=tau)
 }
 if(!MC)res=lapply(data,anc2COV.sub,FRAC=FRAC,TPM=TPM,tau=tau)
@@ -1242,7 +1241,6 @@ ancDEP.MULC.ES<-function(x1,y1,y2,fr1=1.5,fr2=1.5,tr=.2,pts=NULL,xout=FALSE,outf
 #  the significant points returned by
 #  ancdetM4 are used
 #
-library(MASS)
 x2=x1
 p=ncol(x1)
 if(p<2)stop('This function is for two or more covariates')
@@ -1519,7 +1517,6 @@ xy[[i]][1:nmiss,1:3]=NA
 }
 if(!MC)pvals=lapply(xy,ancdet2C.sub,tr=tr,FRAC=FRAC)
 if(MC){
-library(parallel)
 pvals=mclapply(xy,ancdet2C.sub,tr=tr,FRAC=FRAC)
 }
 pvals=matl(pvals)
@@ -1648,7 +1645,6 @@ xy[[i]][1:nmiss,1:2]=NA
 }
 if(!MC)pvals=lapply(xy,ancdet.sub,npts=npts,tr=tr)
 if(MC){
-library(parallel)
 pvals=mclapply(xy,ancdet.sub,npts=npts,tr=tr)
 }
 pvals=matl(pvals)
@@ -2594,7 +2590,6 @@ bvec[[i]]=rmul(nmax,p=4)
 if(n1!=n2)bvec[[i]][np1:nmax,1:2]=NA
 }
 if(MC){
-library(parallel)
 prm=mclapply(bvec,ancGLOB_sub2,fr1=fr1,fr2=fr2,est=est,SEED=SEED,nboot=nboot,pts=pts,...)
 }
 if(!MC)prm=lapply(bvec,ancGLOB_sub2,fr1=fr1,fr2=fr2,est=est,SEED=SEED,nboot=nboot,pts=pts,...)
@@ -2647,7 +2642,6 @@ bvec[[i]][1:n2,3]=x2
 }
 prm=NA
 if(MC){
-library(parallel)
 prm=mclapply(bvec,ancGLOB_sub4,fr1=fr1,fr2=fr2,est=est,SEED=SEED,nboot=nboot,pts=pts,...)
 }
 #if(!MC)prm=lapply(bvec,ancGLOB_sub4,fr1=fr1,fr2=fr2,est=est,SEED=SEED,nboot=nboot,pts=pts,...)
@@ -3751,7 +3745,6 @@ list(n=nv,num.sig=num.sig,p.crit=p.crit,points=pts,output.sig=output.sig,output=
 ancJNmpcp<-function(n1,n2,regfun=qreg,CPP=FALSE,nreps=1000,alpha=.05,MC=FALSE,
 SEED=TRUE,cov1=FALSE){
 if(CPP)library(WRScpp)
-if(MC)library(parallel)
 if(SEED)set.seed(2)
 x=list()
 n=max(c(n1,n2))
@@ -4230,7 +4223,6 @@ m[[i]]=list(x1[id1],y1[id1],x2[id2],y2[id2])
 }
 if(!MC)v=lapply(m,anclinQS.sub,pts=pts,npts=npts,...)
 if(MC){
-library(parallel)
 v=mclapply(m,anclinQS.sub,pts=pts,npts=npts,...)
 }
 v=matl(v)
@@ -4500,7 +4492,6 @@ SEED=TRUE,pr=TRUE,cop=3,con=0,nboot=NA,alpha=.05,bhop=FALSE){
 #   see=ancmg
 #  results in see[[1]] containing the results for the first point, see[[2]] the results for the 2nd point etc.
 #
-library(MASS)
 output<-NULL
 if(SEED)set.seed(2) # set the seed so that MVE always gives same result
 if(pr){
@@ -6788,7 +6779,6 @@ est1=t(as.matrix(est1))
 est2=t(as.matrix(est2))
 }
 if(MC){
-library(parallel)
 data1=listm(data1)
 data2=listm(data2)
 if(!ef){
@@ -6833,7 +6823,6 @@ xy[[i]][[4]]=rnorm(n2)
 }
 if(!MC)pv=lapply(xy,ancovaV2pv.sub,qpts=qpts,qvals=qvals,nboot=nboot,MC=FALSE,est=est)
 if(MC){
-library(parallel)
 pv=mclapply(xy,ancovaV2pv.sub,qpts=qpts,qvals=qvals,nboot=nboot,MC=FALSE,est=est)
 }
 pv=as.vector(matl(pv))
@@ -7916,7 +7905,6 @@ est2=t(as.matrix(est2))
 }
 
 if(MC){
-library(parallel)
 data=listm(data)
 est1=mclapply(data,DancGLOB_sub,xy=xy[,1:2],pts=pts,est=est,fr=fr1,nmin=nmin,...)
 est2=mclapply(data,DancGLOB_sub,xy=xy[,3:4],pts=pts,est=est,fr=fr2,nmin=nmin,...)
@@ -8958,7 +8946,6 @@ est1=t(as.matrix(est1))
 est2=t(as.matrix(est2))
 }
 if(MC){
-library(parallel)
 data=listm(data)
 if(!ef){
 est1=mclapply(data,DancGLOB_sub,xy=xy[,1:2],pts=pts,est=est,fr=fr1,nmin=nmin,...)
@@ -9370,7 +9357,6 @@ x1=as.matrix(x1)
 x2=as.matrix(x2)
 data<-matrix(sample(length(y1),size=n*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
-library(parallel)
 est1=mclapply(data,Danctspb.sub,x1,y1,xr=pts,regfun=regfun,xout=FALSE,...)
 est2=mclapply(data,Danctspb.sub,x2,y2,xr=pts,regfun=regfun,xout=FALSE,...)
 est1=matl(est1)
@@ -9949,7 +9935,6 @@ bl[[k]]=list(x1[id1],y1[id1],x2[id2],y2[id2])
 }
 if(!MC)temp=lapply(bl,QS.ancbse.sub,pts)
 else{
-library(parallel)
 temp=mclapply(bl,QS.ancbse.sub,pts)
 }
 tv=list()
@@ -10026,7 +10011,6 @@ bl[[k]]=list(x1[id1],y1[id1],x2[id2],y2[id2])
 }
 if(!MC)tv=lapply(bl,QS.ancp2.sub,pts)
 else{
-library(parallel)
 tv=mclapply(bl,QS.ancp2.sub,pts)
 }
 tv=elimna(tv)
@@ -10109,7 +10093,6 @@ bl[[k]]=list(x1[id1],y1[id1],x2[id2],y2[id2])
 }
 if(!MC)tv=lapply(bl,QS.ancp2.sub,pts)
 else{
-library(parallel)
 tv=mclapply(bl,QS.ancp2.sub,pts)
 }
 tv=elimna(tv)
@@ -10429,7 +10412,6 @@ rmanc.best.crit<-function(x,alpha=.05,tr=.2,iter=5000,SEED=TRUE,...){
 #  Determine critical p-values for rmanc.best
 #
 if(SEED)set.seed(2)
-library(MASS)
 J=ncol(x)
 n=nrow(x)
 Jm1=J-1
@@ -10769,7 +10751,6 @@ bl[[k]]=list(x1[id1],y1[id1],x2[id2],y2[id2])
 }
 if(!MC)tv=lapply(bl,wmw.ancbse.sub,pts)
 else{
-library(parallel)
 tv=mclapply(bl,wmw.ancbse.sub,pts)
 }
 E=t(matl(tv))
@@ -10853,7 +10834,6 @@ bl[[k]]=list(x1[id1,],y1[id1],x2[id2,],y2[id2])
 }
 if(!MC)tv=lapply(bl,wmw.ancbsep2.sub,pts)
 else{
-library(parallel)
 tv=mclapply(bl,wmw.ancbsep2.sub,pts)
 }
 E=t(matl(tv))

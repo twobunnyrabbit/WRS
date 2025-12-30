@@ -1,6 +1,11 @@
 # Export all names
 exportPattern("^[^\\.]")
 
+    # Core package imports
+    importFrom("parallel", "mclapply", "detectCores")
+    importFrom("MASS", "ginv", "cov.rob", "cov.mcd", "cov.mve", "lqs", "rlm")
+    importFrom("akima", "interp", "aspline")
+
     importFrom("grDevices", "chull")
     importFrom("graphics", "abline", "arrows", "axis", "boxplot", "hist",
                "identify", "lines", "matlines", "matplot", "pairs", "par",

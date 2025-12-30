@@ -1095,7 +1095,6 @@ corbMC<-function(x,y,corfun=pbcor,nboot=599,alpha=.05,SEED=TRUE,...){
 #
 #   The default number of bootstrap samples is nboot=599
 #
-library(parallel)
 m1=cbind(x,y)
 m1<-elimna(m1)  # Eliminate rows with missing values
 nval=nrow(m1)
@@ -1238,7 +1237,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 #
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
-library(parallel)
 bvec<-mclapply(data,scorsubMC,x,y,STAND=STAND,corfun=corfun,cop=cop,...)
 bvec=matl(bvec)   # A 1 by nboot matrix.
 bvec=as.vector(bvec)
@@ -1348,7 +1346,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,corCOMmcp_sub,x,y,corfun,...)
 }
 if(!MC)bvec<-lapply(data,corCOMmcp_sub,x,y,corfun,...)
@@ -1430,7 +1427,6 @@ outfun=outpro,pr=TRUE){
 # alpha
 #
 if(pr)print('Here, the p-value is the smallest alpha value for which one or more hypotheses are rejected')
-library(parallel)
 if(SEED)set.seed(2)
 x=elimna(x)
 n=nrow(x)
@@ -1463,7 +1459,6 @@ mscorci.cr<-function(n,p,iter=500,corfun=pcor,alpha=c(.05,.025,.01),TV=FALSE,SEE
 #
 if(SEED)set.seed(65)
 x=list()
-library(parallel)
 for(i in 1:iter)x[[i]]=rmul(n,p=p)
 tval=mclapply(x,mscorci.cr.sub,corfun=corfun,nboot=iter)
 tval=list2vec(tval)
@@ -1763,7 +1758,6 @@ data<-matrix(sample(n,size=n*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(!MC)bvec<-lapply(data,scorreg.sub,xy,corfun=corfun,outfun=outfun,ALL=ALL)
 if(MC){
-library(parallel)
 bvec<-mclapply(data,scorreg.sub,xy,corfun=corfun,outfun=outfun,ALL=ALL)
 }
 bvec=matl(bvec)   # A p by nboot matrix.
@@ -1868,7 +1862,6 @@ data<-matrix(sample(n,size=n*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(!MC)bvec<-lapply(data,scorci.sub,x,corfun=corfun,outfun=outfun,STAND=TRUE)
 if(MC){
-library(parallel)
 bvec<-mclapply(data,scorci.sub,x,corfun=corfun,outfun=outfun,STAND=TRUE)
 }
 bvec=matl(bvec)   # A J by nboot matrix. J=(p^2-p)/2, p=number of IV variables.
@@ -2029,7 +2022,6 @@ data<-matrix(sample(n,size=n*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(!MC)bvec<-lapply(data,scorreg.sub,xy,corfun=corfun,outfun=outfun,ALL=ALL,...)
 if(MC){
-library(parallel)
 bvec<-mclapply(data,scorreg.sub,xy,corfun=corfun,outfun=outfun,ALL=ALL,...)
 }
 bvec=matl(bvec)   # A p by nboot matrix.
@@ -2107,7 +2099,6 @@ scorreg.cr<-function(n,p,iter=500,nboot=500,corfun=pcor,alpha=c(.05,.025,.01),TV
 #
 if(SEED)set.seed(65)
 x=list()
-library(parallel)
 p1=p+1
 for(i in 1:iter){
 x[[i]]=rmul(n,p=p1)
@@ -3089,7 +3080,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,corCOMmcp_sub,x,y,corfun,...)
 }
 if(!MC)bvec<-lapply(data,corCOMmcp_sub,x,y,corfun,...)
@@ -3965,7 +3955,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,corCOMmcp_sub,x,y,corfun,...)
 }
 if(!MC)bvec<-lapply(data,corCOMmcp_sub,x,y,corfun,...)
@@ -4021,7 +4010,6 @@ R=order(est,decreasing=TRUE)
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,corCOMmcp_sub,x,y,corfun,...)
 }
 if(!MC)bvec<-lapply(data,corCOMmcp_sub,x,y,corfun,...)
@@ -4067,7 +4055,6 @@ R=order(est,decreasing=TRUE)
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,corCOMmcp_sub,x,y,corfun,...)
 }
 if(!MC)bvec<-lapply(data,corCOMmcp_sub,x,y,corfun,...)
@@ -4203,7 +4190,6 @@ use.cor=TRUE
 
 if(rho+delta>1)stop('rho+delta is greater than 1')
 if(rho+delta<0-1)stop('rho+delta is less than -1')
-if(MC)library(parallel)
 if(SEED)set.seed(2)
 if(delta<0-1 || delta>1)stop('rho + delta should be between -1 and 1')
 PMD=0
@@ -4278,7 +4264,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,corCOMmcp_sub,x,y,corfun)
 }
 IB=NA

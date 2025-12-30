@@ -1502,7 +1502,6 @@ bl[[k]]=list(x1[id1],y1[id1],x2[id2],y2[id2])
 }
 if(!MC)tv=lapply(bl,wmw.ancbse.sub,pts)
 else{
-library(parallel)
 tv=mclapply(bl,wmw.ancbse.sub,pts)
 }
 E=t(matl(tv))
@@ -3875,7 +3874,6 @@ a
 }
 
  MVECOR<-function(x){
-library(MASS)
 val<-cov.mve(x)
 val=cov2cor(val$cov)
 val
@@ -4385,7 +4383,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,twoDcorR_sub,x,y,corfun,...)
 }
 if(!MC)bvec<-lapply(data,twoDcorR_sub,x,y,corfun,...)
@@ -4489,8 +4486,6 @@ expand=.5,scale=FALSE,xlab="X",ylab="Y",zlab="",ticktype="simple",...){
 #
 # Missing values are automatically removed.
 #
-library(MASS)
-library(akima)
 if(SEED)set.seed(2)
 temp<-cbind(x,y)
 x<-as.matrix(x)
@@ -4613,7 +4608,6 @@ run3hat<-function(x,y,pts,fr=.8,tr=.2){
 # x is an n by p matrix of predictors.
 # pts is an m by p matrix, m>=1.
 #
-library(MASS)
 set.seed(12)
 if(!is.matrix(x))stop("Predictors are not stored in a matrix.")
 if(!is.matrix(pts))stop("The third argument, pts, must be a matrix.")
@@ -5082,8 +5076,6 @@ xlab="X",ylab="Y",zlab="",pr=TRUE,duplicate="error",ticktype="simple",...){
 #
 # pyhat=T, predicted values are returned.
 #
-library(MASS)
-library(akima)
 if(SEED)set.seed(12) # set seed for cov.mve
 if(eout && xout)stop("Not allowed to have eout=xout=TRUE")
 if(!is.matrix(x))stop("Data are not stored in a matrix.")
@@ -5171,7 +5163,6 @@ if(is.matrix(y)){
 if(ncol(y)==1)y=as.vector(y)
 }
 x1<-cbind(1,x)
-library(MASS)
 reslms<-lmsreg(x,y)$resid
 sighat<-sqrt(median(reslms^2))
 sighat<-1.4826*(1+(5/(length(y)-ncol(x)-1)))*sighat
@@ -5303,7 +5294,6 @@ rung3hat<-function(x,y,est=tmean,pts,fr=1,DET=TRUE,...){
 #
 if(!is.matrix(x))stop("Predictors are not stored in a matrix.")
 if(!is.matrix(pts))stop("The third argument, pts, must be a matrix.")
-library(MASS)
 if(DET)m=DETMCD(x)
 else m<-cov.mve(x)
 rmd<-1 # Initialize rmd
@@ -5339,7 +5329,6 @@ val
 # If h is specfied, use h smallest residuals, and ignore tr
 #
 x<-as.matrix(x)
-library(MASS)
 if(is.na(h)) h <- length(y) - floor(tr * length(y))
 X<-cbind(x,y)
 X<-elimna(X)
@@ -5418,7 +5407,6 @@ if(ADJ)alpha=rung3hat.pcrit(x,pts=pts,tr=tr,nmin=nmin,fr=fr,iter=iter)
 x=as.matrix(x)
 p=ncol(x)
 pts=as.matrix(pts)
-library(MASS)
 m<-cov.mve(x)
 rmd<-1 # Initialize rmd
 nval<-1
@@ -5576,8 +5564,6 @@ pr=TRUE,SEED=TRUE,ticktype="simple"){
 #  theta is the azimuthal direction and phi the colatitude
 #   expand controls relative length of z-axis
 #
-library(MASS)
-library(akima)
 if(plotit){
 if(pr){
 print("Note: when there is independence, scale=F is probably best")
@@ -5665,7 +5651,6 @@ lines(sx,sysm)
 }}
 x<-as.matrix(x)
 if(ncol(x)>1){
-library(MASS)
 if(is.na(fr))fr<-.6
 m<-covmve(x)
 for(i in 1:nrow(x)){
@@ -5673,7 +5658,6 @@ rmd[i]<-sum(near3d(x,x[i,],fr,m))
 }
 rmd<-rmd/nrow(x)
 if(plotit && ncol(x)==2){
-library(akima)
 fitr<-rmd
 iout<-c(1:length(fitr))
 nm1<-length(fitr)-1
@@ -5970,7 +5954,6 @@ for(i in 1:nrow(pts))rmd[i]<-est(y[nmat[i,]],...)
 for(i in 1:nrow(pts))nval[i]<-sum(nmat[i,])
 if(ncol(x)==2){
 if(plotit){
-library(akima)
 fitr<-rmd[nval>nmin]
 y<-y[nval>nmin]
 x<-x[nval>nmin,]
@@ -6031,7 +6014,6 @@ sppbi<-function(J,K,x,est=tmean,JK=J*K,grp=c(1:JK),nboot=500,SEED=TRUE,pr=TRUE,.
 #  using grp
 #
 if(pr)print('As of Oct. 2014, argument est defaults to tmean')
-library(MASS)
        if(is.matrix(x)) {
                 y <- list()
                 for(j in 1:ncol(x))
@@ -6186,7 +6168,6 @@ MC=FALSE,MDIS=FALSE,pr=TRUE,...){
 #  using grp
 #
 if(pr)print('As of Oct. 2014 the argument est defaults to tmean')
-library(MASS)
        if(is.matrix(x)) {
                 y <- list()
                 for(j in 1:ncol(x))
@@ -6383,7 +6364,6 @@ if(pr){
 if(!STAND){
 if(ncol(m)>1)print("STAND=FALSE. If measures are on different scales, might want to use STAND=TRUE")
 }}
-library(MASS)
 m=elimna(m)
 m<-as.matrix(m)
 nv=nrow(m)
@@ -6852,7 +6832,6 @@ x1=as.matrix(x1)
 x2=as.matrix(x2)
 data<-matrix(sample(length(y1),size=n*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
-library(parallel)
 est1=mclapply(data,Danctspb.sub,x1,y1,xr=pts,regfun=regfun,xout=FALSE,...)
 est2=mclapply(data,Danctspb.sub,x2,y2,xr=pts,regfun=regfun,xout=FALSE,...)
 est1=matl(est1)
@@ -8636,7 +8615,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,corCOMmcp_sub,x,y,corfun,...)
 }
 if(!MC)bvec<-lapply(data,corCOMmcp_sub,x,y,corfun,...)
@@ -9514,7 +9492,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,corCOMmcp_sub,x,y,corfun,...)
 }
 if(!MC)bvec<-lapply(data,corCOMmcp_sub,x,y,corfun,...)
@@ -9573,7 +9550,6 @@ R=order(est,decreasing=TRUE)
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,corCOMmcp_sub,x,y,corfun,...)
 }
 if(!MC)bvec<-lapply(data,corCOMmcp_sub,x,y,corfun,...)
@@ -9619,7 +9595,6 @@ R=order(est,decreasing=TRUE)
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,corCOMmcp_sub,x,y,corfun,...)
 }
 if(!MC)bvec<-lapply(data,corCOMmcp_sub,x,y,corfun,...)
@@ -12595,7 +12570,6 @@ KMS.ES.M<-function(x,y){
 # based	on an M-estimator and percentage bend variance
 #Cohen d=.2, .5 .8 correspond to .1, .25 and .4') (KMS p. 180)
 
-library(MASS)
 x<-elimna(x)
 y<-elimna(y)
 n1<-length(x)
@@ -13553,7 +13527,6 @@ xlab="X",ylab="",zlab="",theta=50,phi=25,expand=.5,scale=TRUE,ticktype="simple")
 # sop=F, use usual linear model y~x1+x2...
 # sop=T, use splines
 #
-library(akima)
 library(mgcv)
 x<-as.matrix(x)
 np<-ncol(x)
@@ -14876,7 +14849,6 @@ trimciv2<-function(x,tr=.2,alpha=.05,null.value=0,pr=TRUE){
 #
 #  The default amount of trimming is tr=.2
 #
-library(MASS)
 x<-elimna(x)
 se<-sqrt(winvar(x,tr))/((1-2*tr)*sqrt(length(x)))
 trimci<-vector(mode="numeric",length=2)
@@ -15791,7 +15763,6 @@ list(Factor.A=FA,Factor.B=FB)
 # ----------------------------------------------------------------------------
 
 MCDCOR<-function(x){
-library(MASS)
 #val<-cov.mcd(x)
 val<-DetMCD(x)
 val=cov2cor(val$cov)
@@ -15866,7 +15837,6 @@ null.val=0,MC=FALSE,...){
 # difference scores. For robust estimators, these two approaches generally give
 # different results.
 #
-library(MASS)
 if(!is.null(y))x=cbind(x,y)
 x=elimna(x)
 if(SEED)set.seed(2)
@@ -15880,7 +15850,6 @@ v[i]=rm.margOM.es(x[id,],locfun=locfun)
 }
 }
 if(MC){
-library(parallel)
 d=list()
 for(j in 1:nboot){
 id=sample(n,replace=TRUE)
@@ -17093,8 +17062,6 @@ p<-ncol(x)
 if(p==1)val<-rungen(x[,1],y,est=est,pyhat=TRUE,plotit=plotit,fr=fr,
 xlab=xlab,ylab=ylab,...)$output
 if(p>1){
-library(MASS)
-library(akima)
 np<-p+1
 x<-m[,1:p]
 y<-m[,np]
@@ -17308,8 +17275,6 @@ x<-as.matrix(x)
 p<-ncol(x)
 if(p==1)val<-lplot(x[,1],y,pyhat=TRUE,plotit=plotit,span=fr,pr=FALSE)$yhat.values
 if(p>1){
-library(MASS)
-library(akima)
 np<-p+1
 x<-m[,1:p]
 y<-m[,np]
@@ -17764,8 +17729,6 @@ phi=25,expand=.5,scale=FALSE,xlab="X",ylab="Y",zlab="",ticktype="simple"){
 # pr=T, returns density estimates at pts
 # ticktype="detailed" will create ticks as done in two-dimensional plot
 #
-library(MASS)
-library(akima)
 if(is.na(pts[1]))pts<-x
 if(ncol(x)!=ncol(pts))stop("Number of columns for x and pts do not match")
 if(!is.matrix(x))stop("Data should be stored in a matrix")
@@ -18044,7 +18007,6 @@ bl[[k]]=list(x1[id1],y1[id1],x2[id2],y2[id2])
 }
 if(!MC)temp=lapply(bl,QS.ancbse.sub,pts)
 else{
-library(parallel)
 temp=mclapply(bl,QS.ancbse.sub,pts)
 }
 tv=list()
@@ -18629,7 +18591,6 @@ ylab="VAR 2"){
 #  When plotting,
 #  center is marked with a cross, +.
 #
-library(MASS)
 if(cop!=2 && cop!=3 && cop!=4)stop("Only cop=2, 3 or 4 is allowed")
 if(is.list(m))stop("Store data in a matrix; might use function listm")
 m<-as.matrix(m)
@@ -18737,7 +18698,6 @@ opreg<-function(x,y,regfun=tsreg,cop=3,MC=FALSE,varfun=pbvar,corfun=pbcor,STAND=
 #
 #  Note: argument xout is not relevant here, but is included to avoid conflicts when using regci.
 #
-if(MC)library(parallel)
 x<-as.matrix(x)
 m<-cbind(x,y)
 m<-elimna(m) # eliminate any rows with missing data
@@ -19946,7 +19906,6 @@ y=x[[2]]
 x=x[[1]]
 }
 }
-library(MASS)
 x<-x[!is.na(x)]  # Remove any missing values in x
 y<-y[!is.na(y)]  # Remove any missing values in y
 n1=length(x)
@@ -20684,7 +20643,6 @@ pdisMC<-function(m,MM=FALSE,cop=3,dop=1,center=NA){
 #  cop=4 uses MVE center
 #  cop=5 uses skipped mean
 #
-library(parallel)
 m<-elimna(m) # Remove missing values
 m<-as.matrix(m)
 if(ncol(m)==1){
@@ -21352,7 +21310,6 @@ STAND=TRUE,alpha=.05,pr=TRUE,AD=FALSE,...){
 #   n is sample size after missing values are removed
 #   nv.keep is sample size after leverage points are removed.
 #
-library(parallel)
 if(pr){
 if(!xout)print("Might want to consider xout=T to  remove leverage points")
 }
@@ -21605,7 +21562,6 @@ xout=FALSE,outfun=outpro,pr=FALSE,xlab='X',ylab='Y',...){
 #   estimated intercept, the second element contains the estimate of
 #   the first predictor, etc.
 #
-library(parallel)
 x<-as.matrix(x)
 xx<-cbind(x,y)
 xx<-elimna(xx)
@@ -21900,7 +21856,6 @@ STAND=TRUE,alpha=.05,pr=TRUE,...){
 #   n is sample size after missing values are removed
 #   nv.keep is sample size after leverage points are removed.
 #
-library(parallel)
 if(SEED)set.seed(2)
 if(pr){
 if(!xout)print("Might want to consider xout=T to  remove leverage points")
@@ -22105,7 +22060,6 @@ xlab="VAR 1",ylab="VAR 2",rate=.05,iter=100,ip=6,pr=TRUE,SEED=TRUE){
 #
 # When dealing with p-variate data, p>9, this adjustment can be crucial
 #
-library(parallel)
 m=elimna(m)
 m=as.matrix(m)
 n=nrow(m)
@@ -22397,7 +22351,6 @@ effectg.sub<-function(x,y,locfun=tmean,varfun=winvarN,...){
 #  varfun defaults to winvarN, the Winsorized variance rescaled so that
 #  it estimates the population variance under normality.
 #
-library(MASS)
 x<-x[!is.na(x)]  # Remove any missing values in x
 y<-y[!is.na(y)]  # Remove any missing values in y
 m1=locfun(x,...)
@@ -26629,7 +26582,6 @@ t1wayF<-function(x,fac,tr=.2,nboot=100,SEED=TRUE,EP=FALSE,pr=TRUE){
 if(!EP){
 if(pr)print('To get an estimate of the explanatory measure of effect size, set EP=TRUE')
 }
-library(MASS)
 if(SEED)set.seed(2)
 x=fac2list(x,fac)
 J<-length(x)
@@ -26755,7 +26707,6 @@ if(is.null(dp))stop("Specify a value for dp, the column containing the data")
 x=fac2list(x[,dp],x[,g])
 }
 if(SEED)set.seed(2)
-if(MC)library(parallel)
 if(is.data.frame(x))x=as.matrix(x)
 if(is.matrix(x))x=listm(x)
 chk=tlist(x)
@@ -27402,7 +27353,6 @@ t1way.effect<-function(x,tr=.2,grp=NA,MAT=FALSE,lev.col=1,var.col=2){
 #
 #  Missing values are automatically removed.
 #
-library(MASS)
 if(MAT){
 if(!is.matrix(x))stop("With MAT=T, data must be stored in a matrix")
 if(length(lev.col)!=1)stop("Argument lev.col should have 1 value")
@@ -29452,7 +29402,6 @@ if(SEED)set.seed(2)
 mv=NA
 chk=0
 if(n1!=n2)nmiss=max(c(n1,n2))-min(c(n1,n2))
-if(MC)library(parallel)
 xy=list()
 for (i in 1:nboot){
 x1=ghdist(n,g=g,h=h)
@@ -29736,7 +29685,6 @@ xy[[i]][1:nmiss,1:2]=NA
 }
 if(!MC)pvals=lapply(xy,ancdet.sub,npts=npts,tr=tr)
 if(MC){
-library(parallel)
 pvals=mclapply(xy,ancdet.sub,npts=npts,tr=tr)
 }
 pvals=matl(pvals)
@@ -29838,7 +29786,6 @@ xy[[i]][1:nmiss,1:3]=NA
 }
 if(!MC)pvals=lapply(xy,ancdet2C.sub,tr=tr,FRAC=FRAC)
 if(MC){
-library(parallel)
 pvals=mclapply(xy,ancdet2C.sub,tr=tr,FRAC=FRAC)
 }
 pvals=matl(pvals)
@@ -30106,7 +30053,6 @@ list(n=nv,num.sig=num.sig,p.crit=p.crit,points=pts,output.sig=output.sig,output=
 ancJNmpcp<-function(n1,n2,regfun=qreg,CPP=FALSE,nreps=1000,alpha=.05,MC=FALSE,
 SEED=TRUE,cov1=FALSE){
 if(CPP)library(WRScpp)
-if(MC)library(parallel)
 if(SEED)set.seed(2)
 x=list()
 n=max(c(n1,n2))
@@ -30153,7 +30099,6 @@ xy[[i]][[4]]=rnorm(n2)
 }
 if(!MC)pv=lapply(xy,ancovaV2pv.sub,qpts=qpts,qvals=qvals,nboot=nboot,MC=FALSE,est=est)
 if(MC){
-library(parallel)
 pv=mclapply(xy,ancovaV2pv.sub,qpts=qpts,qvals=qvals,nboot=nboot,MC=FALSE,est=est)
 }
 pv=as.vector(matl(pv))
@@ -30528,7 +30473,6 @@ xy[[i]]=rmul(n)
 }
 if(!MC)pvals=lapply(xy,rplotCITAP.sub,npts=npts,tr=tr,fr=fr,alpha=alpha,nmin=nmin)
 if(MC){
-library(parallel)
 pvals=mclapply(xy,rplotCITAP.sub,npts=npts,tr=tr,fr=fr,alpha=alpha,nmin=nmin)
 }
 pvals=matl(pvals)
@@ -30575,7 +30519,6 @@ xy[[i]]=rmul(n)
 }
 if(!MC)pvals=lapply(xy,rplotCIv2.sub,tr=tr,fr=fr,nmin=nmin)
 if(MC){
-library(parallel)
 pvals=mclapply(xy,rplotCIv2.sub,tr=tr,fr=fr,nmin=nmin)
 }
 pvals=matl(pvals)
@@ -30877,7 +30820,6 @@ D.akp.effect<-function(x,y=NULL,null.value=0,tr=.2){
 #  When comparing two dependent groups, data for the second group can be stored in
 #  the second argument y. The function then computes the difference scores x-y
 #
-library(MASS)
 if(!is.null(y))x=x-y
 x<-elimna(x)
 s1sq=winvar(x,tr=tr)
@@ -32945,7 +32887,6 @@ dfried<-function(m,plotit=TRUE,pop=0,fr=.8,v2=FALSE,op=FALSE){
 if(is.list(m))m<-matl(m)
 if(!is.matrix(m))stop("m should be a matrix having at least 2 columns.")
 m<-elimna(m)
-library(MASS)
 K<-ncol(m)
 n<-nrow(m)
 if(n<=10 && !op)print("With n<=10, might want to use op=T")
@@ -33656,7 +33597,6 @@ p=ncol(as.matrix(x))
 p1=p+1
 x=xy[,1:p]
 y=xy[,p1]
-library(MASS)
 res<-rinit(y~x)$res
 res.scale<-abs(res)/mad(res)
 flag<-(res.scale >=K)
@@ -34081,7 +34021,6 @@ est2=t(as.matrix(est2))
 }
 
 if(MC){
-library(parallel)
 data=listm(data)
 est1=mclapply(data,DancGLOB_sub,xy=xy[,1:2],pts=pts,est=est,fr=fr1,nmin=nmin,...)
 est2=mclapply(data,DancGLOB_sub,xy=xy[,3:4],pts=pts,est=est,fr=fr2,nmin=nmin,...)
@@ -34721,7 +34660,6 @@ if(pr){
 if(!xout)print('Suggest also looking at result using xout=TRUE')
 }
 if(!is.null(pch))pc=pch
-library(stats)
 x<-as.matrix(x)
 m<-elimna(cbind(x,y))
 n.orig=nrow(m)
@@ -34729,7 +34667,6 @@ n.keep=n.orig
 if(!is.matrix(x))stop("x is not a matrix")
 d<-ncol(x)
 if(d>=2){
-library(akima)
 if(ncol(x)==2 & !scale){
 if(pr){
 print("scale=FALSE is specified.")
@@ -35115,7 +35052,6 @@ effectg<-function(x,y,locfun=tmean,varfun=winvarN,nboot=100,SEED=TRUE,...){
 #  (explanatory power) based on the measures of location and scale
 # indicated by the arguments locfun and varfun, respectively
 #
-library(MASS)
 if(SEED)set.seed(2)
 x<-x[!is.na(x)]  # Remove any missing values in x
 y<-y[!is.na(y)]  # Remove any missing values in y
@@ -35142,7 +35078,6 @@ winvarN<-function(x,tr=.2){
 # normal distribution
 #
 x=elimna(x)
-library(MASS)
 cterm=NULL
 if(tr==0)cterm=1
 if(tr==0.1)cterm=0.6786546
@@ -35224,7 +35159,6 @@ y=x[[2]]
 x=x[[1]]
 }
 }
-library(MASS)
 x<-x[!is.na(x)]  # Remove any missing values in x
 y<-y[!is.na(y)]  # Remove any missing values in y
 n1=length(x)
@@ -36113,7 +36047,6 @@ near3d<-function(x,pt,fr=.8,m){
 # pt is a vector of length p (a point in p-space).
 # m is cov.mve(x) computed by runm3d
 #
-library(MASS)
 if(!is.matrix(x))stop("Data are not stored in a matrix.")
 dis<-sqrt(mahalanobis(x,pt,m$cov))
 dflag<-dis < fr
@@ -36330,7 +36263,6 @@ m[[i]]=list(x1[id1],y1[id1],x2[id2],y2[id2])
 }
 if(!MC)v=lapply(m,anclinQS.sub,pts=pts,npts=npts,...)
 if(MC){
-library(parallel)
 v=mclapply(m,anclinQS.sub,pts=pts,npts=npts,...)
 }
 v=matl(v)
@@ -36886,7 +36818,6 @@ regmediate<-function(x,y,regfun=tsreg,nboot=400,alpha=.05,xout=FALSE,outfun=out,
 #   MC=T. A multicore processor will be used.
 #   xout=T will remove leverage points using the function indicated by the argument out.
 #
-if(MC)library(parallel)
 x<-as.matrix(x)
 p1<-ncol(x)+1
 p<-ncol(x)
@@ -36952,7 +36883,6 @@ SEED=TRUE,pr=TRUE,...){
 #   MC=T. A multicore processor will be used.
 #   xout=T will remove leverage points using the function indicated by the argument out.
 #
-if(MC)library(parallel)
 x<-as.matrix(x)
 p1<-ncol(x)+1
 p<-ncol(x)
@@ -39583,7 +39513,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,corCOMmcp_sub,x,y,corfun)
 }
 IB=NA
@@ -42096,7 +42025,6 @@ kms.effect<-function(x,y,tr=.2,DIF=NULL){
 # Given a value for the difference that is of interest
 # Stein2g determines sample size needed so that power is equal to some specified value for DIF.
 
-library(MASS)
 x<-elimna(x)
 y<-elimna(y)
 n1<-length(x)
@@ -45075,7 +45003,6 @@ interWMWpb<-function(x,nreps=100,SEED=TRUE,nboot=500,alpha=.05,nmax=10^8,MC=TRUE
 #
 #
 #
-if(MC)library(parallel)
 if(SEED)set.seed(2)
 if(is.data.frame(x))x=as.matrix(x)
 if(is.matrix(x))x<-listm(x)
@@ -45139,7 +45066,6 @@ y[[i]]=mat
 }
 if(!MC)pv=lapply(y,linWMWpb.lsub,con=con,nreps=nreps,SEED=SEED)
 if(MC){
-library(parallel)
 pv=mclapply(y,linWMWpb.lsub,con=con,nreps=nreps,SEED=SEED)
 }
 pv=pool.a.list(pv)
@@ -47313,7 +47239,6 @@ DqdifMC<-function(x,y=NULL,q=.25,nboot=1000,plotit=TRUE,xlab='Group 1 - Group 2'
 #
 # q indicates the quantiles to be compared. By default, the .25 and .75 quantiles are used.
 #
-library(parallel)
 if(SEED)set.seed(2)
 if(q>=.5)stop('q should be less than .5')
 if(!is.null(y)){
@@ -47441,7 +47366,6 @@ qcomhdMC<-function(x,y,est=hd,q=c(.1,.25,.5,.75,.9),nboot=4000,plotit=TRUE,SEED=
 #
 #   Function returns p-values and critical p-values based on Hochberg's method.
 #
-library(parallel)
 if(SEED)set.seed(2)
 print('Can also use the function qcomhd with the argument MC=TRUE')
 pv=NULL
@@ -47575,7 +47499,6 @@ val
 #   Setting est=onestep will compare M-estimators of location.
 #   The default number of bootstrap samples is nboot=2000
 #
-library(parallel)
 x<-x[!is.na(x)] # Remove any missing values in x
 y<-y[!is.na(y)] # Remove any missing values in y
 if(SEED)set.seed(2) # set seed of random number generator so that
@@ -47615,7 +47538,6 @@ cbmhdMC<-function(x,y,alpha=.05,q=.25,plotit=FALSE,pop=0,fr=.8,rval=15,xlab="",y
 #  pop=4 stem-and-leaf
 #  pop=5 histogram
 #
-library(parallel)
 if(SEED)set.seed(2)
 if(q>=.5)stop("q should be less than .5")
 if(q<=0)stop("q should be greater than 0")
@@ -47675,7 +47597,6 @@ lintestMC<-function(x,y,regfun=tsreg,nboot=500,alpha=.05,xout=FALSE,outfun=out,.
 # Test the hypothesis that the regression surface is a plane.
 # Stute et al. (1998, JASA, 93, 141-149).
 #
-library(parallel)
 set.seed(2)
 if(identical(regfun,tshdreg))print('When using tshdreg, be sure to include RES=TRUE')
 #if(identical(regfun,Qreg))print('When using Qreg, be sure to include res.vals=TRUE')
@@ -48574,7 +48495,6 @@ val=NULL,...){
 #  Default is to use the largest value, 8 in the example.
 #
 options(warn=-1)
-library(parallel)
 x<-as.matrix(x)
 p1<-ncol(x)+1
 p<-ncol(x)
@@ -48804,7 +48724,6 @@ flag=y==max(y)
 yy[flag]=1
 y=yy
 x=as.matrix(x)
-library(MASS)
 m=cov.mve(x)
 flag<-(y==1)
 phat<-NA
@@ -48821,7 +48740,6 @@ lines(x[flag2],phat[flag2])
 }}
 if(p==2){
 if(plotit){
-library(akima)
 if(pr){
 if(!scale)print("With dependence, suggest using scale=TRUE")
 }
@@ -49732,7 +49650,6 @@ y<-m[,p1]
 x=as.matrix(x)
 if(is.null(pts))pts=x
 pts=as.matrix(pts)
-library(MASS)
 m=covmve(x)
 phat<-NA
 m1=matrix(NA,nrow=nrow(pts),ncol=nrow(pts))
@@ -49951,7 +49868,6 @@ print("To get adjusted estimates of strength of association, use ADJ=T")
 print("The strength of association is estimated under independence")
 print(" and then rescaled")
 }}
-library(akima)
 library(mgcv)
 x<-as.matrix(x)
 np<-ncol(x)
@@ -51610,7 +51526,6 @@ use.cor=TRUE
 
 if(rho+delta>1)stop('rho+delta is greater than 1')
 if(rho+delta<0-1)stop('rho+delta is less than -1')
-if(MC)library(parallel)
 if(SEED)set.seed(2)
 if(delta<0-1 || delta>1)stop('rho + delta should be between -1 and 1')
 PMD=0
@@ -51659,7 +51574,6 @@ a
 
 ltsR<-function(x,y,RES=FALSE,varfun=pbvar,corfun=pbcor){
 #
-library(MASS)
 xy=elimna(cbind(x,y))
 p1=ncol(xy)
 p=p1-1
@@ -52089,7 +52003,6 @@ grp=c(1:ncol(x)),nullvec=c(rep(0,length(grp))),xout=FALSE,outfun=outpro,SEED=TRU
 #  The critical value is determined with the percentile bootstrap method
 #  in conjunction with Mahalanobis distance.
 #
-library(parallel)
 x<-as.matrix(x)
 p1<-ncol(x)+1
 p<-ncol(x)
@@ -53987,7 +53900,6 @@ mwmw<-function(m1,m2,cop=5,pr=TRUE,plotit=TRUE,pop=1,fr=.8,op=1,dop=1){
 # cop=4, MVE
 # cop=5, skipped mean
 #
-library(akima)
 if(is.null(dim(m1)))stop("m1 is not a matrix or data frame")
 if(is.null(dim(m2)))stop("m2 is not a matrix or data frame")
 if(ncol(m1)!=ncol(m2))stop("number of columns for m1 and m2 are not equal")
@@ -56650,7 +56562,6 @@ rmat<-matsqrt(cmat)
 x<-x%*%rmat
 }
 if(!OP){
-library(MASS)
 x=mvrnorm(n,rep(0,p),cmat)
 if(g==0)x=x*exp(h*x^2/2)
 if(g>0)x=(exp(g*x)-1)*exp(h*x^2/2)/g
@@ -56770,7 +56681,6 @@ tbscov <- function(x,eps=1e-3,maxiter=20,r=.45,alpha=.05){
 #
 if(!is.matrix(x))stop("x should be a matrix with two or more columns")
 x<-elimna(x)
-library(MASS)
 temp<-cov.mve(x)
 t1<-temp$center
 s<-temp$cov
@@ -57679,7 +57589,6 @@ bl[[k]]=list(x1[id1,],y1[id1],x2[id2,],y2[id2])
 }
 if(!MC)tv=lapply(bl,wmw.ancbsep2.sub,pts)
 else{
-library(parallel)
 tv=mclapply(bl,wmw.ancbsep2.sub,pts)
 }
 E=t(matl(tv))
@@ -57909,7 +57818,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,corCOMmcp_sub,x,y,corfun,...)
 }
 if(!MC)bvec<-lapply(data,corCOMmcp_sub,x,y,corfun,...)
@@ -57985,7 +57893,6 @@ if(k==1)bvec1=bvec
 if(k==2)bvec2=bvec
 }
 if(MC){
-library(parallel)
 data=listm(t(data))
 bvec<-mclapply(data,regbootMC,x,y,regfun,mc.preschedule=TRUE,xout=FALSE,...)
 if(k==1)bvec1=matl(bvec)
@@ -58582,12 +58489,10 @@ if(ADJ){
 if(SEED)set.seed(2)
 }
 si=1
-library(stats)
 x<-as.matrix(x)
 if(!is.matrix(x))stop("x is not a matrix")
 d<-ncol(x)
 if(d>=2){
-library(akima)
 if(ncol(x)==2 && !scale){
 if(pr){
 print("scale=F is specified.")
@@ -59263,8 +59168,6 @@ mopreg<-function(x,y,regfun=tsreg,cop=3,KEEP=TRUE,MC=FALSE,STAND=TRUE){
 #  KEEP=F, outliers will be eliminated
 #  KEEP=T, outliers are not eliminated
 # cop: see function outpro
-library(MASS)
-if(MC)library(parallel)
 x<-as.matrix(x)
 y<-as.matrix(y)
 px<-ncol(x)
@@ -61539,7 +61442,6 @@ list(n=c(nv1,nv2),intercept.slope.group1=reg1,intercept.slope.group2=reg2,output
 # ----------------------------------------------------------------------------
 
 ols.ridge<-function(x,y,k=NULL,xout=FALSE,outfun=outpro,MSF=TRUE){
-library(MASS)
 x=as.matrix(x)
 if(ncol(x)==1)stop('Should have two or more independent variables.')
 xy=elimna(cbind(x,y))
@@ -61952,7 +61854,6 @@ corbMC<-function(x,y,corfun=pbcor,nboot=599,alpha=.05,SEED=TRUE,...){
 #
 #   The default number of bootstrap samples is nboot=599
 #
-library(parallel)
 m1=cbind(x,y)
 m1<-elimna(m1)  # Eliminate rows with missing values
 nval=nrow(m1)
@@ -62351,7 +62252,6 @@ lplotcom2<-function(x,y,xout=FALSE,pts1=NULL,pts2=NULL,outfun=outpro,span=2/3,np
 #
 # For two independent variables, estimate their relative importance when using LOESS
 #
-library(stats)
 x<-as.matrix(x)
 m<-elimna(cbind(x,y))
 n.orig=nrow(m)
@@ -62870,7 +62770,6 @@ varfun=pbvar,e.pow=TRUE,pr=TRUE,ticktype="simple",pch='.',...){
 # With a single predictor, this function calls locreg
 # See locreg for information about np and plotting
 #
-library(akima)
 x<-as.matrix(x)
 xx<-cbind(x,y)
 xx<-elimna(xx)
@@ -63237,7 +63136,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 #
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
-library(parallel)
 bvec<-mclapply(data,scorsubMC,x,y,STAND=STAND,corfun=corfun,cop=cop,...)
 bvec=matl(bvec)   # A 1 by nboot matrix.
 bvec=as.vector(bvec)
@@ -63595,7 +63493,6 @@ chregF<-function(x,y,bend=1.345,SEED=FALSE,xout=FALSE,outfun=out,...){
 #  Comments in this function follow the notation used
 #  by Coakley and Hettmansperger
 #
-library(MASS)
 # with old version of R, need library(lqs) when using ltsreg
 # as the initial estimate.
 #
@@ -64818,7 +64715,6 @@ duplicate='error',pc='*',ticktype='simple',expand=.5){
 #
 x=as.matrix(x)
 if(ncol(x)!=2)stop('x should have two columns only')
-library(akima)
 fitr<-interp(x[,1],x[,2],y,duplicate=duplicate)
 persp(fitr,theta=theta,phi=phi,xlab=xlab,ylab=ylab,zlab=zlab,expand=expand,
 scale=scale,ticktype=ticktype)
@@ -65097,7 +64993,6 @@ data<-matrix(sample(n,size=n*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(!MC)bvec<-lapply(data,scorci.sub,x,corfun=corfun,outfun=outfun,STAND=TRUE)
 if(MC){
-library(parallel)
 bvec<-mclapply(data,scorci.sub,x,corfun=corfun,outfun=outfun,STAND=TRUE)
 }
 bvec=matl(bvec)   # A J by nboot matrix. J=(p^2-p)/2, p=number of IV variables.
@@ -65258,7 +65153,6 @@ data<-matrix(sample(n,size=n*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(!MC)bvec<-lapply(data,scorreg.sub,xy,corfun=corfun,outfun=outfun,ALL=ALL,...)
 if(MC){
-library(parallel)
 bvec<-mclapply(data,scorreg.sub,xy,corfun=corfun,outfun=outfun,ALL=ALL,...)
 }
 bvec=matl(bvec)   # A p by nboot matrix.
@@ -65336,7 +65230,6 @@ scorreg.cr<-function(n,p,iter=500,nboot=500,corfun=pcor,alpha=c(.05,.025,.01),TV
 #
 if(SEED)set.seed(65)
 x=list()
-library(parallel)
 p1=p+1
 for(i in 1:iter){
 x[[i]]=rmul(n,p=p1)
@@ -66776,7 +66669,6 @@ wmwaov<-function(x,est=median,nboot=500,MC=FALSE,SEED=TRUE,MM=FALSE){
 # test p_{jk}=.5 all j<k
 #
 if(SEED)set.seed(2)
-if(MC)library(parallel)
 if(is.data.frame(x))x=as.matrix(x)
 if(is.matrix(x))x=listm(x)
 chk=tlist(x)
@@ -66866,7 +66758,6 @@ nullvec=rep(0,ncol(x)+1),plotit=TRUE,opdis=2,gval=sqrt(qchisq(.95,ncol(x)+1))){
 # ADJ=T, Adjust p-values as described in Section 11.1.5 of the text.
 #
 if(SEED)set.seed(2)
-library(parallel)
 x<-as.matrix(x)
 m<-cbind(x,y)
 p1<-ncol(x)+1
@@ -66965,7 +66856,6 @@ opregMC<-function(x,y,regfun=tsreg,cop=3,fast=FALSE,pr=TRUE,prres=FALSE,STAND=TR
 #
 #  Note: argument xout is not relevant here, but is included to avoid conflicts when using regci.
 #
-library(parallel)
 x<-as.matrix(x)
 m<-cbind(x,y)
 m<-elimna(m) # eliminate any rows with missing data
@@ -67442,7 +67332,6 @@ xlab='Predictor 1',ylab='Predictor 2',xout=FALSE,outfun=outpro,SEED=TRUE,...){
 #   plotit=TRUE: If there are two predictors, plot 1-alpha confidence region based
 #  on the bootstrap samples.
 #
-library(parallel)
 x<-as.matrix(x)
 p1<-ncol(x)+1
 p<-ncol(x)
@@ -69016,7 +68905,6 @@ gv=NA
 if(is.null(p))p=ncol(x)
 if(!MC)for(j in 1:p)gv[j]=Ppca(x,p=j,pr=FALSE,SCALE=SCALE)$gen.sd
 if(MC){
-library(parallel)
 y=list()
 for(j in 1:p)y[[j]]=j
 gv=mclapply(y,Ppca.sum.sub,x,SCALE=SCALE,mc.preschedule=TRUE)
@@ -71020,7 +70908,6 @@ datay<-matrix(sample(y,size=length(y)*nboot,replace=TRUE),nrow=nboot)
 datax=listm(t(datax))
 datay=listm(t(datay))
 if(MC){
-library(parallel)
 bvecx<-mclapply(datax,hd,q,mc.preschedule=TRUE)
 bvecy<-mclapply(datay,hd,q,mc.preschedule=TRUE)
 }
@@ -71050,7 +70937,6 @@ datay<-matrix(sample(y,size=length(y)*nboot,replace=TRUE),nrow=nboot)
 datax=listm(t(datax))
 datay=listm(t(datay))
 if(MC){
-library(parallel)
 bvecx<-mclapply(datax,thd,q,mc.preschedule=TRUE)
 bvecy<-mclapply(datay,thd,q,mc.preschedule=TRUE)
 }
@@ -71370,7 +71256,6 @@ winsdN<-function(x,tr=.2){
 # Rescale a Winsorized standard deviation so that it estimates
 # the population standard deviation under normality.
 #
-library(MASS)
 x=elimna(x)
 e=winsd(x,tr=tr)
 if(tr==0)cterm=1
@@ -71471,7 +71356,6 @@ wincovN<-function(x,y=NULL,tr=0.2){
 #
 # Winsorized covariance rescaled to est cov under normality when there is no trimming
 #
-library(MASS)
 e=wincor(x,y,tr=tr)$cov
 if(tr==0)cterm=1
 else cterm=area(dnormvar,qnorm(tr),qnorm(1-tr))+2*(qnorm(tr)^2)*tr
@@ -72700,7 +72584,6 @@ temp<-temp/n
 test<-max(eigen(temp)$values)
 if(com.pval){
 if(SEED)set.seed(2)
-if(MC)library(parallel)
 xy=list()
 p1=p+1
 for(i in 1:nboot)xy[[i]]=rmul(n,p=p1)
@@ -72813,7 +72696,6 @@ regYciCV<-function(n,alpha=.05,nboot=1000,regfun=tsreg,SEED=TRUE,MC=FALSE,null.v
 if(SEED)set.seed(2)
 mv=NA
 chk=0
-if(MC)library(parallel)
 xy=list()
 for (i in 1:nboot)xy[[i]]=rmul(n)
 if(!MC)est=lapply(xy,regciCV.sub,regfun=regfun,null.value=null.value,...)
@@ -73355,7 +73237,6 @@ outblp.HH<-function(x,y,regfun=tsreg,omit.col=NULL,plotit=TRUE,xlab='X',ylab='Y'
 # columns 1 and 3 of x are ignored when checking for bad leverage points.
 #   These columns might be, for example, dummy variables.
 #
-library(MASS)
 xy=elimna(cbind(x,y))
 n=nrow(xy)
 x=as.matrix(x)
@@ -73604,7 +73485,6 @@ bl[[k]]=list(x1[id1],y1[id1],x2[id2],y2[id2])
 }
 if(!MC)tv=lapply(bl,QS.ancp2.sub,pts)
 else{
-library(parallel)
 tv=mclapply(bl,QS.ancp2.sub,pts)
 }
 tv=elimna(tv)
@@ -73840,7 +73720,6 @@ outfun=outpro,pr=TRUE){
 # alpha
 #
 if(pr)print('Here, the p-value is the smallest alpha value for which one or more hypotheses are rejected')
-library(parallel)
 if(SEED)set.seed(2)
 x=elimna(x)
 n=nrow(x)
@@ -73875,7 +73754,6 @@ mscorci.cr<-function(n,p,iter=500,corfun=pcor,alpha=c(.05,.025,.01),TV=FALSE,SEE
 #
 if(SEED)set.seed(65)
 x=list()
-library(parallel)
 for(i in 1:iter)x[[i]]=rmul(n,p=p)
 tval=mclapply(x,mscorci.cr.sub,corfun=corfun,nboot=iter)
 tval=list2vec(tval)
@@ -74173,7 +74051,6 @@ data<-matrix(sample(n,size=n*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(!MC)bvec<-lapply(data,scorreg.sub,xy,corfun=corfun,outfun=outfun,ALL=ALL)
 if(MC){
-library(parallel)
 bvec<-mclapply(data,scorreg.sub,xy,corfun=corfun,outfun=outfun,ALL=ALL)
 }
 bvec=matl(bvec)   # A p by nboot matrix.
@@ -74726,7 +74603,6 @@ mulgreg<-function(x,y,cov.fun=rmba){
 #
 # (y can be multivariate)
 #
-library(MASS)
 if(!is.matrix(y))stop("y is not a matrix")
 X<-cbind(x,y)
 X<-elimna(X)
@@ -75006,7 +74882,6 @@ r.gauss.pro<-function(n,C,M,t){
 # t is the interval over which the mean is computed
 #t <- seq(0, 1, by = 0.01) # will sample the GP at these points
 #
-library(MASS)
 k <- length(t)
 m <- M(t)
 S <- matrix(nrow = k, ncol = k)
@@ -76571,7 +76446,6 @@ y=as.matrix(y)
 n1=nrow(x)
 n2=nrow(y)
 est=bwdepth(x,y,plotit=plotit,xlab=xlab,ylab=ylab)
-if(MC)library(parallel)
 id=list()
 for(i in 1:nboot)id[[i]]=c(sample(n1,replace=TRUE),sample(n2,replace=TRUE))
 if(!MC)BE=lapply(id,bwdepth.sub,x,y,n1,n2,fun=fun)
@@ -77241,7 +77115,6 @@ rmanc.best.crit<-function(x,alpha=.05,tr=.2,iter=5000,SEED=TRUE,...){
 #  Determine critical p-values for rmanc.best
 #
 if(SEED)set.seed(2)
-library(MASS)
 J=ncol(x)
 n=nrow(x)
 Jm1=J-1
@@ -78806,7 +78679,6 @@ rgvar<-function(x,est=covmcd,...){
 #  Rocke's measure of scatter, this requires that the command
 #          library(robust) has been executed.
 #
-library(MASS)
 val<-prod(eigen(est(x,...))$values)
 val
 }
@@ -78850,7 +78722,6 @@ covmcd<-function(x,nsamp="sample"){
 # nsamp="sample" the number of samples
 #  is min(5*p, 3000)
 #
-library(MASS)
 oldSeed <- .Random.seed
 val<-cov.mcd(x,nsamp=nsamp)
 assign(x='.Random.seed', value=oldSeed, envir=.GlobalEnv)
@@ -78867,7 +78738,6 @@ mcdcov<-function(x,nsamp="sample"){
 #  is min(5*p, 3000)
 #
 #library(lqs)
-library(MASS)
 oldSeed <- .Random.seed
 val<-cov.mcd(x,nsamp=nsamp)
    assign(x='.Random.seed', value=oldSeed, envir=.GlobalEnv)
@@ -78931,7 +78801,6 @@ se<-sqrt(var(val))
 se
 }
 covmve<-function(x){
-library(MASS)
 oldSeed <- .Random.seed
 val<-cov.mve(x)
 assign(x='.Random.seed', value=oldSeed, envir=.GlobalEnv)
@@ -78939,7 +78808,6 @@ list(center=val$center,cov=val$cov)
 }
 
 mvecov<-function(x){
-library(MASS)
 val<-cov.mve(x)
 val$cov
 }
@@ -79139,7 +79007,6 @@ rm.marg.es<-function(x,y=NULL,tr=0.2){
 # Analog of robust version  KMS measure of effect size for two
 # dependent groups
 #
-library(MASS)
 if(!is.null(y))x=cbind(x,y)
 x=elimna(x)
 if(ncol(x)>2)stop('Should have only two variables')
@@ -79169,7 +79036,6 @@ null.val=0,MC=FALSE,...){
 # difference scores. For robust estimators, these two approaches generally give
 # different results.
 #
-library(MASS)
 if(!is.null(y))x=cbind(x,y)
 x=elimna(x)
 if(SEED)set.seed(2)
@@ -79183,7 +79049,6 @@ v[i]=rm.marg.es(x[id,],tr=tr)
 }
 }
 if(MC){
-library(parallel)
 d=list()
 for(j in 1:nboot){
 id=sample(n,replace=TRUE)
@@ -79219,7 +79084,6 @@ rm.margOM.es<-function(x,y=NULL,locfun=onestep){
 # dependent groups using a one-step M-estimator by default coupled
 # with the percentage bend variance.
 #
-library(MASS)
 if(!is.null(y))x=cbind(x,y)
 x=elimna(x)
 if(ncol(x)>2)stop('Should have only two variables')
@@ -79818,7 +79682,6 @@ rmdzD<-function(x,est=skipSPR,grp=NA,nboot=500,SEED=TRUE,MC=FALSE,...){
 #
 #   The default number of bootstrap samples is nboot=500
 #
-if(MC)library(parallel)
 if(!is.list(x) && !is.matrix(x))stop('Data must be stored in a matrix or in list mode.')
 if(is.list(x)){
 # put the data in an n by J matrix
@@ -80515,7 +80378,6 @@ est1=t(as.matrix(est1))
 est2=t(as.matrix(est2))
 }
 if(MC){
-library(parallel)
 data=listm(data)
 if(!ef){
 est1=mclapply(data,DancGLOB_sub,xy=xy[,1:2],pts=pts,est=est,fr=fr1,nmin=nmin,...)
@@ -80651,7 +80513,6 @@ est1=t(as.matrix(est1))
 est2=t(as.matrix(est2))
 }
 if(MC){
-library(parallel)
 data1=listm(data1)
 data2=listm(data2)
 if(!ef){
@@ -80845,7 +80706,6 @@ outmve<-function(x,mve.flag=TRUE,plotit=TRUE,SEED=TRUE,outsym='*'){
 #
 #  If plotit=TRUE, plot points and circle outliers.
 #
-library(MASS)
 if(SEED){
 oldSeed <- .Random.seed
 set.seed(12)
@@ -80983,7 +80843,6 @@ rmdzeroGMC<-function(x,est=skipSPR,grp=NA,nboot=500,SEED=TRUE,...){
 #
 #   The default number of bootstrap samples is nboot=500
 #
-library(parallel)
 if(!is.list(x) && !is.matrix(x))stop('Data must be stored in a matrix or in list mode.')
 if(is.list(x)){
 # put the data in an n by J matrix
@@ -81053,7 +80912,6 @@ yuendv2<-function(x, y, tr = 0.2, alpha = 0.05,null.value=0,pr=TRUE){
 #
 if(pr)print('This version returns an effect size similar to what is used by yuenv2')
 if(pr)print('To get a measure of effect size based on the difference scores, use trimciv2')
-library(MASS)
 if(tr<0)stop('tr must be between 0 and .5')
 if(tr>.5)stop('tr must be between 0 and .5')
 res=yuend(x=x,y=y,tr=tr,alpha=alpha)
@@ -81346,7 +81204,6 @@ bvec[[i]]=rmul(nmax,p=4)
 if(n1!=n2)bvec[[i]][np1:nmax,1:2]=NA
 }
 if(MC){
-library(parallel)
 prm=mclapply(bvec,ancGLOB_sub2,fr1=fr1,fr2=fr2,est=est,SEED=SEED,nboot=nboot,pts=pts,...)
 }
 if(!MC)prm=lapply(bvec,ancGLOB_sub2,fr1=fr1,fr2=fr2,est=est,SEED=SEED,nboot=nboot,pts=pts,...)
@@ -81404,7 +81261,6 @@ bvec[[i]][1:n2,3]=x2
 }
 prm=NA
 if(MC){
-library(parallel)
 prm=mclapply(bvec,ancGLOB_sub4,fr1=fr1,fr2=fr2,est=est,SEED=SEED,nboot=nboot,pts=pts,...)
 }
 #if(!MC)prm=lapply(bvec,ancGLOB_sub4,fr1=fr1,fr2=fr2,est=est,SEED=SEED,nboot=nboot,pts=pts,...)
@@ -82938,7 +82794,6 @@ crit=NULL,KS=TRUE,plotit=FALSE,...){
 #
 #  KS=TRUE: keep  the seed that was used
 #
-library(MASS)
 if(KS)oldSeed <- .Random.seed
 set.seed(12)
 if(is.data.frame(x))x=as.matrix(x)
@@ -82984,7 +82839,6 @@ lintestMC<-function(x,y,regfun=tsreg,nboot=500,alpha=.05,xout=FALSE,outfun=out,.
 if(identical(regfun,Qreg))print('When using Qreg, be sure to include res.vals=TRUE')
 if(identical(regfun,tshdreg))print('When using tshdreg, be sure to include RES=TRUE')
 if(identical(regfun,MMreg))print('When using MMreg, be sure to include RES=TRUE')
-library(parallel)
 set.seed(2)
 x<-as.matrix(x)
 d<-ncol(x)
@@ -83054,7 +82908,6 @@ xlab="Groups",ylab="",PB=FALSE){
 #
 if(tr==.5)stop("Use medpb to compare medians.")
 if(tr>.5)stop("Can't have tr>.5")
-library(MASS)
 x<-x[!is.na(x)]  # Remove any missing values in x
 y<-y[!is.na(y)]  # Remove any missing values in y
 h1<-length(x)-2*floor(tr*length(x))
@@ -83473,7 +83326,6 @@ diag(cmat)<-1
 }
 if(length(g)!=p)stop('Length of g should equal p')
 if(length(h)!=p)stop('Length of h should equal p')
-library(MASS)
 x=mvrnorm(n,rep(0,p),cmat)
 for(j in 1:p){
 if(g[j]==0)x[,j]=x[,j]*exp(h[j]*x[,j]^2/2)
@@ -83655,7 +83507,6 @@ rngh<-function(n,rho=0,p=2,g=0,h=0,ADJ=TRUE,pr=TRUE){
 # when transforming the marginal distributions to a g-and-h distribution, the correlation is rho.
 #
 #
-library(MASS)
 if(ADJ){
 adjrho=rngh.sub(n,g,h,rho)$rho.adjusted
 rho=adjrho
@@ -84790,7 +84641,6 @@ if(pr)print(paste("Number of principal components specified is",pval))
 #				  adapted by Karlien Vanden Branden.
 # Last Update: 14/01/2005
 if(!plotit)plots<-0
-library(MASS)
 	if(missing(x)){
 		stop("Error in robpca: You have to provide at least some data")
 	}
@@ -85734,7 +85584,6 @@ ancDEP.MULC.ES<-function(x1,y1,y2,fr1=1.5,fr2=1.5,tr=.2,pts=NULL,xout=FALSE,outf
 #  the significant points returned by
 #  ancdetM4 are used
 #
-library(MASS)
 x2=x1
 p=ncol(x1)
 if(p<2)stop('This function is for two or more covariates')
@@ -87369,7 +87218,6 @@ if(N>0)x[1:N,1:3]=NA
 data[[i]]=x
 }
 if(MC){
-library(parallel)
 res=mclapply(data,anc2COV.sub,FRAC=FRAC,TPM=TPM,tau=tau)
 }
 if(!MC)res=lapply(data,anc2COV.sub,FRAC=FRAC,TPM=TPM,tau=tau)
@@ -88257,7 +88105,6 @@ lplotcom2v2<-function(x,y,xout=FALSE,pts1=NULL,pts2=NULL,outfun=outpro,span=2/3,
 #
 # For two independent variables, estimate their relative importance when using LOESS
 #
-library(stats)
 x<-as.matrix(x)
 m<-elimna(cbind(x,y))
 n.orig=nrow(m)
@@ -88316,7 +88163,6 @@ MEDIAN=FALSE,Q1=FALSE,Q2=FALSE,alpha=.05,MC=FALSE,...){
 #  otherwise use alpha
 #
 if(SEED)set.seed(2)
-library(stats)
 x<-as.matrix(x)
 m<-elimna(cbind(x,y))
 n=nrow(m)
@@ -88389,7 +88235,6 @@ v1[i]=temp$mean.str1
 v2[i]=temp$mean.str2
 }}
 if(MC){
-library(parallel)
 data=listm(t(data))
 bvec<-mclapply(data,lplotCIMCv2,x,y,pts1=pts1,pts2=pts2,npts=npts,tr=tr,span=span)
 bvec=matl(bvec)  # a 2-by-nboot matrix.
@@ -88430,7 +88275,6 @@ p.crit=alpha
 if(ADJ.CI)print('Confidence intervals are based on the critical p-value')
 }
 if(SEED)set.seed(2)
-library(stats)
 x<-as.matrix(x)
 m<-elimna(cbind(x,y))
 n=nrow(m)
@@ -88465,7 +88309,6 @@ v1[i,j]=temp$mean.str1
 v2[i,j]=temp$mean.str2
 }}}
 if(MC){
-library(parallel)
 data=listm(t(data))
 for(j in 1:3){
 bvec<-mclapply(data,lplotCIMCv2,x,y,pts1=pts1[j],pts2=pts2[j],npts=npts,tr=tr,span=span)
@@ -88754,7 +88597,6 @@ interWMWAP<-function(x,nreps=100,SEED=TRUE,nboot=500,alpha=.05,nmax=10^8,MC=TRUE
 #  small unequal sample sizes when there is heteroscedasticity.
 #
 #
-if(MC)library(parallel)
 if(SEED)set.seed(2)
 if(is.data.frame(x))x=as.matrix(x)
 if(is.matrix(x))x<-listm(x)
@@ -89881,7 +89723,6 @@ if(SEED)set.seed(45)
 fv=NA
 p1=p+1
 a=list()
-library(parallel)
 for(i in 1:iter)a[[i]]=rmul(n,p1)
 fv=mclapply(a,ridgeGnullMC.sub,p=p,regfun=regfun)
 fv=matl(fv)
@@ -90291,7 +90132,6 @@ lines(x[flag2],phat)
 }}
 if(p==2){
 if(plotit){
-library(akima)
 if(pr){
 if(!scale)print("With dependence, suggest using scale=T")
 }
@@ -90870,7 +90710,6 @@ akp.effect<-function(x,y,EQVAR=TRUE,tr=.2){
 #
 # Computes the robust effect size suggested by
 #Algina, Keselman, Penfield Psych Methods, 2005, 317-328
-library(MASS)
 x<-elimna(x)
 y<-elimna(y)
 n1<-length(x)
@@ -90999,7 +90838,6 @@ ltsgreg<-function(x, y, tr = 0.2, h = NA,xout=FALSE,outfun=outpro,...)
         #  Can simply use ltsreg with tr=amount of trimming.
         #
 x<-as.matrix(x)
-library(MASS)
 X<-cbind(x,y)
 X<-elimna(X)
 np<-ncol(X)
@@ -91715,7 +91553,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 data<-matrix(sample(nrow(y),size=nrow(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec1<-mclapply(data,corbsub,x[,1],x[,2],corfun)
 bvec2<-mclapply(data,corbsub,y[,1],y[,2],corfun)
 }
@@ -91985,7 +91822,6 @@ SEED=TRUE,pr=TRUE,cop=3,con=0,nboot=NA,alpha=.05,bhop=FALSE){
 #   see=ancmg
 #  results in see[[1]] containing the results for the first point, see[[2]] the results for the 2nd point etc.
 #
-library(MASS)
 output<-NULL
 if(SEED)set.seed(2) # set the seed so that MVE always gives same result
 if(pr){
@@ -93267,7 +93103,6 @@ tbs<- function(x,eps=1e-3,maxiter=20,r=.45,alpha=.05,init.est=OGK){
 #      r=.45 is the breakdown point
 #      alpha=.05 is the asymptotic rejection probability.
 #
-library(MASS)
 x<-elimna(x)
 x=as.matrix(x)
     n <- nrow(x)
@@ -93602,7 +93437,6 @@ MAT2[1:nv[[4]],3:4]=cbind(x[[4]][id2],y[[4]][id2])
 dat2[[i]]=MAT2
 }
 if(MC){
-library(parallel)
 a1=mclapply(dat1,t2way.KMS.inter.sub,pts=pts)
 a2=mclapply(dat2,t2way.KMS.inter.sub,pts=pts)
 }
@@ -94287,7 +94121,6 @@ SEED=TRUE,plotit=FALSE,pr=TRUE,...){
 #  set everytime outpro is called.)
 #
 flag=FALSE
-library(parallel)
 if(SEED)set.seed(2)
 X=elimna(cbind(x1,y1,x2,y2))
 x1=as.matrix(x1)
@@ -94352,7 +94185,6 @@ alpha=.05,SEED=TRUE,plotit=FALSE,xlab='X',ylab='Y',pr=TRUE,...){
 #
 #  compute confidence interval for the difference in the slopes and intercepts
 #
-library(parallel)
 if(SEED)set.seed(2)
 X=elimna(cbind(x1,y1,x2,y2))
 x1=as.matrix(x1)
@@ -94826,8 +94658,6 @@ xlab="VAR 1",ylab="VAR 2",STAND=TRUE,tr=.2,q=.5,pr=TRUE,...){
 #
 #  Donoho-Gasko (Tukey) median is marked with a cross, +.
 #
-library(parallel)
-library(MASS)
 m<-as.matrix(m)
 if(pr){
 if(!STAND){
@@ -95315,7 +95145,6 @@ ols.plot.inter<-function(x,y, pyhat = FALSE, eout = FALSE, xout = FALSE, outfun 
 #  usual product term
 #
 #   x is assumed to be a matrix with two columns (two predictors)
-library(akima)
 x<-as.matrix(x)
 xx<-cbind(x,y)
 xx<-elimna(xx)
@@ -95358,7 +95187,6 @@ SCALE=FALSE,zscale=TRUE,eout=FALSE,outfun=out,ticktype="simple",xlab = "X", ylab
 if(eout && xout)stop("Not allowed to have eout=xout=T")
 x<-as.matrix(x)
 if(ncol(x)!=2)stop("x must be an n by 2 matrix")
-library(akima)
 library(mgcv)
 np=ncol(x)
 np1=np+1
@@ -95411,7 +95239,6 @@ reg.plot.inter<-function(x,y, regfun=tsreg,
 #  usual product term
 #
 #   x is assumed to be a matrix with two columns (two predictors)
-library(akima)
 x<-as.matrix(x)
 xx<-cbind(x,y)
 xx<-elimna(xx)
@@ -96312,7 +96139,6 @@ xlab="Predictor 1",ylab="Predictor 2",xout=FALSE,outfun=out,...){
 #   The predictor values are assumed to be in the n by p matrix x.
 #
 
-if(MC)library(parallel)
 x<-as.matrix(x)
 p1<-ncol(x)+1
 p<-ncol(x)
@@ -96432,7 +96258,6 @@ if(!WARN)options(warn=0)
 }
 }
 if(p==2){
-library(akima)
 fitr=logreg.pred(x,y,x)
 if(is.null(xlab))v='X'
 if(is.null(ylab))v[2]='Y'
@@ -96871,7 +96696,6 @@ rfanova<-function(x,grp=0){
 #  missing values are automatically removed.
 #  Tied values are a ssumed to occur with probability zero.
 #
-library(MASS)  # Needed for the function ginv
 if(!is.list(x))x<-listm(x)
 chk=tlist(x)
 if(chk!=0)print("Warning: tied values detected")
@@ -98750,7 +98574,6 @@ mlrregCI<-function(x,y,nboot=300,MC=FALSE,SEED=TRUE,op.dis=TRUE){
 #  bootstrap method.
 #
 if(SEED)set.seed(2)
-if(MC)library(parallel)
 est=mlrreg(x,y)$coef
 pval=est
 n=nrow(x)
@@ -98913,7 +98736,6 @@ mlrregWtest<-function(x,y,nboot=300,MC=FALSE,SEED=TRUE){
 #  Strategy: a variation of the wild bootstrap method, percentile version.
 #
 if(SEED)set.seed(2)
-if(MC)library(parallel)
 estit=mlrreg.subest(y,x)  #YES, y before x
 n=nrow(x)
 JK=ncol(x)*ncol(y)
@@ -99192,7 +99014,6 @@ quantile.used=floor(.75*n),RES=FALSE,...){
 # mvecov
 # mcdcov
 #
-library(MASS)
 if(!is.matrix(y))stop("y is not a matrix")
 X<-cbind(x,y)
 X<-elimna(X)

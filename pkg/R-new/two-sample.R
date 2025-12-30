@@ -33,7 +33,6 @@ qcomhdMC<-function(x,y,est=hd,q=c(.1,.25,.5,.75,.9),nboot=4000,plotit=TRUE,SEED=
 #
 #   Function returns p-values and critical p-values based on Hochberg's method.
 #
-library(parallel)
 if(SEED)set.seed(2)
 print('Can also use the function qcomhd with the argument MC=TRUE')
 pv=NULL
@@ -1084,7 +1083,6 @@ mwmw<-function(m1,m2,cop=5,pr=TRUE,plotit=TRUE,pop=1,fr=.8,op=1,dop=1){
 # cop=4, MVE
 # cop=5, skipped mean
 #
-library(akima)
 if(is.null(dim(m1)))stop("m1 is not a matrix or data frame")
 if(is.null(dim(m2)))stop("m2 is not a matrix or data frame")
 if(ncol(m1)!=ncol(m2))stop("number of columns for m1 and m2 are not equal")
@@ -1376,7 +1374,6 @@ y=x[[2]]
 x=x[[1]]
 }
 }
-library(MASS)
 x<-x[!is.na(x)]  # Remove any missing values in x
 y<-y[!is.na(y)]  # Remove any missing values in y
 n1=length(x)
@@ -1491,7 +1488,6 @@ xlab="Groups",ylab="",PB=FALSE){
 #
 if(tr==.5)stop("Use medpb to compare medians.")
 if(tr>.5)stop("Can't have tr>.5")
-library(MASS)
 x<-x[!is.na(x)]  # Remove any missing values in x
 y<-y[!is.na(y)]  # Remove any missing values in y
 h1<-length(x)-2*floor(tr*length(x))
@@ -1571,7 +1567,6 @@ if(is.null(dp))stop("Specify a value for dp, the column containing the data")
 x=fac2list(x[,dp],x[,g])
 }
 if(SEED)set.seed(2)
-if(MC)library(parallel)
 if(is.data.frame(x))x=as.matrix(x)
 if(is.matrix(x))x=listm(x)
 chk=tlist(x)
@@ -1910,7 +1905,6 @@ wmwaov<-function(x,est=median,nboot=500,MC=FALSE,SEED=TRUE,MM=FALSE){
 # test p_{jk}=.5 all j<k
 #
 if(SEED)set.seed(2)
-if(MC)library(parallel)
 if(is.data.frame(x))x=as.matrix(x)
 if(is.matrix(x))x=listm(x)
 chk=tlist(x)
@@ -2428,7 +2422,6 @@ yuendv2<-function(x, y, tr = 0.2, alpha = 0.05,null.value=0,pr=TRUE){
 #
 if(pr)print('This version returns an effect size similar to what is used by yuenv2')
 if(pr)print('To get a measure of effect size based on the difference scores, use trimciv2')
-library(MASS)
 if(tr<0)stop('tr must be between 0 and .5')
 if(tr>.5)stop('tr must be between 0 and .5')
 res=yuend(x=x,y=y,tr=tr,alpha=alpha)
@@ -2696,7 +2689,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 data<-matrix(sample(length(y),size=length(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec<-mclapply(data,twoDcorR_sub,x,y,corfun,...)
 }
 if(!MC)bvec<-lapply(data,twoDcorR_sub,x,y,corfun,...)
@@ -2740,7 +2732,6 @@ if(SEED)set.seed(2) # set seed of random number generator so that
 data<-matrix(sample(nrow(y),size=nrow(y)*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(MC){
-library(parallel)
 bvec1<-mclapply(data,corbsub,x[,1],x[,2],corfun)
 bvec2<-mclapply(data,corbsub,y[,1],y[,2],corfun)
 }
@@ -3047,7 +3038,6 @@ interWMWpb<-function(x,nreps=100,SEED=TRUE,nboot=500,alpha=.05,nmax=10^8,MC=TRUE
 #
 #
 #
-if(MC)library(parallel)
 if(SEED)set.seed(2)
 if(is.data.frame(x))x=as.matrix(x)
 if(is.matrix(x))x<-listm(x)
@@ -3110,7 +3100,6 @@ y[[i]]=mat
 }
 if(!MC)pv=lapply(y,linWMWpb.lsub,con=con,nreps=nreps,SEED=SEED)
 if(MC){
-library(parallel)
 pv=mclapply(y,linWMWpb.lsub,con=con,nreps=nreps,SEED=SEED)
 }
 pv=pool.a.list(pv)
@@ -3352,7 +3341,6 @@ interWMWAP<-function(x,nreps=100,SEED=TRUE,nboot=500,alpha=.05,nmax=10^8,MC=TRUE
 #  small unequal sample sizes when there is heteroscedasticity.
 #
 #
-if(MC)library(parallel)
 if(SEED)set.seed(2)
 if(is.data.frame(x))x=as.matrix(x)
 if(is.matrix(x))x<-listm(x)
@@ -3437,7 +3425,6 @@ y=x[[2]]
 x=x[[1]]
 }
 }
-library(MASS)
 x<-x[!is.na(x)]  # Remove any missing values in x
 y<-y[!is.na(y)]  # Remove any missing values in y
 n1=length(x)
@@ -4432,7 +4419,6 @@ bl[[k]]=list(x1[id1],y1[id1],x2[id2],y2[id2])
 }
 if(!MC)tv=lapply(bl,wmw.ancbse.sub,pts)
 else{
-library(parallel)
 tv=mclapply(bl,wmw.ancbse.sub,pts)
 }
 E=t(matl(tv))
@@ -4508,7 +4494,6 @@ datay<-matrix(sample(y,size=length(y)*nboot,replace=TRUE),nrow=nboot)
 datax=listm(t(datax))
 datay=listm(t(datay))
 if(MC){
-library(parallel)
 bvecx<-mclapply(datax,hd,q,mc.preschedule=TRUE)
 bvecy<-mclapply(datay,hd,q,mc.preschedule=TRUE)
 }
@@ -4700,7 +4685,6 @@ bl[[k]]=list(x1[id1,],y1[id1],x2[id2,],y2[id2])
 }
 if(!MC)tv=lapply(bl,wmw.ancbsep2.sub,pts)
 else{
-library(parallel)
 tv=mclapply(bl,wmw.ancbsep2.sub,pts)
 }
 E=t(matl(tv))
@@ -5197,7 +5181,6 @@ wmw.ref.mul.TOST <- function(x, y, refp = NULL, pts = NULL, q = seq(.6, .9, .1),
 #   Setting est=onestep will compare M-estimators of location.
 #   The default number of bootstrap samples is nboot=2000
 #
-library(parallel)
 x<-x[!is.na(x)] # Remove any missing values in x
 y<-y[!is.na(y)] # Remove any missing values in y
 if(SEED)set.seed(2) # set seed of random number generator so that

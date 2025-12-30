@@ -23,7 +23,6 @@ rfanova<-function(x,grp=0){
 #  missing values are automatically removed.
 #  Tied values are a ssumed to occur with probability zero.
 #
-library(MASS)  # Needed for the function ginv
 if(!is.list(x))x<-listm(x)
 chk=tlist(x)
 if(chk!=0)print("Warning: tied values detected")
@@ -1854,7 +1853,6 @@ t1way.effect<-function(x,tr=.2,grp=NA,MAT=FALSE,lev.col=1,var.col=2){
 #
 #  Missing values are automatically removed.
 #
-library(MASS)
 if(MAT){
 if(!is.matrix(x))stop("With MAT=T, data must be stored in a matrix")
 if(length(lev.col)!=1)stop("Argument lev.col should have 1 value")
@@ -1951,7 +1949,6 @@ t1wayF<-function(x,fac,tr=.2,nboot=100,SEED=TRUE,EP=FALSE,pr=TRUE){
 if(!EP){
 if(pr)print('To get an estimate of the explanatory measure of effect size, set EP=TRUE')
 }
-library(MASS)
 if(SEED)set.seed(2)
 x=fac2list(x,fac)
 J<-length(x)
@@ -2245,7 +2242,6 @@ sppbi<-function(J,K,x,est=tmean,JK=J*K,grp=c(1:JK),nboot=500,SEED=TRUE,pr=TRUE,.
 #  using grp
 #
 if(pr)print('As of Oct. 2014, argument est defaults to tmean')
-library(MASS)
        if(is.matrix(x)) {
                 y <- list()
                 for(j in 1:ncol(x))
@@ -2401,7 +2397,6 @@ MC=FALSE,MDIS=FALSE,pr=TRUE,...){
 #  using grp
 #
 if(pr)print('As of Oct. 2014 the argument est defaults to tmean')
-library(MASS)
        if(is.matrix(x)) {
                 y <- list()
                 for(j in 1:ncol(x))
@@ -2969,7 +2964,6 @@ t1wayv2<-function(x,tr=.2,grp=NA,MAT=FALSE,lev.col=1,var.col=2,nboot=100,SEED=TR
 #
 #  Missing values are automatically removed.
 #
-library(MASS)
 if(SEED)set.seed(2)
 if(is.data.frame(x))x=as.matrix(x)
 if(MAT){
@@ -3508,7 +3502,6 @@ MAT2[1:nv[[4]],3:4]=cbind(x[[4]][id2],y[[4]][id2])
 dat2[[i]]=MAT2
 }
 if(MC){
-library(parallel)
 a1=mclapply(dat1,t2way.KMS.inter.sub,pts=pts)
 a2=mclapply(dat2,t2way.KMS.inter.sub,pts=pts)
 }

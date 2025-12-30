@@ -165,7 +165,6 @@ xlab="X",ylab="",zlab="",theta=50,phi=25,expand=.5,scale=TRUE,ticktype="simple")
 # sop=F, use usual linear model y~x1+x2...
 # sop=T, use splines
 #
-library(akima)
 library(mgcv)
 x<-as.matrix(x)
 np<-ncol(x)
@@ -235,7 +234,6 @@ mulgreg<-function(x,y,cov.fun=rmba){
 #
 # (y can be multivariate)
 #
-library(MASS)
 if(!is.matrix(y))stop("y is not a matrix")
 X<-cbind(x,y)
 X<-elimna(X)
@@ -698,7 +696,6 @@ print("To get adjusted estimates of strength of association, use ADJ=T")
 print("The strength of association is estimated under independence")
 print(" and then rescaled")
 }}
-library(akima)
 library(mgcv)
 x<-as.matrix(x)
 np<-ncol(x)
@@ -915,7 +912,6 @@ SCALE=FALSE,zscale=TRUE,eout=FALSE,outfun=out,ticktype="simple",xlab = "X", ylab
 if(eout && xout)stop("Not allowed to have eout=xout=T")
 x<-as.matrix(x)
 if(ncol(x)!=2)stop("x must be an n by 2 matrix")
-library(akima)
 library(mgcv)
 np=ncol(x)
 np1=np+1
@@ -1088,7 +1084,6 @@ mlrregCI<-function(x,y,nboot=300,MC=FALSE,SEED=TRUE,op.dis=TRUE){
 #  bootstrap method.
 #
 if(SEED)set.seed(2)
-if(MC)library(parallel)
 est=mlrreg(x,y)$coef
 pval=est
 n=nrow(x)
@@ -1142,7 +1137,6 @@ mlrregWtest<-function(x,y,nboot=300,MC=FALSE,SEED=TRUE){
 #  Strategy: a variation of the wild bootstrap method, percentile version.
 #
 if(SEED)set.seed(2)
-if(MC)library(parallel)
 estit=mlrreg.subest(y,x)  #YES, y before x
 n=nrow(x)
 JK=ncol(x)*ncol(y)
@@ -1199,7 +1193,6 @@ regmediate<-function(x,y,regfun=tsreg,nboot=400,alpha=.05,xout=FALSE,outfun=out,
 #   MC=T. A multicore processor will be used.
 #   xout=T will remove leverage points using the function indicated by the argument out.
 #
-if(MC)library(parallel)
 x<-as.matrix(x)
 p1<-ncol(x)+1
 p<-ncol(x)
@@ -1267,7 +1260,6 @@ SEED=TRUE,pr=TRUE,...){
 #   MC=T. A multicore processor will be used.
 #   xout=T will remove leverage points using the function indicated by the argument out.
 #
-if(MC)library(parallel)
 x<-as.matrix(x)
 p1<-ncol(x)+1
 p<-ncol(x)
@@ -1385,7 +1377,6 @@ quantile.used=floor(.75*n),RES=FALSE,...){
 # mvecov
 # mcdcov
 #
-library(MASS)
 if(!is.matrix(y))stop("y is not a matrix")
 X<-cbind(x,y)
 X<-elimna(X)
@@ -1979,7 +1970,6 @@ regYciCV<-function(n,alpha=.05,nboot=1000,regfun=tsreg,SEED=TRUE,MC=FALSE,null.v
 if(SEED)set.seed(2)
 mv=NA
 chk=0
-if(MC)library(parallel)
 xy=list()
 for (i in 1:nboot)xy[[i]]=rmul(n)
 if(!MC)est=lapply(xy,regciCV.sub,regfun=regfun,null.value=null.value,...)
@@ -2131,7 +2121,6 @@ if(SEED)set.seed(2)
 mv=NA
 chk=0
 if(n1!=n2)nmiss=max(c(n1,n2))-min(c(n1,n2))
-if(MC)library(parallel)
 xy=list()
 for (i in 1:nboot){
 x1=ghdist(n,g=g,h=h)
@@ -2383,7 +2372,6 @@ if(k==1)bvec1=bvec
 if(k==2)bvec2=bvec
 }
 if(MC){
-library(parallel)
 data=listm(t(data))
 bvec<-mclapply(data,regbootMC,x,y,regfun,mc.preschedule=TRUE,xout=FALSE,...)
 if(k==1)bvec1=matl(bvec)

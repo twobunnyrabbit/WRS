@@ -60,7 +60,6 @@ winvarN<-function(x,tr=.2){
 # normal distribution
 #
 x=elimna(x)
-library(MASS)
 cterm=NULL
 if(tr==0)cterm=1
 if(tr==0.1)cterm=0.6786546
@@ -126,7 +125,6 @@ winsdN<-function(x,tr=.2){
 # Rescale a Winsorized standard deviation so that it estimates
 # the population standard deviation under normality.
 #
-library(MASS)
 x=elimna(x)
 e=winsd(x,tr=tr)
 if(tr==0)cterm=1

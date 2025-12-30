@@ -7396,7 +7396,6 @@ MC=FALSE,MDIS=FALSE,pr=TRUE,...){
 #  using grp
 #
 if(pr)print('As of Oct. 2014 the argument est defaults to tmean')
-library(MASS)
        if(is.matrix(x)) {
                 y <- list()
                 for(j in 1:ncol(x))
@@ -7651,7 +7650,6 @@ sppbi<-function(J,K,x,est=tmean,JK=J*K,grp=c(1:JK),nboot=500,SEED=TRUE,pr=TRUE,.
 #  using grp
 #
 if(pr)print('As of Oct. 2014, argument est defaults to tmean')
-library(MASS)
        if(is.matrix(x)) {
                 y <- list()
                 for(j in 1:ncol(x))

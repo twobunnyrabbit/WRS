@@ -281,7 +281,6 @@ M
 }
 
 covmve<-function(x){
-library(MASS)
 oldSeed <- .Random.seed
 val<-cov.mve(x)
 assign(x='.Random.seed', value=oldSeed, envir=.GlobalEnv)
@@ -289,7 +288,6 @@ list(center=val$center,cov=val$cov)
 }
 
 mvecov<-function(x){
-library(MASS)
 val<-cov.mve(x)
 val$cov
 }
@@ -302,7 +300,6 @@ covmcd<-function(x,nsamp="sample"){
 # nsamp="sample" the number of samples
 #  is min(5*p, 3000)
 #
-library(MASS)
 oldSeed <- .Random.seed
 val<-cov.mcd(x,nsamp=nsamp)
 assign(x='.Random.seed', value=oldSeed, envir=.GlobalEnv)
@@ -318,7 +315,6 @@ mcdcov<-function(x,nsamp="sample"){
 #  is min(5*p, 3000)
 #
 #library(lqs)
-library(MASS)
 oldSeed <- .Random.seed
 val<-cov.mcd(x,nsamp=nsamp)
    assign(x='.Random.seed', value=oldSeed, envir=.GlobalEnv)
@@ -654,7 +650,6 @@ tbscov <- function(x,eps=1e-3,maxiter=20,r=.45,alpha=.05){
 #
 if(!is.matrix(x))stop("x should be a matrix with two or more columns")
 x<-elimna(x)
-library(MASS)
 temp<-cov.mve(x)
 t1<-temp$center
 s<-temp$cov
@@ -954,7 +949,6 @@ wincovN<-function(x,y=NULL,tr=0.2){
 #
 # Winsorized covariance rescaled to est cov under normality when there is no trimming
 #
-library(MASS)
 e=wincor(x,y,tr=tr)$cov
 if(tr==0)cterm=1
 else cterm=area(dnormvar,qnorm(tr),qnorm(1-tr))+2*(qnorm(tr)^2)*tr

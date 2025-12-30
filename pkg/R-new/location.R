@@ -770,7 +770,6 @@ cbmhdMC<-function(x,y,alpha=.05,q=.25,plotit=FALSE,pop=0,fr=.8,rval=15,xlab="",y
 #  pop=4 stem-and-leaf
 #  pop=5 histogram
 #
-library(parallel)
 if(SEED)set.seed(2)
 if(q>=.5)stop("q should be less than .5")
 if(q<=0)stop("q should be greater than 0")

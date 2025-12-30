@@ -169,7 +169,6 @@ if(pr){
 if(!xout)print('Suggest also looking at result using xout=TRUE')
 }
 if(!is.null(pch))pc=pch
-library(stats)
 x<-as.matrix(x)
 m<-elimna(cbind(x,y))
 n.orig=nrow(m)
@@ -177,7 +176,6 @@ n.keep=n.orig
 if(!is.matrix(x))stop("x is not a matrix")
 d<-ncol(x)
 if(d>=2){
-library(akima)
 if(ncol(x)==2 & !scale){
 if(pr){
 print("scale=FALSE is specified.")
@@ -410,7 +408,6 @@ rmat<-matsqrt(cmat)
 x<-x%*%rmat
 }
 if(!OP){
-library(MASS)
 x=mvrnorm(n,rep(0,p),cmat)
 if(g==0)x=x*exp(h*x^2/2)
 if(g>0)x=(exp(g*x)-1)*exp(h*x^2/2)/g
@@ -714,7 +711,6 @@ if(pr){
 if(!STAND){
 if(ncol(m)>1)print("STAND=FALSE. If measures are on different scales, might want to use STAND=TRUE")
 }}
-library(MASS)
 m=elimna(m)
 m<-as.matrix(m)
 nv=nrow(m)
@@ -1304,7 +1300,6 @@ near3d<-function(x,pt,fr=.8,m){
 # pt is a vector of length p (a point in p-space).
 # m is cov.mve(x) computed by runm3d
 #
-library(MASS)
 if(!is.matrix(x))stop("Data are not stored in a matrix.")
 dis<-sqrt(mahalanobis(x,pt,m$cov))
 dflag<-dis < fr
@@ -1520,7 +1515,6 @@ lines(sx,sysm)
 }}
 x<-as.matrix(x)
 if(ncol(x)>1){
-library(MASS)
 if(is.na(fr))fr<-.6
 m<-covmve(x)
 for(i in 1:nrow(x)){
@@ -1528,7 +1522,6 @@ rmd[i]<-sum(near3d(x,x[i,],fr,m))
 }
 rmd<-rmd/nrow(x)
 if(plotit && ncol(x)==2){
-library(akima)
 fitr<-rmd
 iout<-c(1:length(fitr))
 nm1<-length(fitr)-1
@@ -1665,7 +1658,6 @@ pdisMC<-function(m,MM=FALSE,cop=3,dop=1,center=NA){
 #  cop=4 uses MVE center
 #  cop=5 uses skipped mean
 #
-library(parallel)
 m<-elimna(m) # Remove missing values
 m<-as.matrix(m)
 if(ncol(m)==1){
@@ -1867,7 +1859,6 @@ ylab="VAR 2"){
 #  When plotting,
 #  center is marked with a cross, +.
 #
-library(MASS)
 if(cop!=2 && cop!=3 && cop!=4)stop("Only cop=2, 3 or 4 is allowed")
 if(is.list(m))stop("Store data in a matrix; might use function listm")
 m<-as.matrix(m)
@@ -2134,7 +2125,6 @@ crit=NULL,KS=TRUE,plotit=FALSE,...){
 #
 #  KS=TRUE: keep  the seed that was used
 #
-library(MASS)
 if(KS)oldSeed <- .Random.seed
 set.seed(12)
 if(is.data.frame(x))x=as.matrix(x)

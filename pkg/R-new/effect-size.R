@@ -183,7 +183,6 @@ akp.effect<-function(x,y,EQVAR=TRUE,tr=.2){
 #
 # Computes the robust effect size suggested by
 #Algina, Keselman, Penfield Psych Methods, 2005, 317-328
-library(MASS)
 x<-elimna(x)
 y<-elimna(y)
 n1<-length(x)
@@ -1486,7 +1485,6 @@ KMS.ES.M<-function(x,y){
 # based	on an M-estimator and percentage bend variance
 #Cohen d=.2, .5 .8 correspond to .1, .25 and .4') (KMS p. 180)
 
-library(MASS)
 x<-elimna(x)
 y<-elimna(y)
 n1<-length(x)

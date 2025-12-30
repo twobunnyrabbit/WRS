@@ -9,10 +9,11 @@ Maintainer: Felix Schönbrodt <felix@nicebread.de>
 URL: https://github.com/nicebread/WRS/
 Contact: <mailto:rwilcox@usc.edu>
 Imports:
-    methods
-Suggests:
+    methods,
+    parallel,
     MASS,
-    akima,
+    akima
+Suggests:
     robustbase,
     cobs,
     robust,
@@ -29,9 +30,33 @@ Suggests:
     DepthProc,
     class,
     fda,
-    parallel,
 	e1071,
-	rankFD
+	rankFD,
+	bcaboot,
+	mrfDepth,
+	glmnet,
+	randomForest,
+	WRScpp,
+	nnet,
+	neuralnet,
+	mboost,
+	gbm,
+	DetMCD,
+	ICSOutlier,
+	ROCR,
+	trimcluster,
+	tseries,
+	hqreg,
+	enetLTS,
+	ddalpha,
+	ggplot2,
+	viridis,
+	tidyverse,
+	reshape,
+	plotrix,
+	hrbrthemes,
+	ragg,
+	segmented
 Description: This is a packaged version of the robust statistic functions
     provided by R. R. Wilcox (http://dornsife.usc.edu/labs/rwilcox/software/).
 License: file LICENSE

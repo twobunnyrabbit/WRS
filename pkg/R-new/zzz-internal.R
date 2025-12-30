@@ -69,7 +69,6 @@ wlogregv2<-function(x0,y,initwml=FALSE,const=0.5,kmax=1e3,maxhalf=10)
 # p next components: estimates for the parameters.
 # p last components: standard errors of the parameters (if first component is T)
 
-library(MASS)
 x0=as.matrix(x0)
 #  n=nrow(x0)
   p=ncol(x0)+1

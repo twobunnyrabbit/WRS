@@ -1362,7 +1362,6 @@ if(SEED)set.seed(45)
 fv=NA
 p1=p+1
 a=list()
-library(parallel)
 for(i in 1:iter)a[[i]]=rmul(n,p1)
 fv=mclapply(a,ridgeGnullMC.sub,p=p,regfun=regfun)
 fv=matl(fv)

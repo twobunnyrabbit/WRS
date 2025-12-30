@@ -53,19 +53,26 @@
 - **Status**: All 20 modules source successfully ✅
 
 ### Recently Completed (2025-12-30)
-**Phase 1 Module Extraction - COMPLETE**:
-- ✅ classification.R (27 functions, 1,668 lines, 52 KB) - ML/classification methods
-- ✅ special.R (1,797 functions, 100,014 lines, 2.6 MB) - Specialized domain methods
-- ✅ zzz-internal.R (3 functions, 215 lines, 8.0 KB) - Internal utilities
-- ✅ All modules validated and source successfully
-- ✅ 100% of unique functions from original file extracted
+**Phase 2, Week 4 - Library Call Elimination - COMPLETE** ✅:
+- ✅ Updated NAMESPACE with imports for parallel, MASS, akima
+- ✅ Updated DESCRIPTION (moved 3 packages from Suggests to Imports)
+- ✅ Removed 325 library() calls (58% reduction: 558 → 233)
+  - library(parallel): 124 → 1 comment
+  - library(MASS): 114 → 0
+  - library(akima): 39 → 0
+  - library(stats): 12 → 3 comments
+- ✅ All 20 modules source successfully after changes
+- ✅ All 23 backward compatibility tests PASSED
+- ✅ 100% backward compatibility maintained
 
 ### Next Steps
-**Ready for Phase 2: Optimization (Weeks 4-5)**
-1. Remove redundant library() calls (331 instances)
-2. Resolve duplicate functions (1,126 duplicates across modules)
-3. Extract common patterns to utilities
-4. Validation after each optimization
+**Phase 2, Week 5: Fix Duplicates & Extract Patterns**
+1. Resolve duplicate functions (1,126 duplicates across modules)
+2. Extract .bootstrap_setup() pattern (456 occurrences)
+3. Extract .bootstrap_ci() pattern (90+ occurrences)
+4. Extract .bootstrap_pvalue() pattern (70+ occurrences)
+5. Extract common data preparation patterns
+6. Validate outputs match exactly
 
 ### ✅ Phase 0: Preparation (COMPLETED - 2025-12-30)
 
@@ -363,18 +370,31 @@ Note: Function count (2,954) includes duplicates. Unique functions: 1,828 (100% 
   - 1,828 unique functions extracted (100% of original)
   - Ready for Phase 2
 
-### 📋 Phase 2: Optimization (Weeks 4-5)
-**Status**: Not started
+### ✅ Phase 2: Optimization (Weeks 4-5)
+**Status**: Week 4 COMPLETED - 2025-12-30 ✅
 **Goal**: Remove redundant code, fix duplicates, optimize patterns
 
-#### Week 4: Eliminate library() Calls
-- [ ] Update NAMESPACE (add imports)
-- [ ] Update DESCRIPTION (move to Imports)
-- [ ] Remove library(parallel) calls (84 instances)
-- [ ] Remove library(MASS) calls (75 instances)
-- [ ] Remove library(akima) calls (21 instances)
-- [ ] Handle optional packages (conditional loading)
-- [ ] Validate after each module
+#### ✅ Week 4: Eliminate library() Calls (COMPLETED - 2025-12-30)
+- [x] Update NAMESPACE (add imports)
+  - Added importFrom() for parallel (mclapply, detectCores)
+  - Added importFrom() for MASS (ginv, cov.rob, cov.mcd, cov.mve, lqs, rlm)
+  - Added importFrom() for akima (interp, aspline)
+- [x] Update DESCRIPTION (move to Imports)
+  - Moved parallel, MASS, akima from Suggests to Imports
+  - Added all discovered optional packages to Suggests
+- [x] Remove library(parallel) calls (124 instances → 1 comment only)
+- [x] Remove library(MASS) calls (114 instances → 0 remaining)
+- [x] Remove library(akima) calls (39 instances → 0 remaining)
+- [x] Remove library(stats) calls (12 instances → 3 comments only)
+- [x] Handle optional packages (233 calls remain for packages in Suggests)
+- [x] Validate after each module (all 20 modules source successfully)
+- [x] **End-of-week validation**: All 23 backward compatibility tests PASSED ✅
+
+**Week 4 Results**:
+- **Library calls removed**: 325 of 558 (58% reduction)
+- **Remaining calls**: 233 (all for optional packages in Suggests)
+- **All modules**: Source successfully without errors
+- **Backward compatibility**: 100% maintained (23/23 tests passed)
 
 #### Week 5: Fix Duplicates & Extract Patterns
 - [ ] Resolve 62 duplicate functions

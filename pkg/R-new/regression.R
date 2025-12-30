@@ -25,7 +25,6 @@ lintestMC<-function(x,y,regfun=tsreg,nboot=500,alpha=.05,xout=FALSE,outfun=out,.
 # Test the hypothesis that the regression surface is a plane.
 # Stute et al. (1998, JASA, 93, 141-149).
 #
-library(parallel)
 set.seed(2)
 if(identical(regfun,tshdreg))print('When using tshdreg, be sure to include RES=TRUE')
 #if(identical(regfun,Qreg))print('When using Qreg, be sure to include res.vals=TRUE')
@@ -118,7 +117,6 @@ chreg<-function(x,y,bend=1.345,SEED=TRUE,xout=FALSE,outfun=outpro,pr=TRUE,...){
 #  Comments in this function follow the notation used
 #  by Coakley and Hettmansperger
 #
-library(MASS)
 # with old version of R, need library(lqs) when using ltsreg
 # as the initial estimate.
 #
@@ -271,7 +269,6 @@ reglev<-function(x,y,plotit=TRUE,SEED=TRUE,DIS=FALSE){
 #  It also returns the distance of the points identified as outliers
 #  in the variable dis.
 #
-library(MASS)
 xy=elimna(cbind(x,y))
 x=as.matrix(x)
 p=ncol(x)
@@ -465,7 +462,6 @@ if(is.matrix(y)){
 if(ncol(y)==1)y=as.vector(y)
 }
 x1<-cbind(1,x)
-library(MASS)
 reslms<-lmsreg(x,y)$resid
 sighat<-sqrt(median(reslms^2))
 sighat<-1.4826*(1+(5/(length(y)-ncol(x)-1)))*sighat
@@ -1598,7 +1594,6 @@ opreg<-function(x,y,regfun=tsreg,cop=3,MC=FALSE,varfun=pbvar,corfun=pbcor,STAND=
 #
 #  Note: argument xout is not relevant here, but is included to avoid conflicts when using regci.
 #
-if(MC)library(parallel)
 x<-as.matrix(x)
 m<-cbind(x,y)
 m<-elimna(m) # eliminate any rows with missing data
@@ -1756,7 +1751,6 @@ ltsgreg<-function(x, y, tr = 0.2, h = NA,xout=FALSE,outfun=outpro,...)
         #  Can simply use ltsreg with tr=amount of trimming.
         #
 x<-as.matrix(x)
-library(MASS)
 X<-cbind(x,y)
 X<-elimna(X)
 np<-ncol(X)
@@ -1940,7 +1934,6 @@ varfun=pbvar,e.pow=TRUE,pr=TRUE,ticktype="simple",pch='.',...){
 # With a single predictor, this function calls locreg
 # See locreg for information about np and plotting
 #
-library(akima)
 x<-as.matrix(x)
 xx<-cbind(x,y)
 xx<-elimna(xx)
@@ -2124,7 +2117,6 @@ p=ncol(as.matrix(x))
 p1=p+1
 x=xy[,1:p]
 y=xy[,p1]
-library(MASS)
 res<-rinit(y~x)$res
 res.scale<-abs(res)/mad(res)
 flag<-(res.scale >=K)
@@ -2471,8 +2463,6 @@ mopreg<-function(x,y,regfun=tsreg,cop=3,KEEP=TRUE,MC=FALSE,STAND=TRUE){
 #  KEEP=F, outliers will be eliminated
 #  KEEP=T, outliers are not eliminated
 # cop: see function outpro
-library(MASS)
-if(MC)library(parallel)
 x<-as.matrix(x)
 y<-as.matrix(y)
 px<-ncol(x)
@@ -2648,7 +2638,6 @@ nullvec=rep(0,ncol(x)+1),plotit=TRUE,opdis=2,gval=sqrt(qchisq(.95,ncol(x)+1))){
 # ADJ=T, Adjust p-values as described in Section 11.1.5 of the text.
 #
 if(SEED)set.seed(2)
-library(parallel)
 x<-as.matrix(x)
 m<-cbind(x,y)
 p1<-ncol(x)+1
@@ -2749,7 +2738,6 @@ opregMC<-function(x,y,regfun=tsreg,cop=3,fast=FALSE,pr=TRUE,prres=FALSE,STAND=TR
 #
 #  Note: argument xout is not relevant here, but is included to avoid conflicts when using regci.
 #
-library(parallel)
 x<-as.matrix(x)
 m<-cbind(x,y)
 m<-elimna(m) # eliminate any rows with missing data
@@ -2808,7 +2796,6 @@ lines(x[flag2],phat)
 }}
 if(p==2){
 if(plotit){
-library(akima)
 if(pr){
 if(!scale)print("With dependence, suggest using scale=T")
 }
@@ -3147,7 +3134,6 @@ STAND=TRUE,alpha=.05,pr=TRUE,AD=FALSE,...){
 #   n is sample size after missing values are removed
 #   nv.keep is sample size after leverage points are removed.
 #
-library(parallel)
 if(pr){
 if(!xout)print("Might want to consider xout=T to  remove leverage points")
 }
@@ -3268,7 +3254,6 @@ xout=FALSE,outfun=outpro,pr=FALSE,xlab='X',ylab='Y',...){
 #   estimated intercept, the second element contains the estimate of
 #   the first predictor, etc.
 #
-library(parallel)
 x<-as.matrix(x)
 xx<-cbind(x,y)
 xx<-elimna(xx)
@@ -3471,7 +3456,6 @@ STAND=TRUE,alpha=.05,pr=TRUE,...){
 #   n is sample size after missing values are removed
 #   nv.keep is sample size after leverage points are removed.
 #
-library(parallel)
 if(SEED)set.seed(2)
 if(pr){
 if(!xout)print("Might want to consider xout=T to  remove leverage points")
@@ -3774,7 +3758,6 @@ chregF<-function(x,y,bend=1.345,SEED=FALSE,xout=FALSE,outfun=out,...){
 #  Comments in this function follow the notation used
 #  by Coakley and Hettmansperger
 #
-library(MASS)
 # with old version of R, need library(lqs) when using ltsreg
 # as the initial estimate.
 #
@@ -4324,7 +4307,6 @@ SEED=TRUE,plotit=FALSE,pr=TRUE,...){
 #  set everytime outpro is called.)
 #
 flag=FALSE
-library(parallel)
 if(SEED)set.seed(2)
 X=elimna(cbind(x1,y1,x2,y2))
 x1=as.matrix(x1)
@@ -4393,7 +4375,6 @@ alpha=.05,SEED=TRUE,plotit=FALSE,xlab='X',ylab='Y',pr=TRUE,...){
 #
 #  compute confidence interval for the difference in the slopes and intercepts
 #
-library(parallel)
 if(SEED)set.seed(2)
 X=elimna(cbind(x1,y1,x2,y2))
 x1=as.matrix(x1)
@@ -4634,7 +4615,6 @@ data<-matrix(sample(n,size=n*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(!MC)bvec<-lapply(data,scorreg.sub,xy,corfun=corfun,outfun=outfun,ALL=ALL)
 if(MC){
-library(parallel)
 bvec<-mclapply(data,scorreg.sub,xy,corfun=corfun,outfun=outfun,ALL=ALL)
 }
 bvec=matl(bvec)   # A p by nboot matrix.
@@ -4788,7 +4768,6 @@ data<-matrix(sample(n,size=n*nboot,replace=TRUE),nrow=nboot)
 data=listm(t(data))
 if(!MC)bvec<-lapply(data,scorreg.sub,xy,corfun=corfun,outfun=outfun,ALL=ALL,...)
 if(MC){
-library(parallel)
 bvec<-mclapply(data,scorreg.sub,xy,corfun=corfun,outfun=outfun,ALL=ALL,...)
 }
 bvec=matl(bvec)   # A p by nboot matrix.
@@ -4862,7 +4841,6 @@ scorreg.cr<-function(n,p,iter=500,nboot=500,corfun=pcor,alpha=c(.05,.025,.01),TV
 #
 if(SEED)set.seed(65)
 x=list()
-library(parallel)
 p1=p+1
 for(i in 1:iter){
 x[[i]]=rmul(n,p=p1)
@@ -4964,7 +4942,6 @@ LMSreg<-function(x,y,xout=FALSE,outfun=outpro,...){
 #
 #  Least median of squares
 #
-library(MASS)
 x<-as.matrix(x)
 xx<-cbind(x,y)
 xx<-elimna(xx)

@@ -63,8 +63,6 @@ xlab="VAR 1",ylab="VAR 2",STAND=TRUE,tr=.2,q=.5,pr=TRUE,...){
 #
 #  Donoho-Gasko (Tukey) median is marked with a cross, +.
 #
-library(parallel)
-library(MASS)
 m<-as.matrix(m)
 if(pr){
 if(!STAND){
@@ -251,7 +249,6 @@ xlab="VAR 1",ylab="VAR 2",rate=.05,iter=100,ip=6,pr=TRUE,SEED=TRUE){
 #
 # When dealing with p-variate data, p>9, this adjustment can be crucial
 #
-library(parallel)
 m=elimna(m)
 m=as.matrix(m)
 n=nrow(m)
@@ -496,7 +493,6 @@ outmve<-function(x,mve.flag=TRUE,plotit=TRUE,SEED=TRUE,outsym='*'){
 #
 #  If plotit=TRUE, plot points and circle outliers.
 #
-library(MASS)
 if(SEED){
 oldSeed <- .Random.seed
 set.seed(12)
@@ -987,7 +983,6 @@ outblp.HH<-function(x,y,regfun=tsreg,omit.col=NULL,plotit=TRUE,xlab='X',ylab='Y'
 # columns 1 and 3 of x are ignored when checking for bad leverage points.
 #   These columns might be, for example, dummy variables.
 #
-library(MASS)
 xy=elimna(cbind(x,y))
 n=nrow(xy)
 x=as.matrix(x)
@@ -2056,7 +2051,6 @@ y=as.matrix(y)
 n1=nrow(x)
 n2=nrow(y)
 est=bwdepth(x,y,plotit=plotit,xlab=xlab,ylab=ylab)
-if(MC)library(parallel)
 id=list()
 for(i in 1:nboot)id[[i]]=c(sample(n1,replace=TRUE),sample(n2,replace=TRUE))
 if(!MC)BE=lapply(id,bwdepth.sub,x,y,n1,n2,fun=fun)
