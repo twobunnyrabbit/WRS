@@ -6339,6 +6339,69 @@ list(num.points.used=nk,test.stat=pavg,crit.value=cr,GLOBAL.p.value=pval,min.p.v
 
 
 # ancova
+#' Dependent Samples ANCOVA Effect Size
+#'
+#' Compares two dependent (paired/repeated measures) regression lines using a robust
+#' measure of effect size that accounts for the correlation between paired observations.
+#' Uses bootstrap estimation of the covariance matrix to compute a marginal measure
+#' of dispersion.
+#'
+#' @param x1 A numeric vector of covariate values at time 1 (or condition 1).
+#' @param y1 A numeric vector of outcome values at time 1.
+#' @param x2 A numeric vector of covariate values at time 2 (or condition 2),
+#'   paired with x1.
+#' @param y2 A numeric vector of outcome values at time 2, paired with y1.
+#' @param pts A numeric vector specifying design points where effect sizes are
+#'   computed. If `NULL`, three points are determined based on data (see `QM` parameter).
+#' @inheritParams common-params
+#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
+#' @param OM Outlier detection method (not currently implemented in shown code).
+#'   Intended choices: 'PRO' (projection), 'BLP' (regression-based), 'MCD', 'BOX'.
+#' @param id Column index to ignore when detecting outliers (used with 'DUM' method).
+#' @param QM Logical. If `TRUE` (default) and `pts = NULL`, selects three points based
+#'   on quantiles. If `FALSE`, uses default points from \code{\link{ancova}}.
+#' @param Nboot Number of bootstrap samples for estimating covariance (default: 100).
+#' @param xlab Label for x-axis in plot (default: 'X').
+#' @param ylab Label for y-axis in plot (default: 'Y').
+#' @param pch Plotting character (default: '.').
+#'
+#' @return A matrix with columns:
+#' \describe{
+#'   \item{pts}{The design points where effect sizes were computed.}
+#'   \item{Effect.size}{The robust effect size at each design point, computed as
+#'     \eqn{\sqrt{2} \times (\hat{y}_1 - \hat{y}_2) / \sqrt{n \times SQE}}, where
+#'     SQE accounts for variances and covariance of the paired estimates.}
+#' }
+#'
+#' @details
+#' This function computes effect sizes for dependent (paired) regression lines.
+#' Unlike independent samples ANCOVA, this accounts for the correlation between
+#' paired observations through bootstrap estimation of the covariance matrix.
+#'
+#' The effect size at each design point is:
+#' \deqn{ES = \sqrt{2} \times \frac{\hat{y}_1 - \hat{y}_2}{\sqrt{n(Var_1 + Var_2 - 2Cov)}}}
+#'
+#' where variances and covariance are estimated via bootstrap.
+#'
+#' If `plotit = TRUE`, displays both regression lines using \code{\link{reg2plot}}.
+#'
+#' @seealso \code{\link{ancovad.ESci}} for confidence intervals,
+#'   \code{\link{Dancova}} for dependent ANCOVA hypothesis testing
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Paired data example
+#' set.seed(123)
+#' n <- 30
+#' x1 <- rnorm(n)
+#' y1 <- 2 + 3*x1 + rnorm(n)
+#' x2 <- x1 + rnorm(n, 0, 0.5)  # Correlated covariates
+#' y2 <- 2.5 + 3*x2 + rnorm(n)  # Paired outcomes
+#'
+#' result <- ancovad.ES(x1, y1, x2, y2, Nboot = 500)
+#' print(result)
+#' }
 ancovad.ES<-function(x1,y1,x2,y2,pts=NULL,plotit=TRUE,regfun=tsreg,
 SEED=TRUE,OM='PRO',id=NULL,
 QM=TRUE,xout=FALSE,Nboot=100,outfun=outpro,xlab='X',ylab='Y',pch='.'){
@@ -6415,7 +6478,75 @@ mat
 }
 
 
-# ancovad.ESci
+#' Dependent Samples ANCOVA Effect Size with Confidence Intervals
+#'
+#' Computes robust effect sizes for two dependent (paired/repeated measures) regression
+#' lines with bootstrap confidence intervals and hypothesis tests. Tests whether the
+#' effect size significantly differs from zero at specified design points.
+#'
+#' @param x1 A numeric vector of covariate values at time 1 (or condition 1).
+#' @param y1 A numeric vector of outcome values at time 1.
+#' @param x2 A numeric vector of covariate values at time 2 (or condition 2),
+#'   paired with x1.
+#' @param y2 A numeric vector of outcome values at time 2, paired with y1.
+#' @param pts A numeric vector specifying design points where effect sizes are
+#'   computed. If `NULL`, points are selected automatically (see `QM` parameter).
+#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
+#' @inheritParams common-params
+#' @param QM Logical. If `FALSE` (default) and `pts = NULL`, uses default points
+#'   from \code{\link{ancovad.ES}}. If `TRUE`, selects three points based on
+#'   quantiles determined by `ql`.
+#' @param ql Quantile level for determining range of design points when `QM = TRUE`
+#'   (default: 0.2, uses 0.2 and 0.8 quantiles).
+#' @param xlab Label for x-axis in plot (default: 'Pts').
+#' @param ylab Label for y-axis in plot (default: 'Y').
+#' @param method Method for adjusting p-values for multiple comparisons (default: 'hoch'
+#'   for Hochberg). See \code{\link{p.adjust}} for options.
+#'
+#' @return A matrix with columns:
+#' \describe{
+#'   \item{pts}{The design points where effect sizes were computed.}
+#'   \item{Est.}{Effect size estimate at each point.}
+#'   \item{SE}{Bootstrap standard error of the effect size.}
+#'   \item{Test.Stat}{Test statistic (Est./SE).}
+#'   \item{ci.low}{Lower confidence interval bound.}
+#'   \item{ci.up}{Upper confidence interval bound.}
+#'   \item{p-value}{Unadjusted p-value for testing H0: effect size = 0.}
+#'   \item{p.adjusted}{P-value adjusted for multiple comparisons.}
+#' }
+#'
+#' @details
+#' This function extends \code{\link{ancovad.ES}} by adding inferential statistics.
+#' For each design point, it computes:
+#' \enumerate{
+#'   \item Effect size using \code{\link{ancovad.ES}}
+#'   \item Bootstrap standard error via \code{ancovad.ES.SEpb}
+#'   \item Confidence intervals assuming normality
+#'   \item P-values for testing whether effect size differs from zero
+#'   \item Adjusted p-values for multiple comparisons
+#' }
+#'
+#' The heteroscedastic effect size accounts for the conditional dispersion of y
+#' given x, rather than using an overall measure of location.
+#'
+#' If `plotit = TRUE`, displays effect size estimates with confidence bands.
+#'
+#' @seealso \code{\link{ancovad.ES}}, \code{\link{Dancova}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Paired data with effect size inference
+#' set.seed(123)
+#' n <- 30
+#' x1 <- rnorm(n)
+#' y1 <- 2 + 3*x1 + rnorm(n)
+#' x2 <- x1 + rnorm(n, 0, 0.5)
+#' y2 <- 2.5 + 3*x2 + rnorm(n)
+#'
+#' result <- ancovad.ESci(x1, y1, x2, y2, nboot = 500)
+#' print(result)
+#' }
 ancovad.ESci<-function(x1,y1,x2,y2,pts=NULL,regfun=tsreg,alpha=.05,nboot=100,SEED=TRUE,
 QM=FALSE,ql=.2,
 xout=FALSE,outfun=outpro,xlab='Pts',ylab='Y',method='hoch',plotit=TRUE){
@@ -6522,6 +6653,55 @@ se
 
 
 # ancova.ES
+#' @title ANCOVA Effect Size (KMS Analog) with Automatic Design Points
+#'
+#' @description
+#' Compute KMS analog effect size for comparing two independent regression lines.
+#' If design points not specified, automatically selects points within the overlapping
+#' quantile range of both groups' covariate distributions.
+#'
+#' @param x1 Covariate values for group 1
+#' @param y1 Response values for group 1
+#' @param x2 Covariate values for group 2
+#' @param y2 Response values for group 2
+#' @param pts Optional vector of design points. If NULL, uses npts equally-spaced
+#'   points in the overlapping range determined by ql quantiles
+#' @param plotit Logical; if TRUE, plot effect sizes (default: TRUE)
+#' @param xout Logical; if TRUE, remove outliers before analysis (default: FALSE)
+#' @param outfun Function for detecting outliers (default: outpro)
+#' @param xlab Label for x-axis (default: 'X')
+#' @param ylab Label for y-axis (default: 'KMS.effect')
+#' @param npts Number of design points to use when pts=NULL (default: 10)
+#' @param ql Quantile level for determining overlapping range (default: .1)
+#' @param line Logical; if TRUE, connect points with line in plot (default: TRUE)
+#' @param ylim Y-axis limits for plot (default: NULL for automatic)
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return Matrix with columns:
+#'   \item{pts}{Design points}
+#'   \item{Effect.size}{KMS effect size at each point}
+#'
+#' @note
+#' - Only one covariate supported
+#' - Design points chosen in [max(q_ql^1, q_ql^2), min(q_{1-ql}^1, q_{1-ql}^2)]
+#'   where q_p^j is the p-th quantile of group j
+#'
+#' @export
+#' @examples
+#' # Generate data with group differences
+#' set.seed(111)
+#' x1 <- runif(50, 0, 10)
+#' y1 <- 2 + 0.5*x1 + rnorm(50, 0, 1.5)
+#' x2 <- runif(50, 0, 10)
+#' y2 <- 4 + 0.5*x2 + rnorm(50, 0, 2)
+#'
+#' # Compute effect sizes at 10 design points
+#' es <- ancova.ES(x1, y1, x2, y2, plotit = FALSE)
+#' print(es)
+#'
+#' # Use custom design points
+#' es2 <- ancova.ES(x1, y1, x2, y2, pts = seq(2, 8, by = 1), plotit = FALSE)
+#'
 ancova.ES<-function(x1,y1,x2,y2,pts=NULL,plotit=TRUE,xout=FALSE,outfun=outpro,xlab='X',ylab='KMS.effect',
 npts=10,ql=.1,line=TRUE,ylim=NULL,...){
 #
@@ -6697,6 +6877,51 @@ se
 
 
 # ancovaG
+#' @title Generalized ANCOVA with Running Interval Smoother
+#'
+#' @description
+#' Compare two independent groups using a generalized ANCOVA approach that allows
+#' any hypothesis testing method. Uses running interval smoothers without making
+#' parametric assumptions about the regression line forms. Groups are compared at
+#' specified design points along the covariate range.
+#'
+#' @param x1 Covariate values for group 1
+#' @param y1 Response values for group 1
+#' @param x2 Covariate values for group 2
+#' @param y2 Response values for group 2
+#' @param fr1 Span parameter for group 1 smoother (default: 1)
+#' @param fr2 Span parameter for group 2 smoother (default: 1)
+#' @inheritParams common-params
+#' @param plotit Logical; if TRUE, plot the running means (default: FALSE)
+#' @param pts Optional vector of design points where groups are compared. If NULL,
+#'   uses 5 equally-spaced points where both groups have at least 12 observations
+#' @param sm Logical; if TRUE, use bootstrap bagging for smoother curves (default: FALSE)
+#' @param pr Logical; if TRUE, print results (default: TRUE)
+#' @param xout Logical; if TRUE, remove outliers before analysis (default: FALSE)
+#' @param outfun Function for detecting outliers (default: out)
+#' @param test Hypothesis testing function to use for group comparisons (default: medpb2)
+#' @param ... Additional arguments passed to the test function
+#'
+#' @return A list with two components:
+#'   \item{[[1]]}{Matrix with columns X (design point), n1 (sample size group 1),
+#'     n2 (sample size group 2)}
+#'   \item{[[2]]}{List of test results from the specified test function at each design point}
+#'
+#' @export
+#' @examples
+#' # Generate example data with covariate effect
+#' set.seed(123)
+#' x1 <- runif(50, 0, 10)
+#' y1 <- 2 + 0.5*x1 + rnorm(50)
+#' x2 <- runif(50, 0, 10)
+#' y2 <- 3 + 0.5*x2 + rnorm(50)  # Different intercept
+#'
+#' # Compare groups using default median-based test
+#' result <- ancovaG(x1, y1, x2, y2)
+#'
+#' # Use custom design points and trimmed mean test
+#' result2 <- ancovaG(x1, y1, x2, y2, pts = c(2, 5, 8), test = yuen)
+#'
 ancovaG<-function(x1,y1,x2,y2,fr1=1,fr2=1,tr=.2,alpha=.05,plotit=FALSE,pts=NULL,sm=FALSE,
 pr=TRUE,xout=FALSE,outfun=out,test=medpb2,...){
 #
@@ -6780,7 +7005,50 @@ list(mat,output)
 }
 
 
-# ancova.KMS
+#' @title ANCOVA Effect Size Using KMS Analog
+#'
+#' @description
+#' Compare two independent regression lines using an analog of the KMS
+#' (Kulinskaya, Morgenthaler, & Staudte) heteroscedastic measure of effect size.
+#' This provides a robust analog of Cohen's d that accounts for conditional variance
+#' of y given x at specified design points.
+#'
+#' @param x1 Covariate values for group 1
+#' @param y1 Response values for group 1
+#' @param x2 Covariate values for group 2
+#' @param y2 Response values for group 2
+#' @param pts Optional vector of design points for comparison. If NULL, uses three
+#'   points determined from the data via ancova()
+#' @param plotit Logical; if TRUE, plot the regression lines (default: TRUE)
+#' @param xout Logical; if TRUE, remove outliers before analysis (default: FALSE)
+#' @param outfun Function for detecting outliers (default: outpro)
+#' @param xlab Label for x-axis (default: 'X')
+#' @param ylab Label for y-axis (default: 'Y')
+#'
+#' @return Matrix with columns:
+#'   \item{pts}{Design points where effect size is computed}
+#'   \item{Effect.size}{KMS effect size analog at each point}
+#'
+#' @note Only one covariate is supported. The function uses quantile regression
+#'   (via Qreg) for estimating regression values and regIQRsd for standard deviation
+#'   estimation based on IQR.
+#'
+#' @export
+#' @examples
+#' # Generate data with different regression lines
+#' set.seed(123)
+#' x1 <- runif(40, 0, 10)
+#' y1 <- 2 + 0.5*x1 + rnorm(40, 0, 2)
+#' x2 <- runif(40, 0, 10)
+#' y2 <- 4 + 0.5*x2 + rnorm(40, 0, 2)  # Different intercept
+#'
+#' # Compute KMS effect size at default points
+#' es <- ancova.KMS(x1, y1, x2, y2, plotit = FALSE)
+#' print(es)
+#'
+#' # Specify custom design points
+#' es2 <- ancova.KMS(x1, y1, x2, y2, pts = c(2, 5, 8), plotit = FALSE)
+#'
 ancova.KMS<-function(x1,y1,x2,y2,pts=NULL,plotit=TRUE,xout=FALSE,outfun=outpro,xlab='X',ylab='Y'){
 #
 #  Comparing two independent regression lines.
@@ -6829,7 +7097,58 @@ mat
 }
 
 
-# ancova.KMSci
+#' @title ANCOVA KMS Effect Size with Bootstrap Confidence Intervals
+#'
+#' @description
+#' Compute heteroscedastic KMS effect size measure (robust analog of Cohen's d) for
+#' comparing two independent regression lines at specified design points. Provides
+#' bootstrap-based confidence intervals and hypothesis tests for zero effect size.
+#'
+#' @param x1 Covariate values for group 1
+#' @param y1 Response values for group 1
+#' @param x2 Covariate values for group 2
+#' @param y2 Response values for group 2
+#' @param pts Optional vector of design points. If NULL, uses three points determined
+#'   either from ancova() (default) or from quantiles if QM=TRUE
+#' @inheritParams common-params
+#' @param nboot Number of bootstrap samples for standard error estimation (default: 100)
+#' @param SEED Logical; if TRUE, set random seed for reproducibility (default: TRUE)
+#' @param QM Logical; if TRUE, determine design points using quantiles of x rather than
+#'   ancova() (default: FALSE)
+#' @param ql Quantile level for determining point range when QM=TRUE (default: .2)
+#' @param xout Logical; if TRUE, remove outliers before analysis (default: FALSE)
+#' @param outfun Function for detecting outliers (default: outpro)
+#' @param xlab Label for x-axis (default: 'Pts')
+#' @param ylab Label for y-axis (default: 'Y')
+#' @param method P-value adjustment method for multiple comparisons (default: 'hoch')
+#' @param plotit Logical; if TRUE, plot effect sizes and confidence bands (default: TRUE)
+#'
+#' @return Matrix with columns:
+#'   \item{pts}{Design points}
+#'   \item{Est.}{KMS effect size estimate}
+#'   \item{Test.Stat}{Test statistic (Est./SE)}
+#'   \item{ci.low}{Lower confidence limit}
+#'   \item{ci.up}{Upper confidence limit}
+#'   \item{p-value}{Unadjusted p-value for testing zero effect}
+#'   \item{p.adjusted}{P-value adjusted for multiple comparisons}
+#'
+#' @note
+#' - Only one covariate is supported
+#' - Standard errors are multiplied by 0.89 when min(n1,n2) < 100 to reduce bias
+#'
+#' @export
+#' @examples
+#' # Generate data with group differences
+#' set.seed(456)
+#' x1 <- runif(50, 0, 10)
+#' y1 <- 2 + 0.5*x1 + rnorm(50, 0, 2)
+#' x2 <- runif(50, 0, 10)
+#' y2 <- 4 + 0.5*x2 + rnorm(50, 0, 2.5)
+#'
+#' # Compute effect sizes with CIs
+#' result <- ancova.KMSci(x1, y1, x2, y2, nboot = 50, plotit = FALSE)
+#' print(result)
+#'
 ancova.KMSci<-function(x1,y1,x2,y2,pts=NULL,alpha=.05,nboot=100,SEED=TRUE,QM=FALSE,ql=.2,
 xout=FALSE,outfun=outpro,xlab='Pts',ylab='Y',method='hoch',plotit=TRUE){
 #
@@ -6916,7 +7235,45 @@ RES
 
 
 
-# ancova.KMS.plot
+#' @title Plot ANCOVA KMS Effect Size as Function of Covariate
+#'
+#' @description
+#' Plot the robust KMS measure of effect size as a function of covariate values.
+#' If no design points are specified, uses all unique covariate values within the
+#' overlapping range of both groups.
+#'
+#' @param x1 Covariate values for group 1
+#' @param y1 Response values for group 1
+#' @param x2 Covariate values for group 2
+#' @param y2 Response values for group 2
+#' @param pts Optional vector of design points. If NULL, uses unique values from
+#'   x1 and x2 within their overlapping range
+#' @param xlab Label for x-axis (default: 'X')
+#' @param ylab Label for y-axis (default: 'Effect Size')
+#' @param xout Logical; if TRUE, remove outliers before analysis (default: FALSE)
+#' @param outfun Function for detecting outliers (default: outpro)
+#' @param pch Point character for plotting if line=FALSE (default: 'x')
+#' @param line Logical; if TRUE, connect points with lines (default: TRUE)
+#'
+#' @return NULL (creates plot as side effect)
+#'
+#' @note Only one covariate is supported.
+#'
+#' @export
+#' @examples
+#' # Generate data with varying effect size
+#' set.seed(789)
+#' x1 <- runif(60, 0, 10)
+#' y1 <- 2 + 0.3*x1 + rnorm(60, 0, 1.5)
+#' x2 <- runif(60, 0, 10)
+#' y2 <- 3 + 0.4*x1 + rnorm(60, 0, 2)
+#'
+#' # Plot effect size across covariate range
+#' ancova.KMS.plot(x1, y1, x2, y2)
+#'
+#' # Use specific design points
+#' ancova.KMS.plot(x1, y1, x2, y2, pts = seq(1, 9, by = 1))
+#'
 ancova.KMS.plot<-function(x1,y1,x2,y2,pts=NULL,xlab='X',ylab='Effect Size',xout=FALSE,outfun=outpro,pch='x',line=TRUE){
 #
 #
@@ -6964,7 +7321,54 @@ points(e[,1],e[,2],pch=pch)
 }
 
 
-# ancovam
+#' @title Median-Based ANCOVA for Two Independent Groups
+#'
+#' @description
+#' Compare two independent groups using median-based ANCOVA with running interval
+#' smoothers. No parametric assumptions are made about regression line forms.
+#' Confidence intervals are adjusted to control familywise error rate across
+#' design points (via Studentized Maximum Modulus distribution).
+#'
+#' @param x1 Covariate values for group 1
+#' @param y1 Response values for group 1
+#' @param x2 Covariate values for group 2
+#' @param y2 Response values for group 2
+#' @param fr1 Span parameter for group 1 smoother (default: 1)
+#' @param fr2 Span parameter for group 2 smoother (default: 1)
+#' @inheritParams common-params
+#' @param plotit Logical; if TRUE, plot running medians (default: TRUE)
+#' @param pts Optional vector of design points. If NA, uses 5 equally-spaced points
+#'   where both groups have at least 12 observations. Maximum 28 points allowed.
+#' @param sm Logical; if TRUE, use bootstrap bagging for smoother curves (default: FALSE)
+#' @param pr Logical; if TRUE, print warning about p-values (default: TRUE)
+#'
+#' @return List with components:
+#'   \item{output}{Matrix with columns: X (design point), n1, n2, DIF (median
+#'     difference), TEST (test statistic), se (standard error), ci.low, ci.hi
+#'     (adjusted confidence limits), p.value}
+#'   \item{crit}{Critical value from Studentized Maximum Modulus distribution}
+#'
+#' @note
+#' - Confidence intervals control familywise Type I error rate
+#' - P-values are NOT adjusted for multiple comparisons
+#' - Warns if fewer than 6 observations at any design point
+#'
+#' @export
+#' @examples
+#' # Generate data with different medians
+#' set.seed(234)
+#' x1 <- runif(50, 0, 10)
+#' y1 <- 5 + 0.3*x1 + rt(50, df=3)  # Heavy tails
+#' x2 <- runif(50, 0, 10)
+#' y2 <- 7 + 0.3*x2 + rt(50, df=3)  # Different intercept
+#'
+#' # Compare at default 5 points
+#' result <- ancovam(x1, y1, x2, y2, plotit = FALSE)
+#' print(result$output)
+#'
+#' # Custom design points
+#' result2 <- ancovam(x1, y1, x2, y2, pts = c(2, 5, 8), plotit = FALSE)
+#'
 ancovam<-function(x1,y1,x2,y2,fr1=1,fr2=1,alpha=.05,plotit=TRUE,pts=NA,sm=FALSE,
 pr=TRUE){
 #
@@ -7073,7 +7477,60 @@ list(output=mat,crit=critv)
 
 
 
-# ancovamp
+#' @title ANCOVA for Multiple Covariates with Trimmed Means
+#'
+#' @description
+#' Compare two independent groups using ANCOVA with multiple covariates and running
+#' interval smoothers. Uses Yuen's trimmed mean test at design points chosen based
+#' on data depth. No parametric assumptions about regression surface forms.
+#' Confidence intervals control familywise error rate.
+#'
+#' @param x1 Matrix of covariate values for group 1 (two or more columns)
+#' @param y1 Response values for group 1
+#' @param x2 Matrix of covariate values for group 2 (two or more columns)
+#' @param y2 Response values for group 2
+#' @param fr1 Span parameter for group 1 smoother (default: 1)
+#' @param fr2 Span parameter for group 2 smoother (default: 1)
+#' @inheritParams common-params
+#' @param pts Optional matrix of design points (one row per point). If NA, uses
+#'   points with deepest depth in x1 (via ancdes)
+#' @param SEED Logical; if TRUE, set seed for reproducible cov.mve results (default: TRUE)
+#' @param plotit Logical; if TRUE and exactly 2 covariates, plot design points
+#'   marking significant ones (default: FALSE)
+#' @param FWE Logical; if TRUE, use familywise error rate for determining
+#'   significance; if FALSE, use individual p-values (default: TRUE)
+#' @param xlab Label for first covariate in plot (default: 'V1')
+#' @param ylab Label for second covariate in plot (default: 'V2')
+#'
+#' @return List with components:
+#'   \item{points}{Matrix of design points used for comparisons}
+#'   \item{output}{Matrix with columns: n1, n2, DIF (trimmed mean difference),
+#'     TEST (test statistic), se, ci.low, ci.hi (adjusted CI), p.value, adj.p.value
+#'     (FWE-adjusted p-value)}
+#'   \item{crit}{Critical value from Studentized Maximum Modulus distribution}
+#'   \item{sig.pts}{Matrix of significant design points (based on FWE setting)}
+#'
+#' @note
+#' - Design points with fewer than 10 observations in either group are excluded
+#' - Warnings issued if fewer than 6 observations at any design point
+#' - Uses MVE (Minimum Volume Ellipsoid) for robust covariance estimation
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Generate data with two covariates
+#' set.seed(567)
+#' n1 <- 60; n2 <- 60
+#' x1 <- matrix(rnorm(n1*2), ncol=2)
+#' y1 <- 2 + 0.5*x1[,1] + 0.3*x1[,2] + rnorm(n1)
+#' x2 <- matrix(rnorm(n2*2), ncol=2)
+#' y2 <- 3 + 0.5*x2[,1] + 0.3*x2[,2] + rnorm(n2)
+#'
+#' # Compare at data-driven design points
+#' result <- ancovamp(x1, y1, x2, y2, plotit = TRUE)
+#' print(result$output)
+#' }
+#'
 ancovamp<-function(x1,y1,x2,y2,fr1=1,fr2=1,tr=.2,alpha=.05,pts=NA,SEED=TRUE,plotit=FALSE,FWE=TRUE,
 xlab='V1',ylab='V2'){
 #
@@ -7169,7 +7626,72 @@ list(points=pts,output=mat,crit=critv,sig.pts=sig.pts)
 rplot2g<-runmean2g
 
 
-# ancovampG
+#' @title Generalized ANCOVA for Multiple Covariates with Custom Tests
+#'
+#' @description
+#' Generalize ancovamp to allow any hypothesis testing method for comparing two
+#' independent groups with multiple covariates. Uses running interval smoothers
+#' without parametric assumptions. Design points chosen based on data depth.
+#' Controls familywise error rate using Hochberg's method.
+#'
+#' @param x1 Matrix of covariate values for group 1 (can have multiple columns)
+#' @param y1 Response values for group 1
+#' @param x2 Matrix of covariate values for group 2
+#' @param y2 Response values for group 2
+#' @param fr1 Span parameter for group 1 smoother (default: 1)
+#' @param fr2 Span parameter for group 2 smoother (default: 1)
+#' @inheritParams common-params
+#' @param pts Optional matrix of design points. If NULL, uses points with deepest
+#'   depth in x1 (controlled by DH and FRAC)
+#' @param SEED Logical; if TRUE, set seed for reproducibility with bootstrap/MVE (default: TRUE)
+#' @param test Hypothesis testing function to use: yuen, qcomhd, qcomhdMC, or
+#'   binom2g (default: yuen)
+#' @param DH Logical; if TRUE, use only deepest (1-FRAC) design points (default: FALSE)
+#' @param FRAC Fraction of deepest points to use when DH=TRUE (default: .5)
+#' @param cov.fun Covariance function for depth computation (default: skip.cov)
+#' @param ZLIM Logical; if TRUE, set z-axis limits in plot (default: TRUE)
+#' @param pr Logical; if TRUE, print progress (default: FALSE)
+#' @param q Quantile for qcomhd tests (default: .5 for median)
+#' @param plotit Logical; if TRUE and 2 covariates, create 3D plot of p-values (default: FALSE)
+#' @param LP Logical; if TRUE, use lplot for 3D visualization; if FALSE, use scatterplot3d (default: FALSE)
+#' @param theta Rotation angle for 3D plot (default: 50)
+#' @param xlab Label for first covariate (default: ' X1')
+#' @param ylab Label for second covariate (default: 'X2 ')
+#' @param SCAT Logical; not currently used (default: FALSE)
+#' @param zlab Label for z-axis in 3D plot (default: 'p.value ')
+#' @param ticktype Type of tick marks for 3D plot (default: 'detail')
+#' @param ... Additional arguments passed to test function
+#'
+#' @return List with components:
+#'   \item{points}{Matrix of design points used}
+#'   \item{results}{Matrix with columns: n1, n2, p.value, crit.p.value (Hochberg),
+#'     Sig (1 if significant by Hochberg, 0 otherwise), est.dif (estimated difference)}
+#'   \item{num.sig}{Number of significant comparisons}
+#'
+#' @note
+#' - Design points with fewer than 10 observations in either group are excluded
+#' - P-values adjusted using Hochberg's sequentially rejective method
+#' - Requires scatterplot3d package if plotit=TRUE and LP=FALSE
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Generate data with two covariates
+#' set.seed(890)
+#' n1 <- 70; n2 <- 70
+#' x1 <- matrix(rnorm(n1*2), ncol=2)
+#' y1 <- 2 + 0.5*x1[,1] + 0.3*x1[,2] + rnorm(n1)
+#' x2 <- matrix(rnorm(n2*2), ncol=2)
+#' y2 <- 3 + 0.5*x2[,1] + 0.3*x2[,2] + rnorm(n2)
+#'
+#' # Compare using trimmed means (default)
+#' result <- ancovampG(x1, y1, x2, y2)
+#' print(result$results)
+#'
+#' # Compare medians using quantile comparison
+#' result2 <- ancovampG(x1, y1, x2, y2, test = qcomhd, q = 0.5)
+#' }
+#'
 ancovampG<-function(x1,y1,x2,y2,fr1=1,fr2=1, tr=.2,
 alpha=.05, pts=NULL,SEED=TRUE,test=yuen,DH=FALSE,FRAC=.5,cov.fun=skip.cov,ZLIM=TRUE,
 pr=FALSE,q=.5,plotit=FALSE,LP=FALSE,theta=50,xlab=' X1',ylab='X2 ',SCAT=FALSE,zlab='p.value ',ticktype='detail',...){
@@ -7308,7 +7830,62 @@ list(points=pts,results=mat,num.sig=dd)
 }
 
 
-# ancovap2.KMS
+#' ANCOVA Effect Size (KMS Analog) for Two Covariates
+#'
+#' Compares two independent regression lines based on an analog of the KMS
+#' (Kraemer-Morgan-Schork) measure of effect size for data with two covariates.
+#' The effect size is computed at specified covariate value combinations.
+#'
+#' @param x1 A matrix with two columns containing the covariate values for group 1.
+#' @param y1 A numeric vector containing the outcome variable for group 1.
+#' @param x2 A matrix with two columns containing the covariate values for group 2.
+#' @param y2 A numeric vector containing the outcome variable for group 2.
+#' @param pts A matrix with two columns specifying the covariate value combinations
+#'   at which to compute effect sizes. If `NULL`, points are automatically selected
+#'   based on data depth.
+#' @param BOTH Logical. If `TRUE` (default), combines x1 and x2 when selecting
+#'   design points. If `FALSE`, uses only x1.
+#' @param npts Number of design points to use when `pts = NULL` (default: 20).
+#' @param profun Function for computing depth of points. Default is `prodepth`
+#'   (uses product of marginal depths). Alternative: `pdepth` (deterministic method,
+#'   may be slow for large n).
+#' @inheritParams common-params
+#'
+#' @return A matrix with columns for each covariate (X1, X2) and the KMS effect
+#'   size. Each row corresponds to one covariate value combination specified in
+#'   `pts` or automatically selected.
+#'
+#' @details
+#' The function implements a heteroscedastic effect size measure for comparing two
+#' regression lines with two covariates. The KMS effect size at a given covariate
+#' combination is computed as:
+#'
+#' \deqn{ES = \frac{\hat{y}_1 - \hat{y}_2}{\sqrt{\sigma^2_{pooled}}}}
+#'
+#' where \eqn{\hat{y}_1} and \eqn{\hat{y}_2} are predicted values from quantile
+#' regression, and \eqn{\sigma^2_{pooled}} is a weighted pooled variance estimate.
+#'
+#' When `pts = NULL`, the function automatically selects design points based on
+#' depth, ranging from the deepest to least deep points in the covariate space.
+#'
+#' @seealso \code{\link{ancovap2.KMSci}} for confidence intervals,
+#'   \code{\link{ancovap2.KMS.plot}} for visualization
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Generate example data with two covariates
+#' set.seed(123)
+#' n1 <- 50; n2 <- 50
+#' x1 <- matrix(rnorm(n1 * 2), ncol = 2)
+#' y1 <- x1[,1] + x1[,2] + rnorm(n1)
+#' x2 <- matrix(rnorm(n2 * 2), ncol = 2)
+#' y2 <- x2[,1] + x2[,2] + 0.5 + rnorm(n2)
+#'
+#' # Compute KMS effect sizes
+#' result <- ancovap2.KMS(x1, y1, x2, y2)
+#' print(result)
+#' }
 ancovap2.KMS<-function(x1,y1,x2,y2,pts=NULL,BOTH=TRUE,npts=20,profun=prodepth,
 xout=FALSE,outfun=outpro){
 #
@@ -7391,7 +7968,76 @@ mat
 }
 
 
-# ancovap2.KMSci
+#' ANCOVA KMS Effect Size with Bootstrap Confidence Intervals (Two Covariates)
+#'
+#' Computes KMS effect sizes for two independent groups with two covariates,
+#' along with bootstrap confidence intervals and hypothesis tests. Tests whether
+#' the effect size is significantly different from zero at specified covariate
+#' value combinations.
+#'
+#' @param x1 A matrix with two columns containing the covariate values for group 1.
+#' @param y1 A numeric vector containing the outcome variable for group 1.
+#' @param x2 A matrix with two columns containing the covariate values for group 2.
+#' @param y2 A numeric vector containing the outcome variable for group 2.
+#' @param pts A matrix with two columns specifying the covariate value combinations.
+#'   If `NULL`, points are automatically selected (see `SIMPLE` parameter).
+#' @inheritParams common-params
+#' @param npts Number of design points when `pts = NULL` and `SIMPLE = FALSE`
+#'   (default: 20). Points are evenly spaced from deepest to least deep.
+#' @param SIMPLE Logical. When `pts = NULL`, if `TRUE`, uses quartiles of the
+#'   marginal distributions of group 1 to determine covariate points. If `FALSE`
+#'   (default), uses depth-based selection via `profun`.
+#' @param PLOT.ADJ Logical. If `TRUE`, highlights points using adjusted p-values.
+#'   If `FALSE` (default), uses unadjusted p-values for highlighting.
+#' @param xlab Label for first covariate axis in plot (default: 'X1').
+#' @param ylab Label for second covariate axis in plot (default: 'X2').
+#' @param BOTH Logical. If `TRUE` (default) and `SIMPLE = FALSE`, combines x1 and
+#'   x2 when selecting design points. If `FALSE`, uses only x1.
+#' @param profun Function for computing depth of points when `SIMPLE = FALSE`.
+#'   Default is `prodepth` (product of marginal depths). Alternative: `pdepth`
+#'   (random projections).
+#' @param method Method for adjusting p-values for multiple comparisons. Options
+#'   include 'hoch' (Hochberg, default), 'BH' (Benjamini-Hochberg), 'bonferroni',
+#'   etc. See \code{\link{p.adjust}}.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{pts}{Matrix of covariate value combinations where effect sizes were computed.}
+#'   \item{output}{Matrix with columns: Est. (effect size estimate), Test.Stat
+#'     (test statistic), ci.low (lower CI bound), ci.up (upper CI bound),
+#'     p-value (unadjusted), p.adjusted (adjusted for multiple comparisons).}
+#' }
+#'
+#' @details
+#' For each covariate value combination in `pts`, the function:
+#' \enumerate{
+#'   \item Computes the KMS effect size using \code{\link{ancovap2.KMS}}
+#'   \item Estimates standard errors via percentile bootstrap
+#'   \item Applies a sample-size adjustment factor to improve accuracy
+#'   \item Computes confidence intervals and p-values
+#'   \item Adjusts p-values for multiple comparisons
+#' }
+#'
+#' The plot displays all tested points with asterisks, and circles significant
+#' points (those with p ≤ 0.05).
+#'
+#' @seealso \code{\link{ancovap2.KMS}}, \code{\link{ancovap2.KMS.plot}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Generate example data
+#' set.seed(123)
+#' n1 <- 50; n2 <- 50
+#' x1 <- matrix(rnorm(n1 * 2), ncol = 2)
+#' y1 <- x1[,1] + x1[,2] + rnorm(n1)
+#' x2 <- matrix(rnorm(n2 * 2), ncol = 2)
+#' y2 <- x2[,1] + x2[,2] + 0.5 + rnorm(n2)
+#'
+#' # Compute effect sizes with CIs
+#' result <- ancovap2.KMSci(x1, y1, x2, y2, nboot = 500)
+#' print(result$output)
+#' }
 ancovap2.KMSci<-function(x1,y1,x2,y2,pts=NULL,alpha=.05,nboot=100,SEED=TRUE,npts=20,
 SIMPLE=FALSE,PLOT.ADJ=FALSE,
 plotit=TRUE,xlab='X1',ylab='X2',BOTH=TRUE,profun=prodepth,
@@ -7524,7 +8170,70 @@ list(pts=pts,output=RES)
 
 
 
-# ancovap2.KMS.plot
+#' Plot ANCOVA KMS Effect Size as Function of Two Covariates
+#'
+#' Creates a 3D visualization of the KMS effect size as a function of two
+#' covariates when comparing two independent regression lines. Automatically
+#' removes leverage points for robust estimation.
+#'
+#' @param x1 A matrix with two columns containing the covariate values for group 1.
+#' @param y1 A numeric vector containing the outcome variable for group 1.
+#' @param x2 A matrix with two columns containing the covariate values for group 2.
+#' @param y2 A numeric vector containing the outcome variable for group 2.
+#' @param pts A matrix with two columns specifying covariate value combinations.
+#'   If `NULL` (default), uses the deepest 90% of the pooled data from x1 and x2.
+#' @param xlab Label for first covariate axis (default: 'X1').
+#' @param ylab Label for second covariate axis (default: 'X2').
+#' @param zlab Label for vertical axis showing effect size (default: 'Effect Size').
+#' @inheritParams common-params
+#' @param theta Azimuthal viewing angle for 3D plot in degrees (default: 50).
+#'   Controls horizontal rotation of the plot.
+#' @param phi Colatitude viewing angle for 3D plot in degrees (default: 25).
+#'   Controls vertical tilt of the plot.
+#' @param REV Logical. If `FALSE` (default), uses covariates in original order.
+#'   If `TRUE`, reverses the order of covariates. This can affect the appearance
+#'   of the LOESS surface fitted to the effect sizes.
+#'
+#' @return A list with component:
+#' \describe{
+#'   \item{Number_of_points_used_is}{The number of covariate value combinations
+#'     used in computing and plotting the effect sizes.}
+#' }
+#'
+#' @details
+#' The function creates a 3D plot showing how the KMS effect size varies across
+#' the two-dimensional covariate space. The plotting method depends on the number
+#' of points:
+#' \itemize{
+#'   \item If N < 25: Uses \code{scatterplot3d} for a simple 3D scatter plot
+#'   \item If N ≥ 25: Uses \code{lplot} to fit a LOESS surface and create a
+#'     smoother visualization
+#' }
+#'
+#' Leverage points are automatically detected and removed using the function
+#' specified by `outfun` (default: \code{outpro}) to ensure robust effect size
+#' estimates.
+#'
+#' The `REV` parameter can be useful when the orientation of the LOESS surface
+#' doesn't clearly show the relationship - reversing the covariate order may
+#' provide a clearer view.
+#'
+#' @seealso \code{\link{ancovap2.KMS}}, \code{\link{ancovap2.KMSci}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Generate example data
+#' set.seed(123)
+#' n1 <- 50; n2 <- 50
+#' x1 <- matrix(rnorm(n1 * 2), ncol = 2)
+#' y1 <- x1[,1] + x1[,2] + rnorm(n1)
+#' x2 <- matrix(rnorm(n2 * 2), ncol = 2)
+#' y2 <- x2[,1] + x2[,2] + 0.5 + rnorm(n2)
+#'
+#' # Create 3D plot of effect sizes
+#' ancovap2.KMS.plot(x1, y1, x2, y2)
+#' }
 ancovap2.KMS.plot<-function(x1,y1,x2,y2,pts=NULL,xlab='X1',ylab='X2',zlab='Effect Size',
 xout=FALSE,outfun=outpro,SEED=TRUE, theta = 50, phi = 25,REV=FALSE){
 #
@@ -7612,6 +8321,80 @@ se
 
 
 # ancovap2.wmw.plot
+#' @title Bootstrap ANCOVA with Unconditional Resampling (Version 2)
+#'
+#' @description
+#' Compare two independent groups using ANCOVA with bootstrap resampling from (x,y)
+#' pairs rather than conditioning on x. This unconditional resampling approach tends
+#' to have more power than standard ancova(). Uses running interval smoothers with
+#' no parametric assumptions. Supports only one covariate.
+#'
+#' @param x1 Covariate values for group 1
+#' @param y1 Response values for group 1
+#' @param x2 Covariate values for group 2
+#' @param y2 Response values for group 2
+#' @param fr1 Span parameter for group 1 smoother (default: 1)
+#' @param fr2 Span parameter for group 2 smoother (default: 1)
+#' @param p.crit Critical p-value for significance. If NULL, determined via simulation
+#'   or fast approximation (default: NULL)
+#' @param padj Logical; if TRUE, use adjusted p-values via Hochberg/Hommel; if FALSE,
+#'   use critical p-value approach for better power (default: TRUE)
+#' @param pr Logical; if TRUE, print messages (default: TRUE)
+#' @param method P-value adjustment method: 'hochberg' or 'hommel' (default: 'hochberg')
+#' @param FAST Logical; if TRUE and alpha=.05, use fast approximation for p.crit;
+#'   if FALSE, compute via simulation (default: TRUE)
+#' @param est Estimator function to use (default: tmean for trimmed mean)
+#' @inheritParams common-params
+#' @param plotit Logical; if TRUE, plot running smoothers (default: TRUE)
+#' @param xlab Label for x-axis (default: 'X')
+#' @param ylab Label for y-axis (default: 'Y')
+#' @param qpts Logical; if TRUE, use quantiles of x1 as design points; if FALSE,
+#'   use ancova() default points (default: FALSE)
+#' @param qvals Quantile values for design points when qpts=TRUE (default: c(.25,.5,.75))
+#' @param sm Logical; if TRUE, use bootstrap bagging for smoother curves (default: FALSE)
+#' @param xout Logical; if TRUE, remove outliers in x before analysis (default: FALSE)
+#' @param eout Logical; if TRUE, eliminate all outliers when plotting (default: FALSE)
+#' @param outfun Function for detecting outliers (default: out)
+#' @param LP Logical; if TRUE, smooth running interval smoother again using lplot (default: TRUE)
+#' @param nboot Number of bootstrap samples (default: 500)
+#' @param SEED Logical; if TRUE, set seed for reproducibility (default: TRUE)
+#' @param nreps Number of replications for determining critical p-value (default: 2000)
+#' @param MC Logical; if TRUE, use parallel processing via mclapply (default: FALSE)
+#' @param nmin Minimum sample size at design points (default: 12)
+#' @param q Quantile for Harrell-Davis estimator when est=hd (default: .5 for median)
+#' @param SCAT Logical; if TRUE, add scatterplot (default: TRUE)
+#' @param pch1 Point character for group 1 in plot (default: '*')
+#' @param pch2 Point character for group 2 in plot (default: '+')
+#' @param ... Additional arguments passed to estimator function
+#'
+#' @return List with components:
+#'   \item{pts}{Design points where comparisons made}
+#'   \item{p.value}{P-values at each design point}
+#'   \item{p.crit}{Critical p-value (if padj=FALSE)}
+#'   \item{num.sig}{Number of significant comparisons}
+#'   \item{n1}{Sample size group 1}
+#'   \item{n2}{Sample size group 2}
+#'
+#' @note
+#' - Only one covariate supported
+#' - FAST=TRUE uses approximation valid for alpha=.05 and n <= 800
+#' - For faster execution with large samples, set MC=TRUE (requires multicore)
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Generate data with covariate relationship
+#' set.seed(345)
+#' x1 <- runif(60, 0, 10)
+#' y1 <- 2 + 0.5*x1 + rnorm(60, 0, 1.5)
+#' x2 <- runif(60, 0, 10)
+#' y2 <- 3 + 0.5*x2 + rnorm(60, 0, 1.5)
+#'
+#' # Compare using bootstrap ANCOVA
+#' result <- ancovaV2(x1, y1, x2, y2, nboot = 200, plotit = FALSE)
+#' print(result$p.value)
+#' }
+#'
 ancovaV2<-function(x1=NULL,y1=NULL,x2=NULL,y2=NULL,fr1=1,fr2=1,p.crit=NULL,padj=TRUE, pr=TRUE,
 method='hochberg',FAST=TRUE,
 est=tmean,alpha=.05,plotit=TRUE,xlab='X',ylab='Y',qpts=FALSE,qvals=c(.25,.5,.75),sm=FALSE,
@@ -7807,6 +8590,57 @@ rm
 #' x2 <- rnorm(50); y2 <- x2 + rnorm(50, mean=1)
 #' result <- ancpar(x1, y1, x2, y2, regfun=tsreg)
 #' }
+#' Parametric ANCOVA Wrapper (Single or Multiple Covariates)
+#'
+#' Wrapper function that automatically calls the appropriate robust ANCOVA function
+#' based on the number of covariates. Calls \code{\link{ancts}} for one covariate
+#' or \code{\link{anctsmp}} for multiple covariates.
+#'
+#' @param x1 A numeric vector or matrix of covariate values for group 1.
+#' @param y1 A numeric vector of outcome values for group 1.
+#' @param x2 A numeric vector or matrix of covariate values for group 2.
+#' @param y2 A numeric vector of outcome values for group 2.
+#' @param pts Design points for comparisons. For single covariate: a vector.
+#'   For multiple covariates: a matrix with one column per covariate.
+#'   If `NULL`, points are chosen automatically.
+#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
+#' @param fr1 Span for group 1 running interval (default: 1).
+#' @param fr2 Span for group 2 running interval (default: 1).
+#' @inheritParams common-params
+#' @param xlab,ylab Axis labels for plots.
+#' @param ... Additional arguments passed to \code{\link{ancts}} or \code{\link{anctsmp}}.
+#'
+#' @return The output from either \code{\link{ancts}} (for 1 covariate) or
+#'   \code{\link{anctsmp}} (for >1 covariates). See those functions for details.
+#'
+#' @details
+#' This is a convenience wrapper that automatically selects the appropriate
+#' robust ANCOVA function:
+#' \itemize{
+#'   \item If x1 and x2 are vectors (ncol = 1): calls \code{\link{ancts}}
+#'   \item If x1 and x2 are matrices (ncol > 1): calls \code{\link{anctsmp}}
+#' }
+#'
+#' Both functions use robust regression (default: Theil-Sen estimator) to
+#' compare regression lines/surfaces at specified design points.
+#'
+#' @seealso \code{\link{ancts}}, \code{\link{anctsmp}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # One covariate
+#' x1 <- rnorm(30); y1 <- 2 + 3*x1 + rnorm(30)
+#' x2 <- rnorm(30); y2 <- 1 + 3*x2 + rnorm(30)
+#' result1 <- ancpar(x1, y1, x2, y2)
+#'
+#' # Two covariates
+#' x1_mat <- matrix(rnorm(60), ncol = 2)
+#' y1 <- 2 + 3*x1_mat[,1] + x1_mat[,2] + rnorm(30)
+#' x2_mat <- matrix(rnorm(60), ncol = 2)
+#' y2 <- 1 + 3*x2_mat[,1] + x2_mat[,2] + rnorm(30)
+#' result2 <- ancpar(x1_mat, y1, x2_mat, y2)
+#' }
 ancpar<-function(x1,y1,x2,y2,pts=NULL,regfun=tsreg,fr1=1,fr2=1,alpha=.05,plotit=TRUE,xout=FALSE,outfun=out,nboot=100,SEED=TRUE,xlab="X",ylab="Y",...){
 #
 # Compare the regression lines of two independent groups at specified design points.
@@ -7981,7 +8815,43 @@ list(mat=mat,output=test$output,con=test$con,num.sig=test$num.sig)
 }
 
 
-# anc.plot.es
+#' Plot Effect Size as Function of Covariate
+#'
+#' Creates an effect size curve showing how the effect size varies across
+#' covariate values. Uses running interval smoothing and optionally adds
+#' confidence intervals.
+#'
+#' @param x1,y1 Covariate and outcome for group 1.
+#' @param x2,y2 Covariate and outcome for group 2.
+#' @param fr1,fr2 Spans for nearest neighbor selection (default: 1).
+#' @inheritParams common-params
+#' @param pts Design points where effect sizes are computed (default: x1 values).
+#' @param method Effect size measure: 'QS' (quantile shift, default), 'EP'
+#'   (explanatory power), 'AKP' (robust Cohen's d), 'WMW' (P(X<Y)), 'KMS'.
+#' @param CI Logical. If `TRUE`, computes confidence intervals and p-values.
+#' @param pts.only Logical. If `TRUE` (default), plots only the estimates.
+#'   If `FALSE`, adds LOESS smoother.
+#' @param low.span Span parameter for LOESS smoother (default: 2/3).
+#' @param nmin Minimum number of neighbors required at each design point (default: 12).
+#' @param xlab,ylab Axis labels.
+#' @param pch Plotting character (default: '*').
+#' @param ... Additional arguments.
+#'
+#' @return If `CI = FALSE`, returns 'Done'. If `CI = TRUE`, returns matrix
+#'   with columns: X, Est, ci.low, ci.hi, p.value.
+#'
+#' @details
+#' For each design point where both groups have ≥ nmin observations nearby,
+#' computes an effect size using the specified method. The default 'QS'
+#' (quantile shift) method provides a robust measure of effect size.
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' x1 <- rnorm(50); y1 <- x1 + rnorm(50)
+#' x2 <- rnorm(50); y2 <- x2 + 0.5 + rnorm(50)
+#' anc.plot.es(x1, y1, x2, y2, method = 'QS', CI = TRUE)
+#' }
 anc.plot.es<-function(x1,y1,x2,y2,fr1=1,fr2=1,tr=.2,alpha=.05,plotit=TRUE,pts=x1,method='QS',CI=FALSE,
 pr=TRUE,xout=FALSE,outfun=out,xlab='X',ylab='Effect.Size',pch='*',pts.only=TRUE,low.span=2/3,
 nmin=12,...){
@@ -8071,7 +8941,45 @@ M
 }
 
 
-# ancsm
+#' ANCOVA Using Depths of Smooths
+#'
+#' Compares two independent group regression lines using the depths of smooths
+#' rather than traditional hypothesis tests. Uses bootstrap to determine
+#' significance based on smooth depth.
+#'
+#' @param x1,y1 Covariate and outcome for group 1.
+#' @param x2,y2 Covariate and outcome for group 2.
+#' @param crit.mat Optional matrix of bootstrap critical values. If `NULL`,
+#'   computes via bootstrap.
+#' @inheritParams common-params
+#' @param REP.CRIT Logical. If `TRUE`, returns bootstrap critical values matrix.
+#' @param LP Logical. Use LOESS for plot (default: `TRUE`).
+#' @param est Estimator function (default: \code{tmean} for trimmed mean).
+#' @param fr Span for running interval smoother. If `NULL`, chosen automatically
+#'   based on sample size.
+#' @param sm Logical. If `TRUE`, uses bootstrap bagging for smooths.
+#' @param xlab,ylab Axis labels.
+#' @param ... Additional arguments.
+#'
+#' @return List with:
+#' \describe{
+#'   \item{p.value}{Bootstrap p-value for testing equal regression lines.}
+#'   \item{crit.mat}{Bootstrap critical values (if `REP.CRIT = TRUE`).}
+#'   \item{test.depth}{Observed depth statistic.}
+#' }
+#'
+#' @details
+#' Uses running interval smoother to create nonparametric regression estimates.
+#' Tests equality of regression lines by comparing depth of observed smooth
+#' difference to bootstrap distribution under null hypothesis.
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' x1 <- rnorm(50); y1 <- x1 + rnorm(50)
+#' x2 <- rnorm(50); y2 <- x2 + 0.5 + rnorm(50)
+#' result <- ancsm(x1, y1, x2, y2, nboot = 500)
+#' }
 ancsm<-function(x1,y1,x2,y2,crit.mat=NULL,nboot=200,SEED=TRUE,REP.CRIT=FALSE,LP=TRUE,
 est=tmean,fr=NULL,plotit=TRUE,sm=FALSE,xout=FALSE,outfun=out,xlab="X",ylab="Y",...){
 #
@@ -8135,7 +9043,36 @@ list(p.value=pv,crit.mat=crit.mat,test.depth=dep)
 
 
 
-# anctgen
+#' General ANCOVA with Running Interval Smoother
+#'
+#' Compares two independent groups using ANCOVA with trimmed means and running
+#' interval smoother. Makes no assumptions about regression line form.
+#'
+#' @param x1,y1 Covariate and outcome for group 1.
+#' @param x2,y2 Covariate and outcome for group 2.
+#' @param pts Design points for comparisons (required). Maximum 28 points allowed.
+#' @param fr1,fr2 Spans for running interval selection (default: 1).
+#' @inheritParams common-params
+#'
+#' @return List with:
+#' \describe{
+#'   \item{output}{Matrix with X, n1, n2, DIF, TEST, se, ci.low, ci.hi for each point.}
+#'   \item{crit}{Critical value used for confidence intervals (Rom's method).}
+#' }
+#'
+#' @details
+#' Uses Yuen's test for trimmed means at each design point. No parametric
+#' regression assumption - uses running interval smoother to get local estimates.
+#' Critical values adjusted for multiple comparisons via Rom's method (max 28 points).
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' x1 <- rnorm(50); y1 <- x1 + rnorm(50)
+#' x2 <- rnorm(50); y2 <- x2 + 0.5 + rnorm(50)
+#' pts <- seq(min(c(x1,x2)), max(c(x1,x2)), length.out = 5)
+#' result <- anctgen(x1, y1, x2, y2, pts)
+#' }
 anctgen<-function(x1,y1,x2,y2,pts,fr1=1,fr2=1,tr=.2){
 #
 # Compare two independent  groups using the ancova method
@@ -8184,6 +9121,72 @@ list(output=mat,crit=critv)
 
 
 # ancts
+#' Theil-Sen ANCOVA for Two Independent Groups
+#'
+#' Compares regression lines of two independent groups at specified design points
+#' using a robust regression estimator. By default, uses the Theil-Sen estimator,
+#' which is highly resistant to outliers.
+#'
+#' @param x1 A numeric vector of covariate values for group 1.
+#' @param y1 A numeric vector of outcome values for group 1.
+#' @param x2 A numeric vector of covariate values for group 2.
+#' @param y2 A numeric vector of outcome values for group 2.
+#' @param pts A numeric vector specifying design points where regression lines
+#'   are compared. If `NULL`, points are chosen automatically (see `Dpts` and `Npts`).
+#' @param Dpts Logical. If `FALSE` (default), `Npts` covariate points are chosen
+#'   uniformly spaced between minimum and maximum observed values. If `TRUE`,
+#'   points are chosen using the same strategy as \code{\link{ancova}}.
+#' @param Npts Number of design points to use when `pts = NULL` (default: 5).
+#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
+#'   Other options include \code{tshdreg} (Theil-Sen with Harrell-Davis),
+#'   \code{opreg} (outlier-pruned), etc.
+#' @param fr1 Span for selecting observations near design points in group 1 (default: 1).
+#' @param fr2 Span for selecting observations near design points in group 2 (default: 1).
+#' @param SCAT Logical. If `TRUE` (default), displays scatter plot points.
+#' @param pch1 Plotting character for group 1 points (default: '*').
+#' @param pch2 Plotting character for group 2 points (default: '+').
+#' @inheritParams common-params
+#' @param xlab Label for x-axis (default: "X").
+#' @param ylab Label for y-axis (default: "Y").
+#' @param ... Additional arguments passed to the regression function.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{n}{Vector of sample sizes for the two groups.}
+#'   \item{intercept.slope.group1}{Regression coefficients (intercept, slope) for group 1.}
+#'   \item{intercept.slope.group2}{Regression coefficients (intercept, slope) for group 2.}
+#'   \item{output}{Matrix with columns: X (design point), Est1 (group 1 estimate),
+#'     Est2 (group 2 estimate), DIF (difference), TEST (test statistic), se (standard error),
+#'     ci.low (lower CI), ci.hi (upper CI), p.value, p.adjust (adjusted p-value).}
+#' }
+#'
+#' @details
+#' The function compares two regression lines using robust regression at each design point.
+#' The Theil-Sen estimator is robust to outliers and does not require normality assumptions.
+#'
+#' Standard errors are estimated via bootstrap. Critical values are adjusted for multiple
+#' comparisons using Rom's method when testing at multiple design points.
+#'
+#' If `plotit = TRUE`, displays both groups' data and fitted regression lines (group 1: solid,
+#' group 2: dashed).
+#'
+#' @seealso \code{\link{anctspb}} for percentile bootstrap version,
+#'   \code{\link{anctsmp}} for multiple covariates, \code{\link{anctsmcp}} for
+#'   multiple groups
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare two groups with Theil-Sen regression
+#' set.seed(123)
+#' x1 <- rnorm(30)
+#' y1 <- 2 + 3*x1 + rnorm(30)
+#' x2 <- rnorm(30)
+#' y2 <- 1 + 3*x2 + rnorm(30)
+#'
+#' result <- ancts(x1, y1, x2, y2)
+#' print(result$output)
+#' }
 ancts<-function(x1,y1,x2,y2,pts=NULL,Dpts=FALSE,Npts=5,regfun=tsreg,fr1=1,fr2=1,SCAT=TRUE,pch1='*',pch2='+',
 alpha=.05,plotit=TRUE,xout=FALSE,outfun=out,nboot=100,SEED=TRUE,xlab="X",ylab="Y",...){
 #
@@ -8335,7 +9338,48 @@ list(n=c(nv1,nv2),intercept.slope.group1=reg1,intercept.slope.group2=reg2,output
 }
 
 
-# anctsmcp
+#' Theil-Sen ANCOVA Multiple Comparisons for J Groups
+#'
+#' Performs pairwise comparisons of regression lines for J independent groups
+#' using robust regression (default: Theil-Sen estimator). All pairwise comparisons
+#' are conducted via calls to \code{\link{ancts}}.
+#'
+#' @param x A list where `x[[j]]` contains the covariate values for group j.
+#'   Can be a matrix if multiple covariates, but `ancts` restricts to single covariate.
+#' @param y A list where `y[[j]]` contains the outcome values for group j.
+#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
+#' @inheritParams common-params
+#' @param pts A numeric vector specifying design points where regression lines
+#'   are compared. If `NULL`, points are chosen automatically by `ancts`.
+#' @param fr1 Span for selecting observations near design points in first group of each pair.
+#' @param fr2 Span for selecting observations near design points in second group of each pair.
+#' @param ... Additional arguments passed to \code{\link{ancts}}.
+#'
+#' @return The function prints results for all pairwise comparisons but does not return
+#'   a value. Each comparison shows the output from \code{\link{ancts}} including
+#'   effect sizes, test statistics, confidence intervals, and p-values at each design point.
+#'
+#' @details
+#' For J groups, performs J(J-1)/2 pairwise comparisons. Each comparison tests whether
+#' the regression lines differ at specified design points using robust regression.
+#'
+#' Results are printed to the console for each pair, showing which groups are being
+#' compared (e.g., "Group 1 Group 2") followed by the detailed output from `ancts`.
+#'
+#' @seealso \code{\link{ancts}}, \code{\link{anctsmp}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare three groups
+#' set.seed(123)
+#' x <- list(rnorm(20), rnorm(20), rnorm(20))
+#' y <- list(2 + 3*x[[1]] + rnorm(20),
+#'           1 + 3*x[[2]] + rnorm(20),
+#'           2 + 4*x[[3]] + rnorm(20))
+#'
+#' anctsmcp(x, y, nboot = 500)
+#' }
 anctsmcp<-function(x,y,regfun=tsreg,nboot=599,alpha=0.05,pts=NULL,
 SEED=TRUE,xout=FALSE,outfun=out,fr1=1,fr2=1,...){
 #
@@ -8363,7 +9407,60 @@ print(res)
 }
 
 
-# anctsmp
+#' Theil-Sen ANCOVA for Multiple Covariates
+#'
+#' Compares regression lines of two independent groups using robust regression
+#' (default: Theil-Sen) when there are multiple covariates. Generalizes
+#' \code{\link{ancts}} to handle more than one covariate.
+#'
+#' @param x1 A matrix containing covariate values for group 1 (one covariate per column).
+#' @param y1 A numeric vector of outcome values for group 1.
+#' @param x2 A matrix containing covariate values for group 2 (one covariate per column).
+#' @param y2 A numeric vector of outcome values for group 2.
+#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
+#' @inheritParams common-params
+#' @param pts A matrix specifying design points (covariate combinations) where
+#'   regression surfaces are compared. If `NULL`, points are chosen based on depth
+#'   using \code{\link{ancdes}}.
+#' @param ... Additional arguments passed to the regression function.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{n}{Vector of sample sizes for the two groups.}
+#'   \item{points}{Matrix of design points where comparisons were made.}
+#'   \item{output}{Matrix with columns: Est 1 (group 1 estimate), Est 2
+#'     (group 2 estimate), DIF (difference), TEST (test statistic), se (standard error),
+#'     ci.low (lower CI), ci.hi (upper CI), p.value.}
+#' }
+#'
+#' @details
+#' This function extends \code{\link{ancts}} to multiple covariates. Design points
+#' are selected based on data depth when `pts = NULL`, ensuring comparisons are made
+#' at representative covariate combinations.
+#'
+#' Standard errors are estimated via bootstrap. Critical values are adjusted for
+#' multiple comparisons using either Rom's method (for ≤28 tests) or Simes' method
+#' (for >28 tests).
+#'
+#' The Theil-Sen estimator provides robust regression that is resistant to outliers
+#' and does not require normality assumptions.
+#'
+#' @seealso \code{\link{ancts}} for single covariate, \code{\link{anctsmcp}}
+#'   for multiple groups
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare two groups with two covariates
+#' set.seed(123)
+#' x1 <- matrix(rnorm(60), ncol = 2)
+#' y1 <- 2 + 3*x1[,1] + 2*x1[,2] + rnorm(30)
+#' x2 <- matrix(rnorm(60), ncol = 2)
+#' y2 <- 1 + 3*x2[,1] + 2*x2[,2] + rnorm(30)
+#'
+#' result <- anctsmp(x1, y1, x2, y2, nboot = 500)
+#' print(result$output)
+#' }
 anctsmp<-function(x1,y1,x2,y2,regfun=tsreg,
 alpha=.05,pts=NULL,SEED=TRUE,nboot=100,xout=FALSE,outfun=out,...){
 #
@@ -8439,7 +9536,69 @@ list(n=nv,points=pts,output=mat)
 }
 
 
-# anctspb
+#' Theil-Sen ANCOVA with Percentile Bootstrap
+#'
+#' Compares regression lines of two independent groups at specified design points
+#' using robust regression with percentile bootstrap confidence intervals and p-values.
+#' Similar to \code{\link{ancts}} but uses percentile bootstrap, which can be more
+#' accurate when there are tied values in the outcome variable.
+#'
+#' @param x1 A numeric vector of covariate values for group 1.
+#' @param y1 A numeric vector of outcome values for group 1.
+#' @param x2 A numeric vector of covariate values for group 2.
+#' @param y2 A numeric vector of outcome values for group 2.
+#' @param pts A numeric vector specifying design points where regression lines
+#'   are compared. If `NULL`, five points are chosen using the same strategy as
+#'   \code{\link{ancova}}, ensuring adequate sample sizes near each point.
+#' @param regfun Regression function to use (default: \code{tshdreg} for Theil-Sen
+#'   with Harrell-Davis estimator). Other options include \code{tsreg}, \code{opreg}, etc.
+#' @param fr1 Span for selecting observations near design points in group 1 (default: 1).
+#' @param fr2 Span for selecting observations near design points in group 2 (default: 1).
+#' @inheritParams common-params
+#' @param xlab Label for x-axis (default: 'X').
+#' @param ylab Label for y-axis (default: 'Y').
+#' @param ... Additional arguments passed to the regression function.
+#'
+#' @return A list with component:
+#' \describe{
+#'   \item{output}{Matrix with columns: X (design point), Est1 (group 1 estimate),
+#'     Est2 (group 2 estimate), DIF (difference), ci.low (lower CI bound),
+#'     ci.hi (upper CI bound), p.value.}
+#' }
+#'
+#' @details
+#' This function is similar to \code{\link{ancts}} but uses a percentile bootstrap
+#' method for inference instead of estimating standard errors. The percentile bootstrap
+#' can provide more accurate inferences when:
+#' \itemize{
+#'   \item There are tied values in the outcome variable
+#'   \item The distribution of differences is skewed
+#'   \item Standard error estimation is problematic
+#' }
+#'
+#' The p-value is computed using the bootstrap distribution: P(difference = 0)
+#' is estimated by the proportion of bootstrap samples where group 1 < group 2,
+#' plus half the proportion where group 1 = group 2.
+#'
+#' If `plotit = TRUE`, displays both groups' data and fitted regression lines
+#' (group 1: circles, solid line; group 2: plus signs, dashed line).
+#'
+#' @seealso \code{\link{ancts}} for standard version, \code{\link{anctsmp}}
+#'   for multiple covariates
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare two groups with percentile bootstrap
+#' set.seed(123)
+#' x1 <- rnorm(30)
+#' y1 <- round(2 + 3*x1 + rnorm(30))  # Rounded to create ties
+#' x2 <- rnorm(30)
+#' y2 <- round(1 + 3*x2 + rnorm(30))
+#'
+#' result <- anctspb(x1, y1, x2, y2, nboot = 1000)
+#' print(result$output)
+#' }
 anctspb<-function(x1,y1,x2,y2,pts=NULL,regfun=tshdreg,fr1=1,fr2=1,alpha=.05,plotit=TRUE,xout=FALSE,outfun=outpro,nboot=500,SEED=TRUE,xlab='X',ylab='Y',...){
 #
 # Compare the regression lines of two independent groups
@@ -9380,6 +10539,45 @@ list(output=mat)
 
 
 
+#' @title Effect Size Summary for Dependent Groups ANCOVA
+#'
+#' @description
+#' Compute multiple measures of effect size for dependent groups ANCOVA based on
+#' difference scores at specified design points. Uses running interval smoother without
+#' parametric assumptions about regression form.
+#'
+#' @inheritParams common_ancova_dep_params
+#' @param REL.MAG Magnitude threshold for relative effect sizes. Default is NULL.
+#' @param nboot Number of bootstrap samples for confidence intervals. Default is 1000.
+#' @param ... Additional arguments passed to dep.ES.summary.CI.
+#'
+#' @details
+#' For each design point (covariate value), computes comprehensive effect size measures
+#' based on difference scores (y1 - y2). If design points are not specified, automatically
+#' selects 5 points where both regression lines can be reliably estimated.
+#'
+#' @return List with components:
+#' \describe{
+#'   \item{n}{Sample sizes at each design point}
+#'   \item{pts}{Design points used for comparison}
+#'   \item{ES.4.Each.pt}{List of effect size summaries for each point from dep.ES.summary.CI}
+#' }
+#'
+#' @seealso \code{\link{Dancova}}, \code{\link{dep.ES.summary}}
+#'
+#' @export
+#' @keywords ancova dependent effect-size
+#'
+#' @examples
+#' \dontrun{
+#'   # Paired data with covariate
+#'   x1 <- rnorm(30)
+#'   y1 <- x1 + rnorm(30)
+#'   x2 <- x1  # Same covariate (dependent design)
+#'   y2 <- x1 + 0.5 + rnorm(30)
+#'   result <- Dancova.ES.sum(x1, y1, x2, y2)
+#'   # Shows effect sizes at 5 design points
+#' }
 # Dancova.ES.sum
 Dancova.ES.sum<-function(x1,y1,x2=x1,y2,fr1=1,fr2=1,tr=.2,alpha=.05,pts=NA,xout=FALSE,outfun=out,
 REL.MAG=NULL, SEED=TRUE,nboot=1000,...){
@@ -9468,6 +10666,50 @@ list(n=N,pts=pts,ES.4.Each.pt=A)
 }
 
 
+#' @title Dependent Groups ANCOVA with Multiple Covariates and Design Points
+#'
+#' @description
+#' Compare two dependent groups using nonparametric ANCOVA with multiple covariates.
+#' Tests differences at multiple design points using running interval smoother.
+#'
+#' @param x1 Matrix of covariates for condition 1.
+#' @param y1 Outcome values for condition 1.
+#' @param x2 Matrix of covariates for condition 2. Default is NULL (uses x1).
+#' @param y2 Outcome values for condition 2.
+#' @inheritParams common_ancova_params
+#' @param tr Amount of trimming (0 to 0.5). Default is 0.2.
+#' @param alpha Significance level. Default is 0.05.
+#' @param pts Design points matrix. If NULL, chosen based on depth of x1.
+#' @param SEED Logical. Set random seed for reproducibility. Default is TRUE.
+#' @param DIF Logical. If TRUE, analyze difference scores; if FALSE, compare marginal estimates. Default is TRUE.
+#' @param cov.fun Covariance function for finding nearest points. Default is skipcov.
+#'   Options: skipcov, tbscov, covogk, mgvcov, mvecov, mcdcov, wincov.
+#' @param ... Additional arguments passed to cov.fun.
+#'
+#' @details
+#' Extension of Dancova to multiple covariates. At each design point, compares groups
+#' using points nearest to the design point in multivariate covariate space.
+#' If DIF=TRUE, uses trimmed mean of difference scores; if DIF=FALSE, compares
+#' marginal trimmed means with Yuen's test.
+#'
+#' @return List with components:
+#' \describe{
+#'   \item{pts}{Design points matrix}
+#'   \item{output}{Matrix with test results for each design point (n, estimates, test statistics, CI, p-values)}
+#' }
+#'
+#' @seealso \code{\link{Dancova}}, \code{\link{ancovamp}}
+#'
+#' @export
+#' @keywords ancova dependent multivariate
+#'
+#' @examples
+#' \dontrun{
+#'   x1 <- matrix(rnorm(100), 50, 2)
+#'   y1 <- rnorm(50)
+#'   y2 <- y1 + 0.5 + rnorm(50)  # Paired outcomes
+#'   result <- Dancovamp(x1, y1, x1, y2)  # x2=x1 for dependent design
+#' }
 # Dancovamp
 Dancovamp<-function(x1,y1,x2=NULL,y2,fr1=1,fr2=1,tr=0.2,alpha=0.05, pts=NULL,SEED=TRUE,DIF=TRUE,cov.fun=skipcov,...){
 #
@@ -9563,6 +10805,40 @@ list(pts=pts,output=mat)
 
 
 
+#' @title Dependent Groups ANCOVA with Percentile Bootstrap
+#'
+#' @description
+#' Compare two dependent groups using nonparametric ANCOVA with percentile bootstrap.
+#' Uses running interval smoother without parametric assumptions.
+#'
+#' @inheritParams common_ancova_dep_params
+#' @param est Estimator function. Default is hd (Harrell-Davis).
+#' @param alpha Significance level. Default is 0.05.
+#' @param nboot Number of bootstrap samples. Default is 500.
+#' @param pr Logical. Print progress messages. Default is TRUE.
+#' @param SEED Logical. Set random seed. Default is TRUE.
+#' @param plotit Logical. Create comparison plot. Default is TRUE.
+#' @param sm Logical. Use smooth (bootstrap bagging). Default is FALSE.
+#' @param xout Logical. Remove outliers before analysis. Default is FALSE.
+#' @param outfun Outlier detection function. Default is out.
+#' @param DIF Logical. If TRUE, analyze difference scores; if FALSE, compare marginal estimates. Default is FALSE.
+#' @param na.rm Logical. Remove NA values. Default is TRUE.
+#' @param ... Additional arguments.
+#'
+#' @return List with test results and design points.
+#'
+#' @seealso \code{\link{Dancova}}, \code{\link{ancovapb}}
+#'
+#' @export
+#' @keywords ancova dependent bootstrap
+#'
+#' @examples
+#' \dontrun{
+#'   x <- rnorm(30)
+#'   y1 <- x + rnorm(30)
+#'   y2 <- x + 0.5 + rnorm(30)
+#'   result <- Dancovapb(x, y1, x, y2)
+#' }
 # Dancovapb
 Dancovapb<-function(x1,y1,x2=x1,y2,fr1=1,fr2=1,est=hd,alpha=.05,nboot=500,pr=TRUE,SEED=TRUE,
 plotit=TRUE, pts=NA,sm=FALSE,xout=FALSE,outfun=out,DIF=FALSE,na.rm=TRUE,...){
@@ -9702,6 +10978,40 @@ runmean2g(x1,y1,x2,y2,fr=fr1,est=est,sm=sm,xout=xout,outfun=outfun,,...)
 list(output=mat)
 }
 
+#' @title Dependent Groups ANCOVA at User-Specified Design Points
+#'
+#' @description
+#' Compare two dependent groups using nonparametric ANCOVA at user-specified design points.
+#' Uses running interval smoother without parametric regression assumptions.
+#'
+#' @inheritParams common_ancova_dep_params
+#' @inheritParams common_ancova_params
+#' @param pts Design points vector where comparisons should be made.
+#' @param sm Logical. Use smoothed estimates via bootstrap bagging. Default is FALSE.
+#' @param DIF Logical. If TRUE, use trimmed means of difference scores; if FALSE, compare marginal trimmed means. Default is FALSE.
+#' @param LP Logical. Use linear programming for control. Default is TRUE.
+#' @param ... Additional arguments.
+#'
+#' @details
+#' User specifies exact design points where regression lines are compared.
+#' At each point, identifies observations from both conditions nearest to that covariate value.
+#' For those matched observations, either compares marginal trimmed means (DIF=FALSE)
+#' or analyzes trimmed mean of difference scores (DIF=TRUE).
+#'
+#' @return Matrix with test results for each design point.
+#'
+#' @seealso \code{\link{Dancova}}, \code{\link{ancova}}
+#'
+#' @export
+#' @keywords ancova dependent
+#'
+#' @examples
+#' \dontrun{
+#'   x <- rnorm(30)
+#'   y1 <- x + rnorm(30)
+#'   y2 <- x + 0.5 + rnorm(30)
+#'   result <- Dancovapts(x, y1, x, y2, pts = c(-1, 0, 1))
+#' }
 # Dancovapts
 Dancovapts<-function(x1,y1,x2,y2,fr1=1,fr2=1,tr=.2,alpha=.05,plotit=TRUE,pts=NA,sm=FALSE,xout=FALSE,outfun=out,DIF=FALSE,LP=TRUE,...){
 #
@@ -9770,6 +11080,50 @@ mat[temp2,9]=dvec
 mat
 }
 
+#' @title Dependent Groups ANCOVA Version 2 with Improved Bootstrap
+#'
+#' @description
+#' Compare two dependent groups using nonparametric ANCOVA with improved bootstrap method.
+#' Similar to Dancova but with enhanced power through different bootstrap resampling strategy.
+#'
+#' @param x1,y1,x2,y2 Covariate and outcome vectors for each condition.
+#' @param xy Alternatively, data matrix with columns [x1, y1, x2, y2].
+#' @inheritParams common_ancova_dep_params
+#' @param est Estimator function. Default is tmean (trimmed mean).
+#' @param alpha Significance level. Default is 0.05.
+#' @param plotit Logical. Create diagnostic plot. Default is TRUE.
+#' @param xlab,ylab Axis labels for plot.
+#' @param qvals Quantiles for design point selection. Default is c(0.25, 0.5, 0.75).
+#' @param sm Logical. Use smoothing. Default is FALSE.
+#' @param DIF Logical. Analyze difference scores if TRUE. Default is FALSE.
+#' @param LP Logical. Use linear programming. Default is TRUE.
+#' @param method P-value adjustment method. Default is 'hochberg'.
+#' @param nboot Number of bootstrap samples. Default is 500.
+#' @param SEED,nreps,MC,cpp Bootstrap control parameters.
+#' @param SCAT,pch1,pch2 Plotting parameters.
+#' @param nmin Minimum sample size at design points. Default is 12.
+#' @param q Quantile for certain estimators. Default is 0.5.
+#' @param ... Additional arguments.
+#'
+#' @details
+#' Like Dancova but with improved power. Bootstrap samples are obtained by resampling
+#' from the full data (x1, y1, x2, y2) rather than conditioning on x values.
+#' This unconditional bootstrap often provides better power.
+#'
+#' @return List with test results and design points.
+#'
+#' @seealso \code{\link{Dancova}}
+#'
+#' @export
+#' @keywords ancova dependent bootstrap
+#'
+#' @examples
+#' \dontrun{
+#'   x <- rnorm(30)
+#'   y1 <- x + rnorm(30)
+#'   y2 <- x + 0.5 + rnorm(30)
+#'   result <- DancovaV2(x, y1, x, y2)
+#' }
 # DancovaV2
 DancovaV2<-function(x1=NULL,y1=NULL,x2=NULL,y2=NULL,xy=NULL,fr1=1,fr2=1,
 est=tmean,alpha=.05,plotit=TRUE,xlab='X',ylab='Y',qvals=c(.25,.5,.75),sm=FALSE,
@@ -9890,6 +11244,45 @@ dimnames(pvm)=list(NULL,c('X','p.values','p.adjusted'))
 list(output=pvm,n=n)
 }
 
+#' @title Dependent Groups ANCOVA Using Theil-Sen Regression
+#'
+#' @description
+#' Compare regression lines of two dependent groups using robust regression (Theil-Sen by default).
+#' A robust Johnson-Neyman method for dependent groups.
+#'
+#' @inheritParams common_ancova_dep_params
+#' @param pts Design points for comparison. If NULL, automatically selected. Default is NULL.
+#' @param regfun Regression function. Default is tsreg (modified Theil-Sen).
+#'   Can also use tshdreg for tied values.
+#' @param alpha Significance level. Default is 0.05.
+#' @param plotit Logical. Create comparison plot. Default is TRUE.
+#' @param xout Logical. Remove outliers. Default is FALSE.
+#' @param outfun Outlier detection function. Default is out.
+#' @param nboot Number of bootstrap samples. Default is 100.
+#' @param SEED Logical. Set random seed. Default is TRUE.
+#' @param xlab,ylab Axis labels for plot.
+#' @param pr Logical. Print warning messages. Default is TRUE.
+#' @param ... Additional arguments passed to regfun.
+#'
+#' @details
+#' For OLS regression, use Dancols instead. This function uses robust regression
+#' to compare dependent groups at specified design points. The default Theil-Sen
+#' estimator is resistant to outliers. For data with tied values, consider regfun=tshdreg.
+#'
+#' @return List with test results and design points.
+#'
+#' @seealso \code{\link{Dancols}}, \code{\link{tsreg}}, \code{\link{tshdreg}}
+#'
+#' @export
+#' @keywords ancova dependent robust regression
+#'
+#' @examples
+#' \dontrun{
+#'   x <- rnorm(30)
+#'   y1 <- 2*x + rnorm(30)
+#'   y2 <- 2*x + 0.5 + rnorm(30)  # Parallel shift
+#'   result <- Dancts(x, y1, x, y2)
+#' }
 # Dancts
 Dancts<-function(x1,y1,x2,y2,pts=NULL,regfun=tsreg,fr1=1,fr2=1,alpha=.05,plotit=TRUE,xout=FALSE,
 outfun=out,nboot=100,SEED=TRUE,xlab='X',ylab='Y',pr=TRUE,...){
@@ -10040,6 +11433,47 @@ list(output=mat)
 
 
 
+#' @title Dependent Groups ANCOVA Using Theil-Sen with Percentile Bootstrap
+#'
+#' @description
+#' Compare regression lines of two dependent groups using robust regression with
+#' percentile bootstrap confidence intervals. A robust Johnson-Neyman method for dependent groups.
+#'
+#' @inheritParams common_ancova_dep_params
+#' @param pts Design points for comparison. If NULL, automatically selected.
+#' @param regfun Regression function. Default is tsreg (modified Theil-Sen).
+#' @param alpha Significance level. Default is 0.05.
+#' @param plotit Logical. Create comparison plot. Default is TRUE.
+#' @param xout Logical. Remove outliers based on x values. Default is FALSE.
+#' @param SCAT Logical. Show scatter plot. Default is TRUE.
+#' @param outfun Outlier detection function. Default is outpro.
+#' @param BLO Logical. Use biweight estimator for location/scale. Default is FALSE.
+#' @param nboot Number of bootstrap samples. Default is 500.
+#' @param SEED Logical. Set random seed. Default is TRUE.
+#' @param xlab,ylab Axis labels for plot.
+#' @param pr Logical. Print warning messages. Default is TRUE.
+#' @param eout Logical. Remove error outliers. Default is FALSE.
+#' @param ... Additional arguments passed to regfun.
+#'
+#' @details
+#' Similar to Dancts but uses percentile bootstrap for confidence intervals and hypothesis tests.
+#' Provides more accurate inference when sampling distributions are skewed.
+#' For OLS regression, use Dancols instead.
+#'
+#' @return List with test results and design points.
+#'
+#' @seealso \code{\link{Dancts}}, \code{\link{DanctspbMC}}, \code{\link{tsreg}}
+#'
+#' @export
+#' @keywords ancova dependent robust bootstrap
+#'
+#' @examples
+#' \dontrun{
+#'   x <- rnorm(30)
+#'   y1 <- 2*x + rnorm(30)
+#'   y2 <- 2*x + 0.5 + rnorm(30)
+#'   result <- Danctspb(x, y1, x, y2, nboot = 1000)
+#' }
 # Danctspb
 Danctspb<-function(x1,y1,x2,y2,pts=NULL,regfun=tsreg,fr1=1,fr2=1,alpha=.05,plotit=TRUE,xout=FALSE,SCAT=TRUE,
 outfun=outpro,BLO=FALSE,nboot=500,SEED=TRUE,xlab='X',ylab='Y',pr=TRUE,eout=FALSE,...){
@@ -10183,6 +11617,47 @@ list(output=mat)
 }
 
 
+#' @title Dependent Groups ANCOVA Using Theil-Sen with Bootstrap (Multicore)
+#'
+#' @description
+#' Compare regression lines of two dependent groups using robust regression with
+#' percentile bootstrap. Multicore-enabled version using parallel processing.
+#'
+#' @inheritParams common_ancova_dep_params
+#' @param pts Design points for comparison. If NULL, automatically selected.
+#' @param regfun Regression function. Default is tshdreg (Theil-Sen for tied values).
+#' @param alpha Significance level. Default is 0.05.
+#' @param SCAT Logical. Show scatter plot. Default is TRUE.
+#' @param plotit Logical. Create comparison plot. Default is TRUE.
+#' @param xout Logical. Remove outliers based on x values. Default is FALSE.
+#' @param outfun Outlier detection function. Default is outpro.
+#' @param nboot Number of bootstrap samples. Default is 500.
+#' @param SEED Logical. Set random seed. Default is TRUE.
+#' @param xlab,ylab Axis labels for plot.
+#' @param WARN Logical. Show warnings. Default is FALSE.
+#' @param pr Logical. Print progress messages. Default is TRUE.
+#' @param eout Logical. Remove error outliers. Default is FALSE.
+#' @param ... Additional arguments passed to regfun.
+#'
+#' @details
+#' Similar to Danctspb but uses parallel processing for faster bootstrap computation.
+#' Bootstrap samples are obtained from the full data rather than conditioning on x values,
+#' similar to approach used in regci. For OLS regression, use Dancols instead.
+#'
+#' @return List with test results and design points.
+#'
+#' @seealso \code{\link{Danctspb}}, \code{\link{Dancts}}, \code{\link{tshdreg}}
+#'
+#' @export
+#' @keywords ancova dependent robust bootstrap parallel
+#'
+#' @examples
+#' \dontrun{
+#'   x <- rnorm(30)
+#'   y1 <- 2*x + rnorm(30)
+#'   y2 <- 2*x + 0.5 + rnorm(30)
+#'   result <- DanctspbMC(x, y1, x, y2, nboot = 1000)
+#' }
 # DanctspbMC
 DanctspbMC<-function(x1,y1,x2,y2,pts=NULL,regfun=tshdreg,fr1=1,fr2=1,alpha=.05,SCAT=TRUE,
 plotit=TRUE,xout=FALSE,outfun=outpro,nboot=500,SEED=TRUE,xlab='X',ylab='Y',WARN=FALSE,pr=TRUE,eout=FALSE,...){
