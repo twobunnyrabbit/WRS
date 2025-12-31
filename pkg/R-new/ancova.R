@@ -6629,7 +6629,26 @@ RES
 
 
 
-# ancovad.ES.SEpb
+#' @title Bootstrap Standard Errors for Dependent ANCOVA Effect Sizes
+#'
+#' @description
+#' Helper function to estimate bootstrap standard errors for effect sizes from
+#' dependent (paired) ANCOVA comparisons. Uses bootstrap resampling of paired
+#' observations.
+#'
+#' @param x1 Covariate values at time 1
+#' @param y1 Response values at time 1
+#' @param x2 Covariate values at time 2 (paired with x1, y1)
+#' @param y2 Response values at time 2 (paired with x1, y1)
+#' @param nboot Number of bootstrap samples (default: 100)
+#' @param regfun Regression function to use (default: tsreg - Theil-Sen estimator)
+#' @param pts Vector of design points where effect sizes are estimated
+#' @param SEED Logical; if TRUE, set random seed for reproducibility (default: TRUE)
+#'
+#' @return Vector of bootstrap standard errors, one for each design point
+#'
+#' @keywords internal
+#' @export
 ancovad.ES.SEpb<-function(x1,y1,x2,y2,nboot=100,regfun=tsreg,pts=0,SEED=TRUE){
 #
 #  Estimate standard error
@@ -6851,7 +6870,25 @@ M
 }
 
 
-# ancova.ES.SEpb
+#' @title Bootstrap Standard Errors for Independent ANCOVA Effect Sizes (KMS)
+#'
+#' @description
+#' Helper function to estimate bootstrap standard errors for KMS effect sizes from
+#' independent groups ANCOVA comparisons. Uses bootstrap resampling of observations
+#' within each group.
+#'
+#' @param x1 Covariate values for group 1
+#' @param y1 Response values for group 1
+#' @param x2 Covariate values for group 2
+#' @param y2 Response values for group 2
+#' @param nboot Number of bootstrap samples (default: 100)
+#' @param pts Vector of design points where effect sizes are estimated
+#' @param SEED Logical; if TRUE, set random seed for reproducibility (default: TRUE)
+#'
+#' @return Vector of bootstrap standard errors, one for each design point
+#'
+#' @keywords internal
+#' @export
 ancova.ES.SEpb<-function(x1,y1,x2,y2,nboot=100,pts=0,SEED=TRUE){
 #
 #  Estimate standard error assuming normaliy
@@ -8294,7 +8331,25 @@ list(Number_of_points_used_is=N)
 #for independent dataset:  SEQ_PE(dependent=F)
 
 
-# ancovap2.KMS.SEpb
+#' @title Bootstrap Standard Errors for Two-Covariate ANCOVA Effect Sizes
+#'
+#' @description
+#' Helper function to estimate bootstrap standard errors for KMS effect sizes from
+#' two-covariate ANCOVA comparisons. Uses bootstrap resampling of observations
+#' within each group.
+#'
+#' @param x1 Matrix of covariate values for group 1 (two columns)
+#' @param y1 Response values for group 1
+#' @param x2 Matrix of covariate values for group 2 (two columns)
+#' @param y2 Response values for group 2
+#' @param nboot Number of bootstrap samples (default: 100)
+#' @param pts Matrix of design points (two columns) where effect sizes are estimated
+#' @param SEED Logical; if TRUE, set random seed for reproducibility (default: TRUE)
+#'
+#' @return Vector of bootstrap standard errors, one for each design point
+#'
+#' @keywords internal
+#' @export
 ancovap2.KMS.SEpb<-function(x1,y1,x2,y2,nboot=100,pts=NULL,SEED=TRUE){
 #
 #  Estimate standard error
@@ -8527,7 +8582,29 @@ dimnames(pvm)=list(NULL,c('X','p.values','p.adjusted'))
 list(output=pvm,n=c(n1,n2),p.crit=p.crit)
 }
 
-# ancovaV2.pv
+#' @title Determine Critical P-Value for ancovaV2
+#'
+#' @description
+#' Helper function to determine the critical p-value for the ancovaV2 function when
+#' testing at specified design points. Generates data from null distribution (normal)
+#' and computes minimum p-value across multiple iterations to establish the critical
+#' value for controlling family-wise error rate.
+#'
+#' @param n1 Sample size for group 1
+#' @param n2 Sample size for group 2
+#' @param nreps Number of simulation iterations (default: 2000)
+#' @param MC Logical; if TRUE, use parallel processing via mclapply (default: FALSE)
+#' @param qpts Logical; if TRUE, use quantile-based design points (default: FALSE)
+#' @param qvals Vector of quantiles to use if qpts=TRUE (default: c(0.25, 0.5, 0.75))
+#' @param nboot Number of bootstrap samples per iteration (default: 500)
+#' @param SEED Logical; if TRUE, set random seed for reproducibility (default: TRUE)
+#' @param est Estimator function to use (default: tmean)
+#' @param alpha Significance level for determining critical value (default: 0.05)
+#'
+#' @return List with p.crit, the critical p-value for family-wise error control
+#'
+#' @keywords internal
+#' @export
 ancovaV2.pv<-function(n1,n2,nreps=2000,MC=FALSE,qpts=FALSE,qvals = c(0.25, 0.5, 0.75),
 nboot=500,SEED=TRUE,est=tmean,alpha=.05){
 iter=nreps
@@ -8550,7 +8627,23 @@ list(p.crit=p)
 }
 
 
-# ancovaV2pv.sub
+#' @title Subroutine for ancovaV2.pv
+#'
+#' @description
+#' Helper subroutine for ancovaV2.pv that processes one simulated dataset.
+#' Calls ancovaV2 and returns the minimum p-value across all design points.
+#'
+#' @param xy List containing simulated x and y data for both groups
+#' @param qpts Logical; if TRUE, use quantile-based design points
+#' @param qvals Vector of quantiles to use if qpts=TRUE
+#' @param nboot Number of bootstrap samples
+#' @param MC Logical; if TRUE, use parallel processing
+#' @param est Estimator function to use
+#'
+#' @return Minimum p-value across all design points
+#'
+#' @keywords internal
+#' @export
 ancovaV2pv.sub<-function(xy,qpts=FALSE,qvals = c(0.25, 0.5, 0.75),nboot=500,MC=TRUE,
 est=tmean){
 res=ancovaV2(xy[[1]],xy[[2]],xy[[3]],xy[[4]],est=est,plotit=FALSE,p.crit=.03,SEED=TRUE,qpts=qpts,
@@ -9724,7 +9817,32 @@ abline(regfun(x2,y2)$coef,lty=2)
 list(output=mat)
 }
 
-# CLASSanc
+#' @title Classic (Non-Robust) ANCOVA
+#'
+#' @description
+#' Perform classic ANCOVA using standard OLS methods. **NOT RECOMMENDED** for
+#' general use - only included for comparison with robust methods. Uses standard
+#' linear model with interaction test for slope equality followed by main ANCOVA
+#' model. One covariate only.
+#'
+#' @param x1 Covariate values for group 1
+#' @param y1 Response values for group 1
+#' @param x2 Covariate values for group 2
+#' @param y2 Response values for group 2
+#' @param xout Logical; if TRUE, remove outliers before analysis (default: FALSE)
+#' @param outfun Function to detect outliers (default: out)
+#' @param ... Additional arguments passed to outfun
+#'
+#' @return List with slope.test (test for interaction/parallel slopes) and
+#'   ancova (main ANCOVA results assuming parallel slopes)
+#'
+#' @note This function uses non-robust classical ANCOVA. Robust alternatives
+#'   are strongly recommended for most applications.
+#'
+#' @seealso \code{\link{ancova}}, \code{\link{ancGLOB}} for robust alternatives
+#'
+#' @keywords internal
+#' @export
 CLASSanc<-function(x1,y1,x2,y2,xout=FALSE,outfun=out,...){
 #
 #  Perform classic ANCOVA
@@ -9903,7 +10021,33 @@ list(p.crit=p.crit,output=res,num.sig=sum(sig),p.crit=p.crit)
 }
 
 
-# DancGLOB_pv
+#' @title Determine Critical P-Value for DancovaV2/DancGLOBv2
+#'
+#' @description
+#' Helper function to determine the critical p-value for the DancovaV2 (formerly DancGLOB)
+#' function when testing dependent groups ANCOVA. Generates paired data from null
+#' distribution (normal) and computes minimum p-value across iterations to establish
+#' the critical value for controlling family-wise error rate.
+#'
+#' @param n Sample size (number of pairs)
+#' @param est Estimator function to use (default: tmean)
+#' @param fr1 Span for first group's smoother (default: 1)
+#' @param fr2 Span for second group's smoother (default: 1)
+#' @param nboot Number of bootstrap samples per iteration (default: 500)
+#' @param SEED Logical; if TRUE, set random seed for reproducibility (default: TRUE)
+#' @param iter Number of simulation iterations (default: 1000)
+#' @param nmin Minimum sample size for running interval smoother (default: 12)
+#' @param MC Logical; if TRUE, use parallel processing via mclapply (default: TRUE)
+#' @param alpha Significance level for determining critical value (default: 0.05)
+#' @param PRM Logical; if TRUE, return all p-values computed (default: FALSE)
+#' @param qvals Vector of quantiles to use for design points (default: c(0.25, 0.5, 0.75))
+#' @param cpp Logical; if TRUE, use C++ implementation from WRScpp (default: FALSE)
+#' @param ... Additional arguments passed to smoother
+#'
+#' @return List with p.crit, the critical p-value for family-wise error control
+#'
+#' @keywords internal
+#' @export
 DancGLOB_pv<-function(n,est=tmean,fr1=1,fr2=1,nboot=500,
 SEED=TRUE,iter=1000,nmin=12,MC=TRUE,alpha=.05,PRM=FALSE,qvals=c(.25,.5,.75),
 cpp=FALSE,...){
@@ -9942,7 +10086,25 @@ list(p.crit=p)
 
 
 
-# DancGLOB_sub
+#' @title Subroutine for Dependent ANCOVA Bootstrap Resampling
+#'
+#' @description
+#' Helper subroutine used in bootstrap resampling for dependent groups ANCOVA.
+#' Processes one bootstrap sample by applying the running interval smoother to
+#' estimate the regression curve at specified design points.
+#'
+#' @param data Bootstrap sample indices
+#' @param xy Matrix of paired data (x,y coordinates)
+#' @param pts Vector of design points where regression is estimated
+#' @param est Estimator function to use
+#' @param fr Span for running interval smoother
+#' @param nmin Minimum sample size for smoother
+#' @param ... Additional arguments passed to runhat
+#'
+#' @return Estimated values at design points
+#'
+#' @keywords internal
+#' @export
 DancGLOB_sub<-function(data,xy=xy,pts=pts,est=est,fr=fr,nmin=nmin,...){
 x1=xy[data,1]
 y1=xy[data,2]
@@ -9953,7 +10115,26 @@ est1
 
 
 
-# DancGLOB_sub
+#' @title Subroutine for Dependent ANCOVA Bootstrap Resampling (Alternative)
+#'
+#' @description
+#' Helper subroutine used in bootstrap resampling for dependent groups ANCOVA.
+#' Processes one bootstrap sample by applying the running interval smoother to
+#' estimate the regression curve at specified design points. This is an alternative
+#' version with xy defaulting to NULL.
+#'
+#' @param data Bootstrap sample indices
+#' @param xy Matrix of paired data (x,y coordinates), default NULL
+#' @param pts Vector of design points where regression is estimated
+#' @param est Estimator function to use
+#' @param fr Span for running interval smoother
+#' @param nmin Minimum sample size for smoother
+#' @param ... Additional arguments passed to runhat
+#'
+#' @return Estimated values at design points
+#'
+#' @keywords internal
+#' @export
 DancGLOB_sub<-function(data,xy=NULL,pts=pts,est=est,fr=fr,nmin=nmin,...){
 x1=xy[data,1]
 y1=xy[data,2]
@@ -10445,7 +10626,34 @@ list(n=n,n.keep=n.keep,output=mat,cross.interval=int,cr.quant.grp1=crq,
 cr.quant.grp2=crq2)
 }
 
-# Dancols_sub
+#' @title Subroutine for Dependent Groups OLS ANCOVA
+#'
+#' @description
+#' Helper subroutine for comparing OLS regression lines of two dependent (paired)
+#' groups at specified design points. Computes differences in predicted values,
+#' standard errors, test statistics, confidence intervals, and p-values.
+#'
+#' @param x1 Covariate values at time 1
+#' @param y1 Response values at time 1
+#' @param x2 Covariate values at time 2 (paired with x1, y1)
+#' @param y2 Response values at time 2 (paired with x1, y1)
+#' @param pts Vector of design points where comparisons are made. If NULL, chosen automatically
+#' @param fr1 Span for first group (used in automatic point selection, default: 1)
+#' @param fr2 Span for second group (used in automatic point selection, default: 1)
+#' @param alpha Significance level (default: 0.05)
+#' @param plotit Logical; if TRUE, create scatterplot with regression lines (default: FALSE)
+#' @param xout Logical; if TRUE, remove outliers before analysis (default: FALSE)
+#' @param outfun Function to detect outliers (default: out)
+#' @param nboot Number of bootstrap samples for variance estimation (default: 100)
+#' @param SEED Logical; if TRUE, set random seed (default: TRUE)
+#' @param xlab Label for x-axis (default: 'X')
+#' @param ylab Label for y-axis (default: 'Y')
+#' @param ... Additional arguments passed to outfun
+#'
+#' @return List with output matrix containing estimates, differences, tests, CIs, and p-values
+#'
+#' @keywords internal
+#' @export
 Dancols_sub<-function(x1,y1,x2,y2,pts=NULL,fr1=1,fr2=1,alpha=.05,plotit=FALSE,xout=FALSE,outfun=out,nboot=100,SEED=TRUE,xlab='X',ylab='Y',...){
 #
 # Compare the OLS regression lines of two dependent (within) groups
@@ -10577,7 +10785,23 @@ abline(lsfit(x2,y2)$coef,lty=2)
 list(n=n,n.keep=n.keep,output=mat)
 }
 
-# Dancols_sub1
+#' @title Extract Lower CI Bound from Dancols_sub
+#'
+#' @description
+#' Helper function that extracts the absolute value of the lower confidence
+#' interval bound from Dancols_sub output. Used in optimization and searching
+#' procedures.
+#'
+#' @param pts Design point(s) where comparison is made
+#' @param x1 Covariate values at time 1
+#' @param y1 Response values at time 1
+#' @param x2 Covariate values at time 2
+#' @param y2 Response values at time 2
+#'
+#' @return Absolute value of lower CI bound
+#'
+#' @keywords internal
+#' @export
 Dancols_sub1<-function(pts,x1,y1,x2,y2){
 #
 #
@@ -10585,7 +10809,23 @@ ci=abs(Dancols_sub(x1,y1,x2,y2,pts=pts)$output[1,7])
 ci
 }
 
-# Dancols_sub2
+#' @title Extract Upper CI Bound from Dancols_sub
+#'
+#' @description
+#' Helper function that extracts the absolute value of the upper confidence
+#' interval bound from Dancols_sub output. Used in optimization and searching
+#' procedures.
+#'
+#' @param pts Design point(s) where comparison is made
+#' @param x1 Covariate values at time 1
+#' @param y1 Response values at time 1
+#' @param x2 Covariate values at time 2
+#' @param y2 Response values at time 2
+#'
+#' @return Absolute value of upper CI bound
+#'
+#' @keywords internal
+#' @export
 Dancols_sub2<-function(pts,x1,y1,x2,y2){
 #
 #
@@ -12002,7 +12242,35 @@ list(output=mat)
 }
 
 
-# Danctspb.sub
+#' @title Dependent Groups ANCOVA with Trimmed Means
+#'
+#' @description
+#' Compare two dependent (paired) groups using a covariate with trimmed means.
+#' Uses running interval smoother with no parametric assumptions about the
+#' regression form. Can compare groups either using trimmed mean differences
+#' or median of distribution of differences.
+#'
+#' @param x1 Covariate values (shared for both groups)
+#' @param y1 Response values at time 1/condition 1
+#' @param y2 Response values at time 2/condition 2 (paired with y1)
+#' @param fr1 Span for running interval smoother (default: 1)
+#' @param tr Trimming proportion (default: 0.2 for 20% trimming)
+#' @param alpha Significance level (default: 0.05)
+#' @param plotit Logical; if TRUE, create plot (default: TRUE)
+#' @param DISDIF Logical; if TRUE, compare using median of distribution of D=Y1-Y2 (default: FALSE)
+#' @param DIF Logical; if TRUE, analyze differences Y1-Y2 directly (default: TRUE)
+#' @param pts Vector of design points for comparisons. If NULL, chosen automatically
+#' @param sm Logical; if TRUE, create smooths using bootstrap bagging (default: FALSE)
+#' @param xout Logical; if TRUE, remove outliers (default: FALSE)
+#' @param outfun Function to detect outliers (default: out)
+#' @param nboot Number of bootstrap samples (default: 500)
+#'
+#' @return List with output matrix containing estimates, tests, CIs, and p-values
+#'
+#' @seealso \code{\link{DEPancpb}} for bootstrap version
+#'
+#' @keywords internal
+#' @export
 DEPanc<-function(x1,y1,y2,fr1=1,tr=.2,alpha=.05,plotit=TRUE,DISDIF=FALSE,DIF=TRUE,
 pts=NULL,sm=FALSE,xout=FALSE,outfun=out,nboot=500){
 #
@@ -12095,7 +12363,41 @@ list(output=mat)
 
 
 
-# DEPancpb
+#' @title Dependent Groups ANCOVA with Bootstrap Methods
+#'
+#' @description
+#' Compare two dependent (paired) groups using a covariate with bootstrap methods.
+#' Similar to DEPanc but uses bootstrap in all cases. Uses running interval smoother
+#' with no parametric assumptions about the regression form.
+#'
+#' @param x1 Covariate values (shared for both groups)
+#' @param y1 Response values at time 1/condition 1
+#' @param y2 Response values at time 2/condition 2 (paired with y1)
+#' @param fr1 Span for running interval smoother (default: 1)
+#' @param est Estimator function to use (default: tmean)
+#' @param alpha Significance level (default: 0.05)
+#' @param plotit Logical; if TRUE, create plot (default: TRUE)
+#' @param DISDIF Logical; if TRUE, compare using median of distribution of D=Y1-Y2 (default: FALSE)
+#' @param DIF Logical; if TRUE, analyze differences Y1-Y2 directly (default: TRUE)
+#' @param TLS Logical; if TRUE, use transformed least squares (default: FALSE)
+#' @param SEED Logical; if TRUE, set random seed (default: TRUE)
+#' @param pts Vector of design points for comparisons. If NULL, chosen automatically
+#' @param sm Logical; if TRUE, create smooths using bootstrap bagging (default: FALSE)
+#' @param xout Logical; if TRUE, remove outliers (default: FALSE)
+#' @param outfun Function to detect outliers (default: out)
+#' @param nboot Number of bootstrap samples (default: 500)
+#' @param pr Logical; if TRUE, print progress messages (default: FALSE)
+#' @param na.rm Logical; if TRUE, use casewise deletion for missing values (default: TRUE)
+#' @param xlab Label for x-axis (default: "Group 1")
+#' @param ylab Label for y-axis (default: "Group 2")
+#' @param ... Additional arguments
+#'
+#' @return List with output matrix containing estimates, CIs, and p-values
+#'
+#' @seealso \code{\link{DEPanc}} for trimmed mean version
+#'
+#' @keywords internal
+#' @export
 DEPancpb<-function(x1,y1,y2,fr1=1,est=tmean,alpha=.05,plotit=TRUE,DISDIF=FALSE,DIF=TRUE,TLS=FALSE,SEED=TRUE,
 pts=NULL,sm=FALSE,xout=FALSE,outfun=out,nboot=500,pr=FALSE,na.rm=TRUE,xlab="Group 1", ylab="Group 2",...){
 #
@@ -12201,7 +12503,38 @@ list(output=mat)
 
 
 
-# oancpb
+#' @title Omnibus ANCOVA with Percentile Bootstrap (Deprecated)
+#'
+#' @description
+#' **DEPRECATED**: Use ancGLOB instead. Perform omnibus test for ANCOVA comparing
+#' two independent groups using percentile bootstrap combined with running interval
+#' smoother. Tests the hypothesis that all K differences at specified design points
+#' are zero.
+#'
+#' @param x1 Covariate values for group 1
+#' @param y1 Response values for group 1
+#' @param x2 Covariate values for group 2
+#' @param y2 Response values for group 2
+#' @param est Estimator function to use (default: tmean)
+#' @param tr Trimming proportion (default: 0.2)
+#' @param pts Design points for comparisons. If NA, 5 points chosen automatically
+#' @param fr1 Span for first group's running interval smoother (default: 1)
+#' @param fr2 Span for second group's running interval smoother (default: 1)
+#' @param nboot Number of bootstrap samples (default: 600)
+#' @param alpha Significance level (default: 0.05)
+#' @param plotit Logical; if TRUE, create plot (default: TRUE)
+#' @param SEED Logical; if TRUE, set random seed (default: TRUE)
+#' @param PRO Logical; if FALSE use Mahalanobis distance, if TRUE use projection distance (default: FALSE)
+#' @param ... Additional arguments
+#'
+#' @note This function is deprecated. Use ancGLOB instead for better performance.
+#'
+#' @return Stops execution with message to use ancGLOB
+#'
+#' @seealso \code{\link{ancGLOB}}
+#'
+#' @keywords internal
+#' @export
 oancpb<-function(x1,y1,x2,y2,est=tmean,tr=.2,pts=NA,fr1=1,fr2=1,nboot=600,
 alpha=.05,plotit=TRUE,SEED=TRUE,PRO=FALSE,...){
 #
@@ -12343,7 +12676,36 @@ list(p.value=sig.level)
 }
 
 
-# Qancsm
+#' @title ANCOVA Using Depths of Quantile Regression Smooths
+#'
+#' @description
+#' Compare two nonparametric regression lines for independent groups using the
+#' depths of quantile regression smooths. Tests the null hypothesis that regression
+#' lines are identical in terms of the median (or other quantile) of Y given X for
+#' all X. Only one covariate is allowed.
+#'
+#' @param x1 Covariate values for group 1
+#' @param y1 Response values for group 1
+#' @param x2 Covariate values for group 2
+#' @param y2 Response values for group 2
+#' @param crit.mat Matrix of critical values from previous bootstrap (optional)
+#' @param nboot Number of bootstrap samples (default: 200)
+#' @param SEED Logical; if TRUE, set random seed (default: TRUE)
+#' @param REP.CRIT Logical; if TRUE, return critical value matrix (default: FALSE)
+#' @param qval Quantile to use for regression smooth (default: 0.5 for median)
+#' @param q Alternative way to specify quantile (overrides qval if not NULL)
+#' @param xlab Label for x-axis (default: "X")
+#' @param ylab Label for y-axis (default: "Y")
+#' @param plotit Logical; if TRUE, create plot (default: TRUE)
+#' @param pr Logical; if TRUE, print progress messages (default: TRUE)
+#' @param xout Logical; if TRUE, remove outliers (default: FALSE)
+#' @param outfun Function to detect outliers (default: out)
+#' @param ... Additional arguments
+#'
+#' @return List with p.value, crit.mat (if REP.CRIT=TRUE), and test.depth
+#'
+#' @keywords internal
+#' @export
 Qancsm<-function(x1,y1,x2,y2,crit.mat=NULL,nboot=200,SEED=TRUE,REP.CRIT=FALSE,
 qval=.5,q=NULL,xlab="X",ylab="Y",plotit=TRUE,pr=TRUE,xout=FALSE,outfun=out,...){
 #
@@ -12414,7 +12776,25 @@ list(p.value=pv,crit.mat=crit.mat,test.depth=dep)
 
 
 
-# QSanc
+#' @title Quantile Shift Effect Size for ANCOVA
+#'
+#' @description
+#' Estimate quantile shift measure of effect size for ANCOVA at specified design
+#' points. Computes the effect size given that the covariate X equals the values
+#' in pts. Supports multiple covariates.
+#'
+#' @param x1 Covariate values for group 1 (vector or matrix)
+#' @param y1 Response values for group 1
+#' @param x2 Covariate values for group 2 (vector or matrix)
+#' @param y2 Response values for group 2
+#' @param pts Vector or matrix of design points where effect sizes are estimated
+#' @param xout Logical; if TRUE, remove outliers (default: FALSE)
+#' @param outfun Function to detect outliers (default: outpro)
+#'
+#' @return Vector of quantile shift effect sizes at each design point
+#'
+#' @keywords internal
+#' @export
 QSanc<-function(x1,y1,x2,y2,pts,xout=FALSE,outfun=outpro){
 #
 #  Estimate quantile shift measure of effect size given that the covariate X is equal to the values in pts.
@@ -12460,7 +12840,31 @@ e[i]=shiftQS(d1,d2)
 e
 }
 
-# QS.ancbse
+#' @title ANCOVA Using Quantile Shift Effect Size with Bootstrap SE
+#'
+#' @description
+#' Perform ANCOVA based on quantile shift measure of effect size. Compares two
+#' independent groups at specified covariate values using bootstrap standard errors.
+#' Supports multiple covariates.
+#'
+#' @param x1 Covariate values for group 1 (vector or matrix)
+#' @param y1 Response values for group 1
+#' @param x2 Covariate values for group 2 (vector or matrix)
+#' @param y2 Response values for group 2
+#' @param pts Vector or matrix of design points where comparisons are made
+#' @param nboot Number of bootstrap samples (default: 100)
+#' @param SEED Logical; if TRUE, set random seed (default: TRUE)
+#' @param MC Logical; if TRUE, use parallel processing via mclapply (default: FALSE)
+#' @param null.value Null hypothesis value for effect size (default: 0.5)
+#' @param xout Logical; if TRUE, remove outliers (default: FALSE)
+#' @param outfun Function to detect outliers (default: outpro)
+#' @param alpha Significance level (default: 0.05)
+#' @param ... Additional arguments
+#'
+#' @return List with Est (effect sizes), SE, test.stat, conf.int, and p.value
+#'
+#' @keywords internal
+#' @export
 QS.ancbse<-function(x1,y1,x2,y2,pts,nboot=100,SEED=TRUE,MC=FALSE,null.value=.5,
 xout=FALSE,outfun=outpro,alpha=.05,...){
 #
@@ -12530,13 +12934,44 @@ list(Est=e,SE=se,test.stat=test,conf.int=ci,p.value=sig)
 }
 
 
-# QS.ancbse.sub
+#' @title Subroutine for QS.ancbse Bootstrap
+#'
+#' @description
+#' Helper subroutine for QS.ancbse that processes one bootstrap sample.
+#' Calls QSanc to compute quantile shift effect sizes for the bootstrap sample.
+#'
+#' @param m List containing bootstrap sample data: x1, y1, x2, y2
+#' @param pts Design points where effect sizes are computed
+#'
+#' @return Vector of quantile shift effect sizes
+#'
+#' @keywords internal
+#' @export
 QS.ancbse.sub<-function(m,pts){
 v=QSanc(m[[1]],m[[2]],m[[3]],m[[4]],pts=pts)
 v
 }
 
 
+#' @title Identify Group with Largest Trimmed Mean (Repeated Measures)
+#'
+#' @description
+#' For J dependent groups, identify the group with the largest trimmed mean.
+#' Makes a decision if all p-values are less than or equal to critical p-values
+#' determined via simulation to control family-wise error rate.
+#'
+#' @param x Matrix or data frame with repeated measures (rows=subjects, cols=groups)
+#' @param alpha Significance level (default: 0.05)
+#' @param tr Trimming proportion (default: 0.2)
+#' @param iter Number of simulation iterations for determining critical p-values (default: 5000)
+#' @param SEED Logical; if TRUE, set random seed (default: TRUE)
+#'
+#' @return S4 object with slots: Group.with.largest.estimate, Larger.than (groups significantly smaller),
+#'   n (sample size), and output (detailed comparison results)
+#'
+#' @keywords internal
+#' @export
+#
 # QS.ancp2pb
 rmanc.best<-function(x,alpha=.05,tr=.2,iter=5000,SEED=TRUE){
 #
@@ -12588,6 +13023,26 @@ put
 
 
 
+#' @title Determine Critical P-Values for rmanc.best
+#'
+#' @description
+#' Helper function to determine critical p-values for the rmanc.best function.
+#' Uses simulation from multivariate normal distribution with covariance structure
+#' matching the data to find appropriate critical values for controlling family-wise
+#' error rate.
+#'
+#' @param x Matrix or data frame with repeated measures
+#' @param alpha Significance level (default: 0.05)
+#' @param tr Trimming proportion (default: 0.2)
+#' @param iter Number of simulation iterations (default: 5000)
+#' @param SEED Logical; if TRUE, set random seed (default: TRUE)
+#' @param ... Additional arguments
+#'
+#' @return Vector of critical p-values for each comparison
+#'
+#' @keywords internal
+#' @export
+#
 # rmanc.best.crit
 rmanc.best.crit<-function(x,alpha=.05,tr=.2,iter=5000,SEED=TRUE,...){
 #
@@ -12610,6 +13065,24 @@ fin.crit
 }
 
 
+#' @title Determine Critical P-Values for rmanc.best (Detailed)
+#'
+#' @description
+#' Helper function to determine critical p-values for rmanc.best across a range of
+#' alpha levels. Computes critical values for many different alpha levels to create
+#' a detailed mapping of critical p-values.
+#'
+#' @param x Matrix or data frame with repeated measures
+#' @param tr Trimming proportion (default: 0.2)
+#' @param iter Number of simulation iterations (default: 5000)
+#' @param SEED Logical; if TRUE, set random seed (default: TRUE)
+#' @param ... Additional arguments
+#'
+#' @return Matrix of critical p-values for different alpha levels
+#'
+#' @keywords internal
+#' @export
+#
 # rmanc.best.crit.det
 rmanc.best.crit.det<-function(x,tr=.2,iter=5000,SEED=TRUE,...){
 #
@@ -12638,6 +13111,23 @@ fin.crit
 }
 
 
+#' @title Determine if Decision About Largest Group is Reasonable
+#'
+#' @description
+#' Helper function to determine whether it is reasonable to decide which group
+#' has the largest measure of location. Uses pairwise comparisons with the
+#' group having the largest estimate.
+#'
+#' @param x Matrix, data frame, or list with repeated measures
+#' @param tr Trimming proportion (default: 0.2)
+#' @param ... Additional arguments
+#'
+#' @return List with Best.Group (group with largest estimate), Est. (all estimates),
+#'   and p.value (maximum p-value from comparisons)
+#'
+#' @keywords internal
+#' @export
+#
 # rmanc.best.DO
 rmanc.best.DO<-function(x,tr=.2,...){
 #
@@ -12667,6 +13157,21 @@ list(Best.Group=id,Est.=e,p.value=pv)
 
 
 
+#' @title Extract P-Values for rmanc.best Simulation
+#'
+#' @description
+#' Helper function used in simulations for rmanc.best. Computes p-values comparing
+#' the group with the largest trimmed mean to all other groups. Used to generate
+#' null distribution for determining critical values.
+#'
+#' @param x Matrix, list, or data frame with repeated measures
+#' @param tr Trimming proportion (default: 0.2)
+#'
+#' @return Vector of p-values from pairwise comparisons
+#'
+#' @keywords internal
+#' @export
+#
 # rmanc.best.ex
 rmanc.best.ex<-function(x,tr=.2){
 #
@@ -12687,6 +13192,28 @@ pvec
 }
 
 
+#' @title Identify Group with Largest Measure (Percentile Bootstrap Version)
+#'
+#' @description
+#' For J dependent groups, identify the group with the largest measure of location
+#' using percentile bootstrap or simulation-based critical values. Supports any
+#' estimator function, not just trimmed means.
+#'
+#' @param x Matrix or data frame with repeated measures (rows=subjects, cols=groups)
+#' @param alpha Significance level (default: 0.05)
+#' @param est Estimator function to use (default: tmean)
+#' @param iter Number of simulation iterations for determining critical p-values (default: 5000)
+#' @param SEED Logical; if TRUE, set random seed (default: TRUE)
+#' @param nboot Number of bootstrap samples (default: 2000)
+#' @param PB Logical; if FALSE use rmanc.best.crit (faster), if TRUE use percentile bootstrap (default: FALSE)
+#' @param ... Additional arguments passed to estimator
+#'
+#' @return S4 object with slots: Group.with.largest.estimate, Larger.than,
+#'   n, and output (detailed comparison results)
+#'
+#' @keywords internal
+#' @export
+#
 # rmanc.bestPB
 rmanc.bestPB<-function(x,alpha=.05,est=tmean,iter=5000,SEED=TRUE,nboot=2000,PB=FALSE,...){
 #
@@ -12742,6 +13269,25 @@ put
 }
 
 
+#' @title Identify Group with Largest Trimmed Mean (P-Value Version)
+#'
+#' @description
+#' For J dependent groups, identify the group with the largest trimmed mean.
+#' Returns detailed p-values and decision information. Similar to rmanc.best
+#' but focuses on p-value reporting.
+#'
+#' @param x Matrix or data frame with repeated measures (rows=subjects, cols=groups)
+#' @param alpha Significance level (default: 0.05)
+#' @param tr Trimming proportion (default: 0.2)
+#' @param iter Number of simulation iterations for determining critical p-values (default: 5000)
+#' @param SEED Logical; if TRUE, set random seed (default: TRUE)
+#'
+#' @return S4 object with slots: Group.with.largest.estimate, Larger.than,
+#'   n, and output (detailed comparison results with p-values)
+#'
+#' @keywords internal
+#' @export
+#
 # rmanc.best.PV
 rmanc.best.PV<-function(x,alpha=.05,tr=.2,iter=5000,SEED=TRUE){
 #
