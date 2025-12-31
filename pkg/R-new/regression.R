@@ -73,6 +73,48 @@ list(dstat=dstat,wstat=wstat,p.value.d=p.value.d,p.value.w=p.value.w)
 # ============================================================================
 # bireg
 # ============================================================================
+
+#' Biweight Midregression
+#'
+#' Computes a robust regression using biweight M-estimation (midregression). This
+#' method combines biweight covariances of predictors with the dependent variable
+#' to produce robust slope estimates, then iteratively refines them.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param iter Maximum number of iterations for convergence (default: 20).
+#' @param bend Bending constant for biweight estimator (default: 1.28).
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients (intercept, slopes).}
+#'   \item{residuals}{Residuals from the final fit.}
+#' }
+#'
+#' @details
+#' The biweight midregression is computed by:
+#' 1. Computing biweight M-estimates of location for each predictor
+#' 2. Computing biweight covariances between predictors and outcome
+#' 3. Solving for initial slopes
+#' 4. Iteratively refining estimates until convergence (change < 0.0001)
+#'
+#' If convergence fails within \code{iter} iterations, a warning message is displayed.
+#'
+#' @family robust regression functions
+#' @export
+#' @examples
+#' \dontrun{
+#' # Simple biweight regression
+#' x <- matrix(rnorm(50), ncol=1)
+#' y <- 2*x + rnorm(50, sd=0.5)
+#' bireg(x, y)
+#'
+#' # Multiple regression with outliers
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50, sd=0.3)
+#' y[1:5] <- y[1:5] + 5  # add outliers
+#' bireg(x, y)
+#' }
 bireg<-function(x,y,iter=20,bend=1.28){
 #
 # Compute a biweight midregression equation
@@ -105,6 +147,62 @@ list(coef=c(b0,slope),residuals=res)
 # ============================================================================
 # chreg
 # ============================================================================
+
+#' Coakley-Hettmansperger Robust Regression
+#'
+#' Computes Coakley and Hettmansperger's (1993) robust regression estimators
+#' using minimum volume ellipsoid (MVE) for detecting leverage points and
+#' least trimmed squares (LTS) for initial estimates, with iterative refinement
+#' using Huber's Psi function.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param bend Bending constant for Huber's Psi function (default: 1.345).
+#' @param SEED Logical; if TRUE (default), sets random seed for reproducibility.
+#' @inheritParams opreg
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients (intercept, slopes).}
+#'   \item{residuals}{Residuals from the final fit.}
+#' }
+#'
+#' @details
+#' The Coakley-Hettmansperger method provides robust regression estimates by:
+#' 1. Using MVE (minimum volume ellipsoid) to compute Mallows weights for leverage points
+#' 2. Computing initial estimates via least trimmed squares (LTS)
+#' 3. Computing standardized residuals with robust scale estimate
+#' 4. Applying Huber's Psi function with the specified bending constant
+#' 5. Updating coefficient estimates using weighted least squares
+#'
+#' **Important**: When using \code{chreg} with bootstrap methods, use \code{chregF}
+#' instead to avoid the warning message that appears by default.
+#'
+#' The method downweights both leverage points (via Mallows weights) and residual
+#' outliers (via Huber's Psi), providing excellent resistance to various types of
+#' contamination.
+#'
+#' @references
+#' Coakley, C.W. and Hettmansperger, T.P. (1993). A bounded influence, high breakdown,
+#' efficient regression estimator. Journal of the American Statistical Association,
+#' 88, 872-880.
+#'
+#' @family robust regression functions
+#' @seealso \code{\link{chregF}} for bootstrap-compatible version
+#' @export
+#' @examples
+#' \dontrun{
+#' # Simple robust regression
+#' x <- matrix(rnorm(50), ncol=1)
+#' y <- 2*x + rnorm(50, sd=0.5)
+#' chreg(x, y)
+#'
+#' # Multiple regression with leverage points
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50, sd=0.3)
+#' x[1:3,] <- x[1:3,] + 5  # add leverage points
+#' chreg(x, y, xout=TRUE)  # remove detected outliers
+#' }
 chreg<-function(x,y,bend=1.345,SEED=TRUE,xout=FALSE,outfun=outpro,pr=TRUE,...){
 #
 # Compute Coakley Hettmansperger robust regression estimators
@@ -186,8 +284,62 @@ list(coef=t(c21),residuals=res)
 }
 
 # ============================================================================
-# regboot
+# bmreg
 # ============================================================================
+
+#' Bounded M-Regression with Schweppe Weights
+#'
+#' Computes a bounded M-regression estimator using Huber's Psi function with
+#' Schweppe weights. The method iteratively reweights observations based on
+#' standardized residuals and leverage, providing robustness to both outliers
+#' and leverage points.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param iter Maximum number of iterations for convergence (default: 20).
+#' @param bend Bending constant for Huber's Psi function. Default is
+#'   \code{2*sqrt((ncol(x)+1)/nrow(x))}, an adaptive choice based on problem dimensions.
+#' @inheritParams opreg
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients (intercept, slopes).}
+#'   \item{residuals}{Residuals from the final fit.}
+#'   \item{w}{Final weights for each observation.}
+#' }
+#'
+#' @details
+#' The bounded M-regression with Schweppe weights:
+#' 1. Starts with least squares initial estimates
+#' 2. Computes Schweppe weights based on leverage (\code{sqrt(1-h)})
+#' 3. Computes robust scale using median of middle residuals
+#' 4. Applies Huber's Psi function to weighted standardized residuals
+#' 5. Updates coefficients via weighted least squares
+#' 6. Iterates until convergence (coefficient change < 0.0001)
+#'
+#' The Schweppe weighting scheme (\code{nu = sqrt(1-h)}) downweights high-leverage
+#' points, while the Huber Psi function provides bounded influence for residual outliers.
+#' Together, these provide protection against both types of contamination.
+#'
+#' The default bending constant is adaptive and increases with sample size, providing
+#' more robust estimates for larger datasets.
+#'
+#' @family robust regression functions
+#' @export
+#' @examples
+#' \dontrun{
+#' # Simple bounded M-regression
+#' x <- matrix(rnorm(50), ncol=1)
+#' y <- 2*x + rnorm(50, sd=0.5)
+#' bmreg(x, y)
+#'
+#' # Multiple regression with custom bending constant
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50, sd=0.3)
+#' y[1:5] <- y[1:5] + 10  # add outliers
+#' fit <- bmreg(x, y, bend=1.5)
+#' print(fit$coef)
+#' }
 bmreg<-function(x,y,iter=20,bend=2*sqrt((ncol(x)+1)/nrow(x)),xout=FALSE,outfun=outpro,...){
 # compute a bounded M regression using Huber Psi and Schweppe weights.
 # The predictors are assumed to be stored in the n by p matrix x.
@@ -290,6 +442,56 @@ list(levpoints=id,regout=idreg,bad.lev.points=blp,keep=nkeep,dis=dis,stanres=sta
 # ============================================================================
 # winreg
 # ============================================================================
+
+#' Winsorized Regression
+#'
+#' Computes a robust regression estimator based on Winsorized covariances.
+#' The method uses Winsorized means and Winsorized covariances to compute
+#' regression coefficients, then iteratively refines them.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param iter Maximum number of iterations for convergence (default: 20).
+#' @inheritParams opreg
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients (intercept, slopes).}
+#'   \item{resid}{Residuals from the final fit.}
+#' }
+#'
+#' @details
+#' Winsorized regression provides robustness by:
+#' 1. Computing Winsorized means for each predictor
+#' 2. Computing Winsorized covariances between predictors and outcome
+#' 3. Solving for initial slopes using these robust covariances
+#' 4. Computing intercept from Winsorized mean of outcome
+#' 5. Iteratively refining estimates by Winsorizing residuals
+#' 6. Converges when coefficient changes are less than 0.0001
+#'
+#' Winsorization replaces extreme values (beyond the \code{tr} quantile)
+#' with less extreme values, providing bounded influence while retaining
+#' more information than trimming would.
+#'
+#' The method is particularly effective when you want robustness without
+#' completely discarding outlying observations.
+#'
+#' @family robust regression functions
+#' @seealso \code{\link{win}}, \code{\link{wincor}}
+#' @export
+#' @examples
+#' \dontrun{
+#' # Simple Winsorized regression
+#' x <- matrix(rnorm(50), ncol=1)
+#' y <- 2*x + rnorm(50, sd=0.5)
+#' winreg(x, y)
+#'
+#' # Multiple regression with 10% Winsorization
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50, sd=0.3)
+#' y[1:5] <- y[1:5] + 8  # add outliers
+#' winreg(x, y, tr=0.1)
+#' }
 winreg<-function(x,y,iter=20,tr=.2,xout=FALSE,outfun=outpro,...){
 #
 # Compute a Winsorized regression estimator
@@ -1433,6 +1635,90 @@ list(coef=coef,residuals=res)
 # ============================================================================
 # opreg
 # ============================================================================
+#' Outlier-Pruned Regression
+#'
+#' Performs regression after removing outliers detected using projection-based
+#' outlier detection. This two-stage approach combines robust outlier detection
+#' with any chosen regression method for improved performance.
+#'
+#' @param x A numeric vector or matrix containing the predictor variable(s). For
+#'   multiple predictors, rows represent observations and columns represent variables.
+#' @inheritParams common-params
+#' @param regfun Regression function to use after outlier removal (default: `tsreg`).
+#'   Can be any function that returns coefficients in `$coef` and residuals in
+#'   `$residuals`. Common choices: `tsreg`, `ltsreg`, `chreg`, `lsfit`.
+#' @param cop Type of correlation/covariance measure used in projection-based
+#'   outlier detection (default: 3 for Winsorized correlation). See \code{\link{outpro}}
+#'   for details. Options:
+#'   \itemize{
+#'     \item 1: Pearson correlation
+#'     \item 2: Median-based correlation
+#'     \item 3: Winsorized correlation
+#'     \item 4: MVE (Minimum Volume Ellipsoid)
+#'   }
+#' @param MC Logical. If `TRUE`, uses parallel processing for outlier detection
+#'   via \code{\link{outproMC}} (default: `FALSE`).
+#' @param varfun Function used to compute variance for strength of association
+#'   (default: `pbvar`).
+#' @param corfun Correlation function used for computing explanatory power when
+#'   the variance ratio exceeds 1 (default: `pbcor`).
+#' @param STAND Logical. If `TRUE`, standardizes the data before applying outlier
+#'   detection (default: `TRUE`). Recommended to keep as `TRUE`.
+#' @param xout Logical. Not used in this function but included to avoid conflicts
+#'   when using with other functions like `regci` (default: `FALSE`).
+#'
+#' @return A list with components:
+#'   \item{coef}{Vector of regression coefficients from `regfun`}
+#'   \item{residuals}{Vector of residuals}
+#'   \item{Strength.Assoc}{Strength of association (square root of explanatory power)}
+#'   \item{Explanatory.Power}{Proportion of variance explained}
+#'
+#' @details
+#' This function implements a two-stage robust regression approach:
+#' \enumerate{
+#'   \item Identify and remove outliers using projection-based outlier detection
+#'         (\code{\link{outpro}} or \code{\link{outproMC}})
+#'   \item Apply the specified regression method to the cleaned data
+#' }
+#'
+#' The projection-based outlier detection examines many random projections of
+#' the multivariate data and flags points that appear as outliers in multiple
+#' projections. This is particularly effective for detecting outliers in
+#' high-dimensional data.
+#'
+#' Strength of association is computed as the square root of the ratio of
+#' variance of fitted values to variance of y. If this ratio exceeds 1, the
+#' squared correlation is used instead.
+#'
+#' @references
+#' Wilcox, R. R. (2022). \emph{Introduction to Robust Estimation and Hypothesis
+#' Testing} (5th ed.). Academic Press. Chapter 10.
+#'
+#' Stahel, W. A. (1981). Robuste Schätzungen: infinitesimale Optimalität und
+#' Schätzungen von Kovarianzmatrizen. PhD thesis, ETH Zürich.
+#'
+#' @seealso \code{\link{outpro}} for outlier detection details,
+#'   \code{\link{opregMC}} for parallel version with different output,
+#'   \code{\link{mopreg}} for multiple outcome regression,
+#'   \code{\link{tsreg}} for Theil-Sen regression
+#'
+#' @examples
+#' # Simple regression with outlier removal
+#' x <- rnorm(50)
+#' y <- 2 + 3*x + rnorm(50)
+#' y[1:3] <- y[1:3] + 10  # Add some outliers
+#' result <- opreg(x, y)
+#' result$coef
+#'
+#' # Multiple regression with different regression method
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- 1 + 2*x[,1] - 3*x[,2] + rnorm(50)
+#' opreg(x, y, regfun=ltsreg)
+#'
+#' # Using parallel processing for large datasets
+#' opreg(x, y, MC=TRUE)
+#'
+#' @export
 opreg<-function(x,y,regfun=tsreg,cop=3,MC=FALSE,varfun=pbvar,corfun=pbcor,STAND=TRUE,xout=FALSE){
 #
 # Do regression on points not labled outliers
@@ -1985,6 +2271,70 @@ output
 # ============================================================================
 # tsp1reg
 # ============================================================================
+#' Single Predictor Theil-Sen Regression
+#'
+#' Computes the Theil-Sen robust regression estimator for a single predictor.
+#' This function is used internally by \code{\link{tsreg}} and \code{\link{tshdreg}}
+#' but can also be called directly for simple linear regression.
+#'
+#' @param x A numeric vector containing the predictor variable.
+#' @param y A numeric vector containing the response variable (must have same
+#'   length as `x`).
+#' @param plotit Logical. If `TRUE`, creates a scatterplot with the fitted
+#'   regression line (default: `FALSE`).
+#' @param HD Logical. If `TRUE`, uses Harrell-Davis estimator for computing
+#'   the slope and intercept; if `FALSE`, uses sample median (default: `FALSE`).
+#' @param OPT Logical. If `TRUE`, computes intercept as `median(y) - slope*median(X)`;
+#'   if `FALSE`, computes intercept as `median(y - slope*X)` (default: `TRUE`).
+#' @param tr Logical or numeric. Trimming parameter for Harrell-Davis estimator
+#'   when `HD=TRUE` (default: `FALSE` for no trimming).
+#'
+#' @return A list with components:
+#'   \item{coef}{Numeric vector of length 2 containing intercept and slope}
+#'   \item{residuals}{Vector of residuals (observed - fitted values)}
+#'
+#' @details
+#' For a single predictor, the Theil-Sen slope is computed as the median of all
+#' pairwise slopes (y[j] - y[i]) / (x[j] - x[i]) for all pairs where x[j] > x[i].
+#' When `HD=TRUE`, the Harrell-Davis estimator (a weighted average of order statistics)
+#' is used instead of the sample median, which can provide improved efficiency.
+#'
+#' The intercept can be computed in two ways controlled by `OPT`:
+#' \itemize{
+#'   \item `OPT=TRUE`: intercept = median(y) - slope * median(x)
+#'   \item `OPT=FALSE`: intercept = median(y - slope * x)
+#' }
+#'
+#' Missing values are automatically removed before computation.
+#'
+#' @references
+#' Theil, H. (1950). A rank-invariant method of linear and polynomial regression
+#' analysis. \emph{Indagationes Mathematicae}, 12, 85-91.
+#'
+#' Sen, P. K. (1968). Estimates of the regression coefficient based on Kendall's tau.
+#' \emph{Journal of the American Statistical Association}, 63, 1379-1389.
+#'
+#' @seealso \code{\link{tsreg}} for multiple predictor version,
+#'   \code{\link{tshdreg}} for Harrell-Davis variant, \code{\link{hd}}
+#'   for Harrell-Davis estimator
+#'
+#' @examples
+#' # Simple linear regression
+#' x <- rnorm(50)
+#' y <- 2 + 3*x + rnorm(50)
+#' result <- tsp1reg(x, y)
+#' result$coef  # Intercept and slope
+#'
+#' # With plot
+#' tsp1reg(x, y, plotit=TRUE)
+#'
+#' # Using Harrell-Davis estimator
+#' tsp1reg(x, y, HD=TRUE)
+#'
+#' # Different intercept computation
+#' tsp1reg(x, y, OPT=FALSE)
+#'
+#' @export
 tsp1reg<-function(x,y,plotit=FALSE,HD=FALSE,OPT=TRUE,tr=FALSE){
 #
 # Compute the Theil-Sen regression estimator.
@@ -2095,6 +2445,92 @@ list(results=init,Explanatory.Power=ex,Strength.Assoc=str,yhat=hatv)
 # ============================================================================
 # tsreg
 # ============================================================================
+#' Theil-Sen Regression Estimator
+#'
+#' Computes the Theil-Sen robust regression estimator, a non-parametric alternative
+#' to least squares regression that is resistant to outliers. For multiple predictors,
+#' uses a Gauss-Seidel algorithm for estimation.
+#'
+#' @param x A numeric vector or matrix containing the predictor variable(s). For
+#'   multiple predictors, rows represent observations and columns represent variables.
+#' @inheritParams common-params
+#' @param iter Number of iterations for the Gauss-Seidel algorithm when there are
+#'   multiple predictors (default: 5). Values of 1 can be unsatisfactory; values
+#'   of 10 may result in excessive execution time without improving Type I error rates.
+#' @param varfun Function used to compute variance for strength of association
+#'   (default: `pbvar`, percentage bend midvariance). Can be any function that
+#'   computes a measure of variation.
+#' @param tr Logical or numeric. If `TRUE` or numeric, uses Harrell-Davis estimator
+#'   for the intercept (default: `FALSE` for median).
+#' @param do.stre Logical. If `TRUE`, computes strength of association measure
+#'   (default: `TRUE`). Set to `FALSE` when `varfun` cannot be computed.
+#' @param corfun Correlation function used for computing explanatory power when
+#'   the variance ratio exceeds 1 (default: `pbcor`).
+#' @param WARN Logical. If `TRUE`, prints warning when measure of variation equals
+#'   zero (default: `TRUE`).
+#' @param HD Logical. If `TRUE`, uses Harrell-Davis estimator for the intercept;
+#'   if `FALSE`, uses median (default: `FALSE`).
+#' @param OPT Logical. If `TRUE`, computes intercept as `median(y) - b1*median(X)`;
+#'   if `FALSE`, computes intercept as `median(y - b1*X)` (default: `FALSE`).
+#'   The default is consistent with other R implementations of Theil-Sen.
+#' @param xlab Label for x-axis when `plotit=TRUE` (default: "X").
+#' @param ylab Label for y-axis when `plotit=TRUE` (default: "Y").
+#'
+#' @return A list with components:
+#'   \item{n}{Original sample size before outlier removal}
+#'   \item{n.keep}{Sample size after outlier removal (if `xout=TRUE`)}
+#'   \item{coef}{Vector of regression coefficients (intercept followed by slopes)}
+#'   \item{residuals}{Vector of residuals}
+#'   \item{Strength.Assoc}{Strength of association (square root of explanatory power)}
+#'   \item{Explanatory.Power}{Proportion of variance explained}
+#'
+#' @details
+#' The Theil-Sen estimator computes the slope as the median of all pairwise slopes
+#' between points. For a single predictor, this is computed directly. For multiple
+#' predictors, a Gauss-Seidel algorithm is used for iterative refinement.
+#'
+#' The Theil-Sen estimator has a breakdown point of approximately 29%, meaning
+#' it remains robust even when up to 29% of the data are outliers. This makes it
+#' substantially more robust than ordinary least squares regression.
+#'
+#' Strength of association is computed as the square root of the ratio of the
+#' variance of fitted values to the variance of y (using `varfun`). If this
+#' ratio exceeds 1, the squared correlation between fitted and observed values
+#' is used instead.
+#'
+#' @references
+#' Theil, H. (1950). A rank-invariant method of linear and polynomial regression
+#' analysis. \emph{Indagationes Mathematicae}, 12, 85-91.
+#'
+#' Sen, P. K. (1968). Estimates of the regression coefficient based on Kendall's tau.
+#' \emph{Journal of the American Statistical Association}, 63, 1379-1389.
+#'
+#' Wilcox, R. R. (2022). \emph{Introduction to Robust Estimation and Hypothesis
+#' Testing} (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{tshdreg}} for Theil-Sen with Harrell-Davis estimator,
+#'   \code{\link{tsp1reg}} for single predictor version, \code{\link{tsregNW}}
+#'   for neighborhood-weighted version, \code{\link{ltsreg}} for least trimmed
+#'   squares, \code{\link{opreg}} for outlier-pruned regression
+#'
+#' @examples
+#' # Simple regression with one predictor
+#' x <- rnorm(50)
+#' y <- 2 + 3*x + rnorm(50)
+#' result <- tsreg(x, y)
+#' result$coef  # Intercept and slope
+#'
+#' # Multiple regression
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- 1 + 2*x[,1] - 3*x[,2] + rnorm(50)
+#' tsreg(x, y)
+#'
+#' # With outlier removal
+#' x <- c(rnorm(45), rep(10, 5))  # 5 outliers
+#' y <- 2 + 3*x + rnorm(50)
+#' tsreg(x, y, xout=TRUE)  # Remove outliers before fitting
+#'
+#' @export
 tsreg<-function(x,y,xout=FALSE,outfun=outpro,iter=5,varfun=pbvar,tr=FALSE,do.stre=TRUE,
 corfun=pbcor,plotit=FALSE,WARN=TRUE,HD=FALSE,OPT=FALSE,xlab='X',ylab='Y',...){
 #
@@ -2338,6 +2774,70 @@ list(n=n,n.keep=n.keep,coef = coef, residuals = res)
 # ============================================================================
 # MMreg
 # ============================================================================
+
+#' MM-Regression Estimator
+#'
+#' Computes Yohai's (1987) MM-regression estimator, which combines high breakdown
+#' point with high efficiency. This is a wrapper around \code{robustbase::lmrob}
+#' with optional outlier removal and association strength assessment.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param RES Logical; if TRUE (default), returns residuals.
+#' @param STAND Logical; if TRUE (default), standardizes predictors for outlier detection.
+#' @param varfun Function for computing variance (default: \code{pbvar}), used for
+#'   strength of association.
+#' @param corfun Function for computing correlation (default: \code{pbcor}), used as
+#'   fallback for strength of association.
+#' @param WARN Logical; if FALSE (default), suppresses warnings from \code{lmrob}.
+#' @inheritParams opreg
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients (intercept, slopes).}
+#'   \item{residuals}{Residuals from the fit (if \code{RES=TRUE}).}
+#'   \item{Strength.Assoc}{Measure of association strength (explanatory power).}
+#' }
+#'
+#' @details
+#' MM-regression achieves:
+#' - **High breakdown point** (50%) from the initial S-estimate
+#' - **High efficiency** (95% under normality) from the final M-estimate
+#' - **Equivariance** under affine transformations
+#'
+#' The method works in three stages:
+#' 1. Compute a high-breakdown S-estimate of regression
+#' 2. Compute M-estimate of scale using S-estimate residuals
+#' 3. Compute final M-estimate of regression using this scale
+#'
+#' **Association Strength**: The function computes an explanatory power measure
+#' as the ratio of variance of fitted values to variance of observed values,
+#' using robust variance estimators. If this exceeds 1 (possible with robust methods),
+#' it falls back to the squared robust correlation.
+#'
+#' **Requires**: The \code{robustbase} package must be installed.
+#'
+#' @references
+#' Yohai, V.J. (1987). High breakdown-point and high efficiency robust estimates
+#' for regression. The Annals of Statistics, 15, 642-656.
+#'
+#' @family robust regression functions
+#' @seealso \code{\link{ltsreg}}, \code{\link{LMSreg}}
+#' @export
+#' @examples
+#' \dontrun{
+#' # Simple MM-regression
+#' x <- matrix(rnorm(50), ncol=1)
+#' y <- 2*x + rnorm(50, sd=0.5)
+#' MMreg(x, y)
+#'
+#' # Multiple regression with outlier removal
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50, sd=0.3)
+#' y[1:5] <- y[1:5] + 10  # add outliers
+#' fit <- MMreg(x, y, xout=TRUE)
+#' print(fit$Strength.Assoc)
+#' }
 MMreg<-function(x,y,RES=TRUE,xout=FALSE,outfun=outpro,STAND=TRUE,varfun=pbvar,corfun=pbcor,WARN=FALSE,...){
 #
 #  Compute MM regression estimate derived by Yohai (1987)
@@ -3863,6 +4363,86 @@ list(n=n,n.keep=nk,param=lvec,p.values=pvec,est.grp1=est1,est.grp2=est2,conf.int
 # ============================================================================
 # tshdreg
 # ============================================================================
+#' Theil-Sen Regression with Harrell-Davis Estimator
+#'
+#' Computes the Theil-Sen robust regression estimator using the Harrell-Davis
+#' estimator for the intercept. This variant can provide improved efficiency
+#' compared to the standard median-based approach while maintaining robustness.
+#'
+#' @param x A numeric vector or matrix containing the predictor variable(s). For
+#'   multiple predictors, rows represent observations and columns represent variables.
+#' @inheritParams common-params
+#' @param HD Logical. If `TRUE`, uses Harrell-Davis estimator for the intercept;
+#'   if `FALSE`, uses median (default: `TRUE`).
+#' @param outfun Outlier detection function (default: `out`). See \code{\link{tsreg}}
+#'   for other options.
+#' @param iter Number of iterations for the back-fitting algorithm when there are
+#'   multiple predictors (default: 5).
+#' @param varfun Function used to compute variance for strength of association
+#'   (default: `pbvar`).
+#' @param tr Logical or numeric. Trimming parameter for Harrell-Davis estimator
+#'   (default: `FALSE` for no trimming).
+#' @param do.stre Logical. If `TRUE`, computes strength of association measure
+#'   (default: `TRUE`).
+#' @param corfun Correlation function used for computing explanatory power when
+#'   the variance ratio exceeds 1 (default: `pbcor`).
+#' @param tol Convergence tolerance for the back-fitting algorithm (default: 0.0001).
+#'   Iteration stops when the maximum absolute change in coefficients is less than `tol`.
+#' @param RES Logical. If `TRUE`, returns residuals in the output (default: `TRUE`).
+#'   Set to `FALSE` to save memory when residuals are not needed.
+#' @param OPT Logical. If `TRUE`, computes intercept as `HD(y) - b1*HD(X)`;
+#'   if `FALSE`, computes intercept as `HD(y - b1*X)` (default: `FALSE`).
+#' @param xlab Label for x-axis when `plotit=TRUE` (default: "X").
+#' @param ylab Label for y-axis when `plotit=TRUE` (default: "Y").
+#'
+#' @return A list with components:
+#'   \item{coef}{Vector of regression coefficients (intercept followed by slopes)}
+#'   \item{residuals}{Vector of residuals (NULL if `RES=FALSE`)}
+#'   \item{Strength.Assoc}{Strength of association (square root of explanatory power)}
+#'   \item{Explanatory.Power}{Proportion of variance explained}
+#'
+#' @details
+#' This function implements the Theil-Sen estimator with the Harrell-Davis estimator
+#' used for computing the intercept and for the back-fitting algorithm (when multiple
+#' predictors are present). The Harrell-Davis estimator is a weighted average of
+#' order statistics that can be more efficient than the sample median while
+#' maintaining robustness.
+#'
+#' For multiple predictors, a back-fitting algorithm is used, which iteratively
+#' updates each coefficient while holding the others fixed. The algorithm continues
+#' until convergence (based on `tol`) or until `iter` iterations are completed.
+#'
+#' When using this function with bootstrap methods, the residuals must be available.
+#' Ensure `RES=TRUE` when using `tshdreg` as the `regfun` argument in bootstrap
+#' functions.
+#'
+#' @references
+#' Harrell, F. E. & Davis, C. E. (1982). A new distribution-free quantile estimator.
+#' \emph{Biometrika}, 69, 635-640.
+#'
+#' Wilcox, R. R. (2022). \emph{Introduction to Robust Estimation and Hypothesis
+#' Testing} (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{tsreg}} for standard Theil-Sen regression,
+#'   \code{\link{tsp1reg}} for single predictor version, \code{\link{hd}}
+#'   for Harrell-Davis estimator
+#'
+#' @examples
+#' # Simple regression with Harrell-Davis estimator
+#' x <- rnorm(50)
+#' y <- 2 + 3*x + rnorm(50)
+#' result <- tshdreg(x, y)
+#' result$coef
+#'
+#' # Multiple regression with outlier removal
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- 1 + 2*x[,1] - 3*x[,2] + rnorm(50)
+#' tshdreg(x, y, xout=TRUE)
+#'
+#' # Ensure residuals are available for bootstrap use
+#' result <- tshdreg(x, y, RES=TRUE)
+#'
+#' @export
 tshdreg<-function(x,y,HD=TRUE,xout=FALSE,outfun=out,iter=5,varfun=pbvar,tr=FALSE,do.stre=TRUE,
 corfun=pbcor,plotit=FALSE,tol=.0001,RES=TRUE,OPT=FALSE,xlab='X',ylab='Y',...){
 #
@@ -3932,6 +4512,69 @@ list(coef=coef,residuals=res,Strength.Assoc=stre,Explanatory.Power=e.pow,residua
 # ============================================================================
 # ltsreg
 # ============================================================================
+#' Least Trimmed Squares Regression
+#'
+#' Computes the Least Trimmed Squares (LTS) regression estimator, a highly
+#' robust regression method that minimizes the sum of the h smallest squared
+#' residuals. Uses the \code{ltsReg} function from the \pkg{robustbase} package.
+#'
+#' @param x A numeric vector or matrix containing the predictor variable(s). For
+#'   multiple predictors, rows represent observations and columns represent variables.
+#' @inheritParams common-params
+#' @param tr Proportion of observations to trim (default: 0.5). The function
+#'   uses the (1-tr) proportion with smallest squared residuals. Higher values
+#'   provide more robustness but lower efficiency.
+#' @param outfun Outlier detection function for removing outliers from predictors
+#'   when `xout=TRUE` (default: `outpro`).
+#' @param STAND Logical. Passed to outlier detection function (default: `TRUE`).
+#'
+#' @return A list with components:
+#'   \item{coef}{Vector of regression coefficients (intercept followed by slopes)}
+#'   \item{residuals}{Vector of raw residuals}
+#'
+#' @details
+#' The Least Trimmed Squares estimator minimizes the sum of the h smallest
+#' squared residuals, where h = n*(1-tr). This makes LTS highly robust to
+#' outliers with a breakdown point of approximately 50% when tr=0.5.
+#'
+#' The default trimming of tr=0.5 provides maximum robustness, using only
+#' the best-fitting 50% of the data. This is much more robust than ordinary
+#' least squares (breakdown point of 0%) or M-estimators (breakdown point
+#' typically around 10-20%).
+#'
+#' This function requires the \pkg{robustbase} package to be installed.
+#'
+#' @references
+#' Rousseeuw, P. J. (1984). Least median of squares regression.
+#' \emph{Journal of the American Statistical Association}, 79, 871-880.
+#'
+#' Rousseeuw, P. J. & Van Driessen, K. (2006). Computing LTS regression for
+#' large data sets. \emph{Data Mining and Knowledge Discovery}, 12, 29-45.
+#'
+#' Wilcox, R. R. (2022). \emph{Introduction to Robust Estimation and Hypothesis
+#' Testing} (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{tsreg}} for Theil-Sen regression, \code{\link{LMSreg}}
+#'   for Least Median of Squares, \code{\link{MMreg}} for MM-estimator,
+#'   \code{\link[robustbase]{ltsReg}} in package \pkg{robustbase}
+#'
+#' @examples
+#' # Simple regression
+#' x <- rnorm(50)
+#' y <- 2 + 3*x + rnorm(50)
+#' result <- ltsreg(x, y)
+#' result$coef
+#'
+#' # With outliers - LTS is highly robust
+#' y[1:5] <- y[1:5] + 10  # Add outliers
+#' ltsreg(x, y)
+#'
+#' # Multiple regression with less trimming
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- 1 + 2*x[,1] - 3*x[,2] + rnorm(50)
+#' ltsreg(x, y, tr=0.25)  # Use 75% of data
+#'
+#' @export
 ltsreg<-function(x,y,tr=.5,xout=FALSE,outfun=outpro,STAND=TRUE,...){
 #
 # Leasts trimmed squares regression via the function ltsReg in the
@@ -4286,6 +4929,68 @@ e
 # ============================================================================
 # LMSreg
 # ============================================================================
+
+#' Least Median of Squares Regression
+#'
+#' Computes the least median of squares (LMS) regression estimator, which has
+#' the highest possible breakdown point (50%) but lower efficiency than LTS.
+#' The LMS estimator minimizes the median of squared residuals.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @inheritParams opreg
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{n}{Original sample size.}
+#'   \item{n.keep}{Sample size after outlier removal (if \code{xout=TRUE}).}
+#'   \item{coef}{Vector of regression coefficients (intercept, slopes).}
+#' }
+#'
+#' @details
+#' **Least Median of Squares (LMS)**:
+#'
+#' The LMS estimator finds regression coefficients that minimize:
+#' \deqn{median(r_i^2)}
+#' where \eqn{r_i} are the residuals.
+#'
+#' **Properties**:
+#' - **Breakdown point**: 50% (highest possible)
+#' - **Efficiency**: Lower than LTS or MM-regression
+#' - **Resistance**: Excellent resistance to outliers and leverage points
+#' - **Computation**: Uses \code{MASS::lmsreg} internally
+#'
+#' **When to use LMS**:
+#' - Maximum robustness is paramount
+#' - Heavy contamination suspected (up to 50%)
+#' - Initial screening of data
+#' - As a starting point for other robust methods
+#'
+#' **Comparison with LTS**: LTS (least trimmed squares) typically has better
+#' efficiency while maintaining high breakdown. LMS is more extreme in its
+#' resistance to outliers.
+#'
+#' @references
+#' Rousseeuw, P.J. (1984). Least median of squares regression. Journal of the
+#' American Statistical Association, 79, 871-880.
+#'
+#' @family robust regression functions
+#' @seealso \code{\link{ltsreg}}, \code{\link{MMreg}}
+#' @export
+#' @examples
+#' \dontrun{
+#' # Simple LMS regression
+#' x <- matrix(rnorm(50), ncol=1)
+#' y <- 2*x + rnorm(50, sd=0.5)
+#' LMSreg(x, y)
+#'
+#' # Heavily contaminated data
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50, sd=0.3)
+#' y[1:20] <- y[1:20] + 10  # 20% contamination
+#' fit <- LMSreg(x, y)
+#' print(fit$coef)
+#' }
 LMSreg<-function(x,y,xout=FALSE,outfun=outpro,...){
 #
 #  Least median of squares

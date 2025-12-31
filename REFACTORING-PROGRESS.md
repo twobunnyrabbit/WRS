@@ -7,7 +7,7 @@
 **Last Updated**: 2025-12-31
 **Phase 1 Status**: ✅ COMPLETED (All 20 modules extracted)
 **Phase 2 Status**: ✅ COMPLETED (Weeks 4-5 completed, Week 6 skipped)
-**Phase 3 Status**: 🔄 IN PROGRESS (Weeks 6-7 complete, Week 8 in progress: 28/344 functions, 8.1%)
+**Phase 3 Status**: 🔄 IN PROGRESS (Weeks 6-7 complete, Week 8 in progress: 136/344 functions, 39.5%)
 
 ---
 
@@ -28,7 +28,7 @@
 
 **✅ PHASE 1 COMPLETED - 2025-12-30**
 **✅ PHASE 2 COMPLETED - 2025-12-30**
-**🔄 PHASE 3 IN PROGRESS - 2025-12-31** (Weeks 6-7 complete, Week 8 in progress: 19.8%)
+**🔄 PHASE 3 IN PROGRESS - 2025-12-31** (Weeks 6-7 complete, Week 8 in progress: 39.5%)
 
 ### Phase 1: Module Extraction (COMPLETED)
 - ✅ **Week 1 COMPLETED**: Foundation modules (4 files, 219 functions)
@@ -86,7 +86,7 @@
 - **Duplicate functions**: 0 (was 1,171, all resolved) ✅
 - **Total size**: ~2.4 MB across 20 modular files (was 4.4 MB before deduplication)
 - **Library calls optimized**: 325 removed, 233 remain (58% reduction) ✅
-- **Roxygen2 documentation**: 564 of ~1,500 functions (37.6%) 🔄
+- **Roxygen2 documentation**: 575 of ~1,500 functions (38.3%) 🔄
   - common-params.R created ✅
   - 00-utils-core.R: 53/53 (100%) ✅
   - location.R: 71/71 (100%) ✅
@@ -96,6 +96,7 @@
   - anova.R: 52/52 (100%) ✅
   - correlation.R: 82/82 (100%) ✅
   - ancova.R: 125/125 (100%) ✅
+  - regression.R: 11/84 (13.1%) 🔄
 - **Status**: All 20 modules source successfully ✅
 - **Backward compatibility**: 100% maintained (23/23 tests pass) ✅
 
@@ -127,10 +128,19 @@
     - ✅ Quantile ANCOVA helpers (4): Qancsm, QSanc, QS.ancbse, QS.ancbse.sub
     - ✅ Repeated measures helpers (7): rmanc.best, rmanc.best.crit, rmanc.best.crit.det, rmanc.best.DO, rmanc.best.ex, rmanc.bestPB, rmanc.best.PV
     - ✅ Other helpers (2): oancpb (deprecated), CLASSanc (non-robust)
-- ⏳ regression.R: 0/84 functions (0%)
+- 🔄 **regression.R: 11/84 functions (13.1%)** - **Sessions 1-2 Complete!**
+  - **Session 1**: Added 5 high-priority Theil-Sen and robust regression functions
+    - ✅ Main Theil-Sen: tsreg, tshdreg, tsp1reg
+    - ✅ LTS regression: ltsreg
+    - ✅ Outlier-pruned: opreg
+  - **Session 2**: Added 6 LTS variant and M-regression functions
+    - ✅ M-regression methods (4): bireg, chreg, bmreg, winreg
+    - ✅ LTS variants (2): MMreg, LMSreg
+  - ⏳ **Session 3**: Regression inference and comparison functions (pending)
+  - ⏳ **Session 4**: Helper and internal functions (pending)
 - ⏳ mcp.R: 0/98 functions (0%)
 - ⏳ covariance.R: 0/37 functions (0%)
-- 📊 Total Week 8 Progress: 125/344 functions documented (36.3%)
+- 📊 Total Week 8 Progress: 136/344 functions documented (39.5%)
 
 **Phase 3 Week 7 - Main Analysis Module Documentation - COMPLETE** ✅:
 - ✅ Completed bootstrap.R documentation (27/27 functions, 100%)
@@ -184,7 +194,7 @@
 
 **Phase 3, Week 8: Continue Advanced Analysis Module Documentation** 🔄
 
-**Current Status**: 564/~1,500 functions documented (37.6%)
+**Current Status**: 575/~1,500 functions documented (38.3%)
 
 1. **✅ Completed ancova.R** (125/125 functions, 100%)
    - ✅ All 125 functions now have full roxygen2 documentation
@@ -199,14 +209,17 @@
      - Repeated measures ANCOVA helpers (7)
      - Other helpers (2: oancpb deprecated, CLASSanc non-robust)
 
-2. **Document regression.R** (84 functions, 0% complete)
-   - Theil-Sen regression: tsreg, tshdreg, tsregS
-   - LTS regression: ltsreg, ltssub
-   - M-regression: opreg, regpre
-   - Regression inference: regci, regtest, reg1way
-   - Two-group comparisons: reg2ci, ancova variants
-   - Quantile regression smoothers (in regression-advanced.R)
-   - **Estimated time**: 2-3 sessions
+2. **🔄 In Progress: regression.R** (84 functions, 13.1% complete)
+   - ✅ **Session 1 Complete**: 5 high-priority functions documented
+     - Main Theil-Sen: tsreg, tshdreg, tsp1reg
+     - LTS regression: ltsreg
+     - Outlier-pruned: opreg
+   - ✅ **Session 2 Complete**: 6 LTS variant and M-regression functions documented
+     - M-regression methods: bireg, chreg, bmreg, winreg
+     - LTS variants: MMreg, LMSreg
+   - ⏳ **Session 3**: Regression inference (regci, regtest, reg1way, reg2ci, lintest)
+   - ⏳ **Session 4**: Helper and internal functions
+   - **Estimated time**: 2 more sessions
 
 3. **Document mcp.R** (98 functions, 0% complete)
    - Linear contrasts: linconb, linconpb, linconbt
@@ -253,8 +266,8 @@ All preparation tasks completed successfully:
 **Completed**: Phase 2 fully complete - Library optimization & duplicate resolution
 **Completed**: Phase 3 Week 6 - Foundation modules documentation ✅
 **Completed**: Phase 3 Week 7 - Main analysis modules documentation ✅
-**Current**: Phase 3 Week 8 - Advanced analysis modules documentation (36.3% complete)
-**Status**: 564/~1,500 functions documented (37.6%)
+**Current**: Phase 3 Week 8 - Advanced analysis modules documentation (39.5% complete)
+**Status**: 575/~1,500 functions documented (38.3%)
   - ✅ common-params.R created
   - ✅ 00-utils-core.R: 53/53 functions (100%)
   - ✅ location.R: 71/71 functions (100%)
@@ -264,10 +277,10 @@ All preparation tasks completed successfully:
   - ✅ anova.R: 52/52 functions (100%)
   - ✅ correlation.R: 82/82 functions (100%)
   - ✅ ancova.R: 125/125 functions (100%) - **COMPLETE!**
-  - ⏳ regression.R: 0/84 functions (0%)
+  - 🔄 regression.R: 11/84 functions (13.1%) - Sessions 1-2 complete
   - ⏳ mcp.R: 0/98 functions (0%)
   - ⏳ covariance.R: 0/37 functions (0%)
-**Next**: Document regression.R (84 functions), mcp.R (98 functions), covariance.R (37 functions)
+**Next**: Continue regression.R (73 remaining), then mcp.R (98 functions), covariance.R (37 functions)
 
 ---
 
@@ -963,4 +976,4 @@ When resuming work:
 
 ---
 
-*Last updated: 2025-12-31 - Phase 3 Week 8 IN PROGRESS 🔄 (Phase 2 complete: 325 library() calls removed, 1,171 duplicates resolved. Phase 3: 564/~1,500 functions documented [37.6%]. Weeks 6-7 complete: 7 modules fully documented. Week 8 in progress: ancova.R 125/125 [100%] ✅ - Session 4 completed all 26 remaining helper/internal functions including bootstrap SE helpers, p-value helpers, DancGLOB/Dancols/DEP helpers, quantile ANCOVA helpers, and repeated measures helpers (rmanc.best*). **ancova.R module now complete!** Remaining in Week 8: 219 functions across regression.R (84), mcp.R (98), covariance.R (37). All 23 backward compatibility tests passing, 100% compatible.)*
+*Last updated: 2025-12-31 - Phase 3 Week 8 IN PROGRESS 🔄 (Phase 2 complete: 325 library() calls removed, 1,171 duplicates resolved. Phase 3: 575/~1,500 functions documented [38.3%]. Weeks 6-7 complete: 7 modules fully documented. Week 8 in progress: ancova.R 125/125 [100%] ✅ complete! regression.R 11/84 [13.1%] 🔄 - Sessions 1-2 complete: documented 11 functions (Session 1: tsreg, tshdreg, tsp1reg, ltsreg, opreg; Session 2: bireg, chreg, bmreg, winreg, MMreg, LMSreg). Remaining in Week 8: 208 functions across regression.R (73), mcp.R (98), covariance.R (37). All 23 backward compatibility tests passing, 100% compatible.)*
