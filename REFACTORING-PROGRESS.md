@@ -4,10 +4,10 @@
 **Version**: v0.45 → v0.46
 **Timeline**: 12 weeks
 **Started**: 2025-12-30
-**Last Updated**: 2025-12-30
+**Last Updated**: 2025-12-31
 **Phase 1 Status**: ✅ COMPLETED (All 20 modules extracted)
 **Phase 2 Status**: ✅ COMPLETED (Weeks 4-5 completed, Week 6 skipped)
-**Phase 3 Status**: 🔄 IN PROGRESS (Setup complete, documenting core modules)
+**Phase 3 Status**: 🔄 IN PROGRESS (Weeks 6-7 complete, Week 8 in progress: 28/344 functions, 8.1%)
 
 ---
 
@@ -28,7 +28,7 @@
 
 **✅ PHASE 1 COMPLETED - 2025-12-30**
 **✅ PHASE 2 COMPLETED - 2025-12-30**
-**🔄 PHASE 3 IN PROGRESS - 2025-12-31** (Week 6-7 complete, Week 8-11 remaining)
+**🔄 PHASE 3 IN PROGRESS - 2025-12-31** (Weeks 6-7 complete, Week 8 in progress: 19.8%)
 
 ### Phase 1: Module Extraction (COMPLETED)
 - ✅ **Week 1 COMPLETED**: Foundation modules (4 files, 219 functions)
@@ -86,7 +86,7 @@
 - **Duplicate functions**: 0 (was 1,171, all resolved) ✅
 - **Total size**: ~2.4 MB across 20 modular files (was 4.4 MB before deduplication)
 - **Library calls optimized**: 325 removed, 233 remain (58% reduction) ✅
-- **Roxygen2 documentation**: 437 of ~1,500 functions (29%) 🔄
+- **Roxygen2 documentation**: 507 of ~1,500 functions (33.8%) 🔄
   - common-params.R created ✅
   - 00-utils-core.R: 53/53 (100%) ✅
   - location.R: 71/71 (100%) ✅
@@ -95,10 +95,31 @@
   - two-sample.R: 88/88 (100%) ✅
   - anova.R: 52/52 (100%) ✅
   - correlation.R: 82/82 (100%) ✅
+  - ancova.R: 68/128 (53.1%) 🔄
 - **Status**: All 20 modules source successfully ✅
 - **Backward compatibility**: 100% maintained (23/23 tests pass) ✅
 
 ### Recently Completed (2025-12-31)
+
+**Phase 3 Week 8 - Advanced Analysis Module Documentation - IN PROGRESS** 🔄:
+- 🔄 Continued ancova.R documentation (68/128 functions, 53.1%)
+  - Session 1: Best group selection, detection, plotting, effect sizes, global tests (28 functions)
+  - Session 2: Added 30+ more functions including:
+    - Detection methods (ancdet2C, ancdetM4, ancdet.pv/sub)
+    - Effect size methods (ancES, ancESband, anc.ES.sum)
+    - Global test helpers (ancGLOB_pv, ancGLOB_pv_pts, ancGLOB_sub*)
+    - Parametric methods (ancGpar, ancGparMC)
+    - Grid methods (anc.grid, anc.grid.bin)
+    - Johnson-Neyman variants (ancJN.LC, ancJNmp, ancJNmpcp, ancJNPVAL)
+    - Linear methods (anclin, anclin.QS, anclin.QS.CIpb)
+    - Multiple group methods (ancmg, ancmg1, ancmg1.power, ancmpbpb, ancmppb)
+    - Specialized methods (anclog, ancM.COV.ES, ancov2COV, etc.)
+- ⏳ Remaining in ancova.R: 60 functions (46.9%)
+  - Priority: ancova* variants, Danc* dependent measures, ancts* methods
+- ⏳ regression.R: 0/84 functions (0%)
+- ⏳ mcp.R: 0/98 functions (0%)
+- ⏳ covariance.R: 0/37 functions (0%)
+- 📊 Total Week 8 Progress: 68/344 functions documented (19.8%)
 
 **Phase 3 Week 7 - Main Analysis Module Documentation - COMPLETE** ✅:
 - ✅ Completed bootstrap.R documentation (27/27 functions, 100%)
@@ -150,10 +171,19 @@
 
 ### Next Steps (For Next Session)
 
-**Phase 3, Week 8: Document Advanced Analysis Modules** 🔄
-1. **Document ancova.R** (125 functions)
-   - ANCOVA methods for independent and dependent groups
-   - Bootstrap ANCOVA, effect sizes, global tests
+**Phase 3, Week 8: Continue Advanced Analysis Module Documentation** 🔄
+1. **Continue ancova.R** (60/128 functions remaining, 46.9%)
+   - High priority user-facing functions (~25):
+     - Core ANCOVA variants: ancovaG, ancovam, ancovamp, ancovampG, ancovaV2
+     - Effect sizes: ancova.ES, ancovad.ES, ancovad.ESci
+     - KMS methods: ancova.KMS, ancova.KMSci, ancova.KMS.plot
+     - Two-covariate methods: ancovap2.KMS, ancovap2.KMSci, ancovap2.KMS.plot
+     - Theil-Sen methods: ancts, anctsmcp, anctsmp, anctspb
+     - Other: ancsm, anctgen, anc.plot.es
+   - Dependent/repeated measures functions (~20):
+     - All Danc* functions: Dancova variants, Dancdet, DancGLOB, Dancols, Dancts, etc.
+   - Specialized & helper functions (~15):
+     - DEPanc, oancpb, Qanc*, QS.anc*, rmanc.best*, ols.coef, CLASSanc
 
 2. **Document regression.R** (84 functions)
    - Theil-Sen, LTS, M-regression, outlier-pruned methods
@@ -167,7 +197,7 @@
    - Robust covariance estimation
    - OGK, MVE, MCD, winsorized/trimmed covariance
 
-**Phase 3 Progress**: 437/~1,500 functions documented (29%)
+**Phase 3 Progress**: 465/~1,500 functions documented (31%)
 
 ### ✅ Phase 0: Preparation (COMPLETED - 2025-12-30)
 
@@ -198,8 +228,8 @@ All preparation tasks completed successfully:
 **Completed**: Phase 2 fully complete - Library optimization & duplicate resolution
 **Completed**: Phase 3 Week 6 - Foundation modules documentation ✅
 **Completed**: Phase 3 Week 7 - Main analysis modules documentation ✅
-**Current**: Phase 3 Week 8 - Advanced analysis modules documentation
-**Status**: 437/~1,500 functions documented (29%)
+**Current**: Phase 3 Week 8 - Advanced analysis modules documentation (19.8% complete)
+**Status**: 507/~1,500 functions documented (33.8%)
   - ✅ common-params.R created
   - ✅ 00-utils-core.R: 53/53 functions (100%)
   - ✅ location.R: 71/71 functions (100%)
@@ -208,11 +238,11 @@ All preparation tasks completed successfully:
   - ✅ two-sample.R: 88/88 functions (100%)
   - ✅ anova.R: 52/52 functions (100%)
   - ✅ correlation.R: 82/82 functions (100%)
-  - ⏳ ancova.R: 0/125 functions (0%)
+  - 🔄 ancova.R: 68/128 functions (53.1%)
   - ⏳ regression.R: 0/84 functions (0%)
   - ⏳ mcp.R: 0/98 functions (0%)
   - ⏳ covariance.R: 0/37 functions (0%)
-**Next**: Document ancova.R, regression.R, mcp.R, covariance.R (~344 functions)
+**Next**: Continue ancova.R (60 remaining), then regression.R, mcp.R, covariance.R
 
 ---
 
@@ -908,4 +938,4 @@ When resuming work:
 
 ---
 
-*Last updated: 2025-12-31 - Phase 3 Week 7 COMPLETED ✅ (Phase 2 complete: 325 library() calls removed, 1,171 duplicates resolved. Phase 3 Weeks 6-7: 7 modules fully documented - 437/~1,500 functions [29%]. Foundation modules (00-utils-core.R ✅, location.R ✅, outliers.R ✅). Main analysis modules (bootstrap.R ✅, two-sample.R ✅, anova.R ✅, correlation.R ✅). All 23 backward compatibility tests passing, 100% compatible. Week 8: Advanced analysis modules next - ancova.R, regression.R, mcp.R, covariance.R)*
+*Last updated: 2025-12-31 - Phase 3 Week 8 IN PROGRESS 🔄 (Phase 2 complete: 325 library() calls removed, 1,171 duplicates resolved. Phase 3: 507/~1,500 functions documented [33.8%]. Weeks 6-7 complete: 7 modules fully documented. Week 8 in progress: ancova.R 68/128 [53.1%] - documented detection methods, effect sizes, global tests, Johnson-Neyman variants, linear methods, multiple groups, parametric methods, grid methods, and specialized ANCOVA functions. Remaining: 60 ancova.R (priority: ancova* variants, Danc* dependent measures, ancts* methods) + 219 other functions. All 23 backward compatibility tests passing, 100% compatible.)*
