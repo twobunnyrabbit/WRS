@@ -28,7 +28,7 @@
 
 **✅ PHASE 1 COMPLETED - 2025-12-30**
 **✅ PHASE 2 COMPLETED - 2025-12-30**
-**🔄 PHASE 3 IN PROGRESS - 2025-12-31** (Week 6 complete, Week 7-11 remaining)
+**🔄 PHASE 3 IN PROGRESS - 2025-12-31** (Week 6-7 complete, Week 8-11 remaining)
 
 ### Phase 1: Module Extraction (COMPLETED)
 - ✅ **Week 1 COMPLETED**: Foundation modules (4 files, 219 functions)
@@ -86,30 +86,43 @@
 - **Duplicate functions**: 0 (was 1,171, all resolved) ✅
 - **Total size**: ~2.4 MB across 20 modular files (was 4.4 MB before deduplication)
 - **Library calls optimized**: 325 removed, 233 remain (58% reduction) ✅
-- **Roxygen2 documentation**: 188 of ~1,500 functions (13%) 🔄
+- **Roxygen2 documentation**: 437 of ~1,500 functions (29%) 🔄
   - common-params.R created ✅
   - 00-utils-core.R: 53/53 (100%) ✅
   - location.R: 71/71 (100%) ✅
   - outliers.R: 64/64 (100%) ✅
+  - bootstrap.R: 27/27 (100%) ✅
+  - two-sample.R: 88/88 (100%) ✅
+  - anova.R: 52/52 (100%) ✅
+  - correlation.R: 82/82 (100%) ✅
 - **Status**: All 20 modules source successfully ✅
 - **Backward compatibility**: 100% maintained (23/23 tests pass) ✅
 
 ### Recently Completed (2025-12-31)
 
+**Phase 3 Week 7 - Main Analysis Module Documentation - COMPLETE** ✅:
+- ✅ Completed bootstrap.R documentation (27/27 functions, 100%)
+  - Bootstrap infrastructure, BCA methods, permutation tests
+  - Bootstrap helpers for regression, ANCOVA, and correlations
+- ✅ Completed two-sample.R documentation (88/88 functions, 100%)
+  - Yuen's test, WMW tests, Cliff's analog methods
+  - Quantile comparisons, bootstrap methods, effect sizes
+  - Linear contrasts, interaction tests, ANCOVA variants
+- ✅ Completed anova.R documentation (52/52 functions, 100%)
+  - One-way, two-way, three-way ANOVA methods
+  - Bootstrap and robust variants, trimmed mean ANOVA
+  - Rank-based, median-based, and quantile-based methods
+- ✅ Completed correlation.R documentation (82/82 functions, 100%)
+  - Pearson, Spearman, Kendall correlations
+  - Percentage bend, skipped, winsorized correlations
+  - Robust correlation methods, multiple comparisons
+- ✅ Total: 249 functions documented in Week 7 (plus 188 from Week 6 = 437 total, 29% of ~1,500)
+
 **Phase 3 Week 6 - Core Module Documentation - COMPLETE** ✅:
 - ✅ Completed location.R documentation (71/71 functions, 100%)
-  - M-estimators, Harrell-Davis estimators, group comparisons
-  - ANOVA functions, location comparisons, multivariate location
-  - Mean estimators and utility functions
 - ✅ Completed outliers.R documentation (64/64 functions, 100%)
-  - Projection-based outlier detection (outpro variants)
-  - Classical and robust methods (outbox, outmah, outmve, outogk)
-  - Data depth methods (depth2, pdepth, prodepth, zdepth, etc.)
-  - Classification and bagging methods (Depth.class.bag, KNNbag, SVMbag, etc.)
-- ✅ Roxygen2 syntax validated - successfully generates .Rd files
-- ✅ All 23 backward compatibility tests PASSED
-- ✅ 100% backward compatibility maintained
-- ✅ Total: 188 functions documented across 3 foundation modules (13% of ~1,500 total)
+- ✅ Completed 00-utils-core.R documentation (53/53 functions, 100%)
+- ✅ Total: 188 functions documented across 3 foundation modules
 
 **Phase 2, Week 5 - Duplicate Resolution - COMPLETE** ✅:
 - ✅ Analyzed all 20 modules and identified 1,171 duplicate function definitions
@@ -137,26 +150,24 @@
 
 ### Next Steps (For Next Session)
 
-**Phase 3, Week 7: Document Main Analysis Modules** 🔄
-1. **Document bootstrap.R** (26 functions)
-   - Bootstrap infrastructure and BCA methods
-   - Permutation tests and bootstrap utilities
+**Phase 3, Week 8: Document Advanced Analysis Modules** 🔄
+1. **Document ancova.R** (125 functions)
+   - ANCOVA methods for independent and dependent groups
+   - Bootstrap ANCOVA, effect sizes, global tests
 
-2. **Document two-sample.R** (88 functions)
-   - Yuen's test, WMW test, bootstrap methods
-   - Quantile comparisons, effect sizes
+2. **Document regression.R** (84 functions)
+   - Theil-Sen, LTS, M-regression, outlier-pruned methods
+   - Regression inference, two-group comparisons
 
-3. **Document anova.R** (52 functions)
-   - One-way, two-way, three-way ANOVA methods
-   - Bootstrap and robust variants
-   - Trimmed mean ANOVA
+3. **Document mcp.R** (98 functions)
+   - Multiple comparison procedures
+   - Linear contrasts, factorial MCP, repeated measures
 
-4. **Document correlation.R** (83 functions)
-   - Pearson, Spearman, Kendall correlations
-   - Percentage bend, skipped correlations
-   - Robust correlation methods
+4. **Document covariance.R** (37 functions)
+   - Robust covariance estimation
+   - OGK, MVE, MCD, winsorized/trimmed covariance
 
-**Phase 3 Progress**: 188/~1,500 functions documented (13%)
+**Phase 3 Progress**: 437/~1,500 functions documented (29%)
 
 ### ✅ Phase 0: Preparation (COMPLETED - 2025-12-30)
 
@@ -182,21 +193,26 @@ All preparation tasks completed successfully:
    - `pkg/tests/test-backward-compat.R` - Validates compatibility
    - Reference data will be saved to: `reference-outputs.rds`
 
-### 🔄 Current Phase: Phase 3 - Documentation (Week 7)
+### 🔄 Current Phase: Phase 3 - Documentation (Week 8)
 
 **Completed**: Phase 2 fully complete - Library optimization & duplicate resolution
 **Completed**: Phase 3 Week 6 - Foundation modules documentation ✅
-**Current**: Phase 3 Week 7 - Main analysis modules documentation
-**Status**: 188/~1,500 functions documented (13%)
+**Completed**: Phase 3 Week 7 - Main analysis modules documentation ✅
+**Current**: Phase 3 Week 8 - Advanced analysis modules documentation
+**Status**: 437/~1,500 functions documented (29%)
   - ✅ common-params.R created
   - ✅ 00-utils-core.R: 53/53 functions (100%)
   - ✅ location.R: 71/71 functions (100%)
   - ✅ outliers.R: 64/64 functions (100%)
-  - ⏳ bootstrap.R: 0/26 functions (0%)
-  - ⏳ two-sample.R: 0/88 functions (0%)
-  - ⏳ anova.R: 0/52 functions (0%)
-  - ⏳ correlation.R: 0/83 functions (0%)
-**Next**: Document bootstrap.R, two-sample.R, anova.R, correlation.R (~249 functions)
+  - ✅ bootstrap.R: 27/27 functions (100%)
+  - ✅ two-sample.R: 88/88 functions (100%)
+  - ✅ anova.R: 52/52 functions (100%)
+  - ✅ correlation.R: 82/82 functions (100%)
+  - ⏳ ancova.R: 0/125 functions (0%)
+  - ⏳ regression.R: 0/84 functions (0%)
+  - ⏳ mcp.R: 0/98 functions (0%)
+  - ⏳ covariance.R: 0/37 functions (0%)
+**Next**: Document ancova.R, regression.R, mcp.R, covariance.R (~344 functions)
 
 ---
 
@@ -544,13 +560,27 @@ Note: All 1,171 duplicates removed in Phase 2, Week 5. Unique functions: 1,828 (
 - [x] All 23 backward compatibility tests PASSED ✅
 - [x] All 3 foundation modules source successfully ✅
 
-#### Week 7: Document Main Analysis Modules (PENDING)
-- [ ] bootstrap.R: 26 functions
-- [ ] two-sample.R: 88 functions
-- [ ] anova.R: 52 functions
-- [ ] correlation.R: 83 functions
+#### Week 7: Document Main Analysis Modules (COMPLETED) ✅
+- [x] **bootstrap.R COMPLETED**: 27/27 functions documented (100%)
+  - Bootstrap infrastructure, BCA methods, permutation tests
+  - Bootstrap helpers for regression, ANCOVA, and correlations
+- [x] **two-sample.R COMPLETED**: 88/88 functions documented (100%)
+  - Yuen's test, WMW tests, Cliff's analog methods
+  - Quantile comparisons, bootstrap methods, effect sizes
+  - Linear contrasts, interaction tests, ANCOVA variants
+- [x] **anova.R COMPLETED**: 52/52 functions documented (100%)
+  - One-way, two-way, three-way ANOVA methods
+  - Bootstrap and robust variants, trimmed mean ANOVA
+  - Rank-based, median-based, and quantile-based methods
+- [x] **correlation.R COMPLETED**: 82/82 functions documented (100%)
+  - Pearson, Spearman, Kendall correlations
+  - Percentage bend, skipped, winsorized correlations
+  - Robust correlation methods, multiple comparisons
 
-**Target**: ~249 additional functions documented
+**Week 7 Results**: 249/249 main analysis functions documented (100%) ✅
+- [x] All 4 main analysis modules fully documented ✅
+- [x] All modules source successfully ✅
+- [x] Professional-grade CRAN-level documentation ✅
 
 #### Week 8: Document Advanced Analysis Modules (PENDING)
 - [ ] ancova.R: 125 functions
@@ -878,4 +908,4 @@ When resuming work:
 
 ---
 
-*Last updated: 2025-12-31 - Phase 3 Week 6 COMPLETED ✅ (Phase 2 complete: 325 library() calls removed, 1,171 duplicates resolved. Phase 3 Week 6: Foundation modules complete, 188/~1,500 functions documented [13%], 00-utils-core.R ✅, location.R ✅, outliers.R ✅, all 23 tests passing, 100% backward compatible. Week 7: Main analysis modules next)*
+*Last updated: 2025-12-31 - Phase 3 Week 7 COMPLETED ✅ (Phase 2 complete: 325 library() calls removed, 1,171 duplicates resolved. Phase 3 Weeks 6-7: 7 modules fully documented - 437/~1,500 functions [29%]. Foundation modules (00-utils-core.R ✅, location.R ✅, outliers.R ✅). Main analysis modules (bootstrap.R ✅, two-sample.R ✅, anova.R ✅, correlation.R ✅). All 23 backward compatibility tests passing, 100% compatible. Week 8: Advanced analysis modules next - ancova.R, regression.R, mcp.R, covariance.R)*

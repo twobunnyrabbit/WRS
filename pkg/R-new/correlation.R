@@ -12,9 +12,57 @@
 #   - Regression-based: correg(), scorreg()
 #
 # Extracted: 2025-12-30
-# Functions: 96
+# Functions: 83
 # ==============================================================================
 
+#' Common Parameters for Correlation Functions
+#'
+#' @param x Numeric vector or matrix. For bivariate functions, the first variable.
+#'   For matrix functions, an n-by-p data matrix.
+#' @param y Numeric vector. The second variable for bivariate correlations.
+#'   Can be `NULL` for some functions that accept a two-column matrix as `x`.
+#' @param tr Trimming proportion (default: 0.2). Proportion of observations to
+#'   trim from each tail when computing winsorized correlation.
+#' @param beta Bending constant for percentage bend correlation (default: 0.2).
+#'   Controls the amount of downweighting for outliers.
+#' @param corfun Correlation function to use. Common options: `pbcor` (percentage
+#'   bend), `pcor` (Pearson), `wincor` (winsorized), `spear` (Spearman).
+#' @param alpha Significance level for confidence intervals (default: 0.05).
+#' @param nboot Number of bootstrap samples (default varies by function).
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducible results
+#'   (default: `TRUE`).
+#' @param plotit Logical. If `TRUE`, produces a scatterplot (default: `FALSE`).
+#' @param xlab Label for x-axis in plots (default: "X" or "VAR 1").
+#' @param ylab Label for y-axis in plots (default: "Y" or "VAR 2").
+#' @param outfun Outlier detection function (default: `outpro` or `outmgvf`).
+#' @param xout Logical. If `TRUE`, removes outliers before computing correlation
+#'   (default: `FALSE`).
+#' @param cop Copula type for skipped correlation (default: 3). Options: 1-5.
+#' @param MC Logical. If `TRUE`, uses parallel processing via `mclapply`
+#'   (default: `FALSE`).
+#' @param pr Logical. If `TRUE`, prints progress messages (default: `TRUE`).
+#' @param STAND Logical. If `TRUE`, standardizes data before analysis
+#'   (default: `TRUE`).
+#' @param ... Additional arguments passed to correlation or estimation functions.
+#'
+#' @name common-params
+#' @keywords internal
+NULL
+
+
+#' Winsorized Correlation Subroutine
+#'
+#' Internal helper function for computing winsorized correlation with p-value.
+#' Used by `wincor()` and related functions.
+#'
+#' @inheritParams common-params
+#'
+#' @return List with components:
+#'   \item{cor}{Winsorized correlation coefficient.}
+#'   \item{cov}{Winsorized covariance.}
+#'   \item{p.value}{Two-sided p-value based on t-test.}
+#'
+#' @keywords internal
 wincor.sub<-function(x,y,tr=tr){
 sig<-NA
 g<-floor(tr*length(x))
@@ -29,6 +77,48 @@ sig<-2*(1-pt(abs(test),length(x)-2*g-2))
 list(cor=wcor,cov=wcov,p.value=sig)
 }
 
+
+#' Kendall's Tau Correlation with Confidence Interval
+#'
+#' Computes Kendall's tau correlation coefficient with a confidence interval
+#' using the method recommended by Long and Cliff (1997).
+#'
+#' @inheritParams common-params
+#'
+#' @return List with components:
+#'   \item{cor}{Kendall's tau correlation coefficient.}
+#'   \item{ci}{Confidence interval for tau (vector of length 2).}
+#'   \item{p.value}{Two-sided p-value for testing H0: tau = 0.}
+#'
+#' @details
+#' This function computes Kendall's tau, a nonparametric measure of rank
+#' correlation. Missing values are removed via casewise deletion.
+#'
+#' Note: tau-b provides an adjustment for ties. However, no adjustment for tied
+#' values is made here due to arguments made by Cliff (1996, pp. 36-37).
+#'
+#' The confidence interval is based on the t-distribution with n-2 degrees of
+#' freedom, following Long and Cliff (1997).
+#'
+#' @seealso \code{\link{tauci}}, \code{\link{tauall}}, \code{\link{pbcor}}
+#'
+#' @references
+#' Long, J. D., & Cliff, N. (1997). Confidence intervals for Kendall's tau.
+#' British Journal of Mathematical and Statistical Psychology, 50, 31-41.
+#'
+#' Cliff, N. (1996). Ordinal methods for behavioral data analysis. Mahwah, NJ:
+#' Erlbaum.
+#'
+#' @export
+#' @examples
+#' # Compute tau correlation
+#' x <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+#' y <- c(2, 3, 1, 6, 5, 8, 7, 10, 9, 4)
+#' tau(x, y)
+#'
+#' # Using matrix input
+#' m <- cbind(x, y)
+#' tau(m)
 tau<-function(x,y=NULL,alpha=.05){
 #
 #   Compute Kendall's tau plus a 1-alpha confidence interval
@@ -63,6 +153,33 @@ siglevel<-2*(1-pt(abs(test),df=df))
 list(cor=tau,ci=c(cilow,cihi),p.value=siglevel)
 }
 
+
+#' Kendall's Tau for All Pairs of Variables
+#'
+#' Computes Kendall's tau correlation for all pairs of variables in a matrix,
+#' along with significance levels.
+#'
+#' @param m An n-by-p matrix where columns represent variables.
+#'
+#' @return List with components:
+#'   \item{taum}{p-by-p symmetric matrix of tau correlations.}
+#'   \item{p.value}{p-by-p matrix of two-sided p-values.}
+#'
+#' @details
+#' This function computes all pairwise Kendall's tau correlations for the
+#' variables (columns) in the matrix `m`. The diagonal elements of the
+#' correlation matrix are 0 (self-correlation not computed).
+#'
+#' @seealso \code{\link{tau}}, \code{\link{mscor}}
+#'
+#' @export
+#' @examples
+#' # Correlations among three variables
+#' set.seed(123)
+#' m <- matrix(rnorm(100 * 3), ncol = 3)
+#' result <- tauall(m)
+#' result$taum  # Correlation matrix
+#' result$p.value  # P-value matrix
 tauall<-function(m){
 #
 #    Compute Kendall's tau for the
@@ -90,6 +207,49 @@ siglevel[j,i]<-siglevel[i,j]
 list(taum=taum,p.value=siglevel)
 }
 
+
+#' Percentage Bend Correlation
+#'
+#' Computes the percentage bend correlation coefficient, a robust alternative
+#' to Pearson's correlation that downweights outliers.
+#'
+#' @inheritParams common-params
+#'
+#' @return List with components:
+#'   \item{cor}{Percentage bend correlation coefficient.}
+#'   \item{test}{Test statistic for H0: rho = 0.}
+#'   \item{p.value}{Two-sided p-value.}
+#'   \item{n}{Sample size (after removing missing values).}
+#'
+#' @details
+#' The percentage bend correlation is a robust alternative to Pearson's
+#' correlation that is resistant to outliers. The bending constant `beta`
+#' (default 0.2) controls the amount of downweighting applied to extreme
+#' values.
+#'
+#' Values beyond omega_N (the (1-beta) quantile of absolute deviations from
+#' the median) are "bent" to reduce their influence. The correlation is then
+#' computed on the bent values.
+#'
+#' Missing values are removed via casewise deletion before analysis.
+#'
+#' @seealso \code{\link{corb}}, \code{\link{wincor}}, \code{\link{pbcorMC}}
+#'
+#' @export
+#' @examples
+#' # Basic percentage bend correlation
+#' x <- rnorm(50)
+#' y <- 0.5 * x + rnorm(50)
+#' pbcor(x, y)
+#'
+#' # With outliers
+#' x2 <- c(x, 10, 11)
+#' y2 <- c(y, 10, -10)
+#' pbcor(x2, y2)  # Robust to outliers
+#' cor(x2, y2)     # Pearson affected by outliers
+#'
+#' # Different bending constant
+#' pbcor(x, y, beta = 0.1)  # More downweighting
 pbcor<-function(x,y,beta=.2){
 #   Compute the percentage bend correlation between x and y.
 #
@@ -118,6 +278,46 @@ sig<-2*(1 - pt(abs(test),length(x)-2))
 list(cor=pbcor,test=test,p.value=sig,n=nval)
 }
 
+
+#' Bootstrap Confidence Interval for Correlation
+#'
+#' Computes a percentile bootstrap confidence interval for any correlation
+#' coefficient. The default is percentage bend correlation.
+#'
+#' @inheritParams common-params
+#'
+#' @return List with components:
+#'   \item{cor.ci}{Bootstrap confidence interval (vector of length 2).}
+#'   \item{p.value}{Two-sided p-value based on bootstrap distribution.}
+#'   \item{cor.est}{Point estimate of the correlation.}
+#'
+#' @details
+#' This function uses percentile bootstrap to compute confidence intervals for
+#' any correlation measure. Bootstrap samples are obtained by resampling pairs
+#' (x[i], y[i]) with replacement.
+#'
+#' The `corfun` argument can be any R function that returns a correlation in
+#' `corfun$cor`. Built-in options include `pbcor` (percentage bend), `wincor`
+#' (winsorized), and `pcor` (Pearson).
+#'
+#' Note: For Pearson's correlation with n < 250, consider using `lsfitci`
+#' instead for better small-sample properties.
+#'
+#' @seealso \code{\link{pbcor}}, \code{\link{pcorb}}, \code{\link{corbMC}}
+#'
+#' @export
+#' @examples
+#' # Bootstrap CI for percentage bend correlation
+#' set.seed(123)
+#' x <- rnorm(40)
+#' y <- 0.6 * x + rnorm(40)
+#' corb(x, y, nboot = 500)
+#'
+#' # Using Pearson correlation
+#' corb(x, y, corfun = pcor, nboot = 500)
+#'
+#' # Using winsorized correlation
+#' corb(x, y, corfun = wincor, nboot = 500, tr = 0.2)
 corb<-function(x,y,corfun=pbcor,nboot=599,alpha=.05,plotit=FALSE,xlab='X',ylab='Y',SEED=TRUE,...){
 #
 #   Compute a 1-alpha confidence interval for a correlation.
@@ -154,6 +354,44 @@ if(plotit)outpro(cbind(x,y),xlab=xlab,ylab=ylab,plotit=TRUE)
 list(cor.ci=corci,p.value=sig,cor.est=est)
 }
 
+
+#' Running Correlation
+#'
+#' Estimates how the correlation between x and y varies as a function of a
+#' third variable z using a running interval method.
+#'
+#' @inheritParams common-params
+#' @param z Numeric vector. The moderator variable.
+#' @param fr Numeric. Controls the fraction/span for smoothing (default: 1).
+#'   Values near 0 use narrow windows, values near 1 use wide windows.
+#' @param corflag Logical. If `TRUE`, uses Pearson correlation; if `FALSE`
+#'   (default), uses `corfun`.
+#' @param rhat Logical. If `TRUE`, returns the vector of running correlations;
+#'   if `FALSE` (default), returns "Done" after plotting.
+#'
+#' @return If `rhat = TRUE`, returns a vector of running correlations
+#'   corresponding to each value of z. Otherwise returns "Done" (used for side
+#'   effect of plotting).
+#'
+#' @details
+#' For each observation i, the correlation between x and y is computed using
+#' observations where z is "near" z[i]. The nearness is determined by the `fr`
+#' parameter.
+#'
+#' This is useful for detecting effect modification or context-dependent
+#' associations.
+#'
+#' @seealso \code{\link{cori}}, \code{\link{pbcor}}
+#'
+#' @export
+#' @examples
+#' # Correlation varies with moderator
+#' set.seed(123)
+#' n <- 100
+#' z <- runif(n, 0, 10)
+#' x <- rnorm(n)
+#' y <- (0.2 + 0.08 * z) * x + rnorm(n)  # Correlation increases with z
+#' runcor(x, y, z, fr = 0.5, rhat = TRUE)
 runcor<-function(x,y,z,fr=1,corflag=FALSE,corfun=pbcor,plotit=TRUE,rhat=FALSE){
 #
 # Estimate how the correlation between  x and y varies with  z
@@ -196,6 +434,41 @@ if(!rhat)rmd<-"Done"
 rmd
 }
 
+
+#' Bootstrap Confidence Interval for Pearson Correlation
+#'
+#' Computes a 95% confidence interval for Pearson's correlation coefficient
+#' using an adjusted percentile bootstrap method.
+#'
+#' @inheritParams common-params
+#'
+#' @return List with components:
+#'   \item{r}{Pearson correlation coefficient.}
+#'   \item{ci}{95% confidence interval (vector of length 2).}
+#'
+#' @details
+#' This function uses an adjusted percentile bootstrap method that performs
+#' well when the error term is heteroscedastic. The percentiles used for the
+#' confidence interval are adjusted based on sample size to improve coverage.
+#'
+#' Sample size adjustments:
+#' - n >= 250: uses 15th and 584th order statistics
+#' - 180 <= n < 250: uses 14th and 585th
+#' - 80 <= n < 180: uses 11th and 588th
+#' - 40 <= n < 80: uses 8th and 592nd
+#' - n < 40: uses 7th and 593rd
+#'
+#' The function always uses nboot = 599 bootstrap samples.
+#'
+#' @seealso \code{\link{corb}}, \code{\link{pcor}}
+#'
+#' @export
+#' @examples
+#' # Bootstrap CI for Pearson correlation
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 0.7 * x + rnorm(50)
+#' pcorb(x, y)
 pcorb<-function(x,y,SEED=TRUE){
 #   Compute a .95 confidence interval for Pearson's correlation coefficient.
 #
@@ -235,6 +508,20 @@ ci<-c(bsort[ilow],bsort[ihi])
 list(r=r,ci=ci)
 }
 
+
+#' Correlation Regression Subroutine
+#'
+#' Internal helper function for `correg()` that computes the objective function
+#' for correlation-based regression.
+#'
+#' @param X Matrix combining predictors and response (last column is y).
+#' @param theta Vector of regression coefficients (excluding intercept).
+#' @inheritParams common-params
+#'
+#' @return Numeric value representing sum of absolute correlations between
+#'   predictors and residuals.
+#'
+#' @keywords internal
 correg.sub<-function(X,theta,corfun=tau){
 np<-ncol(X)
 p<-np-1
@@ -248,6 +535,37 @@ val<-sum(abs(taureg(x,res,corfun=corfun)$cor))
 val
 }
 
+
+#' Correlation-Based Regression
+#'
+#' A generalization of the Theil-Sen estimator that minimizes correlations
+#' between predictors and residuals.
+#'
+#' @inheritParams common-params
+#' @param loc.fun Location estimator for computing intercept (default: `median`).
+#'
+#' @return List with components:
+#'   \item{coef}{Regression coefficients (intercept and slopes).}
+#'   \item{residuals}{Regression residuals.}
+#'
+#' @details
+#' This function generalizes the Theil-Sen estimator by allowing alternative
+#' correlation measures via the `corfun` argument. The regression coefficients
+#' are chosen to minimize the sum of absolute correlations between predictors
+#' and residuals.
+#'
+#' The Nelder-Mead optimization method is used. The intercept is computed using
+#' `loc.fun` (default: median) applied to the centered residuals.
+#'
+#' @seealso \code{\link{scorreg}}, \code{\link{tsreg}}
+#'
+#' @export
+#' @examples
+#' # Robust regression using correlation criterion
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 2), ncol = 2)
+#' y <- 2 + 3 * x[,1] - 2 * x[,2] + rnorm(50)
+#' correg(x, y)
 correg<-function(x,y,corfun=tau,loc.fun=median){
 #
 # A generalization of the Theil-Sen estimator
@@ -273,6 +591,33 @@ res <- y - x %*% temp - alpha
 list(coef = coef, residuals = res)
 }
 
+
+#' Tau Measure of Location
+#'
+#' Computes the tau measure of location as described by Yohai and Zamar (1988).
+#'
+#' @param x Numeric vector.
+#' @param cval Numeric. Tuning constant (default: 4.5).
+#'
+#' @return Numeric value representing the tau measure of location.
+#'
+#' @details
+#' The tau measure of location is a robust location estimator that uses
+#' a weighted mean with weights based on standardized deviations. Values
+#' beyond cval standard deviations receive zero weight.
+#'
+#' @references
+#' Yohai, V. J., & Zamar, R. H. (1988). High breakdown-point estimates of
+#' regression by means of the minimization of an efficient scale.
+#' Journal of the American Statistical Association, 83, 406-413.
+#'
+#' @seealso \code{\link{tauvar}}, \code{\link{taulc}}
+#'
+#' @export
+#' @examples
+#' x <- c(1, 2, 3, 4, 5, 100)  # Contains outlier
+#' tauloc(x)
+#' median(x)  # For comparison
 tauloc<-function(x,cval=4.5){
 #
 # Compute the tau measure of location as described in
@@ -288,6 +633,36 @@ val<-sum(W*x)/sum(W)
 val
 }
 
+
+#' Tau Measure of Scale
+#'
+#' Computes the tau measure of scale as described by Yohai and Zamar (1988),
+#' using the computational method from Maronna and Zamar (2002).
+#'
+#' @param x Numeric vector.
+#' @param cval Numeric. Tuning constant (default: 3).
+#'
+#' @return Numeric value representing the tau measure of scale.
+#'
+#' @details
+#' The tau measure of scale is a robust scale estimator with high efficiency
+#' and breakdown point. It combines aspects of M-estimation and S-estimation.
+#'
+#' @references
+#' Yohai, V. J., & Zamar, R. H. (1988). High breakdown-point estimates of
+#' regression by means of the minimization of an efficient scale.
+#' Journal of the American Statistical Association, 83, 406-413.
+#'
+#' Maronna, R. A., & Zamar, R. H. (2002). Robust estimates of location and
+#' dispersion for high-dimensional datasets. Technometrics, 44, 307-317.
+#'
+#' @seealso \code{\link{tauloc}}, \code{\link{taulc}}
+#'
+#' @export
+#' @examples
+#' x <- c(1, 2, 3, 4, 5, 100)  # Contains outlier
+#' tauvar(x)
+#' mad(x)  # For comparison
 tauvar<-function(x,cval=3){
 #
 # Compute the tau measure of scale as described in
@@ -305,6 +680,25 @@ val<-s^2*sum(W)/length(x)
 val
 }
 
+
+#' Tau Location and Scale
+#'
+#' Computes both tau location and scale measures simultaneously.
+#'
+#' @param x Numeric vector.
+#' @param mu.too Logical. If `TRUE`, returns both location and scale;
+#'   if `FALSE` (default), returns only scale.
+#'
+#' @return If `mu.too = FALSE`, returns tau scale. If `mu.too = TRUE`,
+#'   returns a list with components `mu` (location) and `sigma` (scale).
+#'
+#' @seealso \code{\link{tauloc}}, \code{\link{tauvar}}
+#'
+#' @export
+#' @examples
+#' x <- rnorm(50)
+#' taulc(x)  # Scale only
+#' taulc(x, mu.too = TRUE)  # Location and scale
 taulc<-function(x,mu.too=FALSE){
 #
 val<-tauvar(x)
@@ -315,6 +709,35 @@ val[1]<-tauloc(x)
 val
 }
 
+
+#' Explanatory Correlation with Outlier Detection
+#'
+#' Estimates the explanatory correlation between x and y after removing outliers
+#' detected by projection methods.
+#'
+#' @inheritParams common-params
+#' @param pcor Logical. If `TRUE`, uses Pearson correlation; if `FALSE`, uses `corfun`.
+#' @param regfun Regression function for outlier detection (default: `tsreg`).
+#' @param outkeep Logical. If `TRUE`, keeps outliers; if `FALSE` (default), removes them.
+#'
+#' @return Numeric value representing the explanatory correlation coefficient.
+#'
+#' @details
+#' This function computes an explanatory (predictive) correlation by first
+#' fitting a robust regression of y on x, then computing the correlation between
+#' fitted values and observed y after removing outliers.
+#'
+#' Outliers are detected using the specified `outfun`. The sign of the correlation
+#' matches the sign of the regression coefficient.
+#'
+#' @seealso \code{\link{ocor}}, \code{\link{pbcor}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- c(rnorm(40), 5, 6)  # Two outliers
+#' y <- c(2 + 0.5 * rnorm(40), -5, 7)
+#' ecor(x, y)
 ecor<-function(x,y,pcor=FALSE,regfun=tsreg,corfun=pbcor,outkeep=FALSE,outfun=outmgvf){
 #
 # Estimate the explanatory correlation between x and y
@@ -339,6 +762,34 @@ ecor<-sqrt(epow2)*sign(coef[2])
 ecor
 }
 
+
+#' Correlation with Multivariate Outlier Detection
+#'
+#' Computes correlation after removing bivariate outliers detected using
+#' multivariate outlier detection methods.
+#'
+#' @inheritParams common-params
+#' @param pcor Logical. If `TRUE`, uses Pearson correlation after outlier removal.
+#'
+#' @return List with component:
+#'   \item{cor}{Correlation coefficient after removing outliers.}
+#'
+#' @details
+#' Unlike `ecor()`, which detects univariate outliers separately for x and y,
+#' this function uses multivariate outlier detection on the (x, y) pairs.
+#' This can better identify influential bivariate outliers.
+#'
+#' @seealso \code{\link{ecor}}, \code{\link{scorci}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 0.6 * x + rnorm(50)
+#' # Add bivariate outlier
+#' x <- c(x, 5)
+#' y <- c(y, 5)
+#' ocor(x, y)
 ocor<-function(x,y,corfun=pbcor,outfun=outmgvf,pcor=FALSE,plotit=FALSE){
 #
 #  Compute a correlation when outliers are ignored.
@@ -354,6 +805,44 @@ if(!pcor)ocor<-corfun(x[flag],y[flag])$cor
 list(cor=ocor)
 }
 
+
+#' Correlation at Specified Value of Third Variable
+#'
+#' Computes and compares correlations between x and y for observations
+#' split by a third variable z at a specified point.
+#'
+#' @inheritParams common-params
+#' @param z Numeric vector. The conditioning/splitting variable.
+#' @param pt Numeric. The point at which to split z (default: `median(z)`).
+#' @param fr Numeric. Fraction of data for smoothing (default: 0.8).
+#' @param est Location estimator function (default: `onestep`).
+#' @param testit Logical. If `TRUE`, tests equality of correlations in two groups.
+#' @param nboot Number of bootstrap samples for testing (default: 599).
+#' @param sm Logical. Affects smoothing in `runmean2g` (default: `FALSE`).
+#' @param xlab Label for x-axis.
+#' @param ylab Label for y-axis.
+#'
+#' @return If `testit = FALSE`, returns "Done" (used for plotting side effect).
+#'   If `testit = TRUE`, returns result from `twocor()` testing equal correlations.
+#'
+#' @details
+#' This function splits the data into two groups based on whether z < pt or z >= pt,
+#' then plots smoothed regression lines for each group using `runmean2g()`.
+#'
+#' If `testit = TRUE`, it also tests whether the correlations differ between
+#' the two groups.
+#'
+#' @seealso \code{\link{runcor}}, \code{\link{twocor}}, \code{\link{pbcor}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' n <- 100
+#' z <- rnorm(n)
+#' x <- rnorm(n)
+#' y <- ifelse(z > 0, 0.8 * x, 0.2 * x) + rnorm(n)
+#' # Compare correlations for z < median vs z >= median
+#' cori(x, y, z, testit = TRUE)
 cori<-function(x,y,z,pt=median(z),fr=.8,est=onestep,corfun=pbcor,testit=FALSE,
 nboot=599,sm=FALSE,xlab="X",ylab="Y",...){
 #
@@ -379,12 +868,90 @@ output<-twocor(x[flag],y[flag],x[!flag],y[!flag],corfun=corfun,nboot=nboot,ploti
 output
 }
 
+
+#' Pearson Correlation
+#'
+#' Computes Pearson's product-moment correlation coefficient with significance
+#' test.
+#'
+#' @inheritParams common-params
+#'
+#' @return List with components:
+#'   \item{cor}{Pearson correlation coefficient.}
+#'   \item{p.value}{Two-sided p-value for testing H0: rho = 0.}
+#'
+#' @details
+#' This is a wrapper for `wincor()` with `tr = 0` (no trimming), which gives
+#' Pearson's correlation. If `y = NA`, assumes `x` is a matrix and computes
+#' all pairwise correlations.
+#'
+#' @seealso \code{\link{pbcor}}, \code{\link{wincor}}, \code{\link{pcorb}}
+#'
+#' @export
+#' @examples
+#' x <- rnorm(50)
+#' y <- 0.7 * x + rnorm(50)
+#' pcor(x, y)
+#'
+#' # Matrix input
+#' m <- cbind(x, y)
+#' pcor(m)
 pcor<-function(x,y=NA){
 if(!is.na(y[1]))temp<-wincor(x,y,tr=0)
 if(is.na(y[1]))temp<-winall(x,tr=0)
 list(cor=temp$cor,p.value=temp$p.value)
 }
 
+
+#' Multiple Skipped Correlation
+#'
+#' Computes a correlation matrix after removing multivariate outliers using
+#' projection-based outlier detection.
+#'
+#' @param m Numeric matrix (n-by-p). Rows are observations, columns are variables.
+#' @inheritParams common-params
+#' @param MM Logical. If `TRUE`, uses MM-estimator (default: `FALSE`).
+#' @param gval Numeric. Critical value for outlier detection. If `NA` (default),
+#'   determined automatically.
+#' @param ap Logical. If `TRUE`, applies adjustment for p-values (default: `TRUE`).
+#' @param pw Logical. If `TRUE`, performs pairwise comparisons (default: `TRUE`).
+#'
+#' @return List with components:
+#'   \item{cor.mat}{p-by-p matrix of correlations (after removing outliers).}
+#'   \item{p.values}{Matrix of p-values for testing H0: rho = 0.}
+#'   \item{outliers}{Indices of detected outliers.}
+#'   \item{n.keep}{Number of observations retained.}
+#'
+#' @details
+#' This function computes a "skipped" correlation matrix by first detecting
+#' and removing multivariate outliers, then computing correlations on the
+#' remaining data.
+#'
+#' Outliers are detected using projection methods (see `outpro()`). For each
+#' point, the function considers the line between it and the center, projects
+#' all points onto this line, and checks for outliers using a boxplot rule.
+#'
+#' The `cop` parameter determines how the center is estimated:
+#' - cop=1: Donoho-Gasko halfspace median
+#' - cop=2: MCD measure of location
+#' - cop=3: Marginal medians (default)
+#' - cop=4: MVE measure of location
+#'
+#' The `corfun` parameter specifies the correlation to use (default: Spearman).
+#'
+#' @seealso \code{\link{scorci}}, \code{\link{outpro}}, \code{\link{scor}}
+#'
+#' @export
+#' @examples
+#' # Correlation matrix with outlier detection
+#' set.seed(123)
+#' m <- matrix(rnorm(50 * 4), ncol = 4)
+#' # Add some outliers
+#' m[1, ] <- c(5, 5, 5, 5)
+#' m[2, ] <- c(-5, -5, -5, -5)
+#' result <- mscor(m)
+#' result$cor.mat
+#' result$outliers
 mscor<-function(m,corfun=spear,cop=3,MM=FALSE,gval=NA,ap=TRUE,pw=TRUE,STAND=TRUE,
 outfun=outpro,alpha=.05){
 #
@@ -480,6 +1047,45 @@ test<-as.matrix(test[1,])
 list(cor=mcor,crit.val=crit,test.stat=test)
 }
 
+#' Test for Homoscedasticity in Regression
+#'
+#' Tests the hypothesis of homoscedasticity (constant variance) in regression
+#' model Y = m(X) + s(X)e.
+#'
+#' @inheritParams common-params
+#' @param op Test method: 1 = regression (default), 2 = Winsorized correlation.
+#' @param op2 Logical. If `FALSE` (default), tests homogeneity using running
+#'   interval smoother; if `TRUE`, tests independence based on residuals.
+#' @param plotit Logical. Create diagnostic plot (default: `TRUE`).
+#' @param xlab,ylab,zlab Axis labels for plot.
+#' @param est Location estimator for residuals (default: `median`).
+#' @param sm Logical. Use smoother for plot (default: `FALSE`).
+#' @param xout Logical. Remove outliers (default: `FALSE`).
+#' @param ... Additional arguments passed to plotting functions.
+#'
+#' @return List with test results for homoscedasticity.
+#'
+#' @details
+#' Tests H0: s(X) = 1 for all X, where s(X) models heteroscedasticity.
+#'
+#' **Method options:**
+#' - op = 1: Uses regression method (regci)
+#' - op = 2: Uses Winsorized correlation with heteroscedastic bootstrap
+#'
+#' **Note:** op2 = TRUE should NOT be used when testing for homoscedastic error term.
+#'
+#' For p > 1 predictors, tests each predictor separately.
+#'
+#' @seealso \code{\link{regci}}, \code{\link{wincor}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 * x + rnorm(50, sd = abs(x))  # Heteroscedastic
+#' rhom(x, y, plotit = FALSE)
+#' }
 rhom<-function(x,y,op=1,op2=FALSE,tr=.2,plotit=TRUE,xlab="NA",ylab="NA",zlab="ABS(res)",
 est=median,sm=FALSE,SEED=TRUE,xout=FALSE,outfun=outpro,...){
 # For regression model, Y=m(X)+s(X)e,
@@ -547,6 +1153,35 @@ if(!sm)run3bo(x,abs(res),est=est,xlab=xlab,ylab=ylab,zlab=zlab)
 list(p.value=output)
 }
 
+
+#' TBS Correlation
+#'
+#' Computes correlation coefficient using the TBS (Tau-Based Skipped) measure
+#' of scatter.
+#'
+#' @inheritParams common-params
+#'
+#' @return List with components:
+#'   \item{cor}{TBS correlation coefficient (or matrix if p > 2).}
+#'   \item{test.stat}{Test statistic(s).}
+#'   \item{p.value}{P-value (for bivariate case).}
+#'
+#' @details
+#' Computes a robust correlation using the TBS measure of scatter. For
+#' bivariate data (p=2), provides a p-value for testing H0: rho = 0.
+#'
+#' @seealso \code{\link{tbs}}, \code{\link{pbcor}}, \code{\link{scor}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 0.7 * x + rnorm(50)
+#' tbscor(x, y)
+#'
+#' # Matrix input
+#' m <- cbind(x, y)
+#' tbscor(m)
 tbscor<-function(x,y=NA){
 #
 # Compute a correlation coefficient using the TBS measure of scatter
@@ -578,6 +1213,66 @@ if(test>=crit)p.value<-c("Less than .01")
 list(cor=val,test.stat=test,p.value=p.value)
 }
 
+
+#' Skipped Correlation
+#'
+#' Computes a skipped correlation after removing bivariate outliers using
+#' projection-based outlier detection.
+#'
+#' @inheritParams common-params
+#' @param gval Numeric. Critical value for outlier detection. If `NA` (default),
+#'   determined automatically.
+#' @param op Logical. If `TRUE`, uses certain options (default: `TRUE`).
+#' @param MM Logical. If `TRUE`, uses MM-estimator (default: `FALSE`).
+#' @param RAN Logical. Randomization flag (default: `FALSE`).
+#'
+#' @return List with components:
+#'   \item{cor}{Skipped correlation coefficient.}
+#'   \item{sig.level}{Significance level / p-value.}
+#'   \item{n.keep}{Number of observations retained after outlier removal.}
+#'   \item{outliers}{Indices of detected outliers.}
+#'
+#' @details
+#' A "skipped" correlation removes bivariate outliers before computing
+#' the correlation. This provides robustness against influential points
+#' while maintaining efficiency for clean data.
+#'
+#' The function uses projection-based outlier detection (see `outpro()`).
+#' For each observation, the function considers the line between it and the
+#' center, projects all points onto this line, and checks for outliers using
+#' a modified boxplot rule. An observation is flagged as an outlier if it is
+#' extreme for any projection.
+#'
+#' The `cop` parameter determines how the center is estimated:
+#' - cop=1: Donoho-Gasko halfspace median
+#' - cop=2: MCD measure of location
+#' - cop=3: Marginal medians (default)
+#' - cop=4: MVE measure of location
+#'
+#' If `MC = TRUE`, uses the multicore version of `outpro()` for faster
+#' computation on multi-core systems.
+#'
+#' @seealso \code{\link{scorci}}, \code{\link{scorciMC}}, \code{\link{mscor}},
+#'   \code{\link{pbcor}}, \code{\link{outpro}}
+#'
+#' @export
+#' @examples
+#' # Basic skipped correlation
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 0.6 * x + rnorm(50)
+#' scor(x, y)
+#'
+#' # With outliers
+#' x2 <- c(x, 5, -5)
+#' y2 <- c(y, -5, 5)
+#' result <- scor(x2, y2)
+#' result$cor  # Robust to outliers
+#' result$outliers  # Which points were removed
+#' result$n.keep  # How many points retained
+#'
+#' # Using Spearman correlation after outlier removal
+#' scor(x2, y2, corfun = spear)
 scor<-function(x,y=NULL,corfun=pcor,gval=NA,plotit=FALSE,op=TRUE,MM=FALSE,cop=3,xlab='VAR 1',
 ylab='VAR 2',STAND=TRUE,pr=TRUE,SEED=TRUE,MC=FALSE,RAN=FALSE){
 #
@@ -632,6 +1327,56 @@ if(SEED) {
 list(cor=tcor,test.stat=test,crit.05=crit)
 }
 
+
+#' OGK Correlation
+#'
+#' Computes robust correlation using the Orthogonalized Gnanadesikan-Kettenring
+#' (OGK) method as described by Maronna and Zamar (2002).
+#'
+#' @inheritParams common-params
+#' @param n.iter Number of iterations (default: 1). One iteration seems optimal.
+#' @param sigmamu Function for computing robust location and scale from a vector
+#'   (default: `taulc`).
+#' @param v Function for robust covariance estimation (default: `gkcov`).
+#' @param beta Tuning parameter (default: 0.9).
+#'
+#' @return List with components:
+#'   \item{cor}{p-by-p robust correlation matrix.}
+#'   \item{test.results}{Matrix with correlation tests (VAR, VAR, COR, Test.Stat).}
+#'   \item{p.values}{Matrix with p-values for each pair.}
+#'
+#' @details
+#' The OGK method provides a robust correlation estimate with high breakdown
+#' point. It works by orthogonalizing variables using robust univariate
+#' estimators, then computing pairwise robust covariances.
+#'
+#' The method uses the Gnanadesikan-Kettenring (GK) pairwise estimator combined
+#' with orthogonalization to improve efficiency. The `sigmamu` function computes
+#' robust location and scale for univariate data (default uses tau measures).
+#'
+#' For bivariate data, p-values are categorized as greater than 0.1, less than
+#' 0.1, 0.05, 0.025, or 0.01 using sample-size adjusted critical values.
+#'
+#' @references
+#' Maronna, R. A., & Zamar, R. H. (2002). Robust estimates of location and
+#' dispersion for high-dimensional datasets. Technometrics, 44, 307-317.
+#'
+#' @seealso \code{\link{taulc}}, \code{\link{gkcov}}, \code{\link{pbcor}},
+#'   \code{\link{mcd.cor}}
+#'
+#' @export
+#' @examples
+#' # Bivariate OGK correlation
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 0.7 * x + rnorm(50)
+#' ogkcor(x, y)
+#'
+#' # Matrix input
+#' m <- matrix(rnorm(50 * 3), ncol = 3)
+#' result <- ogkcor(m)
+#' result$cor
+#' result$p.values
 ogkcor<-function(x,y=NA,n.iter=1,sigmamu=taulc,v=gkcov,beta=.9,...){
 #
 # Compute robust (weighted) correlation matrix in Maronna and Zamar
@@ -683,6 +1428,19 @@ p.values[ic,3]=p.value
 list(cor=val,test.results=info,p.values=p.values)
 }
 
+
+#' Pearson Correlation HC4 Confidence Interval Subroutine
+#'
+#' Internal helper function for computing Pearson correlation confidence interval
+#' using the HC4 heteroscedasticity-consistent method.
+#'
+#' @inheritParams common-params
+#' @param CN Logical. If `TRUE`, uses infinite degrees of freedom (Cribari-Neto,
+#'   2004); if `FALSE`, uses n-p degrees of freedom.
+#'
+#' @return Confidence interval (vector of length 2).
+#'
+#' @keywords internal
 pcorhc4sub<-function(x,y,CN=FALSE){
 #
 #   Compute a .95 confidence interval for Pearson's correlation coefficient.
@@ -701,6 +1459,49 @@ ci=ans$ci[2,3:4]
 ci
 }
 
+
+#' Pearson Correlation with HC4 Standard Errors
+#'
+#' Computes Pearson correlation with heteroscedasticity-consistent HC4
+#' (or HC3) standard errors and confidence interval.
+#'
+#' @inheritParams common-params
+#' @param CN Logical. If `FALSE` (default), uses n-p degrees of freedom (better
+#'   for general use); if `TRUE`, uses infinite degrees of freedom as in
+#'   Cribari-Neto (2004).
+#' @param HC3 Logical. If `TRUE`, uses HC3 instead of HC4 (default: `FALSE`).
+#'
+#' @return List with components:
+#'   \item{r}{Pearson correlation coefficient.}
+#'   \item{ci}{HC4 (or HC3) confidence interval.}
+#'   \item{p.value}{Two-sided p-value.}
+#'   \item{test.stat}{Test statistic.}
+#'
+#' @details
+#' HC4 standard errors provide robust inference for Pearson correlation when
+#' the bivariate distribution is heteroscedastic. HC4 generally has better
+#' small-sample properties than HC3.
+#'
+#' **Warning**: This function can return meaningless confidence intervals when
+#' outliers are present. Consider using robust correlation methods like `pbcor()`
+#' or `wincor()` when outliers are suspected.
+#'
+#' @references
+#' Cribari-Neto, F. (2004). Asymptotic inference under heteroskedasticity of
+#' unknown form. Computational Statistics & Data Analysis, 45, 215-233.
+#'
+#' @seealso \code{\link{pcor}}, \code{\link{pcorb}}, \code{\link{pbcor}}
+#'
+#' @export
+#' @examples
+#' # HC4 inference for Pearson correlation
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 * x + rnorm(50, sd = abs(x))  # Heteroscedastic errors
+#' pcorhc4(x, y)
+#'
+#' # Using HC3 instead
+#' pcorhc4(x, y, HC3 = TRUE)
 pcorhc4<-function(x,y,alpha=.05,CN=FALSE,HC3=FALSE){
 #
 #   Compute a .95 confidence interval for Pearson's correlation coefficient.
@@ -719,6 +1520,50 @@ ans=olshc4(z1,z2,alpha=alpha,CN=CN,HC3=HC3)
 list(r=ans$ci[2,2],ci=ans$ci[2,3:4],p.value=ans$ci[2,5],test.stat=ans$test.stat)
 }
 
+
+#' Smooth Correlation Comparison Between Two Groups
+#'
+#' Compares the strength of association between two independent groups using
+#' smoothing methods and robust explanatory power.
+#'
+#' @param x1,y1 Numeric vectors for group 1.
+#' @param x2,y2 Numeric vectors for group 2.
+#' @inheritParams common-params
+#' @param nboot Number of bootstrap samples (default: 200).
+#' @param pts Points at which to evaluate smooths (default: `NA`).
+#' @param varfun Variance function for explanatory power (default: `pbvar`).
+#' @param xout Logical. If `TRUE`, removes outliers (default: `TRUE`).
+#' @param outfun Outlier detection function (default: `out`).
+#'
+#' @return List with components:
+#'   \item{p.value}{Bootstrap p-value for testing equal associations.}
+#'   \item{pcrit.05}{Critical p-value adjusted for sample sizes.}
+#'
+#' @details
+#' This function compares the strength of association in two independent groups
+#' using Cleveland's LOWESS smoother coupled with a robust analog of explanatory
+#' power (R-squared).
+#'
+#' The method generalizes the goal of comparing the usual coefficient of
+#' determination between two independent groups, but uses nonparametric smoothing
+#' instead of linear regression.
+#'
+#' Reject H0 (equal associations) at the 0.05 level if `p.value <= pcrit.05`.
+#' The critical value is sample-size adjusted for better small-sample performance.
+#'
+#' @seealso \code{\link{lplot}}, \code{\link{lplot2g}}, \code{\link{twocor}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare associations in two groups
+#' set.seed(123)
+#' x1 <- rnorm(30)
+#' y1 <- 0.5 * x1 + rnorm(30)
+#' x2 <- rnorm(30)
+#' y2 <- 0.8 * x2 + rnorm(30)
+#' smcorcom(x1, y1, x2, y2, nboot = 500)
+#' }
 smcorcom<-function(x1,y1,x2,y2,nboot=200,pts=NA,plotit=TRUE,
 SEED=TRUE,varfun=pbvar,xout=TRUE,outfun=out,...){
 #
@@ -785,6 +1630,38 @@ if(plotit)lplot2g(x1,y1,x2,y2)
 list(p.value=p.value,pcrit.05=pcrit)
 }
 
+
+#' Pearson Correlation Bootstrap Variant 4
+#'
+#' Computes a 95% bootstrap confidence interval for Pearson correlation using
+#' an adjusted percentile method (variant 4).
+#'
+#' @inheritParams common-params
+#'
+#' @return List with components:
+#'   \item{r}{Pearson correlation coefficient.}
+#'   \item{ci}{95% confidence interval.}
+#'
+#' @details
+#' This function uses an adjusted percentile bootstrap method that performs
+#' well when the error term is heteroscedastic. The adjustment varies by sample
+#' size to improve coverage.
+#'
+#' **Warning**: If the number of bootstrap samples (nboot = 599) is altered,
+#' the confidence interval adjustment for n < 250 may not be valid. While an
+#' obvious linear adjustment seems to work, no formal investigations have been
+#' performed.
+#'
+#' This is variant 4 in a series of Pearson bootstrap methods; see also `pcorb()`.
+#'
+#' @seealso \code{\link{pcorb}}, \code{\link{pcor}}, \code{\link{corb}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 0.7 * x + rnorm(50, sd = abs(x))  # Heteroscedastic
+#' pcorbv4(x, y)
 pcorbv4<-function(x,y,SEED=TRUE){
 #   Compute a .95 confidence interval for Pearson's correlation coefficient.
 #
@@ -829,6 +1706,44 @@ ci<-c(bsort[ilow],bsort[ihi])
 list(r=r,ci=ci)
 }
 
+
+#' Bootstrap Correlation CI with Parallel Processing
+#'
+#' Computes a percentile bootstrap confidence interval for correlation using
+#' parallel processing via `mclapply()`.
+#'
+#' @inheritParams common-params
+#'
+#' @return List with components:
+#'   \item{cor.ci}{Bootstrap confidence interval.}
+#'   \item{p.value}{Two-sided p-value.}
+#'   \item{cor.est}{Point estimate of correlation.}
+#'
+#' @details
+#' This is the parallel version of `corb()`, using `mclapply()` for faster
+#' computation on multi-core systems. The default correlation is percentage
+#' bend, but any correlation function can be used via `corfun`.
+#'
+#' **Note**: `mclapply()` does not work on Windows. Use `corb()` instead on
+#' Windows systems.
+#'
+#' When using `corfun = scor`, set `plotit = FALSE` to avoid plotting issues
+#' in parallel execution.
+#'
+#' @seealso \code{\link{corb}}, \code{\link{scorciMC}}, \code{\link{pbcor}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Fast bootstrap on multi-core systems (not Windows)
+#' set.seed(123)
+#' x <- rnorm(100)
+#' y <- 0.6 * x + rnorm(100)
+#' corbMC(x, y, nboot = 2000)  # Much faster than corb()
+#'
+#' # Using Spearman correlation
+#' corbMC(x, y, corfun = spear, nboot = 2000)
+#' }
 corbMC<-function(x,y,corfun=pbcor,nboot=599,alpha=.05,SEED=TRUE,...){
 #
 #   Compute a .95 confidence interval for a correlation.
@@ -869,6 +1784,54 @@ sig <- 2 * min(phat, 1 - phat)
 list(cor.ci=corci,p.value=sig,cor.est=est)
 }
 
+
+#' Skipped Correlation with Bootstrap Confidence Interval
+#'
+#' Computes a bootstrap confidence interval for the skipped correlation
+#' (correlation after removing bivariate outliers).
+#'
+#' @inheritParams common-params
+#' @param V2 Logical. If `TRUE` (default), uses improved version for n < 120
+#'   (recommended as of Sept 2019). Set to `FALSE` to use original version.
+#' @param RAN Logical. If `TRUE`, uses random projections for faster outlier
+#'   detection (default: `FALSE`).
+#'
+#' @return List with components:
+#'   \item{cor.ci}{Bootstrap confidence interval for skipped correlation.}
+#'   \item{p.value}{Two-sided p-value for H0: rho = 0.}
+#'   \item{cor.est}{Point estimate of skipped correlation.}
+#'
+#' @details
+#' This function computes a skipped correlation (outliers removed via `scor()`)
+#' with bootstrap confidence interval. By default, Pearson's correlation is
+#' computed after outliers are removed, but this can be changed via `corfun`
+#' (e.g., `corfun = spear` for Spearman).
+#'
+#' The V2 algorithm (default) uses an improved method for n < 120 that provides
+#' better coverage. For larger samples, both versions perform similarly.
+#'
+#' Outliers are detected using projection-based methods (see `scor()` and
+#' `outpro()`). The `cop` parameter controls the center estimation method.
+#'
+#' @seealso \code{\link{scor}}, \code{\link{scorciMC}}, \code{\link{mscor}},
+#'   \code{\link{pbcor}}
+#'
+#' @export
+#' @examples
+#' # Skipped correlation with bootstrap CI
+#' set.seed(123)
+#' x <- c(rnorm(45), 5, -5, 6)  # Some outliers
+#' y <- c(0.7 * rnorm(45), -5, 5, -6)
+#' result <- scorci(x, y, nboot = 500)
+#' result$cor.est  # Robust to outliers
+#' result$cor.ci   # Bootstrap CI
+#' result$p.value
+#'
+#' # Using Spearman after outlier removal
+#' scorci(x, y, corfun = spear, nboot = 500)
+#'
+#' # Original version (pre-2019)
+#' scorci(x, y, V2 = FALSE, nboot = 500)
 scorci<-function(x,y,nboot=1000,alpha=.05,V2=TRUE,SEED=TRUE,plotit=TRUE,STAND=TRUE,
 corfun=pcor,pr=TRUE,cop=3,RAN=FALSE,...){
 #
@@ -920,6 +1883,20 @@ if(sig>alpha)sig=.95*alpha
 list(cor.ci=corci,p.value=sig,cor.est=est)
 }
 
+
+#' Skipped Correlation MC Bootstrap Subroutine
+#'
+#' Internal helper function for computing skipped correlation on bootstrap
+#' samples in parallel contexts.
+#'
+#' @param isub Bootstrap sample indices.
+#' @inheritParams common-params
+#' @param CPP Logical. If `TRUE`, uses C++ version (requires WRScpp package).
+#' @param RAN Logical. Random projection flag.
+#'
+#' @return Skipped correlation for the bootstrap sample.
+#'
+#' @keywords internal
 scorsubMC<-function(isub,x,y,pr=FALSE,STAND=TRUE,corfun=corfun,cop=cop,CPP=FALSE,RAN=FALSE,...){
 isub=as.vector(isub)
 if(!CPP)corbsub<-scor(x[isub],y[isub],plotit=FALSE,pr=FALSE,STAND=STAND,corfun=corfun,cop=cop,
@@ -928,6 +1905,46 @@ if(CPP)stop('Need to use RStudio with WRScpp installed and use the file WRSC++')
 corbsub
 }
 
+
+#' Quantile Correlation (Projection Method 1)
+#'
+#' Computes a correlation-like measure based on quantile regression, using
+#' projection method 1.
+#'
+#' @inheritParams common-params
+#' @param qest Quantile estimator function (default: `hd` for Harrell-Davis).
+#' @param q Quantile to use (default: 0.5 for median).
+#'
+#' @return List with component:
+#'   \item{cor}{Quantile-based correlation measure.}
+#'
+#' @details
+#' This function computes a measure of association based on quantile regression
+#' lines. It generalizes the idea of correlation to quantiles other than the mean.
+#'
+#' The measure is based on the proportional reduction in a dispersion measure
+#' when using quantile regression (at quantile q) compared to using just the
+#' marginal quantile of y.
+#'
+#' For univariate x (p=1), the sign of the correlation matches the sign of the
+#' regression slope.
+#'
+#' @seealso \code{\link{qcor}}, \code{\link{qcorp1.ci}}, \code{\link{qreg}},
+#'   \code{\link{hd}}
+#'
+#' @export
+#' @examples
+#' # Median-based correlation
+#' set.seed(123)
+#' x <- rexp(50, rate = 1)
+#' y <- 0.7 * x + rexp(50, rate = 2)
+#' qcorp1(x, y, q = 0.5)
+#'
+#' # Upper quartile correlation
+#' qcorp1(x, y, q = 0.75)
+#'
+#' # With outlier removal
+#' qcorp1(x, y, q = 0.5, xout = TRUE)
 qcorp1<-function(x,y,qest=hd,q=.5,xout=FALSE,outfun=outpro,plotit=FALSE,...){
 #
 # Compute a measure of the strength of the association
@@ -958,6 +1975,37 @@ if(p==1)ce=sign(est[2])*ce
 list(cor=ce)
 }
 
+
+#' Skipped Correlation CI with Parallel Processing
+#'
+#' Computes bootstrap confidence interval for skipped correlation using parallel
+#' processing via `mclapply()`.
+#'
+#' @inheritParams common-params
+#' @param V2 Logical. If `TRUE` (default), uses improved version for n < 120.
+#'
+#' @return List with components:
+#'   \item{cor.ci}{Bootstrap confidence interval.}
+#'   \item{p.value}{Two-sided p-value.}
+#'   \item{cor.est}{Skipped correlation estimate.}
+#'
+#' @details
+#' This is the parallel version of `scorci()`, using `mclapply()` for faster
+#' computation on multi-core systems. See `scorci()` for detailed methodology.
+#'
+#' **Note**: `mclapply()` does not work on Windows. Use `scorci()` on Windows.
+#'
+#' @seealso \code{\link{scorci}}, \code{\link{scor}}, \code{\link{corbMC}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Fast skipped correlation bootstrap (not Windows)
+#' set.seed(123)
+#' x <- c(rnorm(80), 5, -5)
+#' y <- c(0.7 * rnorm(80), -5, 5)
+#' scorciMC(x, y, nboot = 2000)  # Much faster than scorci()
+#' }
 scorciMC<-function(x,y,nboot=1000,alpha=.05,V2=TRUE,SEED=TRUE,plotit=TRUE,STAND=TRUE,corfun=pcor,pr=TRUE,cop=3,...){
 #
 #   Compute a 1-alpha confidence interval for the skipped correlation.
@@ -1010,12 +2058,75 @@ if(sig>alpha)sig=.95*alpha
 list(cor.ci=corci,p.value=sig,cor.est=est)
 }
 
+
+#' Kendall's Tau with Bootstrap CI
+#'
+#' Computes bootstrap confidence interval for Kendall's tau correlation.
+#'
+#' @inheritParams common-params
+#' @param MC Logical. If `TRUE`, uses parallel processing (default: `FALSE`).
+#'
+#' @return List with components:
+#'   \item{cor.ci}{Bootstrap confidence interval.}
+#'   \item{p.value}{Two-sided p-value.}
+#'   \item{cor.est}{Kendall's tau estimate.}
+#'
+#' @details
+#' Wrapper function that calls `corb()` (or `corbMC()` if `MC = TRUE`) with
+#' `corfun = tau`. See `tau()` for details on Kendall's tau.
+#'
+#' @seealso \code{\link{tau}}, \code{\link{corb}}, \code{\link{corbMC}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- 1:50
+#' y <- x + rnorm(50, sd = 10)
+#' tauci(x, y, nboot = 500)
+#'
+#' \dontrun{
+#' # Parallel version (not Windows)
+#' tauci(x, y, nboot = 2000, MC = TRUE)
+#' }
 tauci<-function(x,y,nboot=1000,alpha=.05,SEED=TRUE,MC=FALSE){
 if(!MC)res=corb(x,y,corfun=tau,nboot=nboot,alpha=alpha,SEED=SEED)
 if(MC)res=corbMC(x,y,corfun=tau,nboot=nboot,alpha=alpha,SEED=SEED)
 res
 }
 
+
+#' Theil-Sen Correlation
+#'
+#' Computes a correlation coefficient based on the Theil-Sen regression estimator.
+#'
+#' @inheritParams common-params
+#' @param varfun Variance function (default: `winvar`).
+#' @param WARN Logical. Show warnings if `TRUE` (default: `TRUE`).
+#' @param HD Logical. Use Harrell-Davis estimator if `TRUE` (default: `FALSE`).
+#'
+#' @return List with component:
+#'   \item{cor}{Theil-Sen correlation (explanatory measure of association).}
+#'
+#' @details
+#' This function computes an explanatory measure of association based on the
+#' Theil-Sen regression estimator. The sign matches the sign of the Theil-Sen
+#' slope, and the magnitude reflects the strength of association.
+#'
+#' To obtain a p-value and confidence interval, use `tscorci()`.
+#'
+#' @seealso \code{\link{tscorci}}, \code{\link{tsreg}}, \code{\link{pbcor}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 * x + rnorm(50)
+#' tscor(x, y)
+#'
+#' # With outlier removal
+#' x2 <- c(x, 10)
+#' y2 <- c(y, -10)
+#' tscor(x2, y2, xout = TRUE)
 tscor<-function(x,y,xout = FALSE, outfun = out, varfun = winvar,
 WARN = TRUE, HD = FALSE, ...){
 #
@@ -1029,18 +2140,113 @@ val=sign(temp$coef[2])*temp$Strength.Assoc
 list(cor=val)
 }
 
+
+#' Theil-Sen Correlation with Bootstrap CI
+#'
+#' Computes bootstrap confidence interval for Theil-Sen correlation.
+#'
+#' @inheritParams common-params
+#' @param MC Logical. If `TRUE`, uses parallel processing (default: `FALSE`).
+#'
+#' @return List with components:
+#'   \item{cor.ci}{Bootstrap confidence interval.}
+#'   \item{p.value}{Two-sided p-value.}
+#'   \item{cor.est}{Theil-Sen correlation estimate.}
+#'
+#' @details
+#' Wrapper that calls `corb()` (or `corbMC()`) with `corfun = tscor`.
+#'
+#' @seealso \code{\link{tscor}}, \code{\link{tsreg}}, \code{\link{corb}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 * x + rnorm(50)
+#' tscorci(x, y, nboot = 500)
 tscorci<-function(x,y,nboot=599,alpha=.05,SEED=TRUE,MC=FALSE){
 if(!MC)res=corb(x,y,corfun=tscor,nboot=nboot,alpha=alpha,SEED=SEED)
 if(MC)res=corbMC(x,y,corfun=tscor,nboot=nboot,alpha=alpha,SEED=SEED)
 res
 }
 
+
+#' Winsorized Correlation with Bootstrap CI
+#'
+#' Computes bootstrap confidence interval for winsorized correlation.
+#'
+#' @inheritParams common-params
+#' @param MC Logical. If `TRUE`, uses parallel processing (default: `FALSE`).
+#'
+#' @return List with components:
+#'   \item{cor.ci}{Bootstrap confidence interval.}
+#'   \item{p.value}{Two-sided p-value.}
+#'   \item{cor.est}{Winsorized correlation estimate.}
+#'
+#' @details
+#' Wrapper that calls `corb()` (or `corbMC()`) with `corfun = wincor`.
+#' Winsorized correlation replaces extreme values with less extreme ones
+#' before computing Pearson correlation.
+#'
+#' @seealso \code{\link{wincor}}, \code{\link{corb}}, \code{\link{pbcor}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- c(rnorm(45), 10, 11, 12, 13, 14)  # Some outliers
+#' y <- c(0.7 * rnorm(45), -10, -11, 12, 13, -14)
+#' wincorci(x, y, tr = 0.2, nboot = 500)
+#'
+#' # Less trimming
+#' wincorci(x, y, tr = 0.1, nboot = 500)
 wincorci<-function(x,y,nboot=1000,alpha=.05,SEED=TRUE,MC=FALSE,tr=0.2){
 if(!MC)res=corb(x,y,corfun=wincor,nboot=nboot,alpha=alpha,SEED=SEED,tr=tr)
 if(MC)res=corbMC(x,y,corfun=wincor,nboot=nboot,alpha=alpha,SEED=SEED,tr=tr)
 res
 }
 
+
+#' Quantile Correlation
+#'
+#' Computes quantile correlation as described by Li, Li, and Tsai (2015).
+#'
+#' @inheritParams common-params
+#' @param q Quantile to use (default: 0.5 for median).
+#' @param qfun Quantile function (default: `qest`).
+#'
+#' @return List with components:
+#'   \item{cor}{Quantile correlation coefficient.}
+#'   \item{cov}{Quantile covariance.}
+#'
+#' @details
+#' Quantile correlation extends the concept of correlation to quantiles beyond
+#' the mean. It measures association at a specified quantile level.
+#'
+#' For q = 0.5 (median), this measures association in the center of the
+#' distribution. Other quantiles allow investigation of association in the
+#' tails or other parts of the distribution.
+#'
+#' @references
+#' Li, G., Li, Y., & Tsai, C. L. (2015). Quantile correlations and quantile
+#' autoregressive modeling. Journal of the American Statistical Association,
+#' 110, 246-261.
+#'
+#' @seealso \code{\link{qcorp1}}, \code{\link{qcor.ci}}, \code{\link{qcor.EP}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- rchisq(50, df = 3)
+#' y <- 0.7 * x + rchisq(50, df = 2)
+#'
+#' # Median correlation
+#' qcor(x, y, q = 0.5)
+#'
+#' # Upper quartile correlation
+#' qcor(x, y, q = 0.75)
+#'
+#' # Lower quartile correlation
+#' qcor(x, y, q = 0.25)
 qcor<-function(x,y,q=.5,qfun=qest,xout=FALSE,outfun=outpro){
 #
 # Compute quantile correlation as in Li, Li and Tsai, JASA 2015
@@ -1058,6 +2264,51 @@ qc=qcov/sqrt((q-q^2)*var(x))
 list(cor=qc,cov=qcov)
 }
 
+
+#' Multiple Comparison Procedure for Dependent Correlations
+#'
+#' Compares multiple dependent correlations with familywise error rate control.
+#' Tests all pairwise differences cor(y, x_j) vs cor(y, x_k) for j < k.
+#'
+#' @param x Numeric matrix. Independent variables (columns are variables).
+#' @inheritParams common-params
+#' @param method Multiple comparison method (default: 'hommel'). Options include
+#'   'hochberg', 'hommel', 'BH' (Benjamini-Hochberg), 'BY' (Benjamini-Yekutieli),
+#'   etc. See `p.adjust()`.
+#'
+#' @return List with components:
+#'   \item{estimates}{Vector of correlation estimates cor(y, x_j) for each j.}
+#'   \item{test.stat}{Matrix of test statistics for all pairwise comparisons.}
+#'   \item{p.values}{Matrix of unadjusted p-values.}
+#'   \item{adjusted.p}{Matrix of adjusted p-values (FWE controlled).}
+#'   \item{num.sig}{Number of significant pairwise differences.}
+#'   \item{method}{Multiple comparison method used.}
+#'
+#' @details
+#' This function addresses the overlapping correlations problem: comparing
+#' correlations that share a common variable (y). For example, comparing
+#' cor(IQ, Math) vs cor(IQ, Reading) where IQ is the shared variable.
+#'
+#' Uses bootstrap to account for dependence among the correlations. The default
+#' is winsorized correlation, but any correlation function can be used via
+#' `corfun`.
+#'
+#' Hommel's method (default) controls the familywise error rate and is generally
+#' more powerful than Bonferroni for multiple comparisons.
+#'
+#' @seealso \code{\link{corCOM.DVvsIV}}, \code{\link{wincor}}, \code{\link{twocor}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare correlations of DV with multiple IVs
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 4), ncol = 4)  # 4 independent variables
+#' y <- rnorm(50)  # Dependent variable
+#' result <- corCOMmcp(x, y, nboot = 500)
+#' result$estimates  # Correlations
+#' result$num.sig    # Number of significant differences
+#' }
 corCOMmcp<-function(x,y,corfun=wincor,alpha=.05,nboot=500,SEED=TRUE,MC=FALSE,xout=FALSE,outfun=outpro,method='hommel',...){
 #
 # Comparing robust dependent correlations: Overlapping case
@@ -1123,6 +2374,39 @@ output[,8]=p.adjust(output[,7],method=method)
 list(results=output)
 }
 
+
+#' Regression-Based Correlation
+#'
+#' Estimates the strength of association based on robust regression by
+#' correlating observed y with predicted y-hat.
+#'
+#' @inheritParams common-params
+#' @param regfun Regression function (default: `winreg`).
+#' @param xlab,ylab Labels for plot axes (if `plotit = TRUE`).
+#'
+#' @return List with components:
+#'   \item{cor}{Correlation between y and y-hat.}
+#'   \item{cor.sq}{Squared correlation (R-squared analog).}
+#'
+#' @details
+#' This function estimates association by first fitting a robust regression
+#' of y on x, then computing the correlation between observed y and fitted
+#' values y-hat. The squared correlation provides a robust analog of R-squared.
+#'
+#' Any robust regression function can be used via `regfun`, and any correlation
+#' function via `corfun`.
+#'
+#' @seealso \code{\link{correg}}, \code{\link{corregci}}, \code{\link{winreg}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 2), ncol = 2)
+#' y <- 2 + 3 * x[,1] - 2 * x[,2] + rnorm(50)
+#' regcor(x, y)
+#'
+#' # With plotting
+#' regcor(x, y, plotit = TRUE)
 regcor<-function(x,y,regfun=winreg,corfun=wincor,xout=FALSE,outfun=outpro,
 plotit=FALSE,xlab='Y',ylab='Y.hat',...){
 #
@@ -1135,6 +2419,42 @@ if(plotit)plot(y,yhat,xlab=xlab,ylab=ylab)
 list(cor=est$cor,cor.sq=est$cor^2)
 }
 
+
+#' Multiple Skipped Correlation with Bootstrap
+#'
+#' Tests whether skipped correlations are zero for all pairs of variables in
+#' multivariate data, controlling familywise error rate via bootstrap.
+#'
+#' @param x Numeric matrix (n-by-p). Columns are variables.
+#' @inheritParams common-params
+#'
+#' @return List with components:
+#'   \item{n}{Sample size.}
+#'   \item{cor}{p-by-p matrix of skipped correlations.}
+#'   \item{test.stats}{Matrix of test statistics.}
+#'   \item{crit.val}{Critical value for controlling FWE at level alpha.}
+#'   \item{num.sig}{Number of significant correlations.}
+#'   \item{p.value}{Smallest alpha level for which >= 1 hypothesis is rejected.}
+#'
+#' @details
+#' This function tests the omnibus hypothesis that all pairwise skipped
+#' correlations are zero, while controlling the familywise error rate (the
+#' probability of one or more Type I errors).
+#'
+#' Uses bootstrap to determine the critical value. The p-value returned is the
+#' smallest alpha value for which one or more hypotheses would be rejected.
+#'
+#' Outliers are removed before computing correlations (skipped correlation).
+#'
+#' @seealso \code{\link{mscorpbMC}}, \code{\link{mscor}}, \code{\link{mscorci}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' m <- matrix(rnorm(50 * 4), ncol = 4)
+#' result <- mscorpb(m, nboot = 500)
+#' result$cor  # Correlation matrix
+#' result$num.sig  # Number of significant pairs
 mscorpb<-function(x,corfun=pcor,nboot=500,alpha=0.05,SEED=TRUE,outfun=outpro,pr=TRUE){
 #
 # For p-variate data, test the hypothesis that the
@@ -1165,6 +2485,40 @@ list(n=n,cor=test$cor,test.stats=res,crit.val=crit,
 num.sig=num.sig,p.value=1-hdPV$minimum)
 }
 
+
+#' Multiple Skipped Correlation Bootstrap (Parallel)
+#'
+#' Parallel version of `mscorpb()` using `mclapply()` for faster computation.
+#'
+#' @param x Numeric matrix (n-by-p).
+#' @inheritParams common-params
+#' @param WARN Logical. If `FALSE` (default), suppresses warnings.
+#'
+#' @return List with components (same as `mscorpb()`):
+#'   \item{n}{Sample size.}
+#'   \item{cor}{Correlation matrix.}
+#'   \item{test.stats}{Test statistics.}
+#'   \item{crit.val}{Critical value.}
+#'   \item{num.sig}{Number of significant correlations.}
+#'   \item{p.value}{Overall p-value.}
+#'
+#' @details
+#' This is the parallel version of `mscorpb()`. Uses `mclapply()` for faster
+#' bootstrap computation on multi-core systems.
+#'
+#' **Note**: Does not work on Windows. Use `mscorpb()` on Windows.
+#'
+#' @seealso \code{\link{mscorpb}}, \code{\link{mscor}}, \code{\link{scorciMC}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Fast bootstrap on multi-core (not Windows)
+#' set.seed(123)
+#' m <- matrix(rnorm(100 * 5), ncol = 5)
+#' result <- mscorpbMC(m, nboot = 2000)
+#' result$num.sig
+#' }
 mscorpbMC<-function(x,corfun=pcor,nboot=500,alpha=0.05,SEED=TRUE,WARN=FALSE,
 outfun=outpro,pr=TRUE){
 #
@@ -1198,6 +2552,34 @@ list(n=n,cor=test$cor,test.stats=res,crit.val=crit,
 num.sig=num.sig,p.value=1-hdPV$minimum)
 }
 
+
+#' Critical Values for Multiple Skipped Correlation CI
+#'
+#' Determines critical p-values for `mscorci()` via simulation.
+#'
+#' @param n Sample size.
+#' @param p Number of variables.
+#' @param iter Number of simulation iterations (default: 500).
+#' @inheritParams common-params
+#' @param alpha Vector of alpha levels (default: c(0.05, 0.025, 0.01)).
+#' @param TV Logical. If `TRUE`, returns test values; if `FALSE`, returns only
+#'   critical p-values (default: `FALSE`).
+#'
+#' @return List with components:
+#'   \item{crit.p.values}{Critical p-values for each alpha level.}
+#'   \item{tval}{Simulated test values (if TV = TRUE).}
+#'
+#' @details
+#' This function simulates the distribution of the minimum p-value when all
+#' null hypotheses are true, then determines critical p-values for controlling
+#' the familywise error rate in `mscorci()`.
+#'
+#' Critical p-values are functions of n and p. Once computed, they can be
+#' supplied to `mscorci()` via the `crit.pv` argument to save computation time.
+#'
+#' @seealso \code{\link{mscorci}}, \code{\link{mscorpb}}
+#'
+#' @keywords internal
 mscorci.cr<-function(n,p,iter=500,corfun=pcor,alpha=c(.05,.025,.01),TV=FALSE,SEED=TRUE){
 #
 # Determine critical p-values for the function mscorci
@@ -1216,12 +2598,54 @@ if(!TV)tval=NULL
 list(crit.p.values=crit.p,tval=tval)
 }
 
+
+#' Multiple Skipped Correlation CI Critical Values Subroutine
+#'
+#' Internal helper for `mscorci.cr()` that computes minimum p-value for a
+#' single simulation iteration.
+#'
+#' @param x Simulated data matrix.
+#' @inheritParams common-params
+#'
+#' @return Minimum p-value across all pairwise tests.
+#'
+#' @keywords internal
 mscorci.cr.sub<-function(x,corfun,nboot=500){
 v=mscorci(x,SEED=FALSE,corfun=corfun,nboot=nboot,crit.pv=1)$p.values
 mp=min(as.vector(v),na.rm=T)
 mp
 }
 
+
+#' Skipped Correlation Version 2
+#'
+#' Computes skipped correlation using version 2 algorithm (does not reset SEED).
+#'
+#' @inheritParams common-params
+#' @param gval Critical value for outlier detection (default: `NA` for automatic).
+#' @param op Logical. Operational flag (default: `TRUE`).
+#'
+#' @return List with components:
+#'   \item{cor}{Skipped correlation coefficient.}
+#'   \item{test.stat}{Test statistic.}
+#'   \item{crit.05}{Critical value at 0.05 level.}
+#'
+#' @details
+#' Nearly identical to `scor()`, but does not reset the random seed, which
+#' prevents problems when called from other functions that manage their own
+#' seeds.
+#'
+#' This version is used internally by functions that need skipped correlation
+#' without seed interference.
+#'
+#' @seealso \code{\link{scor}}, \code{\link{scorci}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- c(rnorm(45), 5, -5)
+#' y <- c(0.6 * rnorm(45), -5, 5)
+#' scorv2(x, y)
 scorv2<-function(x,y=NULL,corfun=pcor,gval=NA,plotit=FALSE,op=TRUE,cop=3,xlab="VAR 1",
 ylab="VAR 2",STAND=TRUE,pr=TRUE,SEED=TRUE,MC=FALSE){
 #
@@ -1267,6 +2691,44 @@ crit<-6.947/nrow(m)+2.3197
 list(cor=tcor,test.stat=test,crit.05=crit)
 }
 
+
+#' Skipped Correlation Regression
+#'
+#' Computes skipped correlations between a response variable y and each
+#' predictor in matrix x.
+#'
+#' @param x Numeric matrix (n-by-p). Predictor variables.
+#' @inheritParams common-params
+#' @param gval Critical value for outlier detection (default: `NA` for automatic).
+#' @param MC Logical. Use parallel processing if `TRUE`. If `NULL` (default),
+#'   automatically uses `TRUE` for n >= 200.
+#' @param ALL Logical. If `TRUE` (default), eliminates outliers from cbind(x, y)
+#'   jointly; if `FALSE`, eliminates outliers separately for each (x[,j], y) pair.
+#'
+#' @return List with component:
+#'   \item{cor}{Vector of p correlations cor(y, x_j) for j = 1,...,p.}
+#'
+#' @details
+#' Computes skipped correlations between y and each column of x. Two approaches:
+#'
+#' - `ALL = TRUE`: Detects outliers in the full (x, y) space once, then computes
+#'   correlations on the cleaned data. More conservative.
+#' - `ALL = FALSE`: For each predictor x[,j], detects outliers in the (x[,j], y)
+#'   bivariate space separately. Can detect more variable-specific outliers.
+#'
+#' For n >= 500, uses faster depth-based outlier detection.
+#'
+#' @seealso \code{\link{scorreg ci}}, \code{\link{scorregciH}}, \code{\link{scor}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 3), ncol = 3)
+#' y <- rnorm(50)
+#' scorreg(x, y)
+#'
+#' # Separate outlier detection per variable
+#' scorreg(x, y, ALL = FALSE)
 scorreg<-function(x,y,corfun=spear,cop=3,MM=FALSE,gval=NA,
 outfun=outpro,alpha=.05,MC=NULL,SEED=TRUE,ALL=TRUE,...){
 #
@@ -1330,6 +2792,67 @@ for(j in 1:p)e[j]=corfun(xy[,j],xy[,p1],...)$cor
 list(cor=e)
 }
 
+#' Multiple Skipped Correlation Confidence Intervals
+#'
+#' Tests zero correlation for all pairs of variables using skipped correlation,
+#' controlling familywise error rate (FWE). Optionally computes confidence intervals.
+#'
+#' @inheritParams common-params
+#' @param y Optional second matrix or vector to combine with `x` (default: `NULL`).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param alpha Vector of significance levels for critical p-values (default: c(.05, .025, .01)).
+#'   FWE rate is taken to be `alpha[1]`.
+#' @param STAND Logical. Standardize variables before outlier detection (default: `TRUE`).
+#' @param crit.pv Pre-computed critical p-values (default: `NULL` for automatic).
+#' @param pvals Pre-computed p-value distribution for minimum p-value (default: `NULL`).
+#' @param hoch Logical. Use Hochberg adjustment if `TRUE` (default: `FALSE`).
+#' @param iter Number of iterations for critical p-value simulation (default: 500).
+#' @param pval.SEED Logical. Set seed when computing critical p-values (default: `TRUE`).
+#' @param pr Logical. Print progress messages (default: `TRUE`).
+#'
+#' @return List with components:
+#'   \item{p.values}{Matrix of p-values for testing zero correlation.}
+#'   \item{cor.est}{Vector of correlation estimates (upper triangle only).}
+#'   \item{confidence.int}{Matrix with columns: Var i, Var j, ci.low, ci.up (only if `hoch = FALSE`).}
+#'   \item{critical.p.values}{Critical p-values for controlling FWE.}
+#'   \item{hoch.adjusted.p.values}{Hochberg-adjusted p-values (only if `hoch = TRUE`).}
+#'
+#' @details
+#' For p-variate data, tests H0: rho_ij = 0 for all pairs (i,j) while controlling
+#' the probability of one or more Type I errors at level `alpha[1]` (default 0.05).
+#'
+#' **Two approaches:**
+#'
+#' - **hoch = FALSE** (recommended for alpha < .05 or n < 60): Computes critical p-values
+#'   via simulation (can be slow). Returns confidence intervals.
+#'
+#' - **hoch = TRUE** (faster): Uses Hochberg adjustment. Reasonable for n >= 60 and
+#'   alpha = .05, but may have reduced power. Returns unadjusted 1-alpha[1] confidence
+#'   intervals.
+#'
+#' Critical p-values depend on n and p. Pre-compute them using `mscorci.cr()` and
+#' supply via `crit.pv` to reduce execution time:
+#' ```
+#' pv <- mscorci.cr(n, p)$crit.p.values
+#' mscorci(x, crit.pv = pv)
+#' ```
+#'
+#' @seealso \code{\link{mscorci.cr}}, \code{\link{mscor}}, \code{\link{scorci}}, \code{\link{mscorpb}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- matrix(rnorm(60 * 4), ncol = 4)
+#'
+#' # Using Hochberg adjustment (faster)
+#' result <- mscorci(x, hoch = TRUE)
+#' result$hoch.adjusted.p.values
+#'
+#' # Full method with confidence intervals (slower)
+#' result2 <- mscorci(x, hoch = FALSE, nboot = 500)
+#' result2$confidence.int
+#' }
 mscorci<-function(x,y=NULL,nboot=1000,alpha=c(.05,.025,.01),SEED=TRUE,
 STAND=TRUE,corfun=pcor,outfun=outpro, crit.pv=NULL,
 pvals=NULL,hoch=FALSE,iter=500,pval.SEED=TRUE,pr=TRUE){
@@ -1455,6 +2978,20 @@ if(hoch)adj.p=p.adjust(sig,method='hochberg')
 list(p.values=p.mat,cor.est=est,confidence.int=ci.mat,critical.p.values=crit.pv,hoch.adjusted.p.values=adj.p)
 }
 
+#' Bootstrap Subroutine for Skipped Correlation Matrix
+#'
+#' Internal helper for `mscorci()` to compute skipped correlation matrix on
+#' bootstrap samples.
+#'
+#' @param data Bootstrap sample indices.
+#' @param x Data matrix.
+#' @param STAND Logical. Standardize before outlier detection.
+#' @param corfun Correlation function to use.
+#' @param outfun Outlier detection function.
+#'
+#' @return Vector of upper-triangular correlations.
+#'
+#' @keywords internal
 scorci.sub<-function(data,x,STAND=STAND,corfun=corfun,outfun=outfun){
 est<-mscor(x[data,],STAND=STAND,corfun=corfun)$cor
 flag=upper.tri(est)
@@ -1462,6 +2999,51 @@ est=est[flag]
 est
 }
 
+#' Skipped Correlation Regression CI with Hochberg Adjustment
+#'
+#' Tests zero correlation between y and each predictor in x using skipped
+#' correlation, controlling FWE with Hochberg adjustment.
+#'
+#' @inheritParams common-params
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param alpha Significance level (default: 0.05). Each CI has approximately
+#'   1-alpha coverage, but FWE is approximately alpha.
+#' @param crit.pv Pre-computed critical p-values (default: `NULL`).
+#' @param ALL Logical. Eliminate outliers jointly from cbind(x, y) if `TRUE` (default),
+#'   or separately for each (x[,j], y) pair if `FALSE`.
+#' @param MC Logical. Use parallel processing (default: `TRUE`).
+#' @param pvals Pre-computed p-value distribution (default: `NULL`).
+#' @param iter Number of iterations for critical p-value simulation (default: 500).
+#' @param pval.SEED Logical. Set seed when computing critical p-values (default: `TRUE`).
+#' @param pr Logical. Print progress messages (default: `TRUE`).
+#' @param STOP Logical. Stop with error if only one predictor (default: `TRUE`).
+#'
+#' @return List with components:
+#'   \item{p.values}{P-values for testing zero correlation with each predictor.}
+#'   \item{cor.est}{Vector of correlation estimates for each predictor.}
+#'   \item{confidence.int}{Matrix with columns: Var j, ci.low, ci.up.}
+#'   \item{hoch.adjusted.p.values}{Hochberg-adjusted p-values.}
+#'
+#' @details
+#' Tests H0: rho(y, x_j) = 0 for j = 1,...,p while controlling familywise error
+#' rate at approximately alpha using Hochberg's adjustment.
+#'
+#' Each confidence interval has approximately 1-alpha coverage, but the
+#' simultaneous coverage is not 1-alpha. It's possible for Hochberg to fail
+#' to reject when confidence intervals exclude zero.
+#'
+#' For a single predictor (p=1), use `scorci()` instead.
+#'
+#' @seealso \code{\link{scorreg}}, \code{\link{scorregci}}, \code{\link{scorci}}, \code{\link{mscorci}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 3), ncol = 3)
+#' y <- 0.5 * x[, 1] + rnorm(50)
+#' scorregciH(x, y, nboot = 500)
+#' }
 scorregciH<-function(x,y,nboot=500,alpha=.05,SEED=TRUE,
 corfun=pcor,outfun=outpro, crit.pv=NULL,ALL=TRUE,MC=TRUE,
 pvals=NULL,iter=500,pval.SEED=TRUE,pr=TRUE,STOP=TRUE){
@@ -1569,6 +3151,20 @@ dimnames(p.mat)=list(NULL,c('Est.','p-value','adjusted p.value','Hoch.adjusted.p
 list(Estimates=p.mat,confidence.int=ci.mat)
 }
 
+#' Bootstrap Subroutine for Skipped Correlation Regression
+#'
+#' Internal helper for `scorregciH()` and `scorregci()` to compute skipped
+#' correlations on bootstrap samples.
+#'
+#' @param data Bootstrap sample indices.
+#' @param xy Data matrix with predictors and response (last column is y).
+#' @param corfun Correlation function to use.
+#' @param outfun Outlier detection function.
+#' @param ALL Logical. Eliminate outliers jointly or separately.
+#'
+#' @return Vector of correlations between y and each predictor.
+#'
+#' @keywords internal
 scorreg.sub<-function(data,xy,corfun=corfun,outfun=outfun,ALL=ALL){
 p1=ncol(xy)
 p=p1-1
@@ -1576,6 +3172,46 @@ est<-scorreg(xy[data,1:p],xy[data,p1],corfun=corfun,SEED=FALSE,ALL=ALL)$cor
 est
 }
 
+#' Multiple Skipped Correlation CI with Hochberg Adjustment
+#'
+#' Tests zero correlation for all pairs of variables using skipped correlation
+#' with Hochberg adjustment to control FWE.
+#'
+#' @inheritParams common-params
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param alpha Significance level (default: 0.05). Each CI has approximately
+#'   1-alpha coverage.
+#' @param method Adjustment method (default: 'hoch' for Hochberg).
+#' @param crit.pv Pre-computed critical p-values (default: `NULL`).
+#' @param ALL Logical. Not used for multivariate case (default: `TRUE`).
+#' @param MC Logical. Use parallel processing (default: `TRUE`).
+#' @param pr Logical. Print progress messages (default: `TRUE`).
+#'
+#' @return List with components:
+#'   \item{Estimates}{Matrix with columns: Est., p-value, adjusted p.value, Hoch.adjusted.p.value.}
+#'   \item{confidence.int}{Matrix with columns: Var i, Var j, ci.low, ci.up.}
+#'
+#' @details
+#' Tests H0: rho_ij = 0 for all pairs (i,j) using Hochberg adjustment of
+#' p-values to control the familywise error rate at approximately alpha.
+#'
+#' Each confidence interval has approximately 1-alpha probability coverage,
+#' but the simultaneous coverage is not controlled.
+#'
+#' Faster alternative to `mscorci(..., hoch = FALSE)` but may have reduced
+#' power for small samples (n < 60) or strict alpha levels (< 0.05).
+#'
+#' @seealso \code{\link{mscorci}}, \code{\link{mscor}}, \code{\link{scorci}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- matrix(rnorm(60 * 4), ncol = 4)
+#' result <- mscorciH(x, nboot = 500)
+#' result$Estimates
+#' result$confidence.int
+#' }
 mscorciH<-function(x,nboot=1000,alpha=.05,SEED=TRUE,method='hoch',
 corfun=pcor,outfun=outpro, crit.pv=NULL,ALL=TRUE,MC=TRUE,pr=TRUE){
 #
@@ -1693,6 +3329,66 @@ ci.mat[ic,7]=p.mat[j,k]
 list(output=ci.mat,critical.p.value=crit.pv)
 }
 
+#' Skipped Correlation Regression with Confidence Intervals
+#'
+#' Tests zero correlation between y and each predictor in x using skipped
+#' correlation, controlling FWE. Returns confidence intervals when hoch = FALSE.
+#'
+#' @inheritParams common-params
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param alpha Vector of significance levels for critical p-values (default: c(.05, .025, .01)).
+#'   FWE rate is taken to be `alpha[1]`.
+#' @param crit.pv Pre-computed critical p-values (default: `NULL` for automatic).
+#' @param ALL Logical. Eliminate outliers jointly from cbind(x, y) if `TRUE` (default),
+#'   or separately for each (x[,j], y) pair if `FALSE`.
+#' @param MC Logical. Use parallel processing (default: `TRUE`).
+#' @param pvals Pre-computed p-value distribution (default: `NULL`).
+#' @param hoch Logical. Use Hochberg adjustment if `TRUE` (default: `TRUE`).
+#' @param iter Number of iterations for critical p-value simulation (default: 500).
+#' @param pval.SEED Logical. Set seed when computing critical p-values (default: `TRUE`).
+#' @param pr Logical. Print progress messages (default: `TRUE`).
+#' @param ... Additional arguments passed to `scorreg()`.
+#'
+#' @return List with components:
+#'   \item{Estimates}{Matrix with columns: Est., p-value, adjusted p.value.}
+#'   \item{confidence.int}{Matrix with columns: Var, ci.low, ci.up.}
+#'   \item{critical.p.values}{Critical p-values for controlling FWE (only if `hoch = FALSE`).}
+#'
+#' @details
+#' Tests H0: rho(y, x_j) = 0 for j = 1,...,p while controlling familywise error
+#' rate at level `alpha[1]` (default 0.05).
+#'
+#' **Two approaches:**
+#'
+#' - **hoch = TRUE** (default, faster): Uses Hochberg adjustment. Reasonable for
+#'   n >= 60 and alpha = .05. Returns unadjusted confidence intervals but no
+#'   critical p-values.
+#'
+#' - **hoch = FALSE** (recommended for alpha < .05 or n < 60): Computes critical
+#'   p-values via simulation (can be slow). Returns confidence intervals with
+#'   controlled FWE.
+#'
+#' Pre-compute critical p-values to reduce execution time:
+#' ```
+#' pv <- scorregci.cr(n, p)$crit.p.values
+#' scorregci(x, y, crit.pv = pv)
+#' ```
+#'
+#' @seealso \code{\link{scorreg}}, \code{\link{scorregciH}}, \code{\link{scorregci.cr}}, \code{\link{mscorci}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 3), ncol = 3)
+#' y <- 0.5 * x[, 1] + rnorm(50)
+#'
+#' # Fast Hochberg adjustment
+#' result <- scorregci(x, y, hoch = TRUE, nboot = 500)
+#'
+#' # Full method with critical p-values
+#' result2 <- scorregci(x, y, hoch = FALSE, nboot = 500)
+#' }
 scorregci<-function(x,y,nboot=500,alpha=c(.05,.025,.01),SEED=TRUE,
 corfun=pcor,outfun=outpro, crit.pv=NULL,ALL=TRUE,MC=TRUE,
 pvals=NULL,hoch=TRUE,iter=500,pval.SEED=TRUE,pr=TRUE,...){
@@ -1827,6 +3523,21 @@ dimnames(p.mat)=list(NULL,c('Est.','p-value','adjusted p.value'))
 list(Estimates=p.mat,confidence.int=ci.mat,critical.p.values=crit.pv)
 }
 
+#' Bootstrap Subroutine for Skipped Correlation Regression (Version 2)
+#'
+#' Internal helper for `scorregci()` - duplicate of earlier version but with
+#' ... parameter support.
+#'
+#' @param data Bootstrap sample indices.
+#' @param xy Data matrix with predictors and response (last column is y).
+#' @param corfun Correlation function to use.
+#' @param outfun Outlier detection function.
+#' @param ALL Logical. Eliminate outliers jointly or separately.
+#' @param ... Additional arguments passed to `scorreg()`.
+#'
+#' @return Vector of correlations between y and each predictor.
+#'
+#' @keywords internal
 scorreg.sub<-function(data,xy,corfun=corfun,outfun=outfun,ALL=ALL,...){
 p1=ncol(xy)
 p=p1-1
@@ -1834,6 +3545,35 @@ est<-scorreg(xy[data,1:p],xy[data,p1],corfun=corfun,SEED=FALSE,ALL=ALL,...)$cor
 est
 }
 
+#' Critical Values for Skipped Correlation Regression CI
+#'
+#' Determines critical p-values for `scorregci()` via simulation under the null
+#' hypothesis of zero correlation.
+#'
+#' @param n Sample size.
+#' @param p Number of predictors.
+#' @param iter Number of iterations for simulation (default: 500).
+#' @param nboot Number of bootstrap samples per iteration (default: 500).
+#' @inheritParams common-params
+#' @param alpha Vector of significance levels (default: c(.05, .025, .01)).
+#' @param TV Logical. Return test statistic values if `TRUE` (default: `FALSE`).
+#' @param ALL Logical. Eliminate outliers jointly (default: `TRUE`).
+#'
+#' @return List with components:
+#'   \item{crit.p.values}{Critical p-values for each alpha level.}
+#'   \item{pvals}{Vector of minimum p-values from `iter` simulations (if `TV = TRUE`).}
+#'
+#' @details
+#' Estimates the null distribution of the minimum p-value across all p predictors
+#' when all correlations are zero. Uses simulation to generate critical p-values
+#' that control the familywise error rate at the specified alpha levels.
+#'
+#' Pre-computing these critical values can significantly reduce execution time
+#' when repeatedly calling `scorregci()` with the same n and p.
+#'
+#' @seealso \code{\link{scorregci}}, \code{\link{mscorci.cr}}
+#'
+#' @keywords internal
 scorreg.cr<-function(n,p,iter=500,nboot=500,corfun=pcor,alpha=c(.05,.025,.01),TV=FALSE,ALL=TRUE,SEED=TRUE,outfun=outpro){
 #
 # Determine critical p-values for the function scorregci
@@ -1859,6 +3599,21 @@ if(!TV)tval=NULL
 list(crit.p.values=crit.p,tval=tval)
 }
 
+#' Critical Value Simulation Subroutine for Skipped Regression
+#'
+#' Internal helper for `scorreg.cr()` to compute minimum p-value for one
+#' simulated dataset.
+#'
+#' @param x Simulated data matrix.
+#' @param corfun Correlation function to use.
+#' @param p Number of predictors.
+#' @param nboot Number of bootstrap samples.
+#' @param ALL Logical. Eliminate outliers jointly.
+#' @param outfun Outlier detection function.
+#'
+#' @return Minimum p-value across all predictors for this simulation.
+#'
+#' @keywords internal
 scorreg.cr.sub<-function(x,corfun,p=p,nboot=500,ALL=ALL,outfun=outfun){
 p1=p+1
 v=scorregci(x[,1:p],x[,p1],SEED=FALSE,corfun=corfun,nboot=nboot,crit.pv=1,pr=FALSE,hoch=TRUE,ALL=ALL,outfun=outfun)$Estimates[,2]
@@ -1953,6 +3708,58 @@ up=min(up,1)
 list(est=r1,p.value=alph[i],ci=c(low,up))
 }
 
+#' Compare DV-IV Correlations: Largest vs Others
+#'
+#' Tests whether the predictor with the largest correlation to y has significantly
+#' higher correlation than other predictors, controlling FWE.
+#'
+#' @param x Matrix (n-by-p) of independent variables.
+#' @inheritParams common-params
+#' @param com.p.dist Logical. Compute null distribution for critical p-values
+#'   (default: `FALSE`). Set to `TRUE` for p > 6.
+#' @param iter Number of iterations for null distribution simulation (default: 200).
+#' @param PV Pre-computed null distribution from `corCOM.DVvsIV.crit()` (default: `NULL`).
+#' @param pr Logical. Print progress messages (default: `TRUE`).
+#' @param neg.col Vector of column indices to negate before computing correlations
+#'   (default: `NULL`).
+#' @param LARGEST Logical. Test whether largest correlation is significantly higher
+#'   than others (default: `TRUE`).
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param MC Logical. Use parallel processing (default: `FALSE`).
+#' @param xout Logical. Remove outliers from x before analysis (default: `FALSE`).
+#' @param FWE.method Method for controlling FWE (default: 'hoch' for Hochberg).
+#' @param ... Additional arguments passed to `corfun`.
+#'
+#' @return List with components:
+#'   \item{I}{Index of predictor with largest correlation to y.}
+#'   \item{test}{Test results for comparing largest to each other predictor.}
+#'   \item{est}{Vector of all correlations with y.}
+#'   \item{p.value}{P-value for comparing largest to each other predictor.}
+#'   \item{adj.p.value}{Adjusted p-values controlling FWE.}
+#'   \item{sig}{Logical indicating which comparisons are significant.}
+#'
+#' @details
+#' For p >= 3 predictors, identifies the predictor x_I with highest |cor(y, x_I)|
+#' and tests whether this correlation is significantly different from cor(y, x_k)
+#' for all k != I, using Hochberg's method to control familywise error rate.
+#'
+#' Winsorized correlation is used by default. Alternative choices include:
+#' `spear`, `tau`, `pbcor`, `bicor`, `scor`, `mve.cor`, `mcd.cor`.
+#'
+#' For p > 6, recommend using `com.p.dist = TRUE` to compute the null distribution
+#' for more accurate critical p-values (can be slow). Pre-compute with
+#' `corCOM.DVvsIV.crit()` and supply via `PV` to reduce execution time.
+#'
+#' @seealso \code{\link{corCOM.DVvsIV.crit}}, \code{\link{corREG.best}}, \code{\link{TWOpov}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 4), ncol = 4)
+#' y <- 0.8 * x[, 1] + 0.2 * x[, 2] + rnorm(50)
+#' corCOM.DVvsIV(x, y, nboot = 500)
+#' }
 corCOM.DVvsIV<-function(x,y,com.p.dist=FALSE,corfun=wincor,iter=200,PV=NULL,pr=TRUE,neg.col=NULL,LARGEST=TRUE,
 alpha=.05,nboot=500,SEED=TRUE,MC=FALSE,xout=FALSE,outfun=outpro,FWE.method='hoch',...){
 #
@@ -2832,6 +4639,47 @@ if(sum(output[,8]<=alpha)==pm1)Best='Decide'
 list(CH,Conclusion=Best,results=output)
 }
 
+#' Order Predictors by Correlation with Response
+#'
+#' Compares correlations between y and each predictor in x, testing whether the
+#' highest correlation is significantly different from others, controlling FWE.
+#'
+#' @param x Matrix (n-by-p) of independent variables.
+#' @inheritParams common-params
+#' @param com.p.dist Logical. Compute null distribution for critical p-values
+#'   (default: `FALSE`). Recommended for p > 6 or n > 350.
+#' @param iter Number of iterations for null distribution simulation (default: 1000).
+#' @param PV Pre-computed null distribution from `corREGorder.crit()` (default: `NULL`).
+#' @param pr Logical. Print progress messages (default: `TRUE`).
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param MC Logical. Use parallel processing (default: `FALSE`).
+#' @param xout Logical. Remove outliers from x before analysis (default: `FALSE`).
+#' @param method Method for controlling FWE (default: 'hoch' for Hochberg).
+#' @param ... Additional arguments passed to `corfun`.
+#'
+#' @return List with components:
+#'   \item{Order}{Vector of predictor indices ordered by correlation with y.}
+#'   \item{results}{Matrix with columns: IV, Est., Highest.Est, Dif, ci.low, ci.hi, p.value, adj.p.value.}
+#'
+#' @details
+#' Identifies the predictor x_I with highest |cor(y, x_I)| and tests whether
+#' this correlation is significantly different from cor(y, x_k) for all k != I.
+#' Uses Hochberg's method to control familywise error rate.
+#'
+#' For p > 6 or n > 350, recommend using `com.p.dist = TRUE` for more accurate
+#' critical p-values (can be slow). Pre-compute with `corREGorder.crit()` and
+#' supply via `PV` to reduce execution time.
+#'
+#' @seealso \code{\link{corREGorder.crit}}, \code{\link{corCOM.DVvsIV}}, \code{\link{corREG.best}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 4), ncol = 4)
+#' y <- 0.7 * x[, 1] + 0.3 * x[, 2] + rnorm(50)
+#' corREGorder(x, y, nboot = 500)
+#' }
 corREGorder<-function(x,y,com.p.dist=FALSE, corfun=wincor,iter=1000,PV=NULL,pr=TRUE,
 alpha=.05,nboot=500,SEED=TRUE,MC=FALSE,xout=FALSE,outfun=outpro,method='hoch',...){
 #
@@ -3703,6 +5551,29 @@ output[,9]=p.adjust(output[,8],method=method)
 list(results=output)
 }
 
+#' Critical Values for corREGorder
+#'
+#' Estimates the null distribution of p-values for `corREGorder()` via simulation.
+#'
+#' @param p Number of predictors.
+#' @param n Sample size.
+#' @inheritParams common-params
+#' @param iter Number of iterations for null distribution simulation (default: 1000).
+#' @param nboot Number of bootstrap samples per iteration (default: 1000).
+#' @param MC Logical. Use parallel processing (default: `FALSE`).
+#' @param pr Logical. Print progress messages (default: `TRUE`).
+#' @param ... Additional arguments passed to `corfun`.
+#'
+#' @return Matrix of null p-value distributions.
+#'
+#' @details
+#' Estimates the null distribution when all correlations are zero. Pre-computing
+#' these values can significantly reduce execution time when repeatedly calling
+#' `corREGorder()` with the same n and p.
+#'
+#' @seealso \code{\link{corREGorder}}
+#'
+#' @keywords internal
 corREGorder.crit<-function(p,n,corfun=wincor,iter=1000,nboot=1000,SEED=TRUE,MC=FALSE,pr=TRUE,...){
 #
 # Estimate null distribution of	the p-values for corREGorde
@@ -3746,6 +5617,28 @@ rem[I,k]=2*min(c(pv,1-pv))
 rem
 }
 
+#' Critical Values for corCOM.DVvsIV
+#'
+#' Estimates the null p-value distribution for `corCOM.DVvsIV()` via simulation.
+#'
+#' @param p Number of independent variables.
+#' @param n Sample size.
+#' @inheritParams common-params
+#' @param iter Number of iterations for null distribution simulation (default: 1000).
+#' @param nboot Number of bootstrap samples per iteration (default: 500).
+#' @param MC Logical. Use parallel processing (default: `FALSE`).
+#' @param ... Additional arguments passed to `corfun`.
+#'
+#' @return Matrix (iter-by-(p-1)) of null p-value distributions.
+#'
+#' @details
+#' Estimates the null distribution when all correlations are zero. Pre-computing
+#' these values can significantly reduce execution time when repeatedly calling
+#' `corCOM.DVvsIV()` with the same n and p.
+#'
+#' @seealso \code{\link{corCOM.DVvsIV}}
+#'
+#' @keywords internal
 corCOM.DVvsIV.crit<-function(p,n,corfun=wincor,iter=1000,nboot=500,SEED=TRUE,MC=FALSE,...){
 #
 # Null p-value distribution for	corCOM.DVvsIV
@@ -3801,6 +5694,37 @@ a=cov2cor(a)
 list(cor=a[1,2])
 }
 
+#' Bootstrap Confidence Intervals for Correlation Regression
+#'
+#' Computes bootstrap confidence intervals and p-values for correlations between
+#' y and each predictor in x.
+#'
+#' @inheritParams common-params
+#' @param nboot Number of bootstrap samples (default: 599).
+#' @param pr Logical. Print number of significant results (default: `TRUE`).
+#' @param ... Additional arguments passed to `corfun`.
+#'
+#' @return List with components:
+#'   \item{output}{Matrix with columns: ci.low, ci.up, cor, p.value, adj.p.value.}
+#'   \item{n}{Sample size after removing missing values.}
+#'   \item{num.sig}{Number of significant correlations (Hochberg-adjusted).}
+#'
+#' @details
+#' Computes bootstrap confidence intervals for correlation between y and each
+#' column of x. Adjusted p-values use Hochberg's method to control FWE.
+#'
+#' Any correlation function can be used (pbcor, bicor, spear, tau, etc.).
+#'
+#' @seealso \code{\link{corxy}}, \code{\link{scorreg}}, \code{\link{scorregci}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 3), ncol = 3)
+#' y <- 0.5 * x[, 1] + rnorm(50)
+#' corregci(x, y, nboot = 500)
+#' }
 corregci<-function(x,y,corfun=wincor,nboot=599,alpha=.05,SEED=TRUE,pr=TRUE,...){
 #
 #  Deals with correlations between some dependent variable y and p independent variables, x
@@ -3859,12 +5783,81 @@ num.sig=sum(regci[,5]<=alpha)
 list(output=regci,n=nrem,num.sig=num.sig)
 }
 
+#' MCD Robust Correlation
+#'
+#' Computes correlation using Minimum Covariance Determinant (MCD) estimator.
+#'
+#' @inheritParams common-params
+#'
+#' @return List with component:
+#'   \item{cor}{MCD correlation coefficient.}
+#'
+#' @details
+#' Computes robust correlation based on the MCD covariance estimator, which
+#' has high breakdown point (can handle up to ~50% contamination).
+#'
+#' @seealso \code{\link{ogkcor}}, \code{\link{pbcor}}, \code{\link{wincor}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 0.5 * x + rnorm(50)
+#' mcd.cor(x, y)
+#' }
 mcd.cor<-function(x,y){
 xy=cbind(x,y)
 a=MCDCOR(x=xy)[1,2]
 list(cor=a)
 }
 
+#' Probability of Making and Correctly Deciding on Largest Correlation
+#'
+#' Estimates PMD (Probability of Making a Decision) and PCD (Probability of
+#' Correct Decision) for identifying the predictor with largest correlation to y.
+#'
+#' @param n Sample size.
+#' @param p Number of explanatory variables.
+#' @param rho Correlation for non-focal predictors (default: 0).
+#' @param delta Correlation difference for focal predictor (default: 0.3).
+#'   Focal predictor has correlation rho + delta.
+#' @inheritParams common-params
+#' @param LARGEST Logical. Test for largest correlation if `TRUE` (default),
+#'   smallest if `FALSE`.
+#' @param x Optional data matrix to estimate correlations from (default: `NULL`).
+#' @param y Optional response vector to estimate correlations from (default: `NULL`).
+#' @param iter Number of simulation iterations (default: 500).
+#' @param pr Logical. Print warnings about execution time (default: `TRUE`).
+#' @param MC Logical. Use parallel processing (default: `TRUE`).
+#' @param FUN Function to summarize correlation matrix if x and y are provided
+#'   (default: `mean`).
+#' @param ... Additional arguments passed to `corfun`.
+#'
+#' @return List with components:
+#'   \item{PMD}{Probability of making a decision (proportion of iterations where decision was made).}
+#'   \item{PMD.CI}{Confidence interval for PMD.}
+#'   \item{PCD}{Probability of correct decision (proportion of decisions that correctly identified focal predictor).}
+#'   \item{PCD.CI}{Confidence interval for PCD.}
+#'
+#' @details
+#' Determines the probability of making a decision about which predictor has the
+#' largest correlation with y in an indifference zone context. By default, all
+#' predictors have correlation rho with y except the first, which has rho + delta.
+#'
+#' Cohen's suggestions for small, medium, and large correlations are 0.1, 0.3, 0.5.
+#'
+#' If x and y are provided, estimates correlation matrix from data instead of
+#' using indifference zone.
+#'
+#' @seealso \code{\link{corCOM.DVvsIV}}, \code{\link{corREG.best}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Estimate PMD and PCD for n=50, p=4, delta=0.3
+#' corCOM.PMDPCD(n = 50, p = 4, delta = 0.3, iter = 100)
+#' }
 corCOM.PMDPCD<-function(n,p,rho=0,delta=.3,corfun=wincor,LARGEST=TRUE,alpha=.05,
 x=NULL,y=NULL,iter=500,pr=TRUE,SEED=TRUE,MC=TRUE,FUN=mean,...){
 #
@@ -3938,12 +5931,62 @@ PMD=PMD/iter
 list(PMD=PMD,PMD.CI=PMD.CI, PCD=PCD, PCD.CI=PCD.CI)
 }
 
+#' PMD/PCD Simulation Subroutine
+#'
+#' Internal helper for `corCOM.PMDPCD()` to process one simulated dataset.
+#'
+#' @param x Simulated data matrix.
+#' @param corfun Correlation function to use.
+#' @param LARGEST Logical. Test for largest correlation.
+#' @param ... Additional arguments passed to `corCOM.DVvsIV()`.
+#'
+#' @return Result from `corCOM.DVvsIV()`.
+#'
+#' @keywords internal
 corCOM.PMDPCD.sub<-function(x,corfun,LARGEST=LARGEST,...){
 p1=ncol(x)
 a=corCOM.DVvsIV(x[,2:p1],x[,1],corfun=corfun,SEED=FALSE,LARGEST=LARGEST,...)
 a
 }
 
+#' Identify Best Predictor by Correlation
+#'
+#' Determines which predictor has the strongest correlation with y and tests
+#' whether this can be decided with confidence.
+#'
+#' @param x Matrix (n-by-p) of independent variables.
+#' @inheritParams common-params
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param neg.col Vector of column indices to negate before computing correlations
+#'   (default: `NULL`).
+#' @param LARGEST Logical. Identify predictor with largest correlation if `TRUE`
+#'   (default), smallest if `FALSE`.
+#' @param MC Logical. Use parallel processing (default: `FALSE`).
+#' @param xout Logical. Remove outliers from x before analysis (default: `FALSE`).
+#' @param ... Additional arguments passed to `corfun`.
+#'
+#' @return List with components:
+#'   \item{Est.}{Vector of correlations between each predictor and y.}
+#'   \item{p.value}{P-value for testing whether identified predictor is consistently best.}
+#'
+#' @details
+#' Identifies the predictor with the strongest (largest or smallest) correlation
+#' with y. Uses bootstrap to test whether the same predictor is consistently
+#' identified as best across bootstrap samples.
+#'
+#' P-value is the two-sided proportion of bootstrap samples where a different
+#' predictor was identified as best.
+#'
+#' @seealso \code{\link{corCOM.DVvsIV}}, \code{\link{corREG.DO}}, \code{\link{corREGorder}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 4), ncol = 4)
+#' y <- 0.7 * x[, 1] + 0.2 * x[, 2] + rnorm(50)
+#' corREG.best(x, y, nboot = 500)
+#' }
 corREG.best<-function(x,y,corfun=wincor,alpha=.05,nboot=500, neg.col=NULL,LARGEST=TRUE, SEED=TRUE,MC=FALSE,xout=FALSE,outfun=outpro,...){
 #
 # Can a decision be made about which IV
@@ -3994,6 +6037,40 @@ PC=2*min(PC,1-PC)
 list(Est.=est,p.value=PC)
 }
 
+#' Pearson Correlation Best Predictor Decision (Decision-Oriented)
+#'
+#' Determines the best predictor by Pearson correlation and makes a formal
+#' decision using pairwise comparisons via TWOpov.
+#'
+#' @param x Matrix (n-by-p) of independent variables.
+#' @inheritParams common-params
+#' @param neg.col Vector of column indices to negate before computing correlations
+#'   (default: `NULL`).
+#' @param LARGEST Logical. Identify predictor with largest correlation if `TRUE`
+#'   (default), smallest if `FALSE`.
+#' @param xout Logical. Remove outliers from x before analysis (default: `FALSE`).
+#' @param ... Additional arguments passed to `outfun`.
+#'
+#' @return List with components:
+#'   \item{output}{Matrix with columns: Best.IV, IV, Est.best, Est, dif, ci.low, ci.up.}
+#'   \item{Result}{Character string: "Decide IV X is best" or "No Decision".}
+#'
+#' @details
+#' Specifically for Pearson correlation. Identifies the predictor with the
+#' strongest Pearson correlation, then performs pairwise comparisons between
+#' this predictor and all others using `TWOpov()`. Makes a decision if all
+#' pairwise confidence intervals exclude zero.
+#'
+#' @seealso \code{\link{corREG.DO}}, \code{\link{TWOpov}}, \code{\link{corREG.best}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 4), ncol = 4)
+#' y <- 0.8 * x[, 1] + 0.2 * x[, 2] + rnorm(50)
+#' PcorREG.best.DO(x, y)
+#' }
 PcorREG.best.DO<-function(x,y,neg.col=NULL,
 LARGEST=TRUE,xout=FALSE,outfun=outpro,...){
 #
@@ -4039,6 +6116,41 @@ if(sum(chk)==pm1)D=paste('Decide IV',ID,' is best')
 list(output=a, Result=D)
 }
 
+#' Decision-Oriented Predictor Selection by Correlation
+#'
+#' Determines the best predictor by correlation and makes a formal decision
+#' based on pairwise comparisons with all other predictors.
+#'
+#' @param x Matrix (n-by-p) of independent variables.
+#' @inheritParams common-params
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param neg.col Vector of column indices to negate before computing correlations
+#'   (default: `NULL`).
+#' @param LARGEST Logical. Identify predictor with largest correlation if `TRUE`
+#'   (default), smallest if `FALSE`.
+#' @param xout Logical. Remove outliers from x before analysis (default: `FALSE`).
+#' @param ... Additional arguments passed to `corfun`.
+#'
+#' @return List with components:
+#'   \item{output}{Matrix with columns: Best.IV, IV, Est.best, Est, dif, ci.low, ci.up.}
+#'   \item{Result}{Character string: "Decide IV X is best" or "No Decision".}
+#'
+#' @details
+#' Identifies the predictor with the strongest correlation, then performs
+#' pairwise comparisons between this predictor and all others using `TWOpov()`.
+#' Makes a decision if all pairwise confidence intervals exclude zero (i.e., all
+#' have the same sign for lower and upper bounds).
+#'
+#' @seealso \code{\link{corREG.best}}, \code{\link{TWOpov}}, \code{\link{corCOM.DVvsIV}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 4), ncol = 4)
+#' y <- 0.8 * x[, 1] + 0.2 * x[, 2] + rnorm(50)
+#' corREG.DO(x, y, nboot = 500)
+#' }
 corREG.DO<-function(x,y,corfun=wincor,alpha=.05,nboot=500,SEED=TRUE,neg.col=NULL,
 LARGEST=TRUE,xout=FALSE,outfun=outpro,...){
 #
@@ -4093,6 +6205,44 @@ if(pv <=alpha)dc='YES'
 list(ID=ID,Est.=est,results=a,p.value=pv,Decide=dc)
 }
 
+#' Compare Overlapping Skipped Correlations
+#'
+#' Compares two skipped correlations with a common dependent variable using
+#' bias-corrected accelerated (BCa) bootstrap.
+#'
+#' @param x Matrix with two predictors (n-by-2).
+#' @inheritParams common-params
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param ... Additional arguments passed to `corfun`.
+#'
+#' @return List with components:
+#'   \item{Est1}{Skipped correlation between x[,1] and y.}
+#'   \item{Est2}{Skipped correlation between x[,2] and y.}
+#'   \item{dif}{Difference Est1 - Est2.}
+#'   \item{ci}{BCa bootstrap confidence interval for the difference.}
+#'
+#' @details
+#' For two predictors, compares their skipped correlations with the dependent
+#' variable (overlapping case). Uses BCa bootstrap to handle the dependence
+#' between the two correlation estimates.
+#'
+#' Requires the `bcaboot` package for bias-corrected accelerated bootstrap.
+#' Limited to (1-alpha) confidence interval for the difference.
+#'
+#' @references
+#' Efron, B., & Tibshirani, R. J. (1993). An Introduction to the Bootstrap.
+#' Chapman and Hall.
+#'
+#' @seealso \code{\link{corskip.comPV}}, \code{\link{scor}}, \code{\link{TWOpov}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 2), ncol = 2)
+#' y <- 0.7 * x[, 1] + 0.2 * x[, 2] + rnorm(50)
+#' cor.skip.com(x, y, nboot = 500)
+#' }
 cor.skip.com<-function(x,y,corfun=wincor,outfun=outpro,alpha=.05,nboot=1000,SEED=TRUE,...){
 #
 #  Regression,  two explanatory variables
@@ -4118,6 +6268,38 @@ ci=c(a$lims[1,1],a$lims[3,1])
 list(Est1=e1,Est2=e2,dif=dif,ci=ci)
 }
 
+#' Compare Overlapping Skipped Correlations with P-Value
+#'
+#' Compares two skipped correlations with a common dependent variable,
+#' returning both p-value and confidence interval.
+#'
+#' @param x Matrix with two predictors (n-by-2).
+#' @inheritParams common-params
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param ... Additional arguments passed to `corfun`.
+#'
+#' @return List with components:
+#'   \item{Est1}{Skipped correlation between x[,1] and y.}
+#'   \item{Est2}{Skipped correlation between x[,2] and y.}
+#'   \item{dif}{Difference Est1 - Est2.}
+#'   \item{ci}{Bootstrap confidence interval for the difference.}
+#'   \item{p.value}{P-value for testing equality of correlations.}
+#'
+#' @details
+#' Similar to `cor.skip.com()` but also returns a p-value for testing whether
+#' the two skipped correlations are equal. Uses percentile bootstrap for the
+#' confidence interval and p-value.
+#'
+#' @seealso \code{\link{cor.skip.com}}, \code{\link{scor}}, \code{\link{TWOpov}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- matrix(rnorm(50 * 2), ncol = 2)
+#' y <- 0.7 * x[, 1] + 0.2 * x[, 2] + rnorm(50)
+#' corskip.comPV(x, y, nboot = 500)
+#' }
 corskip.comPV<-function(x,y,corfun=wincor,outfun=outpro,alpha=.05,nboot=1000,SEED=TRUE,...){
 #
 #  Regression,  two explanatory variables
@@ -4153,6 +6335,30 @@ ci=c(a$lims[1,1],a$lims[3,1])
 list(n=nrow(m),Est1=est1,Est2=est2,difference=dif,ci.low=A[1],ci.upper=A[2],p.value=pv)
 }
 
+#' Compute All Pairwise Difference Scores
+#'
+#' Computes difference scores for all pairs of columns in a matrix.
+#'
+#' @param x Matrix or data frame (n-by-J).
+#'
+#' @return Matrix (n-by-K) where K = J(J-1)/2, containing all pairwise
+#'   differences x[,j] - x[,k] for j < k.
+#'
+#' @details
+#' For a matrix with J columns, computes all J(J-1)/2 pairwise difference
+#' scores. The kth column of the output contains x[,j] - x[,k] for the kth
+#' pair (j, k) with j < k.
+#'
+#' Useful for repeated measures designs when analyzing pairwise comparisons.
+#'
+#' @seealso \code{\link{smeancr.cord}}, \code{\link{rmanova}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- matrix(rnorm(30), ncol = 3)
+#' dif <- rmdif.scores(x)
+#' dim(dif)  # 10 rows, 3 columns (3 pairs from 3 variables)
 rmdif.scores<-function(x){
 #
 # Compute all pairwise difference scores
@@ -4174,6 +6380,50 @@ rmdif.scores<-function(x){
   M
 }
 
+#' Multivariate Skipped Mean Test (One-Phase Version)
+#'
+#' Tests whether multivariate skipped means equal a null value using
+#' one-phase outlier detection.
+#'
+#' @param m Matrix (n-by-p) of data.
+#' @param nullv Null hypothesis vector (default: zero vector).
+#' @param cop Center determination method: 1 = Donoho-Gasko, 2 = MCD,
+#'   3 = marginal medians (default), 4 = MVE.
+#' @param MM Logical. If `FALSE` (default), use boxplot rule for outliers;
+#'   if `TRUE`, use MAD-based rule.
+#' @inheritParams common-params
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param plotit Logical. Create diagnostic plot (default: `TRUE`).
+#' @param MC Logical. Use parallel processing (default: `FALSE`).
+#' @param xlab,ylab Axis labels for plot.
+#' @param STAND Logical. Standardize before outlier detection (default: `TRUE`).
+#'
+#' @return List with components:
+#'   \item{p.value}{P-value for testing H0: mean = nullv.}
+#'   \item{boot.vals}{Matrix of bootstrap estimates.}
+#'   \item{center}{Estimated skipped mean.}
+#'
+#' @details
+#' Tests H0: skipped mean = nullv using projection-based outlier detection.
+#' For each point, projects all data onto the line from that point to the center,
+#' identifies outliers via boxplot (or MAD) rule, then repeats for all points.
+#' A point is an outlier if flagged in any projection.
+#'
+#' Uses one-phase outlier detection (oph) where outliers are removed once before
+#' computing the test statistic. Compare to `smeancr.cord()` which uses iterative
+#' outlier removal.
+#'
+#' Critical levels are adjusted for small sample sizes to maintain nominal .05 level.
+#'
+#' @seealso \code{\link{smeancr.cord}}, \code{\link{smean}}, \code{\link{outpro}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' m <- matrix(rnorm(50 * 3), ncol = 3)
+#' smeancr.cord.oph(m, nboot = 500, plotit = FALSE)
+#' }
 smeancr.cord.oph<-function(m,nullv=rep(0,ncol(m)),cop=3,MM=FALSE,SEED=TRUE,
 nboot=500,plotit=TRUE,MC=FALSE,xlab="VAR 1",ylab="VAR 2",STAND=TRUE){
 #
@@ -4229,6 +6479,47 @@ sig.level<-sum(temp[nboot+1]<temp[1:nboot])/nboot
 list(p.value=sig.level,boot.vals=val,center=est)
 }
 
+#' Multivariate Skipped Mean Test
+#'
+#' Tests whether multivariate skipped means equal a null value using
+#' projection-based outlier detection with iterative refinement.
+#'
+#' @param m Matrix (n-by-p) of data.
+#' @param nullv Null hypothesis vector (default: zero vector).
+#' @param cop Center determination method: 1 = Donoho-Gasko, 2 = MCD,
+#'   3 = marginal medians (default), 4 = MVE.
+#' @param MM Logical. If `FALSE` (default), use boxplot rule for outliers;
+#'   if `TRUE`, use MAD-based rule.
+#' @inheritParams common-params
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param plotit Logical. Create diagnostic plot (default: `TRUE`).
+#' @param MC Logical. Use parallel processing (default: `FALSE`).
+#' @param xlab,ylab Axis labels for plot.
+#' @param STAND Logical. Standardize before outlier detection (default: `TRUE`).
+#'
+#' @return List with components:
+#'   \item{p.value}{P-value for testing H0: mean = nullv.}
+#'
+#' @details
+#' Tests H0: skipped mean = nullv using projection-based outlier detection
+#' with iterative refinement. Similar to `smeancr.cord.oph()` but uses
+#' iterative outlier removal for potentially better outlier detection.
+#'
+#' For each point, projects all data onto the line from that point to the center,
+#' identifies outliers via boxplot (or MAD) rule, then repeats for all points.
+#' A point is an outlier if flagged in any projection.
+#'
+#' Uses bootstrap to compute p-value with projection distance metric.
+#'
+#' @seealso \code{\link{smeancr.cord.oph}}, \code{\link{smean}}, \code{\link{outpro}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' m <- matrix(rnorm(50 * 3), ncol = 3)
+#' smeancr.cord(m, nboot = 500, plotit = FALSE)
+#' }
 smeancr.cord<-function(m,nullv=rep(0,ncol(m)),cop=3,MM=FALSE,SEED=TRUE,
 nboot=500,plotit=TRUE,MC=FALSE,xlab="VAR 1",ylab="VAR 2",STAND=TRUE){
 #
@@ -4299,6 +6590,54 @@ lines(xx[c(temp[1],temp[length(temp)]),])
 list(p.value=sig.level)
 }
 
+#' Robust Partial Correlation
+#'
+#' Computes robust partial correlation between x and y controlling for z,
+#' based on residuals from robust regression.
+#'
+#' @inheritParams common-params
+#' @param z Variable(s) to control for (can be vector or matrix).
+#' @param regfun Robust regression function (default: `MMreg`).
+#' @param plotit Logical. Create scatterplot of residuals (default: `FALSE`).
+#' @param xout Logical. Remove leverage points (default: `FALSE`).
+#' @param GEN Logical. Remove only bad leverage points (default: `TRUE`).
+#' @param BOOT Logical. Compute bootstrap CI (default: `TRUE`).
+#' @param nboot Number of bootstrap samples (default: 599).
+#' @param XOUT.blp Logical. Remove bad leverage points for x vs z and y vs z
+#'   regressions (default: `TRUE`).
+#' @param plot.out Logical. Plot outliers (default: `FALSE`).
+#' @param plotfun Plotting function (default: `plot`).
+#' @param xlab,ylab Labels for residual plot.
+#' @param ... Additional arguments passed to `corfun`.
+#'
+#' @return List with components:
+#'   \item{cor}{Partial correlation estimate.}
+#'   \item{p.value}{P-value for testing zero partial correlation (if BOOT = TRUE).}
+#'   \item{ci}{Bootstrap confidence interval (if BOOT = TRUE).}
+#'
+#' @details
+#' Computes partial correlation by:
+#' 1. Regressing x on z to get residuals res_x
+#' 2. Regressing y on z to get residuals res_y
+#' 3. Computing correlation between res_x and res_y
+#'
+#' Default uses Winsorized correlation between residuals from MM-regression.
+#'
+#' **Outlier handling:**
+#' - XOUT.blp = TRUE: Permanently removes bad leverage points
+#' - GEN = TRUE: Removes only bad leverage points (not all leverage points)
+#'
+#' @seealso \code{\link{pcor}}, \code{\link{wincor}}, \code{\link{MMreg}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' z <- rnorm(50)
+#' y <- 0.5 * x + 0.3 * z + rnorm(50)
+#' part.cor(x, y, z, nboot = 500)
+#' }
 part.cor<-function(x,y,z,corfun=wincor,regfun=MMreg,plotit=FALSE,xout=FALSE,GEN=TRUE,BOOT=TRUE,SEED=TRUE,nboot=599,
 XOUT.blp=TRUE,plot.out=FALSE,
 outfun=outpro,plotfun=plot,xlab='Res 1',ylab='Res 2',...){
@@ -4375,6 +6714,41 @@ est=corfun(res1,res2)
 est
 }
 
+#' Correlation Based on Robust Regression with Bad Leverage Point Removal
+#'
+#' Computes correlation as explanatory power from robust regression after
+#' removing bad leverage points.
+#'
+#' @inheritParams common-params
+#' @param regfun Robust regression function (default: `tsreg` for Theil-Sen).
+#' @param varfun Variance function for explanatory power (default: `pbvar` for
+#'   percentage bend variance).
+#' @param plotit Logical. Create diagnostic plot (default: `FALSE`).
+#' @param ... Additional arguments passed to regression functions.
+#'
+#' @return List with components:
+#'   \item{cor}{Correlation estimate (signed square root of R-squared).}
+#'   \item{Rsq}{R-squared (explanatory power).}
+#'
+#' @details
+#' Computes correlation based on explanatory power from robust regression:
+#' 1. Removes bad leverage points using `reglev.gen()`
+#' 2. Fits robust regression on cleaned data
+#' 3. Computes R-squared as ratio of residual variance to response variance
+#' 4. Returns signed sqrt(R-squared) as correlation
+#'
+#' Sign is determined by the slope coefficient. Only supports single predictor.
+#'
+#' @seealso \code{\link{corblp.ci}}, \code{\link{corblppb}}, \code{\link{tsreg}}, \code{\link{pbvar}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 * x + rnorm(50)
+#' corblp.EP(x, y)
+#' }
 corblp.EP<-function(x,y,regfun=tsreg,varfun=pbvar,plotit=FALSE,...){
 #
 # Correlation based on a robust regression estimator with bad
@@ -4400,6 +6774,43 @@ rest=sign(est)*sqrt(rsq)
 list(cor=rest,Rsq=rsq)
 }
 
+#' Bootstrap CI for Correlation Based on Robust Regression (BLP Removed)
+#'
+#' Computes bootstrap confidence interval for correlation based on explanatory
+#' power from robust regression after removing bad leverage points.
+#'
+#' @inheritParams common-params
+#' @param regfun Robust regression function (default: `tsreg`).
+#' @param varfun Variance function (default: `pbvar`).
+#' @param nboot Number of bootstrap samples (default: 100).
+#' @param outfun Outlier detection function (default: `outpro.depth`).
+#' @param plotit Logical. Create diagnostic plot (default: `FALSE`).
+#' @param ... Additional arguments passed to regression functions.
+#'
+#' @return List with components:
+#'   \item{cor}{Correlation estimate.}
+#'   \item{test}{Test statistic (cor / SE).}
+#'   \item{p.value}{P-value for testing zero correlation.}
+#'   \item{ci}{Confidence interval based on normal approximation.}
+#'
+#' @details
+#' Computes correlation based on robust regression explanatory power with bad
+#' leverage points removed. Uses bootstrap to estimate standard error, then
+#' constructs CI via normal approximation.
+#'
+#' Only supports single predictor. For multiple predictors, see other correlation
+#' methods.
+#'
+#' @seealso \code{\link{corblp.EP}}, \code{\link{corblppb}}, \code{\link{tsreg}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 * x + rnorm(50)
+#' corblp.ci(x, y, nboot = 500)
+#' }
 corblp.ci<-function(x,y,regfun=tsreg,varfun=pbvar,nboot=100,alpha=.05,outfun=outpro.depth,SEED=TRUE,
 plotit=FALSE,...){
 #
@@ -4442,6 +6853,41 @@ ci[2]=min(ci[2],1)
 list(cor=est$cor,test=test,p.value=sig,ci=ci)
 }
 
+#' Percentile Bootstrap CI for Correlation Based on Robust Regression
+#'
+#' Computes percentile bootstrap confidence interval for correlation based on
+#' explanatory power from robust regression.
+#'
+#' @inheritParams common-params
+#' @param regfun Robust regression function (default: `tsreg`).
+#' @param varfun Variance function (default: `pbvar`).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param outfun Outlier detection function (default: `outpro.depth`).
+#' @param plotit Logical. Create diagnostic plot (default: `FALSE`).
+#' @param ... Additional arguments passed to regression functions.
+#'
+#' @return List with components:
+#'   \item{cor.est}{Correlation estimate.}
+#'   \item{p.value}{Bootstrap p-value for testing zero correlation.}
+#'   \item{ci}{Percentile bootstrap confidence interval.}
+#'
+#' @details
+#' Computes correlation based on robust regression explanatory power. Uses
+#' percentile bootstrap for both confidence interval and p-value. More robust
+#' to non-normality than `corblp.ci()` which uses normal approximation.
+#'
+#' Only supports single predictor.
+#'
+#' @seealso \code{\link{corblp.ci}}, \code{\link{corblp.EP}}, \code{\link{tsreg}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 * x + rnorm(50)
+#' corblppb(x, y, nboot = 500)
+#' }
 corblppb<-function(x,y,regfun=tsreg,varfun=pbvar,nboot=1000,alpha=.05,outfun=outpro.depth,SEED=TRUE,
 plotit=FALSE,...){
 #
@@ -4473,6 +6919,40 @@ est=corblp(x,y,regfun=regfun,varfun=varfun)
 list(cor.est=est$cor,p.value=pv,ci=ci)
 }
 
+#' Quantile Regression Correlation CI (Ratio Method)
+#'
+#' Bootstrap confidence interval for quantile regression correlation using the
+#' ratio of loss functions method.
+#'
+#' @inheritParams common-params
+#' @param q Quantile to use (default: 0.5 for median).
+#' @param nboot Number of bootstrap samples (default: 599).
+#' @param xout Logical. Remove outliers before analysis (default: `TRUE`).
+#' @param method Outlier detection method (default: 'PRO').
+#' @param regfun Regression function for outlier detection (default: `Qreg`).
+#'
+#' @return List with components:
+#'   \item{Est.}{Estimated quantile correlation.}
+#'   \item{ci}{Bootstrap confidence interval.}
+#'   \item{p.value}{Two-sided p-value for testing zero correlation.}
+#'
+#' @details
+#' Computes quantile regression correlation based on ratio of loss functions
+#' (full model vs null model). See Wilcox (2022, section 11.9).
+#'
+#' For n <= 40, outlier removal is skipped to avoid computational issues.
+#' Currently supports single independent variable only.
+#'
+#' @seealso \code{\link{qcorp1}}, \code{\link{qcor.R}}, \code{\link{qcor.ci}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 * x + rnorm(50)
+#' qcorp1.ci(x, y, q = 0.5, nboot = 500)
+#' }
 qcorp1.ci<-function(x,y,q=.5,alpha=.05,nboot=599,SEED=TRUE, xout=TRUE,
 method='PRO',regfun=Qreg){
 #
@@ -4517,6 +6997,45 @@ ilow<-ilow+1
  list(Est.=e,ci=ci,p.value=pv)
  }
 
+#' Quantile Regression Correlation CI (Li et al. Method)
+#'
+#' Bootstrap confidence interval for quantile regression correlation using the
+#' method by Li, Li & Tsai (2015).
+#'
+#' @inheritParams common-params
+#' @param q Quantile to use (default: 0.5 for median).
+#' @param nboot Number of bootstrap samples (default: 599).
+#' @param xout Logical. Remove outliers before analysis (default: `TRUE`).
+#' @param method Outlier detection method (default: 'PRO').
+#' @param regfun Regression function for outlier detection (default: `Qreg`).
+#'
+#' @return List with components:
+#'   \item{Est.}{Estimated quantile correlation.}
+#'   \item{ci}{Bootstrap confidence interval.}
+#'   \item{p.value}{Two-sided p-value for testing zero correlation.}
+#'
+#' @details
+#' Computes quantile regression correlation using the approach by Li, Li & Tsai
+#' (2015). Different from `qcorp1.ci()` in how correlation is calculated.
+#'
+#' For n <= 40, outlier removal is skipped to avoid computational issues.
+#' Currently supports single independent variable only.
+#'
+#' @references
+#' Li, Y., Li, T., & Tsai, C. L. (2015). Quantile correlations and quantile
+#' autoregressive modeling. Journal of the American Statistical Association,
+#' 110(509), 246-261.
+#'
+#' @seealso \code{\link{qcor}}, \code{\link{qcorp1.ci}}, \code{\link{qcor.EP}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 * x + rnorm(50)
+#' qcor.ci(x, y, q = 0.5, nboot = 500)
+#' }
 qcor.ci<-function(x,y,q=.5,alpha=.05,nboot=599,SEED=TRUE, xout=TRUE,
 method='PRO',regfun=Qreg){
 #
@@ -4561,6 +7080,40 @@ ilow<-ilow+1
  list(Est.=e,ci=ci,p.value=pv)
  }
 
+#' Quantile Regression Correlation CI (Explanatory Power Method)
+#'
+#' Bootstrap confidence interval for quantile regression correlation using the
+#' explanatory power method.
+#'
+#' @inheritParams common-params
+#' @param q Quantile to use (default: 0.5 for median).
+#' @param nboot Number of bootstrap samples (default: 599).
+#' @param xout Logical. Remove outliers before analysis (default: `TRUE`).
+#' @param method Outlier detection method (default: 'PRO').
+#' @param regfun Regression function for outlier detection (default: `Qreg`).
+#'
+#' @return List with components:
+#'   \item{Est.}{Estimated quantile correlation.}
+#'   \item{ci}{Bootstrap confidence interval.}
+#'   \item{p.value}{Two-sided p-value for testing zero correlation.}
+#'
+#' @details
+#' Computes quantile regression correlation using explanatory power method.
+#' Different from `qcorp1.ci()` and `qcor.ci()` in how correlation is calculated.
+#'
+#' For n <= 40, outlier removal is skipped to avoid computational issues.
+#' Currently supports single independent variable only.
+#'
+#' @seealso \code{\link{qcor.ep}}, \code{\link{qcorp1.ci}}, \code{\link{qcor.EP}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 * x + rnorm(50)
+#' qcor.ep.ci(x, y, q = 0.5, nboot = 500)
+#' }
 qcor.ep.ci<-function(x,y,q=.5,alpha=.05,nboot=599,SEED=TRUE, xout=TRUE,
 method='PRO',regfun=Qreg){
 #
@@ -4603,6 +7156,40 @@ ilow<-ilow+1
  list(Est.=e,ci=ci,p.value=pv)
  }
 
+#' Quantile Regression Correlation for Multiple Quantiles (Ratio Method)
+#'
+#' Computes quantile regression correlation for multiple quantiles using the
+#' ratio of loss functions method.
+#'
+#' @inheritParams common-params
+#' @param q Vector of quantiles to use (default: c(0.25, 0.5, 0.75)).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param xout Logical. Remove outliers before analysis (default: `TRUE`).
+#' @param method Outlier detection method (default: 'PRO').
+#' @param regfun Regression function for outlier detection (default: `Qreg`).
+#'
+#' @return Matrix with columns: q, Est, ci.low, ci.up, p-value (one row per quantile).
+#'
+#' @details
+#' Computes quantile regression correlation based on ratio of loss functions
+#' (full model vs null model) for each quantile in q. See Wilcox (2022, section 11.9).
+#'
+#' Internally calls `qcorp1.ci()` for each quantile.
+#'
+#' @references
+#' Wilcox, R. R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#' Academic Press.
+#'
+#' @seealso \code{\link{qcorp1.ci}}, \code{\link{qcor.EP}}, \code{\link{qcor.ci}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 * x + rnorm(50)
+#' qcor.R(x, y, q = c(0.25, 0.5, 0.75), nboot = 500)
+#' }
 qcor.R<-function(x,y,q=c(.25,.5,.75),alpha=.05,nboot=1000,SEED=TRUE, xout=TRUE,
 method='PRO',regfun=Qreg){
 #
@@ -4620,6 +7207,34 @@ dimnames(res)=list(NULL,c('q','Est','ci.low','ci.up','p-value'))
 res
 }
 
+#' Quantile Regression Correlation for Multiple Quantiles (Explanatory Power)
+#'
+#' Computes quantile regression correlation for multiple quantiles using the
+#' explanatory power method.
+#'
+#' @inheritParams common-params
+#' @param q Vector of quantiles to use (default: c(0.25, 0.5, 0.75)).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param xout Logical. Remove outliers before analysis (default: `TRUE`).
+#' @param method Outlier detection method (default: 'PRO').
+#' @param regfun Regression function for outlier detection (default: `Qreg`).
+#'
+#' @return Matrix with columns: q, Est, ci.low, ci.up, p-value (one row per quantile).
+#'
+#' @details
+#' Computes quantile regression correlation using explanatory power method for
+#' each quantile in q. Internally calls `qcor.ep.ci()` for each quantile.
+#'
+#' @seealso \code{\link{qcor.ep.ci}}, \code{\link{qcor.R}}, \code{\link{qcor.ci}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 * x + rnorm(50)
+#' qcor.EP(x, y, q = c(0.25, 0.5, 0.75), nboot = 500)
+#' }
 qcor.EP<-function(x,y,q=c(.25,.5,.75),alpha=.05,nboot=1000,SEED=TRUE, xout=TRUE,
 method='PRO',regfun=Qreg){
 #

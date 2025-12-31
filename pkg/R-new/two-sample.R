@@ -17,6 +17,63 @@
 # Functions: 103
 # ==============================================================================
 
+#' Compare Multiple Quantiles Between Two Groups (Multicore Version)
+#'
+#' Compares quantiles between two independent groups using the Harrell-Davis
+#' estimator with percentile bootstrap. Uses Hochberg's method to control
+#' the familywise error rate across multiple quantile comparisons.
+#'
+#' @inheritParams common-params
+#' @param est Estimator function for quantiles (default: `hd`, the Harrell-Davis estimator).
+#' @param q Vector of quantiles to compare (default: c(.1, .25, .5, .75, .9)).
+#' @param xlab Label for x-axis in plot (default: "Group 1").
+#' @param ylab Label for y-axis in plot (default: "Est.1-Est.2").
+#' @param ADJ.CI Logical. If `TRUE`, adjusts confidence intervals based on the
+#'   significance level used by the corresponding test statistic (default: `TRUE`).
+#'
+#' @return A data frame with columns:
+#'   \itemize{
+#'     \item `q`: The quantile being compared
+#'     \item `n1`, `n2`: Sample sizes for groups 1 and 2
+#'     \item `est.1`, `est.2`: Quantile estimates for each group
+#'     \item `est.1_minus_est.2`: Difference between group estimates
+#'     \item `ci.low`, `ci.up`: Confidence interval bounds for the difference
+#'     \item `p_crit`: Critical p-value based on Hochberg's method
+#'     \item `p-value`: P-value for the comparison
+#'     \item `signif`: "YES" if significant, "NO" otherwise
+#'   }
+#'
+#' @details
+#' This function uses the percentile bootstrap method via `pb2genMC` to compare
+#' quantiles. Tied values are allowed. When comparing lower or upper quartiles,
+#' both power and Type I error rates compare favorably to other methods.
+#'
+#' The function uses Hochberg's sequentially rejective procedure to control the
+#' familywise error rate across all quantile comparisons. If `ADJ.CI = TRUE`,
+#' confidence intervals are adjusted to maintain consistency with the test results.
+#'
+#' A plot is created showing the point estimates and confidence intervals for
+#' each quantile difference.
+#'
+#' @note This function prints a message suggesting that `qcomhd` with `MC=TRUE`
+#'   can also be used for the same analysis.
+#'
+#' @seealso \code{\link{qcomhd}}, \code{\link{pb2genMC}}, \code{\link{hd}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50, mean = 0, sd = 1)
+#' y <- rnorm(50, mean = 0.5, sd = 1.2)
+#'
+#' # Compare multiple quantiles
+#' result <- qcomhdMC(x, y, nboot = 1000)
+#' print(result)
+#'
+#' # Compare specific quantiles only
+#' qcomhdMC(x, y, q = c(.25, .5, .75), nboot = 1000)
+#' }
 qcomhdMC<-function(x,y,est=hd,q=c(.1,.25,.5,.75,.9),nboot=4000,plotit=TRUE,SEED=TRUE,xlab="Group 1",ylab="Est.1-Est.2",alpha=.05,ADJ.CI=TRUE){
 #
 # Compare quantiles using pb2gen
@@ -80,6 +137,46 @@ points(output[,4],output[,8],pch="+")
 output
 }
 
+#' Multivariate Two-Sample Behrens-Fisher Test Using Bootstrap
+#'
+#' Compares trimmed means between two independent groups for multiple measures
+#' (multivariate Behrens-Fisher problem). Uses the percentile-t bootstrap
+#' method with simultaneous confidence intervals controlling familywise error rate.
+#'
+#' @inheritParams common-params
+#'
+#' @details
+#' For each of two independent groups with p measures per subject, this function
+#' compares the trimmed means of the first measure, the second measure, and so on,
+#' resulting in p comparisons between the two groups.
+#'
+#' The percentile-t bootstrap method is used to compute simultaneous confidence
+#' intervals with family-wise error control. By default, 20% trimming is used
+#' with 599 bootstrap samples.
+#'
+#' Data can be provided as n-by-p matrices or in list mode. Missing values are
+#' not allowed.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `psihat`: Matrix with columns: `con.num` (contrast number),
+#'       `psihat` (difference in trimmed means), `ci.lower`, `ci.upper`
+#'     \item `teststat`: Matrix with test statistics and standard errors
+#'     \item `critical.value`: Bootstrap critical value for simultaneous inference
+#'   }
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Create multivariate data for two groups
+#' set.seed(123)
+#' g1 <- matrix(rnorm(50 * 3), ncol = 3)  # 50 subjects, 3 measures
+#' g2 <- matrix(rnorm(60 * 3, mean = 0.3), ncol = 3)
+#'
+#' # Compare trimmed means for all measures
+#' result <- twomanbt(g1, g2)
+#' print(result$psihat)
+#' }
 twomanbt<-function(x,y,tr=.2,alpha=.05,nboot=599){
 #
 #   Two-sample Behrens-Fisher problem.
@@ -162,6 +259,43 @@ psihat[j,4]<-mean(matx[,j],tr)-mean(maty[,j])+crit*temp$se
 list(psihat=psihat,teststat=test,critical.value=crit)
 }
 
+#' Confidence Interval for Difference Between Two Binomial Proportions
+#'
+#' Computes a confidence interval for the difference between two independent
+#' binomial proportions (p1 - p2) using Beal's method.
+#'
+#' @param r1 Number of successes in group 1 (default: sum of non-NA values in `x`).
+#' @param n1 Sample size for group 1 (default: length of non-NA values in `x`).
+#' @param r2 Number of successes in group 2 (default: sum of non-NA values in `y`).
+#' @param n2 Sample size for group 2 (default: length of non-NA values in `y`).
+#' @inheritParams common-params
+#'
+#' @details
+#' If vectors `x` and `y` are provided, the function treats them as binary data
+#' (0 = failure, 1 = success) and computes `r1`, `n1`, `r2`, and `n2` automatically.
+#' Otherwise, these values must be provided explicitly.
+#'
+#' Beal's method provides accurate confidence intervals for the difference between
+#' two binomial proportions without relying on large-sample approximations.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `ci`: Two-element vector with lower and upper confidence bounds
+#'     \item `p1`: Estimated proportion for group 1 (r1/n1)
+#'     \item `p2`: Estimated proportion for group 2 (r2/n2)
+#'   }
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Using summary statistics
+#' twobici(r1 = 15, n1 = 50, r2 = 25, n2 = 60)
+#'
+#' # Using binary data vectors
+#' x <- rbinom(50, 1, 0.3)
+#' y <- rbinom(60, 1, 0.4)
+#' twobici(x = x, y = y)
+#' }
 twobici<-function(r1=sum(elimna(x)),n1=length(elimna(x)),r2=sum(elimna(y)),n2=length(elimna(y)),
 x=NA,y=NA,alpha=.05){
 #
@@ -207,6 +341,53 @@ p2<-r2/n2
 list(ci=ci,p1=p1,p2=p2)
 }
 
+#' Percentile Bootstrap CI for Difference in Trimmed Means
+#'
+#' Computes a percentile bootstrap confidence interval for the difference
+#' between two trimmed means. Independent groups are assumed.
+#'
+#' @inheritParams common-params
+#' @param WIN Logical. If `TRUE`, winsorizes data before bootstrapping (default: `FALSE`).
+#' @param win Amount of Winsorizing to apply when `WIN = TRUE` (default: 0.1).
+#' @param op Plot type parameter for `g2plot` when `plotit = TRUE` (default: 4).
+#'
+#' @details
+#' This function computes a bootstrap confidence interval for the difference
+#' between trimmed means of two independent groups. Missing values are automatically removed.
+#'
+#' When `WIN = TRUE`, data are winsorized before bootstrapping. The amount of trimming
+#' should be at least 0.2 when winsorizing. Sample sizes less than 15 may result in
+#' poor control of Type I error when winsorizing.
+#'
+#' If `plotit = TRUE`, creates a plot comparing the bootstrap distributions using `g2plot`.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `Est1`: Trimmed mean for group 1
+#'     \item `Est2`: Trimmed mean for group 2
+#'     \item `p.value`: P-value for the test
+#'     \item `ci`: Two-element vector with confidence interval bounds
+#'     \item `est.dif`: Estimated difference (Est1 - Est2)
+#'   }
+#'
+#' @seealso \code{\link{trimpb}}, \code{\link{pb2gen}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- rnorm(60, mean = 0.5)
+#'
+#' # Basic usage
+#' trimpb2(x, y)
+#'
+#' # With winsorizing
+#' trimpb2(x, y, WIN = TRUE, win = 0.1)
+#'
+#' # With plotting
+#' trimpb2(x, y, plotit = TRUE)
+#' }
 trimpb2<-function(x,y,tr=.2,alpha=.05,nboot=2000,WIN=FALSE,win=.1,plotit=FALSE,op=4,
 SEED=TRUE){
 #
@@ -266,6 +447,47 @@ if(plotit)g2plot(bvec[1,],bvec[2,],op=op)
 list(Est1=e1,Est2=e2,p.value=2*test,ci=ci,est.dif=est.dif)
 }
 
+#' Bootstrap CI for Difference Between Two Regression Slopes
+#'
+#' Computes a 95% confidence interval for the difference between two OLS
+#' regression slopes corresponding to two independent groups.
+#'
+#' @param x1 Covariate values for group 1.
+#' @param y1 Response values for group 1.
+#' @param x2 Covariate values for group 2.
+#' @param y2 Response values for group 2.
+#'
+#' @details
+#' Uses an adjusted percentile bootstrap method that gives good results when
+#' the error term is heteroscedastic. The function uses 599 bootstrap samples.
+#'
+#' WARNING: If the number of bootstrap samples is altered, it is unknown how to
+#' adjust the confidence interval when n1 + n2 < 250. The confidence interval
+#' bounds are automatically adjusted based on the combined sample size.
+#'
+#' Missing values are automatically removed. Only one covariate is allowed.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `b1`: OLS slope estimate for group 1
+#'     \item `b2`: OLS slope estimate for group 2
+#'     \item `ci`: 95% confidence interval for the difference (b1 - b2)
+#'   }
+#'
+#' @seealso \code{\link{tworegwb}}, \code{\link{reg2ci}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x1 <- rnorm(50)
+#' y1 <- 2 + 3 * x1 + rnorm(50)
+#' x2 <- rnorm(60)
+#' y2 <- 2 + 2.5 * x2 + rnorm(60)
+#'
+#' result <- twolsreg(x1, y1, x2, y2)
+#' print(result)
+#' }
 twolsreg<-function(x1,y1,x2,y2){
 #
 #   Compute a .95 confidence interval for
@@ -320,6 +542,45 @@ ci<-c(bsort[ilow],bsort[ihi])
 list(b1=b1,b2=b2,ci=ci)
 }
 
+#' Mann-Whitney U Test with Adjusted P-Value
+#'
+#' Performs the Mann-Whitney (Wilcoxon rank-sum) test and returns both the
+#' usual p-value and an adjusted p-value using the Hodges-Ramsey-Wechsler method.
+#'
+#' @inheritParams common-params
+#'
+#' @details
+#' This function computes the Mann-Whitney U test statistic and returns two p-values:
+#' the usual asymptotic p-value and an adjusted p-value using the Hodges, Ramsey and
+#' Wechsler (1990) method that provides better finite-sample performance.
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' The function also returns p.hat, the estimated probability that a randomly
+#' selected value from y exceeds a randomly selected value from x.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `p.value`: Standard asymptotic p-value for Mann-Whitney test
+#'     \item `adj.p.value`: Adjusted p-value using Hodges-Ramsey-Wechsler method
+#'     \item `p.hat`: Estimate of P(Y > X), computed as U/(n*m)
+#'   }
+#'
+#' @references Hodges, J. L., Ramsey, P. H., & Wechsler, S. (1990). Improved
+#'   significance probabilities of the Wilcoxon test. Journal of Educational
+#'   Statistics, 15(3), 249-265.
+#'
+#' @seealso \code{\link{wmwloc}}, \code{\link{wmwpb}}, \code{\link{wmw.RZR}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' x <- rnorm(30)
+#' y <- rnorm(40, mean = 0.5)
+#'
+#' result <- wmw(x, y)
+#' print(result)
+#' }
 wmw<-function(x,y){
 #
 # Do Mann-Whitney test
@@ -349,6 +610,49 @@ sig<-2*(1-pnorm(abs(z)))
 list(p.value=sig,adj.p.value=sighrw,p.hat=u/(n*m))
 }
 
+#' Bootstrap CI for Difference Between Two Pearson Correlations
+#'
+#' Computes a 95% confidence interval for the difference between two Pearson
+#' correlations corresponding to two independent groups using adjusted percentile
+#' bootstrap.
+#'
+#' @param x1 First variable for group 1.
+#' @param y1 Second variable for group 1.
+#' @param x2 First variable for group 2.
+#' @param y2 Second variable for group 2.
+#' @inheritParams common-params
+#'
+#' @details
+#' Uses an adjusted percentile bootstrap method (599 samples) that gives good
+#' results when the error term is heteroscedastic. The confidence interval bounds
+#' are automatically adjusted based on combined sample size.
+#'
+#' WARNING: If the number of bootstrap samples is altered, adjustment of CI
+#' bounds for n1 + n2 < 250 is unknown.
+#'
+#' Missing values are automatically removed.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `r1`: Pearson correlation for group 1
+#'     \item `r2`: Pearson correlation for group 2
+#'     \item `ci`: 95% confidence interval for r1 - r2
+#'   }
+#'
+#' @seealso \code{\link{tworhobt}}, \code{\link{twohc4cor}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x1 <- rnorm(50)
+#' y1 <- 0.5 * x1 + rnorm(50)
+#' x2 <- rnorm(60)
+#' y2 <- 0.3 * x2 + rnorm(60)
+#'
+#' result <- twopcor(x1, y1, x2, y2)
+#' print(result)
+#' }
 twopcor<-function(x1,y1,x2,y2,SEED=TRUE){
 #
 #   Compute a .95 confidence interval for
@@ -401,6 +705,47 @@ ci<-c(bsort[ilow],bsort[ihi])
 list(r1=r1,r2=r2,ci=ci)
 }
 
+#' Bootstrap-t Test for Comparing Two Independent Correlations
+#'
+#' Compares two independent correlations using a bootstrap-t method with the
+#' HC4 heteroscedasticity-consistent estimator.
+#'
+#' @param X1 First variable for group 1.
+#' @param Y1 Second variable for group 1.
+#' @param X2 First variable for group 2.
+#' @param Y2 Second variable for group 2.
+#' @inheritParams common-params
+#'
+#' @details
+#' Uses a bootstrap-t approach with the HC4 estimator to compare correlations
+#' between two independent groups. This method provides better control of Type I
+#' error rates than methods based on Fisher's z-transformation, especially with
+#' non-normal data.
+#'
+#' The function standardizes the variables before computing correlations and
+#' uses the HC4 method for robust standard error estimation.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `test`: Test statistic
+#'     \item `crit.val`: Bootstrap critical values
+#'     \item `p.value`: P-value for the test
+#'   }
+#'
+#' @seealso \code{\link{twopcor}}, \code{\link{twohc4cor}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' X1 <- rnorm(50)
+#' Y1 <- 0.5 * X1 + rnorm(50)
+#' X2 <- rnorm(60)
+#' Y2 <- 0.3 * X2 + rnorm(60)
+#'
+#' result <- tworhobt(X1, Y1, X2, Y2)
+#' print(result)
+#' }
 tworhobt<-function(X1,Y1,X2,Y2,alpha=.05,nboot=499,SEED=TRUE){
 #
 # compare two independent correlations using a bootstrap-t method in conjunction with the HC4 estimator
@@ -448,6 +793,44 @@ if(pv<0)pv=0
 list(test=test,crit.val=crit,p.value=pv)
 }
 
+#' Test for Equality of Two Binomial Proportions
+#'
+#' Tests the hypothesis that two independent binomial distributions have equal
+#' probability of success using the Storer-Kim method.
+#'
+#' @param r1 Number of successes in group 1.
+#' @param n1 Sample size for group 1.
+#' @param r2 Number of successes in group 2.
+#' @param n2 Sample size for group 2.
+#' @inheritParams common-params
+#'
+#' @details
+#' The Storer-Kim method provides an exact test for comparing two binomial
+#' proportions without relying on large-sample approximations. It has better
+#' control of Type I error rates than asymptotic methods, especially with
+#' small sample sizes.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `p.value`: P-value for the test
+#'     \item `p1`: Estimated proportion for group 1 (r1/n1)
+#'     \item `p2`: Estimated proportion for group 2 (r2/n2)
+#'     \item `est.dif`: Estimated difference (p1 - p2)
+#'   }
+#'
+#' @seealso \code{\link{twobici}}, \code{\link{twobicipv}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Test if success rates differ
+#' twobinom(r1 = 15, n1 = 50, r2 = 25, n2 = 60)
+#'
+#' # Using binary data vectors
+#' x <- rbinom(50, 1, 0.3)
+#' y <- rbinom(60, 1, 0.4)
+#' twobinom(x = x, y = y)
+#' }
 twobinom<-function(r1=sum(elimna(x)),n1=length(elimna(x)),r2=sum(elimna(y)),n2=length(elimna(y)),x=NA,y=NA,alpha=.05){
 #
 # Test the hypothesis that two independent binomials have equal
@@ -487,6 +870,68 @@ test<-sum(m3*m4)
 list(p.value=test,p1=r1/n1,p2=r2/n2,est.dif=r1/n1-r2/n2)
 }
 
+#' Multiple Comparisons via Percentile Bootstrap (Rom's Method)
+#'
+#' Computes confidence intervals for linear contrasts of trimmed means across
+#' multiple independent groups using the percentile bootstrap method. Uses
+#' Rom's (1990) method to control the familywise error rate.
+#'
+#' @inheritParams common-params
+#' @param x Data in list mode (each element is a group) or matrix (columns are groups).
+#' @param crit Critical value for Rom's method (default: `NA`, computed automatically for tr=0.2).
+#' @param con Matrix of contrast coefficients (rows = groups, columns = contrasts).
+#'   If 0, performs all pairwise comparisons (default: 0).
+#' @param tr Trimming proportion (default: 0.2).
+#' @param alpha Significance level (default: 0.05).
+#' @param nboot Number of bootstrap samples (default: 2000).
+#' @param grp Vector specifying which groups to analyze (default: `NA`, uses all groups).
+#' @param WIN Logical. If `TRUE`, uses Winsorized means instead of trimmed means (default: `FALSE`).
+#' @param win Winsorizing proportion when `WIN=TRUE` (default: 0.1).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `num.sig`: Number of significant contrasts
+#'     \item `con`: Matrix of contrast coefficients used
+#'     \item `psihat`: Vector of contrast estimates
+#'     \item `test`: Test statistics
+#'     \item `crit.val`: Critical value(s) used
+#'     \item `p.value`: P-values for each contrast
+#'     \item Various other components depending on contrast type
+#'   }
+#'
+#' @details
+#' This function performs multiple comparisons of trimmed means using Rom's (1990)
+#' sequentially rejective procedure, which controls the familywise Type I error rate.
+#' The percentile bootstrap is used to obtain p-values and confidence intervals.
+#'
+#' By default, all pairwise comparisons are performed. Custom linear contrasts can
+#' be specified via the `con` matrix, where each column represents one contrast.
+#'
+#' When `WIN=TRUE`, Winsorized means are used instead of trimmed means. In this
+#' case, the trimming proportion should typically be at least 0.2.
+#'
+#' @references
+#' Rom, D. M. (1990). A sequentially rejective test procedure based on a modified
+#' Bonferroni inequality. Biometrika, 77, 663-665.
+#'
+#' @seealso \code{\link{lincon}}, \code{\link{pb2gen}}, \code{\link{tmean}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare four groups
+#' set.seed(123)
+#' x <- list(
+#'   rnorm(30, mean = 0),
+#'   rnorm(30, mean = 0.5),
+#'   rnorm(30, mean = 0.3),
+#'   rnorm(30, mean = 0.8)
+#' )
+#'
+#' # All pairwise comparisons
+#' result <- mcppb20(x, nboot = 1000)
+#' print(result)
+#' }
 mcppb20<-function(x,crit=NA,con=0,tr=.2,alpha=.05,nboot=2000,grp=NA,WIN=FALSE,
 win=.1){
 #
@@ -636,6 +1081,69 @@ psihat[d,3]<-testit$test[1,4]
 list(psihat=psihat,crit.p.value=2*crit,con=con)
 }
 
+#' Compare Variances of Two Dependent Groups
+#'
+#' Tests whether two dependent (paired) groups have equal variances using
+#' a bootstrap approach based on the correlation between U = X - Y and V = X + Y.
+#'
+#' @param x Numeric vector for group 1 (or first measurement).
+#' @param y Numeric vector for group 2 (or second measurement). Must have
+#'   the same length as `x` since observations are paired.
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `n`: Sample size (number of complete pairs)
+#'     \item `ci`: Bootstrap confidence interval for the correlation between U and V
+#'   }
+#'
+#' @details
+#' This function tests for equality of variances in paired data using a clever
+#' transformation:
+#'
+#' 1. Computes U = X - Y (difference scores)
+#' 2. Computes V = X + Y (sum scores)
+#' 3. Tests whether cor(U, V) = 0
+#'
+#' Under the null hypothesis of equal variances (Var(X) = Var(Y)), the
+#' correlation between U and V equals zero. If the variances differ, this
+#' correlation will be non-zero.
+#'
+#' The function uses `pcorb` to compute a bootstrap confidence interval for
+#' the correlation coefficient with 599 bootstrap samples. If the confidence
+#' interval excludes zero, we reject the hypothesis of equal variances.
+#'
+#' **Advantages**:
+#' \itemize{
+#'   \item Works with dependent/paired data
+#'   \item Distribution-free (no normality assumption)
+#'   \item Robust to outliers
+#' }
+#'
+#' @note
+#' Missing values are automatically removed using pairwise deletion. The number
+#' of bootstrap samples is fixed at 599.
+#'
+#' @seealso \code{\link{comvar2}} for independent groups,
+#'   \code{\link{pcorb}} for the underlying bootstrap correlation test
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Generate paired data with unequal variances
+#' set.seed(123)
+#' x <- rnorm(50, mean = 0, sd = 1)
+#' y <- rnorm(50, mean = 0, sd = 2)  # Larger variance
+#'
+#' # Test for equal variances
+#' result <- comvar2d(x, y)
+#' print(result)
+#'
+#' # If CI excludes 0, variances differ
+#' if (result$ci[1] > 0 || result$ci[2] < 0) {
+#'   cat("Variances are significantly different\n")
+#' }
+#' }
 comvar2d<-function(x,y,SEED=TRUE){
 #
 #  Compare the variances of two dependent groups.
@@ -649,6 +1157,94 @@ ci<-pcorb(U,V,SEED=SEED)$ci
 list(n=nrow(m),ci=ci)
 }
 
+#' Multivariate WMW Test Using Projection onto Line Connecting Centers
+#'
+#' Compares two multivariate groups by projecting data onto the line connecting
+#' the group centers, then estimating P(X < Y) using the projected distances.
+#' This provides a distribution-free multivariate two-sample test.
+#'
+#' @param m1 Matrix or data frame for group 1 (must have 2+ columns).
+#' @param m2 Matrix or data frame for group 2 (must have 2+ columns).
+#' @param plotit Logical. If `TRUE`, creates a plot of projected data (default: `TRUE`).
+#' @param cop Method for computing the center of each group (default: 3):
+#'   \itemize{
+#'     \item 1 = Donoho-Gasko (Tukey) median
+#'     \item 2 = MCD (Minimum Covariance Determinant) center
+#'     \item 3 = Median of marginal distributions
+#'     \item 4 = Modified M-estimator (smean)
+#'   }
+#' @param alpha Significance level for confidence interval (default: 0.05).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param pop Plot type when `plotit = TRUE` (default: 4):
+#'   \itemize{
+#'     \item 1 = Two dotplots of projected distances
+#'     \item 2 = Boxplots
+#'     \item 3 = Expected frequency curve
+#'     \item 4 = Adaptive kernel density
+#'   }
+#' @param fr Fraction parameter for span in plots (default: 0.8).
+#' @param pr Logical. If `TRUE`, prints detailed output (default: `FALSE`).
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#' @param tr Trimming proportion for center computation when `cop = 3` (default: 0.5).
+#' @param NC Logical. If `FALSE`, critical values not computed (default: `TRUE`).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `p.value`: P-value for testing H0: P(X < Y) = 0.5
+#'     \item `ci`: Bootstrap confidence interval for P(X < Y)
+#'     \item `p.hat`: Estimated probability that group 1 < group 2
+#'     \item `n1`, `n2`: Sample sizes
+#'     \item `proj1`, `proj2`: Projected distances for each group
+#'   }
+#'
+#' @details
+#' This function reduces the multivariate two-sample problem to a univariate one
+#' by projecting both groups onto the line connecting their centers. The projection
+#' approach is:
+#'
+#' 1. Compute the center of each group using the method specified by `cop`
+#' 2. Project all observations onto the line connecting these two centers
+#' 3. Use the WMW test on the projected distances
+#' 4. Estimate P(projected distance from group 1 < projected distance from group 2)
+#'
+#' The choice of center (`cop`) affects robustness:
+#' \itemize{
+#'   \item **cop = 1**: Donoho-Gasko median (most robust, marked with +)
+#'   \item **cop = 2**: MCD center (robust, good for elliptical data)
+#'   \item **cop = 3**: Componentwise median (simple, fairly robust)
+#'   \item **cop = 4**: Modified M-estimator (balance of efficiency and robustness)
+#' }
+#'
+#' Bootstrap confidence intervals are computed for the probability estimate.
+#'
+#' @note
+#' Data must have at least 2 columns. For univariate data, use `wmw.ref.dif`
+#' or related functions. Missing values are automatically removed.
+#'
+#' @seealso \code{\link{mwmw}} for related multivariate WMW approach,
+#'   \code{\link{wmw.ref.dif}} for univariate WMW,
+#'   \code{\link{smean}} for modified M-estimator
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Generate bivariate data
+#' set.seed(123)
+#' m1 <- cbind(rnorm(50), rnorm(50))
+#' m2 <- cbind(rnorm(50, mean = 0.5), rnorm(50, mean = 0.3))
+#'
+#' # Compare groups with default settings (median of marginals)
+#' result <- mulwmw(m1, m2)
+#'
+#' # Use Donoho-Gasko median
+#' mulwmw(m1, m2, cop = 1)
+#'
+#' # Use MCD center with boxplots
+#' mulwmw(m1, m2, cop = 2, pop = 2)
+#'
+#' # Increase bootstrap samples
+#' mulwmw(m1, m2, nboot = 2000)
+#' }
 mulwmw<-function(m1,m2,plotit=TRUE,cop=3,alpha=.05,nboot=1000,pop=4,fr=.8,pr=FALSE,SEED=TRUE,tr=.5,NC=TRUE){
 #
 #
@@ -767,6 +1363,24 @@ if(NC)v1<-mulwmwcrit(m1,m2,cop=cop,alpha=alpha,iter=nboot,pr=pr,SEED=SEED)
 list(phat=phat,lower.crit=v1[1],upper.crit=v1[2],n1=n1,n2=n2)
 }
 
+#' Determine Critical Values for Multivariate WMW Test (Internal Helper)
+#'
+#' Computes bootstrap critical values for the multivariate Wilcoxon-Mann-Whitney
+#' test implemented in `mulwmw`. This is an internal helper function.
+#'
+#' @param mm1 Matrix of data for group 1 (rows are observations, columns are variables).
+#' @param mm2 Matrix of data for group 2 (rows are observations, columns are variables).
+#' @param plotit Logical. If `TRUE`, creates a plot (default: `TRUE`).
+#' @param cop Integer specifying centering method (1=halfspace depth, 2=MCD, 3=trimmed mean, 4=marginal median; default: 3).
+#' @param iter Number of bootstrap iterations (default: 1000).
+#' @param alpha Significance level (default: 0.05).
+#' @param SEED Logical. If `TRUE`, sets random seed (default: `TRUE`).
+#' @param pr Logical. If `TRUE`, prints progress messages (default: `FALSE`).
+#'
+#' @return A two-element vector with lower and upper critical values.
+#'
+#' @keywords internal
+#' @seealso \code{\link{mulwmw}}
 mulwmwcrit<-function(mm1,mm2,plotit=TRUE,cop=3,iter=1000,alpha=.05,SEED=TRUE,pr=FALSE){
 #
 #
@@ -845,6 +1459,94 @@ crit[2]<-val[up]
 crit
 }
 
+#' Multivariate Analog of Wilcoxon-Mann-Whitney Test
+#'
+#' Computes a multivariate effect size measure analogous to the WMW test
+#' using halfspace depth. Provides a distribution-free way to compare
+#' two multivariate groups.
+#'
+#' @param m1 Matrix or data frame for group 1 (must have 2+ columns).
+#' @param m2 Matrix or data frame for group 2 (must have 2+ columns).
+#' @param cop Method for computing the center when approximating halfspace depth
+#'   (default: 5):
+#'   \itemize{
+#'     \item 1 = Halfspace median
+#'     \item 2 = MCD (Minimum Covariance Determinant)
+#'     \item 3 = Marginal medians
+#'     \item 4 = MVE (Minimum Volume Ellipsoid)
+#'     \item 5 = Skipped mean
+#'   }
+#' @param pr Logical. If `TRUE`, prints critical values and guidance (default: `TRUE`).
+#' @param plotit Logical. If `TRUE`, creates a plot (default: `TRUE`).
+#' @param pop Plot type when `plotit = TRUE` (default: 1):
+#'   \itemize{
+#'     \item 1 = Scatterplot
+#'     \item 2 = Expected frequency curve
+#'     \item 3 = Adaptive kernel density
+#'   }
+#' @param fr Fraction parameter for plotting (default: 0.8).
+#' @param op Operation method (default: 1). Controls depth calculation approach.
+#' @param dop Depth operation method for halfspace depth approximation (default: 1):
+#'   \itemize{
+#'     \item 1 = Method A1 approximation
+#'     \item 2 = Method A2 approximation
+#'   }
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `phat`: Effect size measure (relative depth of zero vector)
+#'     \item `center`: Center of the difference distribution
+#'     \item `crit.val`: Critical values for alpha = 0.1, 0.05, 0.025, 0.01
+#'   }
+#'
+#' @details
+#' This function extends the WMW test to multivariate data using halfspace depth.
+#' The approach:
+#'
+#' 1. Computes all pairwise differences between groups: D_ij = X_i - Y_j
+#' 2. Calculates the halfspace depth of the zero vector relative to these differences
+#' 3. The effect size `phat` is the relative depth of zero
+#'
+#' **Interpretation**:
+#' \itemize{
+#'   \item `phat` near 1 indicates the groups are similar (zero is central to differences)
+#'   \item `phat` near 0 indicates the groups differ substantially
+#'   \item Reject H0 (groups equal) if `phat` <= critical value
+#' }
+#'
+#' Critical values are provided for alpha levels 0.1, 0.05, 0.025, and 0.01,
+#' based on the asymptotic distribution. The test statistic approximately
+#' follows a normal distribution for large samples.
+#'
+#' When plotting (`plotit = TRUE`), the function displays the distribution of
+#' pairwise differences, with the center marked by "o" and the zero vector by "+".
+#'
+#' @note
+#' For univariate data (single column), use `cid` or `bmp` instead.
+#' Data must have matching numbers of columns in both groups.
+#'
+#' @seealso \code{\link{mulwmw}} for projection-based multivariate WMW,
+#'   \code{\link{cid}} for univariate Cliff's analog,
+#'   \code{\link{dmean}} for Donoho-Gasko median
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Generate bivariate data
+#' set.seed(123)
+#' m1 <- cbind(rnorm(40), rnorm(40))
+#' m2 <- cbind(rnorm(40, mean = 0.3), rnorm(40, mean = 0.2))
+#'
+#' # Multivariate WMW test
+#' result <- mwmw(m1, m2)
+#' print(result)
+#'
+#' # Use MCD center
+#' mwmw(m1, m2, cop = 2)
+#'
+#' # With adaptive kernel density plot
+#' mwmw(m1, m2, pop = 3)
+#' }
 mwmw<-function(m1,m2,cop=5,pr=TRUE,plotit=TRUE,pop=1,fr=.8,op=1,dop=1){
 #
 # Compute measure of effect size, p,
@@ -918,6 +1620,51 @@ if(pop==3)akerdmul(mdif,fr=fr)
 list(phat=phat,center=center,crit.val=crit)
 }
 
+#' Compare Two Dependent Pearson Correlations (Non-Overlapping)
+#'
+#' @description
+#' Computes a confidence interval for the difference between two dependent Pearson
+#' correlations in the non-overlapping case, where the correlations involve completely
+#' different pairs of variables.
+#'
+#' @inheritParams common-params
+#' @param x Matrix or data frame with 2 columns.
+#' @param y Matrix or data frame with 2 columns.
+#' @param HC4 Logical; if TRUE, uses HC4 heteroscedasticity correction. Required for
+#'   alpha not equal to 0.05.
+#'
+#' @return A list with components:
+#'   \item{est.1}{Correlation between x[,1] and x[,2]}
+#'   \item{est.2}{Correlation between y[,1] and y[,2]}
+#'   \item{ci.lower}{Lower confidence limit for the difference}
+#'   \item{ci.upper}{Upper confidence limit for the difference}
+#'
+#' @details
+#' This function compares the correlation between x[,1] and x[,2] to the correlation
+#' between y[,1] and y[,2]. This is the "non-overlapping" case because the two
+#' correlations involve completely different pairs of variables (though the data
+#' may be from the same subjects).
+#'
+#' The method deals with heteroscedasticity and non-normality. For alpha != 0.05,
+#' you must use HC4=TRUE.
+#'
+#' @references
+#' Wilcox, R.R. (2009). Comparing Pearson correlations: Dealing with heteroscedasticity
+#' and non-normality. Communications in Statistics - Simulation and Computation, 38,
+#' 2220-2234.
+#'
+#' @seealso \code{\link{TWOpov}}, \code{\link{twoDNOV}}, \code{\link{tworhobt}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' n <- 50
+#' x <- cbind(rnorm(n), rnorm(n))
+#' y <- cbind(rnorm(n), rnorm(n))
+#'
+#' result <- TWOpNOV(x, y)
+#' result$ci.lower
+#' result$ci.upper
 TWOpNOV<-function(x,y,HC4=FALSE,alpha=.05){
 #
 #   Compute a .95 confidence interval
@@ -971,6 +1718,53 @@ if(is.na(L) || is.na(U))L=U=0
 list(est.1=r12,est.2=r34,ci.lower=L,ci.upper=U)
 }
 
+#' Compare Two Dependent Pearson Correlations (Overlapping)
+#'
+#' @description
+#' Computes a confidence interval for the difference between two dependent Pearson
+#' correlations in the overlapping case, where both correlations share a common variable.
+#'
+#' @inheritParams common-params
+#' @param x Matrix or data frame with 2 columns.
+#' @param y Numeric vector.
+#' @param CN Logical; if TRUE, uses Chen-Nadarajah method.
+#' @param BOOT Logical; if TRUE, uses bootstrap method.
+#' @param nboot Number of bootstrap samples (default 499).
+#' @param ZCI Logical; internal parameter for handling NA values in CI.
+#'
+#' @return A list with components:
+#'   \item{est.1}{Correlation between x[,1] and y}
+#'   \item{est.2}{Correlation between x[,2] and y}
+#'   \item{ci.lower}{Lower confidence limit for the difference}
+#'   \item{ci.upper}{Upper confidence limit for the difference}
+#'   \item{p.value}{P-value for testing equality (if BOOT=TRUE)}
+#'
+#' @details
+#' This function compares the correlation of x[,1] with y to the correlation of x[,2]
+#' with y. This is the "overlapping" case because both correlations share the common
+#' variable y.
+#'
+#' The default method uses a bootstrap approach (BOOT=TRUE). Alternatively, CN=TRUE
+#' uses the Chen-Nadarajah method. The method deals with heteroscedasticity and
+#' non-normality.
+#'
+#' @references
+#' Wilcox, R.R. (2009). Comparing Pearson correlations: Dealing with heteroscedasticity
+#' and non-normality. Communications in Statistics - Simulation and Computation, 38,
+#' 2220-2234.
+#'
+#' @seealso \code{\link{TWOpNOV}}, \code{\link{twoDcorR}}, \code{\link{tworhobt}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' n <- 50
+#' x <- cbind(rnorm(n), rnorm(n))
+#' y <- rnorm(n)
+#'
+#' result <- TWOpov(x, y)
+#' result$ci.lower
+#' result$ci.upper
 TWOpov<-function(x,y,alpha=.05,CN=FALSE,BOOT=TRUE, nboot=499,SEED=TRUE,ZCI=FALSE){
 #
 # Comparing two dependent correlations: Overlapping case
@@ -1008,6 +1802,49 @@ if(is.na(L) || is.na(U))L=U=0
 list(est.rho1=r12,est.rho2=r13,dif=r12-r13,ci=c(L,U))
 }
 
+#' Percentile Bootstrap for Trimmed Mean Comparison
+#'
+#' Enhanced version of trimmed mean comparison with bootstrap,  supporting both
+#' one-sample and two-sample designs (independent or dependent groups).
+#'
+#' @inheritParams common-params
+#' @param WIN Logical. If `TRUE`, uses Winsorizing (default: `FALSE`).
+#' @param win Amount of Winsorizing when `WIN = TRUE` (default: 0.1).
+#' @param pop Plot type: 1=expected frequency, 2=kernel density, 3=boxplot, 4=stem-and-leaf (default: 1).
+#' @param null.value Null hypothesis value for testing (default: 0).
+#' @param xlab Label for x-axis (default: "X").
+#' @param fr Fraction parameter (default: NA).
+#'
+#' @details
+#' This function compares trimmed means using percentile bootstrap. It can handle:
+#' \itemize{
+#'   \item One-sample test when only `x` is provided
+#'   \item Independent two-sample test when `x` and `y` are separate vectors
+#'   \item Dependent (paired) test when `y = NULL` and `x` is a two-column matrix
+#' }
+#'
+#' Missing values are automatically removed.
+#'
+#' When `plotit = TRUE`, creates a plot of the bootstrap distribution with type
+#' specified by `pop`.
+#'
+#' @return A list with components including estimates, confidence interval, and p-value.
+#'
+#' @seealso \code{\link{trimpb2}}, \code{\link{pb2gen}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Two independent groups
+#' x <- rnorm(50)
+#' y <- rnorm(60, mean = 0.5)
+#' trimpb(x, y)
+#'
+#' # Dependent groups (paired)
+#' before <- rnorm(30)
+#' after <- before + rnorm(30, mean = 0.3)
+#' trimpb(cbind(before, after))
+#' }
 trimpb<-function(x,y=NULL,tr=.2,alpha=.05,nboot=2000,WIN=FALSE,win=.1,
 plotit=FALSE,pop=1,null.value=0,pr=TRUE,xlab="X",fr=NA,SEED=TRUE){
 #
@@ -1073,6 +1910,43 @@ if(pop==6)akerd(as.vector(bvec),xlab=xlab)
 list(estimate=mean(x,tr=tr),ci=ci,p.value=p.value)
 }
 
+#' Yuen's Test for Dependent Groups with Missing Values
+#'
+#' Compares trimmed means of two dependent (paired) variables allowing for
+#' missing values. Uses marginal trimmed means computed from all available data.
+#'
+#' @inheritParams common-params
+#'
+#' @details
+#' This function extends Yuen's test for dependent groups to handle missing data.
+#' Unlike standard paired tests that delete cases with any missing values, this
+#' function uses all available data by computing marginal trimmed means.
+#'
+#' Pairs with both values missing are deleted. For pairs with one value missing,
+#' the observed value contributes to its marginal trimmed mean. A weighted
+#' combination of these estimates is used.
+#'
+#' If `y` is not supplied, `x` is assumed to be a two-column matrix.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `estimate`: Estimated difference in trimmed means
+#'     \item `test`: Test statistic
+#'     \item `se`: Standard error of the difference
+#'   }
+#'
+#' @seealso \code{\link{yuend}}, \code{\link{yuendv2}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Data with missing values
+#' x <- c(10, 12, NA, 15, 18, 20, NA, 25)
+#' y <- c(8, NA, 14, 13, 16, 19, 22, 23)
+#'
+#' result <- yuendna(x, y)
+#' print(result)
+#' }
 yuendna<-function(x,y=NULL,tr=.2,alpha=.05){
 #
 #  Compare the trimmed means of two dependent random variables
@@ -1126,6 +2000,48 @@ test=est/SE
 list(estimate=est,test=test,se=SE)
 }
 
+#' Yuen's Test for Independent Groups with Visualization
+#'
+#' Performs Yuen's test for comparing trimmed means between two independent
+#' groups with optional visualization and various display options.
+#'
+#' @inheritParams common-params
+#' @param plotfun Plotting function to use (default: `splot`).
+#' @param op Logical. If `TRUE`, prints output (default: `TRUE`).
+#' @param VL Logical. If `TRUE`, adds vertical lines to plot (default: `TRUE`).
+#' @param cor.op Logical. If `TRUE`, displays correlation information (default: `FALSE`).
+#' @param loc.fun Location function for plotting (default: `median`).
+#' @param xlab Label for x-axis (default: "Groups").
+#' @param ylab Label for y-axis (default: "").
+#' @param PB Logical. If `TRUE`, adds percentile bootstrap confidence interval (default: `FALSE`).
+#'
+#' @details
+#' This is an enhanced version of Yuen's test that provides visualization options
+#' and additional diagnostic information. The test compares trimmed means of two
+#' independent groups using Welch's approach for unequal variances.
+#'
+#' When `plotit = TRUE`, creates a plot comparing the two groups. When `PB = TRUE`,
+#' also computes a percentile bootstrap confidence interval for comparison.
+#'
+#' Missing values are automatically removed.
+#'
+#' @return A list with Yuen test results including estimates, test statistic,
+#'   p-value, confidence interval, and degrees of freedom.
+#'
+#' @seealso \code{\link{yuen}}, \code{\link{yuenbt}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' x <- rnorm(50)
+#' y <- rnorm(60, mean = 0.5)
+#'
+#' # Basic test with plot
+#' yuenv2(x, y, plotit = TRUE)
+#'
+#' # With bootstrap CI
+#' yuenv2(x, y, plotit = TRUE, PB = TRUE)
+#' }
 yuenv2<-function(x,y=NULL,tr=.2,alpha=.05,plotit=FALSE,plotfun=splot,op=TRUE, VL=TRUE,cor.op=FALSE, loc.fun=median,
 xlab="Groups",ylab="",PB=FALSE,nboot=100, SEED=TRUE){
 #
@@ -1218,6 +2134,33 @@ p.value=yuen,dif=dif,se=sqrt(q1+q2),teststat=test,
 crit=crit,df=df,Var.Explained=e.pow,Effect.Size=sqrt(e.pow))
 }
 
+#' Explanatory Measure of Effect Size for Yuen's Test with CI
+#'
+#' Computes an explanatory measure of effect size for Yuen's test along with
+#' a bootstrap confidence interval.
+#'
+#' @inheritParams common-params
+#'
+#' @details
+#' The effect size measure indicates the degree to which distributions differ
+#' in a way that is directly interpretable. Bootstrap methods are used to
+#' compute the confidence interval.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `estimate`: Effect size estimate
+#'     \item `ci`: Bootstrap confidence interval for the effect size
+#'   }
+#'
+#' @seealso \code{\link{yuen.effect}}, \code{\link{akp.effect}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' x <- rnorm(50)
+#' y <- rnorm(60, mean = 0.5)
+#' yuen.effect.ci(x, y)
+#' }
 yuen.effect.ci<-function(x,y,SEED=TRUE,nboot=400,tr=.2,alpha=.05){
 #
 # Compute a 1-alpha  confidence interval
@@ -1248,6 +2191,30 @@ es=abs(yuenv2(x,y,tr=tr)$Effect.Size)
 list(CI=ci,Effect.Size=es)
 }
 
+#' Explanatory Measure of Effect Size for Yuen's Test
+#'
+#' Computes an explanatory measure of effect size when comparing trimmed means.
+#'
+#' @inheritParams common-params
+#' @inheritParams yuenv2
+#'
+#' @details
+#' This effect size measure is an explanatory measure that indicates the
+#' probability-based interpretation of the difference between trimmed means.
+#' Same as `yuen` but additionally computes explanatory power and related
+#' effect size measures.
+#'
+#' @return A list with effect size estimate and related information.
+#'
+#' @seealso \code{\link{yuen.effect.ci}}, \code{\link{akp.effect}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' x <- rnorm(50)
+#' y <- rnorm(60, mean = 0.5)
+#' yuen.effect(x, y)
+#' }
 yuen.effect<-function(x,y,tr=.2,alpha=.05,plotit=FALSE,
 plotfun=splot,op=TRUE,VL=TRUE,cor.op=FALSE,
 xlab="Groups",ylab="",PB=FALSE){
@@ -1314,6 +2281,17 @@ list(ci=c(low,up),p.value=yuen,dif=dif,se=sqrt(q1+q2),teststat=test,
 crit=crit,df=df,Var.Explained=e.pow,Effect.Size=sqrt(e.pow))
 }
 
+#' WMW Location Estimates for All Pairs of Groups
+#'
+#' Computes WMW-based location estimates for all pairwise group comparisons.
+#'
+#' @inheritParams common-params
+#'
+#' @details
+#' This function computes pairwise WMW location differences for multiple groups.
+#' Primarily an internal helper function.
+#'
+#' @keywords internal
 wmwloc2<-function(x,est=median){
 #
 # Compute loc2dif for all pairs of groups
@@ -1331,6 +2309,42 @@ locvec[ic]=loc2dif(x[[j]],x[[k]],est=est)
 locvec
 }
 
+#' Multiple Group Comparisons Using Cliff's Method
+#'
+#' Performs all pairwise comparisons using a variation of Cliff's method based
+#' on the median of X-Y. Controls familywise error rate using Hochberg's method.
+#'
+#' @inheritParams common-params
+#' @param g Column number containing group/factor variable (default: `NULL`).
+#' @param dp Column number containing dependent variable (default: `NULL`).
+#'
+#' @details
+#' Uses p = P(X < Y) as an effect size measure and tests whether p = 0.5.
+#' Performs all pairwise comparisons with familywise error rate controlled
+#' via Hochberg's method.
+#'
+#' Data can be provided as:
+#' \itemize{
+#'   \item Matrix where columns are groups (when `g = NULL`)
+#'   \item List where each element is a group (when `g = NULL`)
+#'   \item Data frame/matrix with group indicator in column `g` and data in column `dp`
+#' }
+#'
+#' @return Matrix of pairwise comparison results with adjusted p-values.
+#'
+#' @seealso \code{\link{cid}}, \code{\link{cidmul}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Matrix input
+#' x <- matrix(rnorm(150), ncol = 3)
+#' cidM(x)
+#'
+#' # With grouping variable
+#' data <- data.frame(group = rep(1:3, each = 50), value = rnorm(150))
+#' cidM(data, g = 1, dp = 2)
+#' }
 cidM<-function(x,nboot=1000,alpha=.05,MC=FALSE,SEED=TRUE,g=NULL,dp=NULL){
 #
 # Variation of Cliff method based on median of X-Y
@@ -1391,6 +2405,48 @@ test[temp2,4]=dvec
 list(test=test)
 }
 
+#' Multiple Comparisons Using Cliff's Method
+#'
+#' @description
+#' Performs all pairwise comparisons among J independent groups using Cliff's method
+#' for computing P(X<Y). Unlike some alternatives, this method allows tied values.
+#' Family-wise error rate is controlled using the Studentized maximum modulus distribution.
+#'
+#' @inheritParams common-params
+#' @param x Data in list mode, matrix, or data frame. If matrix/data frame, each column
+#'   represents a group. Length(x) or ncol(x) corresponds to the total number of groups J.
+#' @param g Optional grouping variable (factor) when data is in long format.
+#' @param dp Column index containing the data when using grouping variable \code{g}.
+#' @param pr Logical; if TRUE, prints a message suggesting \code{cidmulv2} for better power.
+#'
+#' @return A list with components:
+#'   \item{n}{Vector of sample sizes for each group}
+#'   \item{test}{Matrix with columns: Group, Group, d (dominance measure), ci.lower,
+#'     ci.upper, p.hat (P(X<Y)), p-value}
+#'
+#' @details
+#' For each pair of groups (j,k) where j < k, the function computes Cliff's dominance
+#' measure d = P(X>Y) - P(X<Y) and estimates p.hat = P(X<Y). The familywise Type I
+#' error probability is controlled using a critical value from the Studentized maximum
+#' modulus distribution.
+#'
+#' The default alpha is 0.05; any other value results in using alpha = 0.01.
+#'
+#' Note: \code{cidmulv2} may provide better power and is recommended.
+#'
+#' @seealso \code{\link{cidmulv2}}, \code{\link{cid}}, \code{\link{cidv2}}, \code{\link{wmwaov}}
+#'
+#' @export
+#' @examples
+#' # Three groups
+#' set.seed(123)
+#' g1 <- rnorm(20, mean = 5)
+#' g2 <- rnorm(20, mean = 5.5)
+#' g3 <- rnorm(20, mean = 6)
+#' x <- list(g1, g2, g3)
+#'
+#' result <- cidmul(x)
+#' result$test
 cidmul<-function(x,alpha=.05,g=NULL,dp=NULL,pr=TRUE){
 #
 #  Perform Cliff's method for all pairs of J independent groups.
@@ -1446,6 +2502,50 @@ test[jcom,7]<-temp2$p.value
 list(n=n,test=test)
 }
 
+#' Compare Two Independent Groups Using Medians
+#'
+#' @description
+#' Compares medians of two independent groups using a percentile bootstrap method that
+#' performs well when there are tied values. This is a robust alternative to parametric
+#' tests for comparing central tendency.
+#'
+#' @inheritParams common-params
+#' @param x Either a numeric vector (when \code{y} is provided), or a matrix/data frame
+#'   with two columns, or a list with two elements.
+#' @param y Optional numeric vector for the second group. If NULL, \code{x} must contain
+#'   both groups.
+#' @param nboot Number of bootstrap samples (default 2000).
+#'
+#' @return A list with components:
+#'   \item{n1}{Sample size of group 1}
+#'   \item{n2}{Sample size of group 2}
+#'   \item{p.value}{P-value for testing equality of medians}
+#'   \item{ci}{Confidence interval for the difference in medians}
+#'   \item{est1}{Median of group 1}
+#'   \item{est2}{Median of group 2}
+#'   \item{est.dif}{Difference in medians (est1 - est2)}
+#'
+#' @details
+#' The function uses a percentile bootstrap approach which is particularly robust when
+#' dealing with tied values, a common issue when using medians. Missing values are
+#' automatically removed.
+#'
+#' @seealso \code{\link{pb2gen}}, \code{\link{wmw}}, \code{\link{cid}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- rnorm(30, mean = 5)
+#' y <- rnorm(25, mean = 5.5)
+#'
+#' # Compare medians
+#' result <- medpb2(x, y)
+#' result$p.value
+#' result$ci
+#'
+#' # Data in matrix format
+#' dat <- cbind(x[1:25], y)
+#' medpb2(dat)
 medpb2<-function(x,y=NULL,alpha=.05,nboot=2000,SEED=TRUE){
 #
 #   Compare 2 independent groups using medians.
@@ -1499,6 +2599,68 @@ list(n1=length(x),n2=length(y),p.value=2*test,ci=ci,est1=est1,est2=est2,
 est.dif=est.dif)
 }
 
+#' Cliff's Analog of the Wilcoxon-Mann-Whitney Test
+#'
+#' @description
+#' Computes a confidence interval for P(X<Y) for two independent groups using Cliff's (1996)
+#' method. This is a robust alternative to the WMW test that handles tied values and provides
+#' estimates of stochastic superiority. Also reports a confidence interval for the dominance
+#' measure P(X>Y) - P(X<Y).
+#'
+#' @inheritParams common-params
+#' @param x Numeric vector for group 1.
+#' @param y Numeric vector for group 2.
+#' @param plotit Logical; if TRUE, creates a plot of the difference scores D = X - Y.
+#' @param pop Integer (0-6) specifying plot type when plotit=TRUE: 0=adaptive kernel density,
+#'   1=expected frequency curve, 2=kernel density (Rosenblatt), 3=boxplot, 4=stem-and-leaf,
+#'   5=histogram, 6=kernel density estimate.
+#' @param fr Argument passed to rdplot when pop=1 (default 0.8).
+#' @param rval Argument passed to kdplot when pop=2 (default 15).
+#' @param xlab Label for x-axis in plot.
+#' @param ylab Label for y-axis in plot.
+#'
+#' @return A list with components:
+#'   \item{n1}{Sample size of group 1}
+#'   \item{n2}{Sample size of group 2}
+#'   \item{cl}{Lower confidence limit for P(X>Y) - P(X<Y)}
+#'   \item{cu}{Upper confidence limit for P(X>Y) - P(X<Y)}
+#'   \item{d}{Estimate of P(X>Y) - P(X<Y)}
+#'   \item{sqse.d}{Squared standard error of d}
+#'   \item{phat}{Estimate of P(X<Y)}
+#'   \item{summary.dvals}{Matrix with P(X<Y), P(X=Y), P(X>Y)}
+#'   \item{ci.p}{Confidence interval for P(X<Y)}
+#'
+#' @details
+#' The method stems from Cliff (1996, p. 140, eq 5.12) and allows tied values. The function
+#' computes all pairwise differences D = X - Y and estimates P(X<Y), which equals 0.5 when
+#' the distributions are identical.
+#'
+#' When the distribution of D is symmetric about zero, the test for symmetry can be performed
+#' and provides insight into how the tails differ. Use \code{\link{cbmhd}} to compare lower
+#' and upper quantiles of D directly, or \code{\link{qwmwhd}} to apply the method across
+#' a range of quantiles.
+#'
+#' For large sample sizes (product of sample sizes > 1,000,000), use the bmp function instead.
+#'
+#' @references
+#' Cliff, N. (1996). Ordinal methods for behavioral data analysis. Psychology Press.
+#'
+#' @seealso \code{\link{cidv2}}, \code{\link{cidM}}, \code{\link{cidmul}}, \code{\link{wmw}},
+#'   \code{\link{cbmhd}}, \code{\link{qwmwhd}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- rnorm(30, mean = 5)
+#' y <- rnorm(25, mean = 5.5)
+#'
+#' # Basic usage
+#' result <- cid(x, y)
+#' result$phat  # P(X < Y)
+#' result$ci.p  # CI for P(X < Y)
+#'
+#' # With plot
+#' cid(x, y, plotit = TRUE, pop = 5)  # histogram of differences
 cid<-function(x,y,alpha=.05,plotit=FALSE,pop=0,fr=.8,rval=15,xlab="",ylab=""){
 #
 # For two independent groups,
@@ -1584,6 +2746,43 @@ cu=1-2*pci[1]
 list(n1=length(x),n2=length(y),cl=cl,cu=cu,d=d,sqse.d=sh,phat=phat,summary.dvals=c.sum,ci.p=pci)
 }
 
+#' Cliff's Analog of WMW Test with P-Value
+#'
+#' @description
+#' Computes a p-value for Cliff's analog of the Wilcoxon-Mann-Whitney test. This is a variation
+#' of \code{\link{cid}} that focuses on hypothesis testing rather than just confidence intervals.
+#'
+#' @inheritParams common-params
+#' @inheritParams cid
+#'
+#' @return A list with components:
+#'   \item{n1}{Sample size of group 1}
+#'   \item{n2}{Sample size of group 2}
+#'   \item{p.value}{P-value for testing P(X>Y) - P(X<Y) = 0}
+#'   \item{phat}{Estimate of P(X<Y)}
+#'   \item{ci}{Confidence interval for P(X<Y)}
+#'   \item{d.ci}{Confidence interval for P(X>Y) - P(X<Y)}
+#'   \item{summary.dvals}{Matrix with P(X<Y), P(X=Y), P(X>Y)}
+#'
+#' @details
+#' This function is similar to \code{\link{cid}} but determines the p-value by searching
+#' for the alpha level at which the confidence interval for d = P(X>Y) - P(X<Y) includes
+#' zero. The null hypothesis is that d = 0, which is equivalent to the distributions
+#' being identical.
+#'
+#' To compare lower and upper quantiles of D = X - Y, use \code{\link{cbmhd}}.
+#'
+#' @seealso \code{\link{cid}}, \code{\link{wmw}}, \code{\link{cbmhd}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- rnorm(30, mean = 5)
+#' y <- rnorm(25, mean = 5.3)
+#'
+#' result <- cidv2(x, y)
+#' result$p.value
+#' result$phat
 cidv2<-function(x,y,alpha=.05,plotit=FALSE,pop=0,fr=.8,rval=15,xlab='',ylab=''){
 #
 #   p-value for Cliff's analog of WMW test
@@ -1635,6 +2834,55 @@ dval=ci$summary.dvals
 list(n1=length(elimna(x)),n2=length(elimna(y)),d.hat=ci$d,d.ci=d.ci,p.value=p.value,p.hat=phat,p.ci=pci,summary.dvals=dval)
 }
 
+#' Two-Way ANOVA Multiple Comparisons with Trimmed Means (Bootstrap)
+#'
+#' @description
+#' Performs multiple comparisons for a J-by-K factorial design using
+#' trimmed means and bootstrap methods. Tests main effects and interactions.
+#'
+#' @inheritParams common-params
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param x Data in list mode or matrix format. If list, `x[[1]]` is level (1,1),
+#'   `x[[2]]` is level (1,2), etc. Matrix format will be converted to list.
+#' @param grp Subset of groups to analyze (default: all groups `1:p`).
+#' @param p Total number of groups J*K (default: J*K).
+#' @param tr Trimming proportion (default: 0.2 for 20% trimming).
+#' @param nboot Number of bootstrap samples (default: NA, uses function default).
+#' @param alpha Significance level (default: 0.05).
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#' @param pr Logical. If `TRUE`, prints progress messages (default: `TRUE`).
+#' @param bhop Logical. If `TRUE`, uses Benjamini-Hochberg procedure (default: `FALSE`).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `Factor.A`: Multiple comparison results for Factor A main effects
+#'     \item `Factor.B`: Multiple comparison results for Factor B main effects
+#'     \item `Factor.AB`: Multiple comparison results for interaction effects
+#'     \item `bhop`: Echo of the bhop parameter
+#'     \item `SEED`: Echo of SEED setting
+#'   }
+#'
+#' @details
+#' This function performs pairwise comparisons for all effects in a two-way design
+#' using trimmed means and bootstrap-t methods. The data organization follows the
+#' convention where groups are ordered first by Factor A, then by Factor B.
+#'
+#' @seealso \code{\link{pbtrmcp}}, \code{\link{con2way}}, \code{\link{t2way}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Create 2x3 factorial design data
+#' set.seed(123)
+#' data <- lapply(1:6, function(i) rnorm(20, mean = i))
+#'
+#' # Perform two-way ANOVA with multiple comparisons
+#' result <- pb2trmcp(J = 2, K = 3, x = data, nboot = 500)
+#'
+#' # View Factor A comparisons
+#' result$Factor.A
+#' }
 pb2trmcp<-function(J,K,x,grp=c(1:p),p=J*K,tr=.2,nboot=NA,alpha=.05,SEED=TRUE,pr=TRUE,
 bhop=FALSE){
 #
@@ -1681,6 +2929,48 @@ Factor.AB<-pbtrmcp(x,con=conAB,tr=tr,alpha=alpha,nboot=nboot,bhop=bhop,SEED=FALS
 list(Factor.A=Factor.A,Factor.B=Factor.B,Factor.AB=Factor.AB,bhop=bhop,SEED=FALSE)
 }
 
+#' WMW-Based Global Test for J Independent Groups
+#'
+#' @description
+#' Extension of the Wilcoxon-Mann-Whitney (WMW) test to J groups using a bootstrap approach.
+#' Tests the global null hypothesis that all pairwise probabilities p_jk = P(X_j < X_k) equal
+#' 0.5 for all j < k. This provides a robust omnibus test for comparing multiple groups.
+#'
+#' @inheritParams common-params
+#' @param x Either a matrix, data frame, or list where each column/element represents a group.
+#' @param est The estimator to use (default is \code{median}). Can also use \code{hd} for
+#'   Harrell-Davis estimator when dealing with tied values.
+#' @param nboot Number of bootstrap samples (default 500).
+#' @param MC Logical; if TRUE, uses parallel processing via mclapply.
+#' @param MM Logical; if TRUE, uses a different distance measure.
+#'
+#' @return The p-value for the global test.
+#'
+#' @details
+#' The function computes P(X<Y) as an effect size measure for all pairs of groups and
+#' performs a bootstrap-based global test. When tied values are detected and the default
+#' median estimator is used, a warning suggests using \code{est=hd} or the function
+#' \code{cidmulv2} instead.
+#'
+#' The test uses a projection-based distance measure to assess whether the pairwise
+#' probabilities differ from the null hypothesis values.
+#'
+#' @seealso \code{\link{wmw}}, \code{\link{cidmul}}, \code{\link{cidmulv2}}, \code{\link{cid}}
+#'
+#' @export
+#' @examples
+#' # Three groups
+#' set.seed(123)
+#' g1 <- rnorm(20, mean = 5)
+#' g2 <- rnorm(20, mean = 5.3)
+#' g3 <- rnorm(20, mean = 5.6)
+#' x <- list(g1, g2, g3)
+#'
+#' # Test for differences
+#' wmwaov(x)
+#'
+#' # With Harrell-Davis estimator
+#' wmwaov(x, est = hd)
 wmwaov<-function(x,est=median,nboot=500,MC=FALSE,SEED=TRUE,MM=FALSE){
 #
 # Extension of WMW to J groups
@@ -1715,6 +3005,62 @@ p.value<-1-sum(dv[bplus]>dv[1:nboot])/nboot-.5*sum(dv[bplus]==dv[1:nboot])/nboot
 p.value
 }
 
+#' Compare Two Independent Discrete Distributions
+#'
+#' @description
+#' Compares two independent variables in terms of their probability functions by testing
+#' P(X=x) = P(Y=x) for each observed value. This method is particularly useful for highly
+#' discrete data. Multiple testing is controlled using Hochberg's method by default.
+#'
+#' @inheritParams common-params
+#' @param x Numeric vector for group 1.
+#' @param y Numeric vector for group 2.
+#' @param KMS Logical; if TRUE, uses the Kulinskaya, Morgenthaler and Staudte (2010)
+#'   variance-stabilizing method for comparing binomial proportions and provides confidence
+#'   intervals.
+#' @param plotit Logical; if TRUE, creates a plot comparing relative frequencies.
+#' @param xlab Label for x-axis.
+#' @param ylab Label for y-axis (default "Rel. Freq.").
+#' @param method Multiple testing correction method passed to p.adjust (default 'hoch'
+#'   for Hochberg's method).
+#' @param pr Logical; if TRUE, prints results.
+#'
+#' @return A data frame with columns:
+#'   \item{Value}{The observed value}
+#'   \item{p1.est}{Proportion in group 1}
+#'   \item{p2.est}{Proportion in group 2}
+#'   \item{p1-p2}{Difference in proportions}
+#'   \item{ci.low}{Lower confidence limit (if KMS=TRUE)}
+#'   \item{ci.up}{Upper confidence limit (if KMS=TRUE)}
+#'   \item{p.value}{P-value for testing P(X=value) = P(Y=value)}
+#'   \item{p.adj}{Adjusted p-value using specified method}
+#'
+#' @details
+#' For each unique value that occurs in either group, the function tests whether the
+#' probability of that value is the same in both groups. When KMS=FALSE (default), uses
+#' the Storer and Kim method. When KMS=TRUE, uses a variance-stabilizing transformation
+#' appropriate for binomial data and provides confidence intervals.
+#'
+#' The plot displays relative frequencies for both groups with error bars.
+#'
+#' @references
+#' Kulinskaya, E., Morgenthaler, S. and Staudte, R. (2010). Variance Stabilizing the
+#' Difference of two Binomial Proportions. American Statistician, 64, 350-356.
+#' DOI:10.1198/tast.2010.09096
+#'
+#' @seealso \code{\link{twobinom}}, \code{\link{twobici}}
+#'
+#' @export
+#' @examples
+#' # Discrete data example
+#' set.seed(123)
+#' x <- sample(1:5, 50, replace = TRUE, prob = c(0.3, 0.2, 0.2, 0.2, 0.1))
+#' y <- sample(1:5, 50, replace = TRUE, prob = c(0.1, 0.2, 0.3, 0.2, 0.2))
+#'
+#' result <- binband(x, y)
+#'
+#' # Using KMS method with confidence intervals
+#' binband(x, y, KMS = TRUE)
 binband<-function(x,y,KMS=FALSE,alpha=.05, plotit=TRUE,xlab="X",    #ADJ.P=FALSE, old code deleted.
 ylab="Rel. Freq.", method='hoch',pr=TRUE){
 #
@@ -1788,6 +3134,47 @@ if(plotit)splotg2(x,y, xlab=xlab, ylab=ylab)
 output
 }
 
+#' Test Equality of Regression Slopes for Two Independent Groups (Bootstrap)
+#'
+#' @description
+#' Tests whether two independent groups have equal regression slopes using
+#' a bootstrap method. Supports outlier detection and robust estimation.
+#'
+#' @inheritParams common-params
+#' @param x1 Predictor values for group 1.
+#' @param y1 Response values for group 1.
+#' @param x2 Predictor values for group 2.
+#' @param y2 Response values for group 2.
+#' @param nboot Number of bootstrap samples (default: 599).
+#' @param RAD Logical. If `TRUE`, uses robust analog of distance (default: `FALSE`).
+#' @param alpha Significance level (default: 0.05).
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#' @param xout Logical. If `TRUE`, removes outliers using `outfun` (default: `FALSE`).
+#' @param outfun Outlier detection function (default: \code{out}).
+#'
+#' @return The p-value for testing equality of slopes.
+#'
+#' @details
+#' This function tests H0: the two groups have equal regression slopes using
+#' an OLS-based bootstrap test. The test is performed by comparing the interaction
+#' term in a combined regression model. Outliers in the predictor can optionally
+#' be removed before analysis.
+#'
+#' @seealso \code{\link{olswbtest}}, \code{\link{reg2ci}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Generate data with different slopes
+#' set.seed(123)
+#' x1 <- rnorm(30)
+#' y1 <- 2 * x1 + rnorm(30)
+#' x2 <- rnorm(30)
+#' y2 <- 0.5 * x2 + rnorm(30)
+#'
+#' # Test for equal slopes
+#' tworegwb(x1, y1, x2, y2, nboot = 500)
+#' }
 tworegwb<-function(x1,y1,x2,y2,nboot=599,RAD=FALSE,alpha=.05,SEED=TRUE,xout=FALSE,
 outfun=out){
 #
@@ -1818,6 +3205,54 @@ res=olswbtest(xg,y,nboot=nboot,SEED=SEED,RAD=RAD,alpha=alpha)
 res[3,6]
 }
 
+#' Compare Two Discrete Distributions (Stouffer-Kolmogorov Approach)
+#'
+#' Compares two independent discrete variables by testing whether their
+#' probability mass functions are equal: P(X=x) = P(Y=x) for all x.
+#' Uses a bootstrap approach based on multinomial resampling.
+#'
+#' @inheritParams common-params
+#' @param x Vector of discrete observations for group 1.
+#' @param y Vector of discrete observations for group 2.
+#' @param alpha Significance level (default: 0.05).
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `test`: Test statistic (sum of squared differences in proportions)
+#'     \item `p.value`: Bootstrap p-value
+#'   }
+#'
+#' @details
+#' This function provides a global test for comparing discrete distributions.
+#' It tests the null hypothesis that the two groups have identical probability
+#' mass functions across all observed values.
+#'
+#' The test statistic is the sum of squared differences between the empirical
+#' probability mass functions. Bootstrap resampling under the null hypothesis
+#' (using pooled proportions) provides the reference distribution.
+#'
+#' Note: This method appears to have no advantage over the chi-square test
+#' implemented in `disc2com`. For testing the hypothesis separately at each
+#' value, use `binband` instead.
+#'
+#' @note Requires the `mc2d` package for multinomial sampling.
+#'
+#' @seealso \code{\link{disc2com}}, \code{\link{binband}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare two discrete distributions
+#' set.seed(123)
+#' x <- sample(1:5, 100, replace = TRUE, prob = c(0.2, 0.2, 0.3, 0.2, 0.1))
+#' y <- sample(1:5, 100, replace = TRUE, prob = c(0.15, 0.25, 0.3, 0.2, 0.1))
+#'
+#' # Test for equality of distributions
+#' result <- disc2comSK(x, y, nboot = 1000)
+#' print(result)
+#' }
 disc2comSK<-function(x,y,alpha=.05,nboot=500,SEED=TRUE){
 #
 #  Comparing two independent variables in terms of their probability function.
@@ -1868,6 +3303,37 @@ pv=1-mean(test>TB)-.5*mean(test==TB)
 list(test=test,p.value=pv)
 }
 
+#' Estimate Location for Distribution of Pairwise Differences
+#'
+#' @description
+#' Estimates a measure of location for the distribution of all pairwise differences
+#' X - Y. This is a helper function used by various WMW-based procedures.
+#'
+#' @param x Numeric vector for group 1.
+#' @param y Numeric vector for group 2.
+#' @param na.rm Logical; if TRUE, removes missing values (default TRUE).
+#' @param est Estimator function to apply to the pairwise differences (default \code{median}).
+#' @param ... Additional arguments passed to the estimator function.
+#'
+#' @return The estimated location measure for the distribution of X - Y.
+#'
+#' @details
+#' The function computes all pairwise differences between x and y values (creating
+#' an outer product), then applies the specified estimator. This is useful for
+#' WMW-type analyses that don't assume independence.
+#'
+#' @seealso \code{\link{wmwpb}}, \code{\link{wmwloc2}}, \code{\link{cid}}
+#'
+#' @export
+#' @examples
+#' x <- c(1, 2, 3, 4, 5)
+#' y <- c(2, 3, 4)
+#'
+#' # Median of all pairwise differences
+#' wmwloc(x, y)
+#'
+#' # Using mean instead
+#' wmwloc(x, y, est = mean)
 wmwloc<-function(x,y,na.rm=TRUE,est=median,...){
 #
 # Estimate the median of the distribution of x-y
@@ -1881,6 +3347,52 @@ est=est(m,na.rm=TRUE,...)
 est
 }
 
+#' Test Symmetry of Distribution Using Multiple Quantiles
+#'
+#' @description
+#' Provides perspective on whether the distribution of D = X - Y is symmetric about zero
+#' by plotting and testing the sum of q and (1-q) quantiles for multiple values of q.
+#' If the distribution is symmetric, the plot should be approximately a horizontal line.
+#'
+#' @inheritParams common-params
+#' @param x Numeric vector for group 1.
+#' @param y Numeric vector for group 2.
+#' @param q Numeric vector of quantiles to test (default seq(0.05, 0.40, 0.05)).
+#'   All values must be less than 0.5.
+#' @param xlab Label for x-axis (default "Quantile").
+#' @param ylab Label for y-axis (default "Sum of q and 1-q Quantiles").
+#' @param plotit Logical; if TRUE, creates a plot showing estimates and confidence intervals.
+#' @param nboot Number of bootstrap samples (default 1000).
+#'
+#' @return A list with components:
+#'   \item{n}{Vector of sample sizes c(n1, n2)}
+#'   \item{output}{Data frame with columns: quantile, Est.1, Est.2, SUM, ci.low, ci.up,
+#'     p_crit (critical p-value), p-value, and signif (YES/NO)}
+#'
+#' @details
+#' For each quantile q in the argument \code{q}, the function computes a confidence
+#' interval for the sum of the q-th and (1-q)-th quantiles of D = X - Y. If the
+#' distribution is symmetric about zero, this sum should be zero for all q.
+#'
+#' Family-wise error rate (FWE) is controlled using Hochberg's method, which determines
+#' critical p-values based on the specified alpha level. The plot shows estimates (marked
+#' with *) and confidence interval limits (marked with +).
+#'
+#' This function internally calls \code{\link{cbmhd}} for each quantile.
+#'
+#' @seealso \code{\link{cbmhd}}, \code{\link{cid}}, \code{\link{cidv2}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- rnorm(50, mean = 0.5)
+#'
+#' # Test symmetry across multiple quantiles
+#' result <- qwmwhd(x, y)
+#'
+#' # Custom quantiles
+#' qwmwhd(x, y, q = seq(0.1, 0.4, 0.1))
 qwmwhd<-function(x,y,q=seq(5,40,5)/100,xlab="Quantile",ylab="Sum of q and 1-q Quantiles",plotit=TRUE,alpha=.05,nboot=1000,SEED=TRUE){
 #
 #  Plot that provides perspective on the degree a distribution is symmetric about zero.
@@ -1932,6 +3444,54 @@ points(q,output[,4],pch="*")
 list(n=c(n1,n2),output=output)
 }
 
+#' Yuen's Test for Dependent Groups with Effect Size
+#'
+#' @description
+#' Performs Yuen's test for comparing trimmed means of two dependent groups and returns
+#' an effect size measure similar to the one used by \code{\link{yuenv2}}. This is an
+#' extension of \code{yuend} that adds effect size estimation.
+#'
+#' @inheritParams common-params
+#' @param x Either a matrix/data frame with two columns (for paired data), or the first
+#'   vector when \code{y} is specified.
+#' @param y Optional second vector for paired data. If NULL, \code{x} must have two columns.
+#' @param null.value Null value for the hypothesis test (default 0).
+#' @param pr Logical; if TRUE, prints informational messages about effect size interpretation.
+#'
+#' @return A list with components:
+#'   \item{test}{Test statistic}
+#'   \item{df}{Degrees of freedom}
+#'   \item{p.value}{P-value}
+#'   \item{conf.int}{Confidence interval for the difference in trimmed means}
+#'   \item{estimate}{Difference in trimmed means}
+#'   \item{effsize}{Effect size: (est.dif - null.value) / sd, where sd is rescaled
+#'     Winsorized variance}
+#'
+#' @details
+#' The effect size is computed as (est.dif - null.value) / sd, where sd is a Winsorized
+#' variance rescaled to estimate the standard deviation under normality. This effect size
+#' is similar to the one used by \code{\link{yuenv2}}.
+#'
+#' To get an effect size based on the difference scores directly, use \code{\link{trimciv2}}
+#' instead.
+#'
+#' @seealso \code{\link{yuend}}, \code{\link{yuenv2}}, \code{\link{trimciv2}}, \code{\link{yuen}}
+#'
+#' @export
+#' @examples
+#' # Paired data in two columns
+#' set.seed(123)
+#' pre <- rnorm(30, mean = 100, sd = 15)
+#' post <- pre + rnorm(30, mean = 5, sd = 10)
+#' dat <- cbind(pre, post)
+#'
+#' # Test with effect size
+#' result <- yuendv2(dat, tr = 0.2)
+#' result$p.value
+#' result$effsize
+#'
+#' # Or with separate vectors
+#' yuendv2(pre, post, tr = 0.2)
 yuendv2<-function(x, y, tr = 0.2, alpha = 0.05,null.value=0,pr=TRUE){
 #
 #  Same as yuend, only it also returns a measure of
@@ -1956,6 +3516,62 @@ list(ci=res$ci,p.value=res$p.value,est1=res$est1,est2=res$est2,dif=res$dif,se=re
 teststat=res$teststat,n=res$n,df=res$df,Effect.Size=epow)
 }
 
+#' ANCOVA Using WMW Method for Two Independent Groups
+#'
+#' @description
+#' Compares two independent groups using an ANCOVA-type method in conjunction with
+#' Cliff's improvement on the Wilcoxon-Mann-Whitney test. Makes no parametric assumptions
+#' about the form of regression lines; uses a running interval smoother instead.
+#'
+#' @inheritParams common-params
+#' @param x1 Covariate values for group 1.
+#' @param y1 Response values for group 1.
+#' @param x2 Covariate values for group 2.
+#' @param y2 Response values for group 2.
+#' @param fr1 Span for the running interval smoother for group 1 (default 1).
+#' @param fr2 Span for the running interval smoother for group 2 (default 1).
+#' @param sm Logical; deprecated parameter (was for bootstrap bagging).
+#' @param est Estimator function for location (default \code{tmean}).
+#' @param plotit Logical; if TRUE, creates plots of the regression lines.
+#' @param pts Optional vector of covariate values at which to compare groups.
+#' @param xout Logical; if TRUE, removes outliers in the covariate.
+#' @param outfun Outlier detection function (default \code{out}).
+#' @param LP Logical; if TRUE, uses running interval smoother followed by LOESS.
+#' @param ... Additional arguments passed to the outlier detection function.
+#'
+#' @return A matrix with columns:
+#'   \item{X}{Covariate value}
+#'   \item{n1}{Sample size for group 1 at this X}
+#'   \item{n2}{Sample size for group 2 at this X}
+#'   \item{p.hat}{Estimated P(Y1 < Y2) at this X}
+#'   \item{ci.low}{Lower confidence limit}
+#'   \item{ci.hi}{Upper confidence limit}
+#'   \item{p.value}{P-value for testing P(Y1 < Y2) = 0.5}
+#'   \item{p.crit}{Critical p-value after adjustment}
+#'
+#' @details
+#' This function compares two groups while adjusting for a covariate using a robust
+#' nonparametric approach. At specified covariate values (either automatically chosen
+#' or user-specified via \code{pts}), the function estimates P(Y1 < Y2) using Cliff's
+#' method within neighborhoods defined by the running interval smoother.
+#'
+#' The function allows only one covariate. For multiple covariates, see related functions.
+#'
+#' @seealso \code{\link{cid}}, \code{\link{cidv2}}, \code{\link{wmw}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Example with simulated data
+#' set.seed(123)
+#' n <- 50
+#' x1 <- rnorm(n)
+#' y1 <- x1 + rnorm(n)
+#' x2 <- rnorm(n)
+#' y2 <- x2 + 0.5 + rnorm(n)
+#'
+#' result <- ancovaWMW(x1, y1, x2, y2)
+#' }
 ancovaWMW<-function(x1,y1,x2,y2,fr1=1,fr2=1,alpha=.05,sm=FALSE,est=tmean,
 plotit=TRUE,pts=NA,xout=FALSE,outfun=out,LP=TRUE,...){
 #
@@ -2067,6 +3683,51 @@ runmean2g(x1,y1,x2,y2,fr=fr1,est=est,sm=sm,xout=FALSE,LP=LP,...)
 list(output=mat,summary=dv.sum)
 }
 
+#' Multiple Comparisons for K Independent Tests (Linear Contrasts/Trimmed Means)
+#'
+#' Performs a step-down multiple comparisons procedure for K independent tests
+#' comparing trimmed means. Uses the Fisher method combined with Hochberg's
+#' adjustment. Requires that the tests be independent.
+#'
+#' @param x Data in matrix or list format (optional if `x1` and `x2` provided).
+#'   If matrix: 2K columns (K pairs). If list: length 2K.
+#' @param x1 Data for group 1 (matrix with K columns or list of length K).
+#' @param x2 Data for group 2 (matrix with K columns or list of length K).
+#' @param tr Trimming proportion (default: 0.2).
+#' @param alpha Significance level (default: 0.05).
+#' @param pr Logical. If `TRUE`, prints results (default: `TRUE`).
+#' @param opt Integer option for data format (default: 1).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `pvalues`: Vector of p-values from Yuen's test for each variable
+#'     \item `adj.pvalues`: Adjusted p-values using Hochberg's method
+#'     \item `num.sig`: Number of significant tests
+#'     \item `test.stats`: Test statistics for each comparison
+#'   }
+#'
+#' @details
+#' This function performs Yuen's test (trimmed mean comparison) for each of K
+#' independent variables, then combines the p-values using the Fisher method
+#' and adjusts for multiple comparisons using Hochberg's procedure.
+#'
+#' The tests MUST be independent for this method to be valid. This is a
+#' specialized version of `twoKgen` specifically for trimmed mean comparisons.
+#'
+#' @seealso \code{\link{twoKgen}}, \code{\link{yuen}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare two groups on multiple independent variables
+#' set.seed(123)
+#' x1 <- matrix(rnorm(100), ncol = 5)
+#' x2 <- matrix(rnorm(120, mean = 0.3), ncol = 5)
+#'
+#' # Apply Yuen's test to each variable
+#' result <- twoKlin(x1 = x1, x2 = x2, tr = 0.2)
+#' print(result)
+#' }
 twoKlin<-function(x=NULL,x1=NULL,x2=NULL,tr=.2,alpha=.05,pr=TRUE,opt=1){
 #
 #  A step-down MCP based on K independent tests.
@@ -2156,6 +3817,45 @@ list(n1=n1,n2=n2,p.values=pv,
 Decisions=as.matrix(Decision),num.sig=nsig)
 }
 
+#' P-Value for Comparing Two Independent Binomial Proportions (Beal's Method)
+#'
+#' @description
+#' Computes a p-value for comparing two independent binomial proportions
+#' using Beal's method based on confidence interval inversion.
+#'
+#' @inheritParams common-params
+#' @param r1 Number of successes in group 1 (default: `sum(x)` if x provided).
+#' @param n1 Sample size for group 1 (default: `length(x)` if x provided).
+#' @param r2 Number of successes in group 2 (default: `sum(y)` if y provided).
+#' @param n2 Sample size for group 2 (default: `length(y)` if y provided).
+#' @param x Binary data vector for group 1 (optional).
+#' @param y Binary data vector for group 2 (optional).
+#' @param alpha Significance level (default: 0.05).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `p.value`: P-value for testing equality of proportions
+#'     \item `ci`: Confidence interval for difference in proportions
+#'     \item `p1`: Proportion for group 1
+#'     \item `p2`: Proportion for group 2
+#'   }
+#'
+#' @details
+#' This function uses Beal's method for comparing two independent binomial
+#' proportions by inverting confidence intervals. The p-value is found by
+#' determining the smallest alpha level at which the confidence interval
+#' excludes zero.
+#'
+#' @seealso \code{\link{twobici}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare two proportions
+#' x <- rbinom(30, 1, 0.3)
+#' y <- rbinom(30, 1, 0.6)
+#' twobicipv(x = x, y = y)
+#' }
 twobicipv<-function(r1=sum(x),n1=length(x),r2=sum(y),n2=length(y),x=NA,y=NA,alpha=.05){
 #
 # Compute a p-value based on Beal's method for comparing two independent
@@ -2172,6 +3872,9 @@ reg=twobici(r1=r1,n1=n1,r2=r2,n2=n2,x=x,y=y,alpha=alpha)
 list(p.value=pv,ci=reg$ci,p1=reg$p1,p2=reg$p2)
 }
 
+#' Internal Helper for twoDcorR (Bootstrap Subsample)
+#'
+#' @keywords internal
 twoDcorR_sub<-function(data,x,y,corfun=wincor,...){
 #
 # Used by TwoDcorR
@@ -2181,6 +3884,51 @@ rv[2]=corfun(x[data,2],y[data],...)$cor
 rv
 }
 
+#' Compare Two Robust Dependent Correlations (Overlapping)
+#'
+#' @description
+#' Compares two robust dependent correlations in the overlapping case using bootstrap.
+#' By default, uses Winsorized correlation but other robust correlation measures can
+#' be specified.
+#'
+#' @inheritParams common-params
+#' @param x Matrix or data frame with 2 columns.
+#' @param y Numeric vector shared by both correlations.
+#' @param corfun Correlation function to use (default \code{wincor} for Winsorized correlation).
+#' @param nboot Number of bootstrap samples (default 500).
+#' @param MC Logical; if TRUE, uses parallel processing via mclapply.
+#' @param outfun Outlier detection function (default \code{outpro}).
+#' @param ... Additional arguments passed to the correlation function.
+#'
+#' @return A list with components:
+#'   \item{est.rho1}{Correlation between x[,1] and y}
+#'   \item{est.rho2}{Correlation between x[,2] and y}
+#'   \item{ci}{Bootstrap confidence interval for the difference}
+#'   \item{p.value}{P-value for testing equality of correlations}
+#'
+#' @details
+#' This function compares the correlation of x[,1] with y to the correlation of x[,2]
+#' with y using a bootstrap approach. This is the "overlapping" case because both
+#' correlations share the common variable y.
+#'
+#' The function uses robust correlation measures (Winsorized correlation by default)
+#' which are less sensitive to outliers than Pearson correlation. The bootstrap
+#' provides valid inference without normality assumptions.
+#'
+#' @seealso \code{\link{twoDNOV}}, \code{\link{TWOpov}}, \code{\link{tworhobt}},
+#'   \code{\link{wincor}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' n <- 50
+#' x <- cbind(rnorm(n), rnorm(n))
+#' y <- rnorm(n)
+#'
+#' # Using Winsorized correlation
+#' result <- twoDcorR(x, y)
+#' result$ci
+#' result$p.value
 twoDcorR<-function(x,y,corfun=wincor,alpha=.05,nboot=500,SEED=TRUE,MC=FALSE,outfun=outpro,...){
 #
 # Comparing two robust dependent correlations: Overlapping case
@@ -2227,6 +3975,50 @@ pv=2*min(c(pv,1-pv))
 list(est.rho1=r12,est.rho2=r13,ci=ci12,p.value=pv)
 }
 
+#' Compare Two Robust Dependent Correlations (Non-Overlapping)
+#'
+#' @description
+#' Compares two robust dependent correlations in the non-overlapping case using bootstrap.
+#' By default, uses Winsorized correlation but other robust correlation measures can
+#' be specified.
+#'
+#' @inheritParams common-params
+#' @param x Matrix or data frame with 2 columns.
+#' @param y Matrix or data frame with 2 columns.
+#' @param corfun Correlation function to use (default \code{wincor} for Winsorized correlation).
+#' @param nboot Number of bootstrap samples (default 500).
+#' @param MC Logical; if TRUE, uses parallel processing via mclapply.
+#'
+#' @return A list with components:
+#'   \item{est.rho1}{Correlation between x[,1] and x[,2]}
+#'   \item{est.rho2}{Correlation between y[,1] and y[,2]}
+#'   \item{est.dif}{Difference between the two correlations}
+#'   \item{ci}{Bootstrap confidence interval for the difference}
+#'   \item{p.value}{P-value for testing equality of correlations}
+#'
+#' @details
+#' This function compares the correlation between x[,1] and x[,2] to the correlation
+#' between y[,1] and y[,2]. This is the "non-overlapping" case because the two
+#' correlations involve completely different pairs of variables.
+#'
+#' The function uses robust correlation measures (Winsorized correlation by default)
+#' which are less sensitive to outliers than Pearson correlation. The bootstrap
+#' provides valid inference without normality assumptions.
+#'
+#' @seealso \code{\link{twoDcorR}}, \code{\link{TWOpNOV}}, \code{\link{tworhobt}},
+#'   \code{\link{wincor}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' n <- 50
+#' x <- cbind(rnorm(n), rnorm(n))
+#' y <- cbind(rnorm(n), rnorm(n))
+#'
+#' # Using Winsorized correlation
+#' result <- twoDNOV(x, y)
+#' result$ci
+#' result$p.value
 twoDNOV<-function(x,y,corfun=wincor,alpha=.05,nboot=500,SEED=TRUE,MC=FALSE){
 #
 # Comparing two robust dependent correlations: Non-overlapping case
@@ -2274,6 +4066,52 @@ pv=2*min(c(pv,1-pv))
 list(est.rho1=r12,est.rho2=r13,est.dif=r12-r13,ci=ci12,p.value=pv)
 }
 
+#' Bootstrap Confidence Interval for Location of Pairwise Differences
+#'
+#' @description
+#' Computes a bootstrap confidence interval for a measure of location associated with
+#' the distribution of all pairwise differences X - Y. This method is useful for both
+#' independent and dependent data and uses the WMW-type measure of location.
+#'
+#' @inheritParams common-params
+#' @param x Either a numeric vector (when \code{y} is provided), or a matrix/data frame
+#'   with two columns.
+#' @param y Optional numeric vector. If NULL, \code{x} must be a matrix/data frame.
+#' @param est Estimator function to use (default \code{median}). Applied to the distribution
+#'   of all pairwise differences.
+#' @param nboot Number of bootstrap samples (default 2000).
+#' @param pr Logical; if TRUE, prints messages.
+#' @param na.rm Logical; if TRUE, removes missing values.
+#' @param ... Additional arguments passed to the estimator function.
+#'
+#' @return A list with components:
+#'   \item{estimate}{Estimated location of X - Y differences}
+#'   \item{ci}{Bootstrap confidence interval}
+#'   \item{p.value}{P-value for testing that the location equals zero}
+#'
+#' @details
+#' The function computes all pairwise differences between values in x and y, then
+#' applies the specified estimator (default median) to this distribution. The bootstrap
+#' procedure resamples from x and y separately, so the method works for both independent
+#' and dependent data.
+#'
+#' For a non-bootstrap confidence interval, see \code{loc2dif.ci}.
+#'
+#' @seealso \code{\link{wmwloc}}, \code{\link{cid}}, \code{\link{wmw}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- rnorm(30, mean = 5)
+#' y <- rnorm(30, mean = 5.3)
+#'
+#' # Default median estimator
+#' result <- wmwpb(x, y)
+#' result$ci
+#' result$p.value
+#'
+#' # Using Harrell-Davis estimator
+#' wmwpb(x, y, est = hd, q = 0.5)
 wmwpb<-function(x,y=NULL,est=median,alpha=.05,nboot=2000,SEED=TRUE,pr=TRUE,
 na.rm=TRUE,...){
 #
@@ -2305,6 +4143,43 @@ estdiff=wmwloc(x,y,est=est,na.rm=na.rm,...)
 list(estimate=estdiff,ci=c(bvec[low],bvec[up]),p.value=sig.level)
 }
 
+#' Compare Two Dependent Correlations with P-Value (Overlapping Case)
+#'
+#' @description
+#' Compares two dependent Pearson correlations in the overlapping case
+#' (when both correlations share a common variable). Returns both confidence
+#' interval and p-value.
+#'
+#' @inheritParams common-params
+#' @param x Matrix with 2 columns containing the two variables to correlate with y.
+#' @param y Vector to correlate with both columns of x.
+#' @param alpha Significance level (default: 0.05).
+#' @param CN Logical. If `TRUE`, uses Zou's confidence interval method (default: `FALSE`).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `p.value`: P-value for testing equality of correlations
+#'     \item `est.rho1`: Correlation between x[,1] and y
+#'     \item `est.rho2`: Correlation between x[,2] and y
+#'     \item `ci`: Confidence interval for difference in correlations
+#'   }
+#'
+#' @details
+#' This function extends \code{TWOpov} by computing a p-value via confidence
+#' interval inversion. Tests whether cor(x[,1], y) = cor(x[,2], y) in the
+#' overlapping case where y is shared.
+#'
+#' @seealso \code{\link{TWOpov}}, \code{\link{TWOpNOVPV}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare two correlations sharing a common variable
+#' set.seed(123)
+#' x <- matrix(rnorm(60), ncol = 2)
+#' y <- 0.5 * x[,1] + rnorm(30)
+#' TWOpovPV(x, y)
+#' }
 TWOpovPV<-function(x,y,alpha=.05,CN=FALSE){
 #
 # Comparing two dependent correlations: Overlapping case
@@ -2345,6 +4220,48 @@ res=TWOpov(x,y,alpha=alpha,CN=CN)
 list(p.value=p.value,est.rho1=res$est.rho1,est.rho2=res$est.rho2,ci=res$ci)
 }
 
+#' Compare Two Dependent Correlations with P-Value (Non-Overlapping Case)
+#'
+#' @description
+#' Compares two dependent Pearson correlations in the non-overlapping case
+#' using HC4 heteroscedasticity correction. Returns both confidence interval
+#' and p-value.
+#'
+#' @inheritParams common-params
+#' @param x Matrix with 2 columns for first correlation.
+#' @param y Matrix with 2 columns for second correlation.
+#' @param HC4 Logical. If `TRUE`, uses HC4 heteroscedasticity correction (default: `TRUE`).
+#' @param alpha Significance level (default: 0.05).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `p.value`: P-value for testing equality of correlations
+#'     \item `est.rho1`: Correlation between x[,1] and x[,2]
+#'     \item `est.rho2`: Correlation between y[,1] and y[,2]
+#'     \item `ci.lower`: Lower bound of confidence interval
+#'     \item `ci.upper`: Upper bound of confidence interval
+#'   }
+#'
+#' @details
+#' Tests whether cor(x[,1], x[,2]) = cor(y[,1], y[,2]) for dependent groups
+#' in the non-overlapping case (no variables shared between the two correlations).
+#' Uses HC4 method for heteroscedasticity-robust inference.
+#'
+#' Reference: Wilcox (2009). Comparing Pearson Correlations: Dealing with
+#' Heteroscedasticity and Non-Normality. Communications in Statistics--Simulations
+#' and Computations, 38, 2220-2234.
+#'
+#' @seealso \code{\link{TWOpNOV}}, \code{\link{TWOpovPV}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare two correlations with no shared variables
+#' set.seed(123)
+#' x <- matrix(rnorm(60), ncol = 2)
+#' y <- matrix(rnorm(60), ncol = 2)
+#' TWOpNOVPV(x, y)
+#' }
 TWOpNOVPV<-function(x,y,HC4=TRUE,alpha=.05){
 #
 # Comparing two dependent correlations: Non-overlapping case
@@ -2417,6 +4334,37 @@ ci=c(res$ci.lower,res$ci.upper)
 list(p.value=p.value,est.1=res$est.1,est.2=res$est.2,ci=ci) #ci.lower=res$ci.lower,ci.upper=res$ci.upper)
 }
 
+#' Compare Two Independent Pearson Correlations (HC4 Method)
+#'
+#' @description
+#' Compares two independent Pearson correlations using the HC4
+#' heteroscedasticity-robust method.
+#'
+#' @inheritParams common-params
+#' @param x1 First variable for group 1.
+#' @param y1 Second variable for group 1.
+#' @param x2 First variable for group 2.
+#' @param y2 Second variable for group 2.
+#' @param alpha Significance level (default: 0.05).
+#'
+#' @return P-value for testing equality of correlations.
+#'
+#' @details
+#' Tests whether the Pearson correlation in group 1 equals that in group 2
+#' using HC4 standard errors for heteroscedasticity-robust inference.
+#' Variables are standardized before comparison.
+#'
+#' @seealso \code{\link{olshc4}}, \code{\link{twopcor}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare correlations from two independent groups
+#' set.seed(123)
+#' x1 <- rnorm(30); y1 <- 0.5 * x1 + rnorm(30)
+#' x2 <- rnorm(40); y2 <- 0.2 * x2 + rnorm(40)
+#' twohc4cor(x1, y1, x2, y2)
+#' }
 twohc4cor<-function(x1,y1,x2,y2,alpha=.05){
 #
 #   Compare two independent Pearson correlations using the HC4 method
@@ -2440,6 +4388,48 @@ pv=2*(1-pt(abs(test),df))
 pv
 }
 
+#' Functional Data Analysis: Compare Two Groups at Multiple Time Points
+#'
+#' @description
+#' Compares two groups using trimmed means with percentile bootstrap for
+#' functional data (multiple measurements over time or space). Tests are
+#' performed at specified time points with FWE control.
+#'
+#' @inheritParams common-params
+#' @param x1 Matrix (n1-by-p) for group 1, where p is number of time points.
+#' @param x2 Matrix (n2-by-p) for group 2, same number of columns as x1.
+#' @param tr Trimming proportion (default: 0.2 for 20% trimming).
+#' @param pts Vector of time point indices for comparisons (default: NULL for automatic selection).
+#' @param npts Number of evenly-spaced points if pts=NULL (default: 25).
+#' @param plotit Logical. If `TRUE`, plots results (default: `TRUE`).
+#' @param alpha Significance level (default: 0.05).
+#' @param SEED Logical. If `TRUE`, sets random seed (default: `TRUE`).
+#' @param nboot Number of bootstrap samples (default: 2000).
+#' @param xlab X-axis label (default: 'T').
+#' @param ylab Y-axis label (default: 'Est.dif').
+#' @param FBP Logical. If `TRUE`, uses family-wise error control (default: `TRUE`).
+#' @param method Multiple comparison adjustment method (default: 'hochberg').
+#' @param COLOR Logical. If `TRUE`, uses color in plot (default: `TRUE`).
+#'
+#' @return A list with test results at each time point including estimates,
+#'   confidence intervals, and adjusted p-values.
+#'
+#' @details
+#' Designed for functional data where many measurements are taken over time.
+#' Uses Yuen's test with percentile bootstrap at multiple time points.
+#' Controls family-wise error rate across time points.
+#'
+#' @seealso \code{\link{yuenbt}}, \code{\link{pb2gen}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Functional data: 30 subjects, 50 time points
+#' set.seed(123)
+#' x1 <- matrix(rnorm(30 * 50), nrow = 30)
+#' x2 <- matrix(rnorm(30 * 50, mean = 0.5), nrow = 30)
+#' funyuenpb(x1, x2, npts = 10, nboot = 500)
+#' }
 funyuenpb<-function(x1,x2,tr=.2,pts=NULL,npts=25,plotit=TRUE,alpha=.05,
 SEED=TRUE,
 nboot=2000,xlab='T',ylab='Est.dif',FBP=TRUE,method='hochberg',COLOR=TRUE){
@@ -2522,6 +4512,63 @@ op=cbind(pts,op)
 op
 }
 
+#' Linear Contrast with Wilcoxon-Mann-Whitney Method
+#'
+#' Determines the distribution of a linear contrast Y_i = sum_j c_j*X_j and
+#' estimates P(Y < 0) and a measure of location based on the specified function.
+#'
+#' @param x Data matrix, data frame, or list. Each column (for matrix/data frame)
+#'   or element (for list) represents a different group.
+#' @param con Vector of contrast coefficients. Must sum to zero.
+#' @param locfun Function for computing the measure of location (default: `median`).
+#'   Can be any function that takes a vector and returns a scalar (e.g., `mean`, `tmean`).
+#' @param nreps Number of replications for determining the distribution (default: 100).
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `p`: Estimated probability that the linear contrast is less than zero
+#'     \item `center`: Estimated measure of location of the linear contrast
+#'   }
+#'
+#' @details
+#' This function creates a linear contrast across J groups and uses a resampling
+#' approach to estimate the distribution of the contrast. For each replication,
+#' it samples `nmin` observations from each group (where `nmin` is the minimum
+#' group size) and computes the linear contrast.
+#'
+#' The contrast coefficients must sum to zero (a requirement for linear contrasts).
+#' The function estimates:
+#' \itemize{
+#'   \item The probability that the contrast is negative
+#'   \item A measure of central tendency (default: median) of the contrast distribution
+#' }
+#'
+#' This is useful for testing specific hypotheses about group differences using
+#' a distribution-free approach based on the WMW method.
+#'
+#' @note Missing values are automatically removed from all groups.
+#'
+#' @seealso \code{\link{linWMWpb}} for bootstrap confidence intervals,
+#'   \code{\link{wmw.ref.dif}} for WMW-based comparisons
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare three groups with contrast (-1, 0.5, 0.5)
+#' set.seed(123)
+#' x1 <- rnorm(30, mean = 0)
+#' x2 <- rnorm(30, mean = 0.5)
+#' x3 <- rnorm(30, mean = 0.5)
+#' x <- list(x1, x2, x3)
+#'
+#' # Test if group 1 differs from average of groups 2 and 3
+#' result <- linWMW(x, con = c(-1, 0.5, 0.5))
+#' print(result)
+#'
+#' # Use mean instead of median as location measure
+#' linWMW(x, con = c(-1, 0.5, 0.5), locfun = mean)
+#' }
 linWMW<-function(x,con,locfun=median,nreps=100,SEED=TRUE){
 #
 # Determine distribution of Y_i=sum_j c_jX_j
@@ -2556,6 +4603,77 @@ p=as.vector(matl(p))
 list(p=mean(p),center=mean(est))
 }
 
+#' Bootstrap Confidence Interval for Interaction Test Using WMW
+#'
+#' Computes a percentile bootstrap confidence interval for the interaction
+#' effect in a 2x2 design using the WMW approach. Extends `interWMW` with
+#' bootstrap inference.
+#'
+#' @param x Matrix with four columns or list with four elements, representing
+#'   the four groups in a 2x2 design.
+#' @param nreps Number of replications for WMW estimation (default: 100).
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param alpha Significance level for confidence interval (default: 0.05).
+#' @param nmax Maximum number of comparisons to prevent memory issues (default: 10^8).
+#' @param MC Logical. If `TRUE`, uses multicore processing via `mclapply` (default: `TRUE`).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `p.est`: Point estimate of P(X1 - X2 < X3 - X4)
+#'     \item `ci`: Bootstrap confidence interval for the probability
+#'     \item `p.value`: P-value for testing H0: P = 0.5 (no interaction)
+#'     \item `row.results`: Matrix with estimates for each row combination
+#'   }
+#'
+#' @details
+#' This function extends `interWMW` by adding bootstrap confidence intervals.
+#' For each bootstrap sample, it resamples with replacement from each of the
+#' four groups and computes the interaction probability.
+#'
+#' The confidence interval uses the percentile method from the bootstrap
+#' distribution. The p-value tests whether the probability differs from 0.5,
+#' which would indicate an interaction effect.
+#'
+#' **Interpretation**:
+#' \itemize{
+#'   \item CI including 0.5: No evidence of interaction
+#'   \item CI excluding 0.5: Evidence of interaction
+#'   \item Direction of effect shown by whether P is above or below 0.5
+#' }
+#'
+#' When `MC = TRUE`, bootstrap samples are processed in parallel using multiple
+#' cores, which can significantly speed up computation.
+#'
+#' @note
+#' Data must have exactly four groups. Missing values are automatically removed.
+#' The function requires the `parallel` package for multicore functionality.
+#'
+#' @seealso \code{\link{interWMW}} for point estimation without bootstrap,
+#'   \code{\link{interWMWAP}} for adjusted p-values,
+#'   \code{\link{linWMWpb}} for linear contrasts
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # 2x2 factorial design with interaction
+#' set.seed(123)
+#' x1 <- rnorm(30, mean = 0)
+#' x2 <- rnorm(30, mean = 0.5)
+#' x3 <- rnorm(30, mean = 0.3)
+#' x4 <- rnorm(30, mean = 1.5)  # Larger effect
+#' x <- list(x1, x2, x3, x4)
+#'
+#' # Bootstrap test for interaction
+#' result <- interWMWpb(x, nboot = 1000)
+#' print(result)
+#'
+#' # Use more bootstrap samples with multicore
+#' interWMWpb(x, nboot = 2000, MC = TRUE)
+#'
+#' # Single-core processing
+#' interWMWpb(x, nboot = 1000, MC = FALSE)
+#' }
 interWMWpb<-function(x,nreps=100,SEED=TRUE,nboot=500,alpha=.05,nmax=10^8,MC=TRUE){
 #
 #
@@ -2591,11 +4709,72 @@ pval=2*min(c(pval,1-pval))
 list(p.est=est$p.est,ci=ci,p.value=pval,row.results=est$results.4.rows)
 }
 
+#' Internal Helper for interWMWpb (Bootstrap Subsample)
+#'
+#' @keywords internal
 interWMWpb.lsub<-function(x,nreps=nreps){
 v=interWMW(x,nreps=nreps,SEED=FALSE)$p.est
 v
 }
 
+#' Bootstrap Confidence Interval for Linear Contrast with WMW Method
+#'
+#' Computes a percentile bootstrap confidence interval for the probability
+#' that a linear contrast is less than zero, using the WMW approach.
+#'
+#' @param x Data matrix, data frame, or list. Each column (for matrix/data frame)
+#'   or element (for list) represents a different group.
+#' @param con Vector of contrast coefficients. Must sum to zero and have the
+#'   same length as the number of groups.
+#' @param nreps Number of replications for WMW estimation (default: 100).
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param alpha Significance level for confidence interval (default: 0.05).
+#' @param MC Logical. If `TRUE`, uses multicore processing via `mclapply` (default: `FALSE`).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `p.est`: Point estimate of P(contrast < 0)
+#'     \item `ci`: Two-element vector with confidence interval bounds
+#'     \item `p.value`: P-value for testing H0: P(contrast < 0) = 0.5
+#'   }
+#'
+#' @details
+#' This function extends `linWMW` by adding bootstrap confidence intervals.
+#' For each bootstrap sample, it resamples with replacement from each group,
+#' computes the linear contrast using `linWMW`, and estimates the probability
+#' that the contrast is negative.
+#'
+#' The confidence interval is constructed using the percentile method from
+#' the bootstrap distribution. The p-value tests whether the probability
+#' differs from 0.5 (which would indicate no difference).
+#'
+#' When `MC = TRUE`, the bootstrap samples are processed in parallel using
+#' multiple cores, which can significantly speed up computation for large
+#' datasets or many bootstrap samples.
+#'
+#' @note Missing values are automatically removed from all groups before analysis.
+#'
+#' @seealso \code{\link{linWMW}} for the basic estimation without bootstrap,
+#'   \code{\link{wmw.ref.dif}} for two-group WMW comparisons
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare three groups with contrast (-1, 0.5, 0.5)
+#' set.seed(123)
+#' x1 <- rnorm(30, mean = 0)
+#' x2 <- rnorm(30, mean = 0.3)
+#' x3 <- rnorm(30, mean = 0.3)
+#' x <- list(x1, x2, x3)
+#'
+#' # Get bootstrap CI for P(contrast < 0)
+#' result <- linWMWpb(x, con = c(-1, 0.5, 0.5), nboot = 1000)
+#' print(result)
+#'
+#' # Use multicore processing for faster computation
+#' linWMWpb(x, con = c(-1, 0.5, 0.5), nboot = 2000, MC = TRUE)
+#' }
 linWMWpb<-function(x,con,nreps=100,SEED=TRUE,nboot=500,alpha=.05,MC=FALSE){
 #
 # Compute a confidence interval for the probability that a linear contrast
@@ -2636,11 +4815,34 @@ pval=2*min(c(pval,1-pval))
 list(p.est=est,ci=ci,p.value=pval)
 }
 
+#' Internal Helper for linWMWpb (Bootstrap Subsample)
+#'
+#' @keywords internal
 linWMWpb.lsub<-function(x,nreps=nreps,con=con,SEED=SEED){
 v=linWMW(x,nreps=nreps,con=con,SEED=SEED)$p
 v
 }
 
+#' Compute Delta for WMW/Cliff's Method Given Target Probability
+#'
+#' Determines the shift value delta such that P(X - delta < Y) = q.
+#' This provides an estimate of the qth quantile of the sampling distribution
+#' for the probability estimator used in Cliff's analog and WMW methods.
+#'
+#' @param x Vector of observations for group 1.
+#' @param y Vector of observations for group 2.
+#' @param q Target probability (quantile level).
+#'
+#' @return The shift value delta satisfying P(X - delta < Y) = q.
+#'
+#' @details
+#' This function uses numerical optimization (via `nelder`) to find the shift
+#' value that achieves a specified target probability. This is useful for
+#' understanding the sampling distribution of probability estimates in
+#' nonparametric methods.
+#'
+#' @keywords internal
+#' @seealso \code{\link{cid}}, \code{\link{WMW2med.sub}}, \code{\link{nelder}}
 WMW2med<-function(x,y,q){
 #
 # If P(X<Y)=q, determine the value delta such that
@@ -2661,6 +4863,18 @@ v=nelder(X,1,FN=WMW2med.sub,START=0)
 v
 }
 
+#' Objective Function for WMW2med Optimization (Internal)
+#'
+#' Internal helper function for `WMW2med` that computes the absolute difference
+#' between the current probability estimate and the target quantile.
+#'
+#' @param X Matrix containing data and target quantile.
+#' @param delta Shift parameter being optimized.
+#'
+#' @return Absolute difference between estimated and target probability.
+#'
+#' @keywords internal
+#' @seealso \code{\link{WMW2med}}
 WMW2med.sub<-function(X,delta){
 n=nrow(X)
 n1m=n-1
@@ -2669,6 +4883,50 @@ dif=abs(pv-X[n,1])
 dif
 }
 
+#' Multiple Comparisons Procedure for K Independent Tests (General Function)
+#'
+#' Performs a step-down multiple comparisons procedure for K independent tests
+#' using the Fisher method combined with Hochberg's adjustment. Requires that
+#' the tests be independent.
+#'
+#' @param x Data in matrix or list format (optional if `x1` and `x2` provided).
+#' @param x1 Data for group 1 (matrix or list, columns/elements are variables).
+#' @param x2 Data for group 2 (matrix or list, columns/elements are variables).
+#' @param func Test function to apply to each variable pair (default: `cidv2`).
+#' @param alpha Significance level (default: 0.05).
+#' @param pr Logical. If `TRUE`, prints results (default: `TRUE`).
+#' @param opt Integer option for data format (default: 1).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `pvalues`: Vector of p-values for each test
+#'     \item `adj.pvalues`: Adjusted p-values using Hochberg's method
+#'     \item `num.sig`: Number of significant tests
+#'     \item Additional components from the test function
+#'   }
+#'
+#' @details
+#' This function applies a specified test function to each of K variables
+#' independently, then combines the p-values using the Fisher method and
+#' adjusts for multiple comparisons using Hochberg's procedure.
+#'
+#' The tests MUST be independent for this method to be valid. For dependent
+#' tests, other adjustment methods should be used.
+#'
+#' @seealso \code{\link{twoKlin}}, \code{\link{cidv2}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare two groups on multiple independent variables
+#' set.seed(123)
+#' x1 <- matrix(rnorm(100), ncol = 5)
+#' x2 <- matrix(rnorm(120, mean = 0.3), ncol = 5)
+#'
+#' # Apply Cliff's test to each variable
+#' result <- twoKgen(x1 = x1, x2 = x2, func = cidv2)
+#' print(result)
+#' }
 twoKgen<-function(x=NULL,x1=NULL,x2=NULL,func=cidv2,alpha=.05,pr=TRUE,opt=1){
 #
 #  A step-down MCP based on K independent tests.
@@ -2758,6 +5016,85 @@ list(n1=n1,n2=n2,p.values=pv,
 Decisions=as.matrix(Decision),num.sig=nsig)
 }
 
+#' Interaction Test Using WMW Approach for 2x2 Designs
+#'
+#' Tests for interaction in a 2x2 ANOVA design using a Wilcoxon-Mann-Whitney
+#' approach. Estimates P(X1 - X2 < X3 - X4) where groups 1-2 form one factor
+#' level and groups 3-4 form another.
+#'
+#' @param x Matrix with four columns or list with four elements, representing
+#'   the four groups in a 2x2 design.
+#' @param locfun Function for computing location measure (default: `median`).
+#' @param nreps Number of replications for distribution estimation (default: 200).
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#' @param nmax Maximum number of comparisons to prevent memory issues (default: 10^8).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `p.est`: Estimated probability P(X1 - X2 < X3 - X4)
+#'     \item `results.4.rows`: Matrix with estimates for each row combination
+#'   }
+#'
+#' @details
+#' This function provides a robust, distribution-free test for interaction in
+#' a 2x2 factorial design. The approach:
+#'
+#' 1. Computes differences within the first pair: D1 = X1 - X2
+#' 2. Computes differences within the second pair: D2 = X3 - X4
+#' 3. Estimates P(D1 < D2) using a resampling approach
+#'
+#' **Interpretation**:
+#' \itemize{
+#'   \item P ≈ 0.5 suggests no interaction (similar effects across factor levels)
+#'   \item P far from 0.5 suggests an interaction is present
+#'   \item The direction indicates which factor level has a larger effect
+#' }
+#'
+#' The function handles heteroscedasticity (unequal variances) and does not
+#' assume normality. It uses a non-parametric estimation of the distributions
+#' of the difference scores.
+#'
+#' For each replication, the function:
+#' \itemize{
+#'   \item Samples with replacement from each group to match the minimum group size
+#'   \item Computes the differences D1 and D2
+#'   \item Estimates the probability that D1 < D2
+#' }
+#'
+#' The final estimate is the average across all replications.
+#'
+#' @note
+#' The `nmax` parameter prevents memory overflow when group sizes are very large.
+#' If the total number of pairwise comparisons would exceed `nmax`, a warning
+#' is issued. Missing values are automatically removed.
+#'
+#' @seealso \code{\link{interWMWpb}} for bootstrap confidence intervals,
+#'   \code{\link{interWMWAP}} for adjusted p-values,
+#'   \code{\link{wmw.ref.dif}} for two-group WMW
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # 2x2 factorial design data
+#' set.seed(123)
+#' # Group 1 (Factor A level 1, Factor B level 1)
+#' x1 <- rnorm(30, mean = 0)
+#' # Group 2 (Factor A level 1, Factor B level 2)
+#' x2 <- rnorm(30, mean = 0.5)
+#' # Group 3 (Factor A level 2, Factor B level 1)
+#' x3 <- rnorm(30, mean = 0.3)
+#' # Group 4 (Factor A level 2, Factor B level 2)
+#' x4 <- rnorm(30, mean = 1.2)  # Interaction: larger effect at level 2
+#'
+#' x <- list(x1, x2, x3, x4)
+#'
+#' # Test for interaction
+#' result <- interWMW(x)
+#' print(result)
+#'
+#' # Use mean instead of median
+#' interWMW(x, locfun = mean)
+#' }
 interWMW<-function(x,locfun=median,nreps=200,SEED=TRUE,nmax=10^8){
 #
 #  Goal: estimate P(X_1-X_2 < X_3-X_4).
@@ -2821,6 +5158,34 @@ row[2,]=c(temp[1,c(1,2,5,6,7)],temp[2,7])
 list(p.est=mean(p),results.4.rows=row)
 }
 
+#' WMW Interaction Effect Size for 2-by-2 Design
+#'
+#' @description
+#' Estimates a Wilcoxon-Mann-Whitney type interaction effect size for a
+#' 2-by-2 factorial design: P(Z < Z*) where Z = X1-X2 and Z* = X3-X4.
+#'
+#' @inheritParams common-params
+#' @param x Data in matrix or list format with 4 groups.
+#' @param iter Number of iterations for large sample approximation (default: 10).
+#' @param SEED Logical. If `TRUE`, sets random seed (default: `TRUE`).
+#'
+#' @return Estimated effect size P(Z < Z*).
+#'
+#' @details
+#' For computational efficiency with large samples (n1*n2*n3*n4 > 1000),
+#' uses a sampling approximation. Otherwise computes exact effect size.
+#' The effect size measures interaction on the probability scale.
+#'
+#' @seealso \code{\link{WMWinterci}}, \code{\link{interWMWAP}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # 2x2 design data
+#' set.seed(123)
+#' x <- list(rnorm(20), rnorm(20, 1), rnorm(20, 1), rnorm(20, 3))
+#' WMWinter.est(x)
+#' }
 WMWinter.est<-function(x,iter=10,SEED=TRUE){
 #
 # For a 2-by-2 design,
@@ -2856,6 +5221,39 @@ ef=mean(ef)
 ef
 }
 
+#' WMW Interaction Test for 2-by-2 Design (Adaptive Percentile Bootstrap)
+#'
+#' @description
+#' Tests for interaction in a 2-by-2 factorial design using a WMW-type measure
+#' with adaptive percentile bootstrap. Better than \code{WMWinterci} for
+#' small unequal sample sizes with heteroscedasticity.
+#'
+#' @inheritParams common-params
+#' @param x Data in matrix or list format with 4 groups.
+#' @param nreps Number of replications for adaptive method (default: 100).
+#' @param SEED Logical. If `TRUE`, sets random seed (default: `TRUE`).
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param alpha Significance level (default: 0.05).
+#' @param nmax Maximum sample size product (default: 10^8).
+#' @param MC Logical. If `TRUE`, uses parallel processing (default: `TRUE`).
+#'
+#' @return Test results including effect size estimate and confidence interval.
+#'
+#' @details
+#' Tests interaction using P(X1-X2 < X3-X4). The adaptive percentile bootstrap
+#' provides better Type I error control than \code{WMWinterci} when sample
+#' sizes are unequal and heteroscedasticity is present.
+#'
+#' @seealso \code{\link{WMWinterci}}, \code{\link{WMWinter.est}}, \code{\link{linWMWpb}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # 2x2 factorial design
+#' set.seed(123)
+#' data <- list(rnorm(15), rnorm(20, 1), rnorm(25, 1), rnorm(18, 3))
+#' interWMWAP(data, nboot = 500)
+#' }
 interWMWAP<-function(x,nreps=100,SEED=TRUE,nboot=500,alpha=.05,nmax=10^8,MC=TRUE){
 #
 #  Interaction in a 2-by-2 design using P(X_1-X_2<X_3-X_4)
@@ -2875,6 +5273,44 @@ alpha = alpha, MC = MC)
 TV
 }
 
+#' WMW Interaction Test for 2-by-2 Design with Confidence Interval
+#'
+#' @description
+#' Tests for interaction in a 2-by-2 factorial design using a Mann-Whitney
+#' type effect measure: P(Z < Z*) where Z = X1-X2 and Z* = X3-X4.
+#'
+#' @inheritParams common-params
+#' @param x Data in matrix or list format with 4 groups.
+#' @param alpha Significance level (default: 0.05).
+#' @param SW Logical. If `TRUE`, uses Studentized Wilcoxon method (default: `FALSE`).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `estimate`: Estimated P(Z < Z*)
+#'     \item `ci`: Confidence interval
+#'     \item `p.value`: P-value for testing no interaction
+#'     \item `test.stat`: Test statistic
+#'   }
+#'
+#' @details
+#' Implements the Mann-Whitney type interaction effect from De Neve & Thas (2016).
+#' For small unequal sample sizes with heteroscedasticity, consider using
+#' \code{interWMWAP} instead.
+#'
+#' Reference: De Neve & Thas (2016). A Mann-Whitney type effect measure
+#' of interaction for factorial designs. Communications in Statistics - Theory
+#' and Methods, DOI: 10.1080/03610926.2016.1263739
+#'
+#' @seealso \code{\link{interWMWAP}}, \code{\link{WMWinter.est}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # 2x2 factorial design
+#' set.seed(123)
+#' data <- list(rnorm(20), rnorm(20, 1), rnorm(20, 1), rnorm(20, 3))
+#' WMWinterci(data)
+#' }
 WMWinterci<-function(x,alpha=0.05,SW=FALSE){
 #
 #
@@ -2917,6 +5353,84 @@ pv=2*(1-pnorm(abs(test)))
 list(n=nx,p.hat=bhat,p.value=pv,ci=ci)
 }
 
+#' Yuen's Test with Quantile Shift Effect Size
+#'
+#' Performs Yuen's test for comparing trimmed means between two independent
+#' groups, with an additional robust quantile shift (QS) measure of effect size.
+#'
+#' @param x Vector of data for group 1, or a matrix/data frame with two columns,
+#'   or a list with two elements.
+#' @param y Vector of data for group 2. Not needed if `x` is a matrix/data frame/list.
+#' @param tr Proportion of trimming (default: 0.2 for 20% trimming from each tail).
+#' @param alpha Significance level for confidence interval (default: 0.05).
+#' @param plotit Logical. If `TRUE`, creates a plot comparing the two groups (default: `FALSE`).
+#' @param op Logical. If `TRUE`, includes output (default: `TRUE`).
+#' @param cor.op Logical. For correlation-related operations (default: `FALSE`).
+#' @param loc.fun Function for computing location measure (default: `median`).
+#' @param pr Logical. If `TRUE`, prints interpretation guidance (default: `TRUE`).
+#' @param xlab Label for x-axis when plotting (default: "X").
+#' @param ylab Label for y-axis when plotting (default: " ").
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `ci`: Confidence interval for the difference between trimmed means
+#'     \item `n1`, `n2`: Sample sizes for groups 1 and 2
+#'     \item `p.value`: P-value for Yuen's test
+#'     \item `dif`: Difference between trimmed means (group 1 - group 2)
+#'     \item `se`: Standard error of the difference
+#'     \item `teststat`: Test statistic value
+#'     \item `crit`: Critical value from t-distribution
+#'     \item `df`: Degrees of freedom
+#'     \item `Q.Effect`: Quantile shift effect size measure
+#'   }
+#'
+#' @details
+#' This function extends the basic Yuen test (see `yuen`) by adding a robust
+#' quantile shift (QS) effect size measure. The quantile shift provides an
+#' alternative to Cohen's d that is more robust to outliers and non-normality.
+#'
+#' The function prints an interpretation guide relating Cohen's d values to
+#' approximate Q.Effect values:
+#' \itemize{
+#'   \item Cohen's d = 0 corresponds to Q.Effect ≈ 0.5 (no effect)
+#'   \item Cohen's d = 0.2 corresponds to Q.Effect ≈ 0.55 (small effect)
+#'   \item Cohen's d = 0.5 corresponds to Q.Effect ≈ 0.65 (medium effect)
+#'   \item Cohen's d = 0.8 corresponds to Q.Effect ≈ 0.70 (large effect)
+#' }
+#'
+#' These correspondences assume normality and homoscedasticity. The QS effect
+#' size is often more interpretable and robust than standardized mean differences.
+#'
+#' @note
+#' Use `medpb` to compare medians (when `tr = 0.5`). Values of `tr > 0.5` are
+#' not allowed. Missing values are automatically removed.
+#'
+#' @seealso \code{\link{yuen}} for basic Yuen test,
+#'   \code{\link{yuend}} for dependent groups,
+#'   \code{\link{yuend.QS.ci}} for bootstrap CI with QS effect size,
+#'   \code{\link{shiftQS}} for computing quantile shift
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(40, mean = 0, sd = 1)
+#' y <- rnorm(50, mean = 0.5, sd = 1.2)
+#'
+#' # Yuen's test with quantile shift effect size
+#' result <- yuenQS(x, y)
+#' print(result)
+#'
+#' # With plot
+#' yuenQS(x, y, plotit = TRUE)
+#'
+#' # Less trimming
+#' yuenQS(x, y, tr = 0.1)
+#'
+#' # Using matrix input
+#' data <- cbind(x[1:40], y[1:40])
+#' yuenQS(data)
+#' }
 yuenQS<-function(x,y=NULL,tr=.2,alpha=.05, plotit=FALSE,op=TRUE,
 cor.op=FALSE,loc.fun=median,pr=TRUE,xlab='X',ylab=' ' ){
 #
@@ -2974,6 +5488,98 @@ p.value=yuen,dif=dif,se=sqrt(q1+q2),teststat=test,
 crit=crit,df=df,Q.Effect=e.pow)
 }
 
+#' ANCOVA Using Wilcoxon-Mann-Whitney Method with Design Points
+#'
+#' Performs ANCOVA comparing two groups using the Wilcoxon-Mann-Whitney analog.
+#' Estimates P(Y1 < Y2 | X) at multiple covariate values with simultaneous
+#' confidence bands. Uses Method S for selecting design points based on minimum
+#' sample size.
+#'
+#' @param x1 Vector of covariate values for group 1.
+#' @param y1 Vector of outcome values for group 1.
+#' @param x2 Vector of covariate values for group 2.
+#' @param y2 Vector of outcome values for group 2.
+#' @param fr1 Span parameter for determining neighborhoods in group 1 (default: 1).
+#' @param fr2 Span parameter for determining neighborhoods in group 2 (default: 1).
+#' @param nmin Minimum number of observations needed in each neighborhood (default: 8).
+#' @param Ycrit Logical. If `TRUE`, uses Y-based critical values (default: `FALSE`).
+#' @param alpha Significance level for simultaneous confidence band (default: 0.05).
+#' @param plotit Logical. If `TRUE`, creates a plot with confidence band (default: `TRUE`).
+#' @param pts Vector of covariate points for evaluation. If `NA`, automatically determined
+#'   (default: `NA`).
+#' @param span Span parameter for loess smoothing when plotting (default: 2/3).
+#' @param sm Logical. If `TRUE`, smooths the plot using lowess (default: `TRUE`).
+#' @param BOTH Logical. If `TRUE`, considers both groups when determining range
+#'   (default: `TRUE`).
+#' @param pr Logical. If `TRUE`, prints additional information (default: `TRUE`).
+#' @param xout Logical. If `TRUE`, removes outliers from covariates (default: `FALSE`).
+#' @param outfun Function for detecting outliers (default: `out`).
+#' @param MC Logical. If `TRUE`, uses multicore processing (default: `FALSE`).
+#' @param npts Number of covariate points to evaluate (default: 25).
+#' @param p.crit Critical p-value for simultaneous testing. If `NULL`, determined
+#'   automatically (default: `NULL`).
+#' @param EST Logical. If `TRUE`, estimates critical values (default: `FALSE`).
+#' @param SCAT Logical. If `TRUE`, includes scatter plot (default: `TRUE`).
+#' @param xlab Label for x-axis (default: "X").
+#' @param ylab Label for y-axis (default: "P.hat").
+#' @param pc Plotting character (default: ".").
+#' @param ... Additional arguments passed to outlier detection function.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `output`: Matrix with columns for covariate values, estimates, and confidence bounds
+#'     \item `p.crit`: Critical p-value used for simultaneous inference
+#'     \item Other components from `ancovaWMW`
+#'   }
+#'
+#' @details
+#' This function extends ANCOVA to use a robust WMW-based approach. At each
+#' covariate value, it estimates P(Y1 < Y2) - the probability that an observation
+#' from group 1 is less than an observation from group 2, given the covariate value.
+#'
+#' **Method S** (used by this function) chooses covariate points based on having
+#' at least `nmin` observations in the neighborhood. This differs from **Method Q**
+#' (see `ancdetwmwQ`) which selects points between quantiles.
+#'
+#' The function creates a simultaneous confidence band across all covariate values,
+#' controlling the familywise error rate at level `alpha`. Critical p-values are
+#' either specified via `p.crit` or determined automatically based on simulation
+#' results for different sample sizes.
+#'
+#' When `plotit = TRUE`, the function creates a plot showing:
+#' \itemize{
+#'   \item Point estimates of P(Y1 < Y2) across covariate values
+#'   \item Simultaneous confidence band
+#'   \item Optional smoothing via lowess
+#' }
+#'
+#' @note
+#' This function only allows one covariate. For multiple covariates, use other
+#' ANCOVA methods. Missing values are automatically removed.
+#'
+#' @seealso \code{\link{ancdetwmwQ}} for Method Q (quantile-based points),
+#'   \code{\link{ancovaWMW}} for the underlying WMW ANCOVA computation,
+#'   \code{\link{ancdet}} for ANCOVA with trimmed means
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' n <- 50
+#' x1 <- rnorm(n)
+#' y1 <- 2 + 0.5*x1 + rnorm(n)
+#' x2 <- rnorm(n)
+#' y2 <- 3 + 0.5*x2 + rnorm(n)
+#'
+#' # ANCOVA with WMW method
+#' result <- ancdetwmw(x1, y1, x2, y2)
+#'
+#' # With fewer design points
+#' ancdetwmw(x1, y1, x2, y2, npts = 15)
+#'
+#' # Remove outliers in covariates
+#' ancdetwmw(x1, y1, x2, y2, xout = TRUE)
+#' }
 ancdetwmw<-function(x1,y1,x2,y2,fr1=1,fr2=1,nmin=8,Ycrit=FALSE,
 alpha=.05,plotit=TRUE,pts=NA,span=2/3,sm=TRUE,BOTH=TRUE,
 pr=TRUE,xout=FALSE,outfun=out,MC=FALSE,
@@ -3100,6 +5706,56 @@ res=cbind(res,sig)
 list(p.crit=p.crit,output=res,summary=temp$summary,num.sig=sum(sig))
 }
 
+#' ANCOVA Using WMW at Design Points with Simultaneous Confidence Band
+#'
+#' @description
+#' Performs ANCOVA using a Wilcoxon-Mann-Whitney analog at multiple design points
+#' with a simultaneous confidence band. Like \code{ancdet} but uses WMW instead
+#' of means.
+#'
+#' @inheritParams common-params
+#' @param x1 Covariate values for group 1.
+#' @param y1 Response values for group 1.
+#' @param x2 Covariate values for group 2.
+#' @param y2 Response values for group 2.
+#' @param fr1 Span for group 1 (default: 1).
+#' @param fr2 Span for group 2 (default: 1).
+#' @param nmin Minimum sample size at each design point (default: 8).
+#' @param q Quantile for selecting covariate range (default: 0.05).
+#' @param alpha Significance level (default: 0.05).
+#' @param plotit Logical. If `TRUE`, creates plot (default: `TRUE`).
+#' @param pts Design points (default: NA for automatic selection).
+#' @param span Span for lowess smoothing (default: 2/3).
+#' @param sm Logical. If `TRUE`, applies smoothing (default: `TRUE`).
+#' @param xout Logical. If `TRUE`, removes outliers (default: `FALSE`).
+#' @param outfun Outlier detection function (default: \code{out}).
+#' @param MC Logical. If `TRUE`, uses parallel processing (default: `FALSE`).
+#' @param npts Number of design points if pts not specified (default: 25).
+#' @param p.crit Critical p-value for confidence band (default: NULL for automatic).
+#' @param SCAT Logical. If `TRUE`, shows scatter plot (default: `TRUE`).
+#' @param xlab X-axis label (default: 'X').
+#' @param ylab Y-axis label (default: 'P.hat').
+#' @param pc Plot character (default: '.').
+#' @param ... Additional arguments passed to outlier function.
+#'
+#' @return A list with WMW estimates and confidence bands at design points.
+#'
+#' @details
+#' Estimates P(Y1 < Y2 | X = x) at multiple design points with simultaneous
+#' confidence band. Design points chosen between q and 1-q quantiles of
+#' the covariate, requiring at least nmin observations at each point.
+#'
+#' @seealso \code{\link{ancovaWMW}}, \code{\link{ancdet}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # ANCOVA with WMW
+#' set.seed(123)
+#' x1 <- rnorm(50); y1 <- x1 + rnorm(50)
+#' x2 <- rnorm(50); y2 <- x2 + 0.5 + rnorm(50)
+#' ancdetwmwQ(x1, y1, x2, y2, npts = 15)
+#' }
 ancdetwmwQ<-function(x1,y1,x2,y2,fr1=1,fr2=1,nmin=8,q=.05,
 alpha=.05,plotit=TRUE,pts=NA,span=2/3,sm=TRUE, xout=FALSE,outfun=out,MC=FALSE,
 npts=25,p.crit=NULL,
@@ -3197,6 +5853,47 @@ res=cbind(res,sig)
 list(p.crit=p.crit,output=res,summary=temp$summary,num.sig=sum(sig),p.crit=p.crit)
 }
 
+#' Multiple Cliff's Analog Tests for Multivariate Data
+#'
+#' For two independent p-variate random variables, performs Cliff's analog
+#' of the Wilcoxon-Mann-Whitney test for each variable separately.
+#'
+#' @param x1 Matrix or data frame for group 1 (rows are observations, columns are variables).
+#' @param x2 Matrix or data frame for group 2 (rows are observations, columns are variables).
+#' @param alpha Significance level (default: 0.05).
+#' @param BMP Logical. If `TRUE`, uses `bmp` function; if `FALSE`, uses `cidv2` (default: `FALSE`).
+#'
+#' @return A matrix with one row per variable and columns:
+#'   \itemize{
+#'     \item `n1`, `n2`: Sample sizes for groups 1 and 2
+#'     \item `p-value`: P-value for the comparison
+#'     \item `p.hat`: Estimate of P(X < Y)
+#'     \item `ci.low`, `ci.up`: Confidence interval bounds
+#'     \item `P(X<Y)`, `P(X=Y)`, `P(X>Y)`: Summary of pairwise comparisons
+#'   }
+#'
+#' @details
+#' This function applies Cliff's analog test to each variable in a multivariate
+#' dataset. It provides a robust alternative to multivariate t-tests when comparing
+#' distributions rather than just means.
+#'
+#' The function does NOT adjust for multiple comparisons; users should apply
+#' appropriate corrections (e.g., Bonferroni, FDR) if needed.
+#'
+#' @seealso \code{\link{cidv2}}, \code{\link{bmp}}, \code{\link{cid}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare two groups on multiple variables
+#' set.seed(123)
+#' x1 <- matrix(rnorm(100), ncol = 5)
+#' x2 <- matrix(rnorm(120, mean = 0.3), ncol = 5)
+#'
+#' # Apply Cliff's test to each variable
+#' result <- cidMULT(x1, x2)
+#' print(result)
+#' }
 cidMULT<-function(x1,x2,alpha=.05,BMP=FALSE){
 #
 #
@@ -3225,6 +5922,23 @@ dimnames(res)=list(L,c('n1','n2','p-value','p.hat','ci.low','ci.up','P(X<Y)','P(
 res
 }
 
+#' Pool Data for Two-Way Design (Internal Helper)
+#'
+#' For a two-way design, pools data for each level of Factor A across levels
+#' of Factor B, and vice versa. Internal helper for two-way effect size calculations.
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param x Data in matrix or list format (J*K groups).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `A`: List of length J, each element containing pooled data across Factor B
+#'     \item `B`: List of length K, each element containing pooled data across Factor A
+#'   }
+#'
+#' @keywords internal
+#' @seealso \code{\link{twowayESM}}, \code{\link{pool.a.list}}
 twoway.pool<-function(J,K,x){
 #
 #  For a two-way design,for each level of Factor A, pool over B
@@ -3244,6 +5958,42 @@ for(k in 1:K)B[[k]]=pool.a.list(x[imat[,k]])
 list(A=A,B=B)
 }
 
+#' Two-Way Effect Size Measures
+#'
+#' For a two-way design, computes effect size measures for each level of Factor A
+#' (pooling over Factor B) and for each level of Factor B (pooling over Factor A).
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param x Data in matrix or list format (J*K groups).
+#' @param fun Function to compute effect sizes (default: `ES.summary`).
+#' @param ... Additional arguments passed to `fun`.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `FactorA`: Effect size results for Factor A (pooled over B)
+#'     \item `FactorB`: Effect size results for Factor B (pooled over A)
+#'   }
+#'
+#' @details
+#' This function pools data appropriately for a two-way design and computes
+#' effect size measures using the specified function (typically `ES.summary`
+#' or related functions from the effect size module).
+#'
+#' @seealso \code{\link{twoway.pool}}, \code{\link{ES.summary}}, \code{\link{IND.PAIR.ES}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Two-way design: 2 x 3
+#' set.seed(123)
+#' J <- 2; K <- 3
+#' x <- matrix(rnorm(120), ncol = J*K)
+#'
+#' # Compute effect sizes for main effects
+#' result <- twowayESM(J, K, x)
+#' print(result)
+#' }
 twowayESM<-function(J,K,x,fun=ES.summary,...){
 #
 # For each level of Factor A, pool data over levels of Factor B, compute
@@ -3259,6 +6009,47 @@ B=IND.PAIR.ES(a$B,fun=fun,...)
 list(Factor.A=A,Factor.B=B)
 }
 
+#' Compare Variation in Tails for Dependent Groups After Centering
+#'
+#' @description
+#' Compares the marginal distributions of two dependent groups by examining
+#' variation in the tails after centering the data using a location measure.
+#'
+#' @inheritParams common-params
+#' @param x Observations for group 1.
+#' @param y Observations for group 2.
+#' @param loc.fun Location function for centering (default: \code{median}).
+#' @param CI Logical. If `TRUE`, computes confidence intervals (default: `FALSE`).
+#' @param plotit Logical. If `TRUE`, creates plot (default: `TRUE`).
+#' @param xlab X-axis label (default: 'First Group').
+#' @param ylab Y-axis label (default: 'Est.1 - Est.2').
+#' @param ylabQCOM Y-axis label for QCOM (default: 'Est.2 - Est.1').
+#' @param sm Logical. If `TRUE`, applies smoothing (default: `TRUE`).
+#' @param QCOM Logical. If `TRUE`, uses quantile comparison method (default: `TRUE`).
+#' @param q Quantiles to compare (default: c(0.1, 0.25, 0.75, 0.9)).
+#' @param MC Logical. If `TRUE`, uses parallel processing (default: `FALSE`).
+#' @param nboot Number of bootstrap samples (default: 2000).
+#' @param PR Logical. If `TRUE`, prints interpretation guide (default: `TRUE`).
+#' @param ... Additional arguments passed to location function.
+#'
+#' @return Results comparing tail variation between groups.
+#'
+#' @details
+#' Centers both groups using the specified location function, then compares
+#' the distributions focusing on tail behavior. Useful for detecting differences
+#' in variability patterns after removing location differences.
+#'
+#' @seealso \code{\link{Dqcomhd}}, \code{\link{lband}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare tail variation in paired data
+#' set.seed(123)
+#' x <- rt(50, df = 5)
+#' y <- rt(50, df = 3) # Heavier tails
+#' RMcomvar.locdis(x, y)
+#' }
 RMcomvar.locdis<-function(x,y,
 loc.fun=median,CI=FALSE,plotit=TRUE,xlab='First Group',
 ylab='Est.1 - Est.2',ylabQCOM='Est.2 - Est.1',sm=TRUE,QCOM=TRUE,q=c(.1,.25,.75,.9),MC=FALSE,nboot=2000,PR=TRUE,...){
@@ -3298,6 +6089,52 @@ a=Dqcomhd(X,Y,q=q,nboot=nboot,plotit=plotit,xlab=xlab,ylab=ylab)
 a
 }
 
+#' Confidence Interval for Quantile Shift Effect Size (Dependent Groups)
+#'
+#' Computes a bootstrap confidence interval for the quantile shift measure of
+#' effect size for dependent (paired) groups. The quantile shift is a robust
+#' measure of how much one distribution is shifted relative to another.
+#'
+#' @inheritParams common-params
+#' @param x Either a vector of observations for group 1, or a two-column matrix/data frame
+#'   where the first column is group 1 and the second is group 2.
+#' @param y Vector of observations for group 2 (optional if `x` is a matrix).
+#' @param tr Trimming proportion (default: 0.2 for 20% trimming).
+#' @param alpha Significance level for confidence interval (default: 0.05 for 95% CI).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#' @param ... Additional arguments passed to `tmean`.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `Q.effect`: The quantile shift effect size estimate
+#'     \item `ci`: Two-element vector with lower and upper confidence interval bounds
+#'   }
+#'
+#' @details
+#' This function uses the percentile bootstrap method to construct a confidence
+#' interval for the quantile shift measure. The quantile shift (Q) is computed
+#' using the `shiftes` function with trimmed means as the location estimator.
+#'
+#' The bootstrap resamples pairs of observations (preserving the dependency
+#' structure) and computes the quantile shift for each bootstrap sample. The
+#' confidence interval is then obtained from the percentiles of the bootstrap
+#' distribution.
+#'
+#' @seealso \code{\link{shiftes}}, \code{\link{yuend}}, \code{\link{tmean}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Generate paired data with a shift
+#' set.seed(123)
+#' x <- rnorm(30)
+#' y <- x + rnorm(30, mean = 0.5)
+#'
+#' # Compute quantile shift effect size with CI
+#' result <- yuend.QS.ci(x, y, nboot = 1000)
+#' print(result)
+#' }
 yuend.QS.ci<-function(x,y=NULL,tr=.2,alpha=.05,nboot=1000,SEED=TRUE,...){
 #
 # confidence interval for the quantile shift measure of effect size.
@@ -3324,6 +6161,53 @@ est=shiftes(xy[,1],xy[,2],locfun=tmean,tr=tr)$Q.Effect
 list(Q.effect=est,ci=ci)
 }
 
+#' Multiple Comparisons of Variances for Independent Groups
+#'
+#' Performs all pairwise comparisons of variances for J independent groups
+#' using a slight extension of the HC4 version of the Morgan-Pitman test.
+#' Controls the familywise error rate using a specified p-value adjustment method.
+#'
+#' @param x Either a matrix/data frame (each column is a group) or a list of vectors.
+#' @param method Method for p-value adjustment (default: "hoch" for Hochberg's method).
+#'   Other options include "holm", "bonferroni", "BH", etc. See \code{\link[stats]{p.adjust}}.
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#'
+#' @return A matrix with one row per comparison and columns:
+#'   \itemize{
+#'     \item `Var`: Index of first variable
+#'     \item `Var`: Index of second variable
+#'     \item `SD 1`: Standard deviation of first group
+#'     \item `SD 2`: Standard deviation of second group
+#'     \item `Dif`: Difference in standard deviations (SD1 - SD2)
+#'     \item `p.value`: Unadjusted p-value
+#'     \item `Adj.p.value`: Adjusted p-value using specified method
+#'   }
+#'
+#' @details
+#' This function compares the variances of J independent variables using all
+#' pairwise comparisons. The Morgan-Pitman test (via `varcom.IND.MP`) is used
+#' for each comparison, which is a robust heteroscedastic test for comparing
+#' two variances.
+#'
+#' The function performs C = J(J-1)/2 pairwise comparisons and adjusts the
+#' p-values to control the familywise error rate.
+#'
+#' @seealso \code{\link{varcom.IND.MP}}, \code{\link{comvar2}}, \code{\link[stats]{p.adjust}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Compare variances of three groups
+#' set.seed(123)
+#' x1 <- rnorm(30, sd = 1)
+#' x2 <- rnorm(30, sd = 1.5)
+#' x3 <- rnorm(30, sd = 2)
+#' x <- cbind(x1, x2, x3)
+#'
+#' # Perform all pairwise variance comparisons
+#' result <- comvar.mcp(x)
+#' print(result)
+#' }
 comvar.mcp<-function(x,method='hoch',SEED=TRUE){
 #
 #  Compare the variances of J indepenent variables.
@@ -3353,6 +6237,56 @@ output[,7]=p.adjust(output[,6],method=method)
 output
 }
 
+#' Compare Two Dependent Groups via Percentile Bootstrap
+#'
+#' Compares measures of location for two dependent (paired) groups using a
+#' percentile bootstrap method. By default, uses trimmed means as the measure
+#' of location.
+#'
+#' @inheritParams common-params
+#' @param x Vector of observations for group 1, or a two-column matrix/data frame.
+#' @param y Vector of observations for group 2 (optional if `x` is a matrix).
+#' @param alpha Significance level (default: 0.05).
+#' @param est Estimator function for location (default: `tmean`).
+#' @param plotit Logical. If `TRUE`, creates a plot (default: `FALSE`).
+#' @param dif Logical. If `TRUE`, analyzes difference scores; if `FALSE`, compares
+#'   marginal trimmed means (default: `TRUE`).
+#' @param nboot Number of bootstrap samples (default: `NA`, which uses 1000).
+#' @param xlab Label for x-axis (default: "Group 1").
+#' @param ylab Label for y-axis (default: "Group 2").
+#' @param pr Logical. If `TRUE`, prints whether difference scores were used (default: `TRUE`).
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#' @param ... Additional arguments passed to the estimator function.
+#'
+#' @return A matrix with one row containing:
+#'   \itemize{
+#'     \item If `dif=FALSE`: `Est.1`, `Est.2`, `Est.dif`, `p.value`, `ci.lower`, `ci.upper`
+#'     \item If `dif=TRUE`: `Est.typical.dif`, `p.value`, `ci.lower`, `ci.upper`
+#'   }
+#'
+#' @details
+#' This is a wrapper function that calls `rmmcppb` for convenience. It provides
+#' a simpler interface for the common case of comparing two dependent groups.
+#'
+#' When `dif=TRUE`, the function analyzes the distribution of difference scores
+#' (X - Y). When `dif=FALSE`, it compares the marginal distributions of X and Y.
+#'
+#' @seealso \code{\link{rmmcppb}}, \code{\link{yuend}}, \code{\link{tmean}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Generate paired data
+#' set.seed(123)
+#' pre <- rnorm(30, mean = 100)
+#' post <- pre + rnorm(30, mean = 5, sd = 10)
+#'
+#' # Compare using difference scores
+#' two.dep.pb(pre, post, nboot = 1000)
+#'
+#' # Compare marginal means
+#' two.dep.pb(pre, post, dif = FALSE, nboot = 1000)
+#' }
 two.dep.pb<-function(x,y=NULL,alpha=.05,est=tmean,plotit=FALSE,dif=TRUE,
 nboot=NA,xlab='Group 1',ylab='Group 2',pr=TRUE,SEED=TRUE,...){
 #
@@ -3390,6 +6324,25 @@ dimnames(output)=list(NULL,c('Est.typical.dif','p.value','ci.lower','ci.upper'))
 output
 }
 
+#' Estimate P(X < Y) for WMW Test (Internal Helper)
+#'
+#' Internal helper function to estimate P(X < Y) for two independent random
+#' variables. Used in bootstrap and simulation contexts.
+#'
+#' @param m Matrix with two columns (group 1 and group 2).
+#' @param M Alternative matrix (default: same as `m`).
+#' @param n1 Sample size for group 1.
+#' @param n2 Sample size for group 2.
+#'
+#' @return Scalar estimate of P(X < Y).
+#'
+#' @details
+#' This is an internal helper function used primarily for bootstrap resampling
+#' in WMW-based methods. It samples from the provided matrices and computes
+#' the probability estimate using `bmp`.
+#'
+#' @keywords internal
+#' @seealso \code{\link{bmp}}, \code{\link{wmw}}
 wmw.est.only<-function(m,M=m,n1,n2){
 #
 # For two independent random variables,
@@ -3407,6 +6360,54 @@ e=bmp(x1,x2)$phat
 e
 }
 
+#' Reiczigel et al. Improved Wilcoxon-Mann-Whitney Test
+#'
+#' Performs the Reiczigel et al. (2005) improvement of the Wilcoxon-Mann-Whitney
+#' test using a bootstrap approach to better control Type I error rates.
+#'
+#' @inheritParams common-params
+#' @param x Vector of observations for group 1.
+#' @param y Vector of observations for group 2.
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#'
+#' @return A list with component:
+#'   \itemize{
+#'     \item `p.value`: P-value from the improved WMW test
+#'   }
+#'
+#' @details
+#' This function implements the improved WMW test proposed by Reiczigel et al. (2005).
+#' The method uses a bootstrap resampling approach after centering the data based
+#' on rank-based location estimates.
+#'
+#' The test procedure:
+#' 1. Ranks all observations from both groups
+#' 2. Computes a location shift estimate using trimmed means on ranks (tr=0)
+#' 3. Centers the data by subtracting the shift estimate
+#' 4. Performs bootstrap resampling to obtain the null distribution
+#' 5. Computes a two-sided p-value
+#'
+#' This approach can provide better Type I error control than the classical WMW test
+#' in certain situations.
+#'
+#' @references
+#' Reiczigel, J., Zakarias, I., & Rozsa, L. (2005). A bootstrap test of stochastic
+#' equality of two populations. The American Statistician, 59(2), 156-161.
+#'
+#' @seealso \code{\link{wmw}}, \code{\link{yuen}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(30)
+#' y <- rnorm(35, mean = 0.3)
+#'
+#' # Perform improved WMW test
+#' result <- wmw.RZR(x, y, nboot = 1000)
+#' print(result)
+#' }
 wmw.RZR<-function(x,y,nboot=1000,SEED=TRUE){
 #
 #   Perform the Reiczigel et al. (2005) improvement of of the
@@ -3440,6 +6441,49 @@ pv=2*min(pv1,pv2)
 list(p.value=pv)
 }
 
+#' Compare Variances for Astigmatism Data
+#'
+#' Compares variances between two groups for astigmatism data (or any paired
+#' bivariate data). Specifically designed to compare variances of the first
+#' variable between groups and the second variable between groups.
+#'
+#' @param m1 Matrix or data frame with two columns (two variables for group 1).
+#' @param m2 Matrix or data frame with two columns (two variables for group 2).
+#' @param method Method for p-value adjustment (default: "holm").
+#'   See \code{\link[stats]{p.adjust}} for options.
+#'
+#' @return A matrix with two rows (one per variable comparison) and columns:
+#'   \itemize{
+#'     \item `VAR 1`: Variance estimate for group 1
+#'     \item `VAR 2`: Variance estimate for group 2
+#'     \item `Ratio`: Ratio of variances (VAR 1 / VAR 2)
+#'     \item `p.value`: Unadjusted p-value
+#'     \item `p.adjusted`: Adjusted p-value
+#'   }
+#'
+#' @details
+#' This function is specifically designed for astigmatism data where each
+#' subject/group has two measurements. It compares:
+#' - Row 1: Variances of first variable (m1[,1] vs m2[,1])
+#' - Row 2: Variances of second variable (m1[,2] vs m2[,2])
+#'
+#' The Morgan-Pitman test (`varcom.IND.MP`) is used for each comparison,
+#' and p-values are adjusted for multiple testing.
+#'
+#' @seealso \code{\link{varcom.IND.MP}}, \code{\link{comvar.mcp}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Astigmatism data: two measurements per eye
+#' set.seed(123)
+#' m1 <- matrix(rnorm(60, sd = 1), ncol = 2)   # Group 1
+#' m2 <- matrix(rnorm(60, sd = 1.5), ncol = 2) # Group 2
+#'
+#' # Compare variances for both measurements
+#' result <- comvar2.astig(m1, m2)
+#' print(result)
+#' }
 comvar2.astig<-function(m1,m2,method='holm'){
 #
 #  This function is designed specifically for dealing with astigmatism.
@@ -3464,6 +6508,63 @@ dimnames(output)=list(NULL,c('VAR 1','VAR 2','Ratio','p.value','p.adjusted') )
 output
 }
 
+#' WMW-Based ANCOVA with Bootstrap Standard Errors
+#'
+#' Performs ANCOVA (analysis of covariance) based on a heteroscedastic analog
+#' of the Wilcoxon-Mann-Whitney test. Estimates P(Y1 < Y2) at specified
+#' covariate values with bootstrap standard errors.
+#'
+#' @inheritParams common-params
+#' @param x1 Matrix or vector of covariate(s) for group 1.
+#' @param y1 Vector of response variable for group 1.
+#' @param x2 Matrix or vector of covariate(s) for group 2.
+#' @param y2 Vector of response variable for group 2.
+#' @param pts Matrix of covariate values at which to compare groups. If `NULL`,
+#'   uses values from `ancova.KMS`.
+#' @param nboot Number of bootstrap samples (default: 100).
+#' @param SEED Logical. If `TRUE`, sets random seed for reproducibility (default: `TRUE`).
+#' @param MC Logical. If `TRUE`, uses parallel processing via `mclapply` (default: `FALSE`).
+#' @param null.value Null hypothesis value for P(Y1 < Y2) (default: 0.5).
+#' @param xout Logical. If `TRUE`, removes outliers in covariates (default: `FALSE`).
+#' @param outfun Function for outlier detection (default: `outpro`).
+#' @param alpha Significance level (default: 0.05).
+#' @param ... Additional arguments passed to outlier detection function.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `Est`: Vector of P(Y1 < Y2) estimates at each covariate value
+#'     \item `SE`: Bootstrap standard errors
+#'     \item `test.stat`: Test statistics (standardized differences)
+#'     \item `conf.int`: Matrix of confidence intervals
+#'     \item `p.value`: P-values for each comparison
+#'   }
+#'
+#' @details
+#' This function extends the Wilcoxon-Mann-Whitney approach to ANCOVA by
+#' estimating P(Y1 < Y2) conditional on specific covariate values. Bootstrap
+#' resampling is used to obtain standard errors and confidence intervals.
+#'
+#' The method allows for heteroscedasticity and does not assume linearity or
+#' normality. It provides a robust alternative to classical ANCOVA.
+#'
+#' @seealso \code{\link{wmw.anc}}, \code{\link{ancova.KMS}}, \code{\link{outpro}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Generate data with covariate
+#' set.seed(123)
+#' n1 <- 40; n2 <- 40
+#' x1 <- rnorm(n1)
+#' y1 <- 2*x1 + rnorm(n1)
+#' x2 <- rnorm(n2)
+#' y2 <- 2*x2 + rnorm(n2, mean = 1)
+#'
+#' # Compare at specific covariate values
+#' pts <- matrix(c(-1, 0, 1), ncol = 1)
+#' result <- wmw.ancbse(x1, y1, x2, y2, pts = pts, nboot = 200)
+#' print(result)
+#' }
 wmw.ancbse<-function(x1,y1,x2,y2,pts,nboot=100,SEED=TRUE,MC=FALSE,null.value=.5,xout=FALSE,
 outfun=outpro,alpha=.05,...){
 #
@@ -3530,11 +6631,51 @@ sig<-2*(1-pnorm(abs(test)))
 list(Est=e,SE=se,test.stat=test,conf.int=ci,p.value=sig)
 }
 
+#' Bootstrap Helper for WMW ANCOVA (Internal)
+#'
+#' Internal helper function for `wmw.ancbse` that computes WMW ANCOVA estimates
+#' for bootstrap samples.
+#'
+#' @param m List containing bootstrapped data: x1, y1, x2, y2.
+#' @param pts Matrix of covariate values.
+#'
+#' @return Vector of P(Y1 < Y2) estimates at each covariate value.
+#'
+#' @keywords internal
+#' @seealso \code{\link{wmw.ancbse}}, \code{\link{wmw.anc}}
 wmw.ancbse.sub<-function(m,pts){
 v=wmw.anc(m[[1]],m[[2]],m[[3]],m[[4]],pts=pts)
 v
 }
 
+#' Estimate P(Y1 < Y2) Conditional on Covariate Values
+#'
+#' Estimates P(Y1 < Y2) given that the covariate X equals specific values.
+#' Used as the core computation for WMW-based ANCOVA methods.
+#'
+#' @inheritParams common-params
+#' @param x1 Matrix or vector of covariate(s) for group 1.
+#' @param y1 Vector of response variable for group 1.
+#' @param x2 Matrix or vector of covariate(s) for group 2.
+#' @param y2 Vector of response variable for group 2.
+#' @param pts Matrix of covariate values at which to estimate P(Y1 < Y2).
+#' @param xout Logical. If `TRUE`, removes outliers in covariates (default: `FALSE`).
+#' @param outfun Function for outlier detection (default: `outpro`).
+#'
+#' @return Vector of P(Y1 < Y2) estimates, one for each row of `pts`.
+#'
+#' @details
+#' For each specified covariate value in `pts`, this function estimates the
+#' probability that a randomly selected observation from group 1 is less than
+#' a randomly selected observation from group 2, conditional on the covariate
+#' value.
+#'
+#' The estimation uses regression-based conditional distributions via
+#' `reg.con.dist` to approximate the conditional distributions at each
+#' covariate value, then computes the probability empirically.
+#'
+#' @keywords internal
+#' @seealso \code{\link{wmw.ancbse}}, \code{\link{reg.con.dist}}, \code{\link{outpro}}
 wmw.anc<-function(x1,y1,x2,y2,pts,xout=FALSE,outfun=outpro){
 #
 #  Estimate P(y1<y2)  given that the covariate X is equal to the values in pts.
@@ -3583,6 +6724,32 @@ e[i]=mean(p)
 e
 }
 
+#' Compare Single Quantile Between Two Groups (Internal Helper)
+#'
+#' Internal helper function for `qcomhd` that compares a single quantile
+#' between two independent groups using the Harrell-Davis estimator and
+#' percentile bootstrap.
+#'
+#' @param x Vector of observations for group 1.
+#' @param y Vector of observations for group 2.
+#' @param q Quantile to compare (single value between 0 and 1).
+#' @param alpha Significance level (default: 0.05).
+#' @param nboot Number of bootstrap samples (default: 2000).
+#' @param SEED Logical. If `TRUE`, sets random seed (default: `TRUE`).
+#' @param MC Logical. If `TRUE`, uses parallel processing (default: `TRUE`).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `est.1`: Harrell-Davis estimate for group 1
+#'     \item `est.2`: Harrell-Davis estimate for group 2
+#'     \item `ci`: Confidence interval for the difference
+#'     \item `p.value`: P-value for the test
+#'     \item `sq.se`: Squared standard error (variance)
+#'     \item `n1`, `n2`: Sample sizes
+#'   }
+#'
+#' @keywords internal
+#' @seealso \code{\link{qcomhd}}, \code{\link{hd}}
 qcomhd.sub<-function(x,y,q,alpha=.05,nboot=2000,SEED=TRUE,MC=TRUE){
 #
 x<-x[!is.na(x)] # Remove any missing values in x
@@ -3612,6 +6779,62 @@ se<-var(bvec)
 list(est.1=hd(x,q),est.2=hd(y,q),ci=c(bvec[low],bvec[up]),p.value=sig.level,sq.se=se,n1=length(x),n2=length(y))
 }
 
+#' Compare Quantiles Between Two Independent Groups
+#'
+#' @description
+#' Compares quantiles between two independent groups using the Harrell-Davis estimator
+#' and percentile bootstrap. This provides a robust method for comparing multiple quantiles
+#' simultaneously with control for multiple testing via Hochberg's method.
+#'
+#' @inheritParams common-params
+#' @param x Numeric vector for group 1.
+#' @param y Numeric vector for group 2.
+#' @param est Estimator function to use (default \code{hd} for Harrell-Davis). Can also
+#'   use other quantile estimators.
+#' @param q Numeric vector of quantiles to compare (default c(0.1, 0.25, 0.5, 0.75, 0.9)).
+#' @param nboot Number of bootstrap samples (default 4000).
+#' @param plotit Logical; if TRUE, creates a plot showing estimates and confidence intervals.
+#' @param xlab Label for x-axis in plot.
+#' @param ylab Label for y-axis in plot.
+#' @param ADJ.CI Logical; if TRUE (default), confidence intervals are adjusted to match the
+#'   alpha level used by the corresponding test statistic (e.g., if testing at 0.05/3 level,
+#'   CI has 1-0.05/3 coverage).
+#' @param MC Logical; if TRUE, uses parallel processing via mclapply.
+#'
+#' @return A matrix with columns:
+#'   \item{q}{The quantile being compared}
+#'   \item{n1}{Sample size of group 1}
+#'   \item{n2}{Sample size of group 2}
+#'   \item{est.1}{Quantile estimate for group 1}
+#'   \item{est.2}{Quantile estimate for group 2}
+#'   \item{est.1_minus_est.2}{Difference in quantile estimates}
+#'   \item{ci.low}{Lower confidence limit}
+#'   \item{ci.up}{Upper confidence limit}
+#'   \item{p-value}{P-value for testing equality}
+#'   \item{adj.p.value}{Adjusted p-value using Hochberg's method}
+#'
+#' @details
+#' The function uses the Harrell-Davis estimator which handles tied values well. For
+#' comparing lower or upper quartiles, both power and Type I error control compare
+#' favorably to other methods.
+#'
+#' Family-wise error rate is controlled using Hochberg's method across all quantile
+#' comparisons. The plot shows differences (marked with *) connected by lines, with
+#' confidence interval limits marked with +.
+#'
+#' @seealso \code{\link{qcomhdMC}}, \code{\link{pb2gen}}, \code{\link{pb2genMC}}, \code{\link{hd}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- rnorm(50, mean = 0.5)
+#'
+#' # Compare default quantiles
+#' result <- qcomhd(x, y)
+#'
+#' # Compare specific quantiles
+#' qcomhd(x, y, q = c(0.25, 0.5, 0.75), plotit = TRUE)
 qcomhd<-function(x,y,est=hd,q=c(.1,.25,.5,.75,.9),nboot=4000,plotit=TRUE,SEED=TRUE,xlab='Group 1',ylab='Est.1-Est.2',alpha=.05,ADJ.CI=TRUE,MC=FALSE){
 #
 # Compare quantiles using pb2gen using trimmed version of the Harrell-Davis estimator
@@ -3672,6 +6895,45 @@ points(output[,4],output[,8],pch='+')
 output
 }
 
+#' Plot WMW ANCOVA: P(Y1 < Y2 | X) vs X
+#'
+#' @description
+#' Plots WMW-based conditional probability estimates P(Y1 < Y2 | X=x)
+#' as a function of the covariate X.
+#'
+#' @inheritParams common-params
+#' @param x1 Covariate for group 1.
+#' @param y1 Response for group 1.
+#' @param x2 Covariate for group 2.
+#' @param y2 Response for group 2.
+#' @param q1 Quantile range for group 1 covariate (default: c(0.1, 0.9)).
+#' @param q2 Quantile range for group 2 covariate (default: c(0.1, 0.9)).
+#' @param npts Number of design points (default: 20).
+#' @param pts Optional vector of design points (default: NULL for automatic).
+#' @param xout Logical. If `TRUE`, removes outliers (default: `FALSE`).
+#' @param outfun Outlier detection function (default: \code{outpro}).
+#' @param xlab X-axis label (default: 'X').
+#' @param ylab Y-axis label (default: 'P(Y1<Y2)').
+#' @param ... Additional arguments passed to outlier function.
+#'
+#' @return A list with the covariate range used.
+#'
+#' @details
+#' Single covariate only. Estimates the conditional WMW effect size at
+#' multiple covariate values and creates a plot. Design points are chosen
+#' within the overlapping quantile ranges of both groups.
+#'
+#' @seealso \code{\link{wmw.anc}}, \code{\link{wmw.ancp2}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Plot conditional WMW effect
+#' set.seed(123)
+#' x1 <- rnorm(50); y1 <- x1 + rnorm(50)
+#' x2 <- rnorm(50); y2 <- x2 + 0.5 + rnorm(50)
+#' wmw.anc.plot(x1, y1, x2, y2, npts = 15)
+#' }
 wmw.anc.plot<-function(x1,y1,x2,y2,q1=c(.1,.9),q2=c(.1,.9),npts=20,
 pts=NULL,xout=FALSE,outfun=outpro,xlab='X',ylab='P(Y1<Y2)',...){
 #
@@ -3715,6 +6977,52 @@ plot(pts,v,xlab=xlab,ylab=ylab,ylim=c(0,1))
 list(Range=c(pts[1],pts[length(pts)]))
 }
 
+#' WMW-Based ANCOVA with Bootstrap for Multiple Covariates
+#'
+#' @description
+#' Performs ANCOVA using a heteroscedastic Wilcoxon-Mann-Whitney analog
+#' with bootstrap standard errors. Supports multiple covariates.
+#'
+#' @inheritParams common-params
+#' @param x1 Covariate matrix for group 1.
+#' @param y1 Response vector for group 1.
+#' @param x2 Covariate matrix for group 2.
+#' @param y2 Response vector for group 2.
+#' @param pts Design points matrix (default: NULL for automatic selection).
+#' @param nboot Number of bootstrap samples (default: 100).
+#' @param alpha Significance level (default: 0.05).
+#' @param SEED Logical. If `TRUE`, sets random seed (default: `TRUE`).
+#' @param MC Logical. If `TRUE`, uses parallel processing (default: `FALSE`).
+#' @param npts Number of design points if pts=NULL (default: 30).
+#' @param profun Projection depth function (default: \code{prodepth}).
+#' @param BOTH Logical. If `TRUE`, selects points from pooled data (default: `TRUE`).
+#' @param plotit Logical. If `TRUE`, creates plot (default: `TRUE`).
+#' @param xlab X-axis label (default: 'X1').
+#' @param ylab Y-axis label (default: 'X2').
+#' @param method Multiple testing adjustment method (default: 'hoch').
+#' @param xout Logical. If `TRUE`, removes outliers (default: `FALSE`).
+#' @param outfun Outlier detection function (default: \code{outpro}).
+#'
+#' @return Matrix with WMW estimates, standard errors, and p-values at design points.
+#'
+#' @details
+#' Assumes a linear model is reasonable. Uses projection depth to select
+#' design points and bootstrap to estimate standard errors. Tests are
+#' adjusted for multiple comparisons.
+#'
+#' @seealso \code{\link{wmw.ancp2}}, \code{\link{wmw.ancbsep2.sub}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Two-covariate ANCOVA
+#' set.seed(123)
+#' x1 <- matrix(rnorm(100), ncol = 2)
+#' y1 <- rowSums(x1) + rnorm(50)
+#' x2 <- matrix(rnorm(100), ncol = 2)
+#' y2 <- rowSums(x2) + 0.5 + rnorm(50)
+#' wmw.ancbsep2(x1, y1, x2, y2, nboot = 200)
+#' }
 wmw.ancbsep2<-function(x1,y1,x2,y2,pts=NULL,nboot=100,alpha=.05,SEED=TRUE,MC=FALSE,
 npts=30,profun=prodepth,BOTH=TRUE,plotit=TRUE,xlab='X1',ylab='X2',method='hoch',
 xout=FALSE,outfun=outpro){
@@ -3807,11 +7115,63 @@ if(sum(flag)>0)points(pts[flag,1],pts[flag,2],pch='o')
 output
 }
 
+#' Internal Helper for wmw.ancbsep2 Bootstrap
+#'
+#' @description
+#' Internal function used by \code{wmw.ancbsep2} to compute WMW estimates
+#' from bootstrap samples.
+#'
+#' @param m List with bootstrap sample data.
+#' @param pts Design points matrix.
+#'
+#' @return Vector of WMW estimates at design points.
+#'
+#' @keywords internal
 wmw.ancbsep2.sub<-function(m,pts){
 v=wmw.ancp2(m[[1]],m[[2]],m[[3]],m[[4]],pts=pts)
 v
 }
 
+#' 3D Surface Plot of WMW ANCOVA Effect Sizes
+#'
+#' @description
+#' Creates a 3D surface plot of WMW-based effect sizes across two covariates.
+#'
+#' @inheritParams common-params
+#' @param x1 Covariate matrix for group 1 (2 columns).
+#' @param y1 Response vector for group 1.
+#' @param x2 Covariate matrix for group 2 (2 columns).
+#' @param y2 Response vector for group 2.
+#' @param pts Design points matrix (default: NULL for automatic).
+#' @param xlab X-axis label (default: 'X1').
+#' @param ylab Y-axis label (default: 'X2').
+#' @param zlab Z-axis label (default: 'Effect Size').
+#' @param REV Logical. If `TRUE`, reverses perspective (default: `FALSE`).
+#' @param xout Logical. If `TRUE`, removes outliers (default: `FALSE`).
+#' @param outfun Outlier detection function (default: \code{outpro}).
+#' @param SEED Logical. If `TRUE`, sets random seed (default: `TRUE`).
+#' @param theta Azimuthal viewing angle (default: 50).
+#' @param phi Colatitude viewing angle (default: 25).
+#'
+#' @return Invisibly returns the effect size matrix.
+#'
+#' @details
+#' Requires exactly 2 covariates. Creates a 3D perspective plot showing
+#' how the WMW effect size varies across the covariate space.
+#'
+#' @seealso \code{\link{wmw.ancp2}}, \code{\link{wmw.ancbsep2}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # 3D plot of WMW effect
+#' set.seed(123)
+#' x1 <- matrix(rnorm(100), ncol = 2)
+#' y1 <- rowSums(x1) + rnorm(50)
+#' x2 <- matrix(rnorm(100), ncol = 2)
+#' y2 <- rowSums(x2) + rnorm(50)
+#' ancovap2.wmw.plot(x1, y1, x2, y2)
+#' }
 ancovap2.wmw.plot<-function(x1,y1,x2,y2,pts=NULL,xlab='X1',ylab='X2',zlab='Effect Size',REV=FALSE,
 xout=FALSE,outfun=outpro,SEED=TRUE, theta = 50, phi = 25){
 #
@@ -3853,6 +7213,40 @@ else f=lplot(pts[,c(2,1)],e,xlab=xlab,ylab=ylab,zlab=zlab,ticktype='det',pr=FALS
 list(Number_of_points_used_is=N)
 }
 
+#' Conditional WMW Effect Size at Design Points
+#'
+#' @description
+#' Estimates the conditional WMW effect size at specified design points
+#' for two independent groups with covariates.
+#'
+#' @inheritParams common-params
+#' @param x1 Covariate matrix/vector for group 1.
+#' @param y1 Response vector for group 1.
+#' @param x2 Covariate matrix/vector for group 2.
+#' @param y2 Response vector for group 2.
+#' @param pts Design points matrix (default: NULL for 3 automatic points).
+#' @param xout Logical. If `TRUE`, removes outliers (default: `FALSE`).
+#' @param outfun Outlier detection function (default: \code{outpro}).
+#'
+#' @return Vector of WMW effect size estimates at each design point.
+#'
+#' @details
+#' For regression lines from two independent groups, estimates the conditional
+#' WMW effect size P(Y1 < Y2 | X = x) at each point in pts. If pts is NULL,
+#' automatically selects three design points based on the data.
+#'
+#' @seealso \code{\link{wmw.ancbsep2}}, \code{\link{wmw.anc}}, \code{\link{reg.con.dist}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Estimate conditional WMW effect
+#' set.seed(123)
+#' x1 <- rnorm(50); y1 <- x1 + rnorm(50)
+#' x2 <- rnorm(50); y2 <- x2 + 0.5 + rnorm(50)
+#' pts <- matrix(c(-1, 0, 1), ncol = 1)
+#' wmw.ancp2(x1, y1, x2, y2, pts = pts)
+#' }
 wmw.ancp2<-function(x1,y1,x2,y2,pts=NULL,xout=FALSE,outfun=outpro){
 #
 #  For the regression lines corresponding to  two independent groups
@@ -3913,6 +7307,51 @@ e[i]=mean(p)
 e
 }
 
+#' Test Symmetry of Difference Distribution Using Reference Points
+#'
+#' @description
+#' Tests whether the distribution of X-Y is symmetric about zero using
+#' reference points. Can test either at quantiles or specified values.
+#'
+#' @inheritParams common-params
+#' @param x Observations from group 1.
+#' @param y Observations from group 2.
+#' @param q Quantile for reference point if pts=NULL (default: 0.25).
+#' @param pts Reference point(s) (default: NULL for quantile-based).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param alpha Significance level (default: 0.05).
+#' @param SEED Logical. If `TRUE`, sets random seed (default: `TRUE`).
+#' @param plotit Logical. If `TRUE`, plots distribution (default: `FALSE`).
+#' @param xlab X-axis label (default: 'Difference').
+#' @param ylab Y-axis label (default: 'Density').
+#' @param estfun Quantile estimator function (default: \code{hdmq}).
+#' @param plotfun Plotting function (default: \code{kerSORT}).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `L`: Estimated P(X-Y < -pts)
+#'     \item `U`: Estimated P(X-Y > pts)
+#'     \item `Est.dif`: Difference U - L
+#'     \item `ci`: Bootstrap confidence interval
+#'     \item `p.value`: P-value for symmetry test
+#'   }
+#'
+#' @details
+#' If X and Y have identical distributions, X-Y is symmetric about zero
+#' and the sum of the q and 1-q quantiles equals zero. Tests this
+#' using bootstrap. Should not be used with tied values.
+#'
+#' @seealso \code{\link{wmw.ref.mul}}, \code{\link{wmw.det}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Test symmetry of difference distribution
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- rnorm(50, mean = 0.3)
+#' wmw.ref.dif(x, y, q = 0.25, nboot = 500)
+#' }
 wmw.ref.dif<-function(x,y,q=.25,pts=NULL,nboot=1000,alpha=.05,SEED=TRUE,
 plotit=FALSE,xlab='Difference',ylab='Density',estfun=hdmq,
 plotfun=kerSORT){
@@ -3990,6 +7429,47 @@ pv<-2*min(pv,1-pv)
 list(L=L,U=U,Est.dif=est,ci=ci,p.value=pv)
 }
 
+#' Test Symmetry at Multiple Reference Points
+#'
+#' @description
+#' Tests symmetry of the X-Y distribution at multiple reference points using
+#' bootstrap. Performs multiple tests with p-value adjustment.
+#'
+#' @inheritParams common-params
+#' @param x Observations from group 1.
+#' @param y Observations from group 2.
+#' @param refp Vector of reference points (default: NULL for quantile-based).
+#' @param pts Alias for refp (default: NULL).
+#' @param q Quantiles for reference points if refp=NULL (default: seq(0.6, 0.9, 0.1)).
+#' @param center Logical. If `TRUE`, centers differences at median (default: `FALSE`).
+#' @param estfun Quantile estimator (default: \code{hdmq} for Harrell-Davis).
+#' @param alpha Significance level (default: 0.05).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param SEED Logical. If `TRUE`, sets random seed (default: `TRUE`).
+#' @param method Multiple testing adjustment method (default: 'BH').
+#' @param plotit Logical. If `TRUE`, plots distribution (default: `FALSE`).
+#' @param xlab X-axis label (default: 'Difference').
+#' @param ylab Y-axis label (default: 'Density').
+#' @param plotfun Plotting function (default: \code{kerSORT}).
+#'
+#' @return Matrix with columns for reference points, tail probabilities,
+#'   differences, confidence intervals, p-values, and adjusted p-values.
+#'
+#' @details
+#' Extension of \code{wmw.ref.dif} to multiple reference points with
+#' family-wise error control via p-value adjustment.
+#'
+#' @seealso \code{\link{wmw.ref.dif}}, \code{\link{wmw.QC.mul}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Multiple reference points test
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- rnorm(50, mean = 0.3)
+#' wmw.ref.mul(x, y, nboot = 500)
+#' }
 wmw.ref.mul<-function(x,y,refp=NULL,pts=NULL,q=seq(.6,.9,.1),  center=FALSE, estfun=hdmq, alpha=.05,nboot=1000,SEED=TRUE,method='BH',plotit=FALSE,
 xlab='Difference',ylab='Density',
 plotfun=kerSORT){
@@ -4028,6 +7508,44 @@ if(plotit)plotfun(as.vector(morig),xlab=xlab,ylab=ylab)
 output
 }
 
+#' Test Symmetry at Multiple Quantile-Based Reference Points
+#'
+#' @description
+#' Tests symmetry of X-Y distribution at multiple quantile-based reference
+#' points. Similar to \code{wmw.ref.mul} but specifically for quantile-based testing.
+#'
+#' @inheritParams common-params
+#' @param x Observations from group 1.
+#' @param y Observations from group 2.
+#' @param q Vector of quantiles less than 0.5 (default: seq(0.1, 0.4, 0.1)).
+#' @param estfun Quantile estimator (default: \code{hdmq} for Harrell-Davis).
+#' @param alpha Significance level (default: 0.05).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param SEED Logical. If `TRUE`, sets random seed (default: `TRUE`).
+#' @param method Multiple testing adjustment method (default: 'BH').
+#' @param plotit Logical. If `TRUE`, plots distribution (default: `FALSE`).
+#' @param xlab X-axis label (default: 'Difference').
+#' @param ylab Y-axis label (default: 'Density').
+#' @param plotfun Plotting function (default: \code{kerSORT}).
+#'
+#' @return Matrix with test results at each quantile including adjusted p-values.
+#'
+#' @details
+#' For each quantile q < 0.5, tests whether the q and 1-q quantiles of X-Y
+#' sum to zero (as they should under symmetry). Uses bootstrap with
+#' multiple comparison adjustment.
+#'
+#' @seealso \code{\link{wmw.ref.mul}}, \code{\link{wmw.ref.dif}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Test at multiple quantiles
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- rnorm(50, mean = 0.2)
+#' wmw.QC.mul(x, y, q = c(0.1, 0.25), nboot = 500)
+#' }
 wmw.QC.mul<-function(x,y,q=seq(.1,.4,.1), estfun=hdmq, alpha=.05,nboot=1000,SEED=TRUE,method='BH',plotit=FALSE,
 xlab='Difference',ylab='Density',
 plotfun=kerSORT){
@@ -4056,6 +7574,52 @@ if(plotit)plotfun(as.vector(morig),xlab=xlab,ylab=ylab)
 output
 }
 
+#' Kolmogorov-Smirnov Effect Size for 2x2 Interaction
+#'
+#' Computes Kolmogorov-Smirnov (KMS) effect sizes for a 2x2 factorial design
+#' to assess the interaction effect. Compares effect sizes at two levels of
+#' Factor A using specified differences for Factor B.
+#'
+#' @param x Data in matrix, data frame, or list format containing 4 groups.
+#' @param DIF1 Specified difference for Factor B at level 1 of Factor A.
+#' @param DIF2 Specified difference for Factor B at level 2 of Factor A.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `KMS.Effect1`: KMS effect size at level 1 of Factor A
+#'     \item `KMS.Effect2`: KMS effect size at level 2 of Factor A
+#'     \item `Difference`: Difference between the two effect sizes
+#'   }
+#'
+#' @details
+#' This function quantifies interaction effects in a 2x2 design using the
+#' Kolmogorov-Smirnov effect size measure. For each level of Factor A, it
+#' computes the KMS effect size between the two levels of Factor B given
+#' the specified difference values.
+#'
+#' The difference between the two effect sizes provides a measure of the
+#' interaction. By common interpretation, KMS effect sizes of .1, .25, and .4
+#' are considered small, medium, and large. A difference of .15 or more between
+#' the two effect sizes might be viewed as practically important.
+#'
+#' @seealso \code{\link{kms.effect}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # 2x2 design data
+#' set.seed(123)
+#' x <- list(
+#'   rnorm(30, mean = 0),      # A1B1
+#'   rnorm(30, mean = 0.5),    # A1B2
+#'   rnorm(30, mean = 0.2),    # A2B1
+#'   rnorm(30, mean = 1.0)     # A2B2
+#' )
+#'
+#' # Assess interaction using KMS effect sizes
+#' result <- twoway.inter.2.delta(x, DIF1 = 0.5, DIF2 = 0.8)
+#' print(result)
+#' }
 twoway.inter.2.delta<-function(x,DIF1,DIF2){
 #
 # 2-by-2 interaction
@@ -4076,6 +7640,50 @@ dif=e1-e2
 list(KMS.Effect1=e1,KMS.Effect2=e2,Difference=dif)
 }
 
+#' Test Symmetry with TOST (Two One-Sided Tests) Extension
+#'
+#' @description
+#' Tests symmetry of X-Y distribution with TOST equivalence testing extension.
+#' Can test both for difference from zero and equivalence to zero.
+#'
+#' @inheritParams common-params
+#' @param x Observations from group 1.
+#' @param y Observations from group 2.
+#' @param q Quantile for reference point if pts=NULL (default: 0.25).
+#' @param pts Reference point (default: NULL for quantile-based).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param alpha Significance level (default: 0.05).
+#' @param SEED Logical. If `TRUE`, sets random seed (default: `TRUE`).
+#' @param plotit Logical. If `TRUE`, creates plot (default: `TRUE`).
+#' @param xlab X-axis label (default: 'Difference').
+#' @param ylab Y-axis label (default: 'Density').
+#' @param estfun Quantile estimator (default: \code{hdmq}).
+#' @param plotfun Plotting function (default: NULL function).
+#' @param eqbound Equivalence bound for TOST (default: NULL for no TOST).
+#'
+#' @return A list with symmetry test results and optionally TOST results:
+#'   \itemize{
+#'     \item `L`, `U`, `Est.dif`: As in \code{wmw.ref.dif}
+#'     \item `ci90`, `ci95`: 90% and 95% confidence intervals
+#'     \item `p.value`: P-value for difference test
+#'     \item `TOST`: TOST equivalence test results (if eqbound specified)
+#'   }
+#'
+#' @details
+#' Extends \code{wmw.ref.dif} with TOST procedure for testing equivalence.
+#' Provides both 90% CIs (for TOST) and 95% CIs (for regular inference).
+#'
+#' @seealso \code{\link{wmw.ref.dif}}, \code{\link{wmw.ref.mul.TOST}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Test with TOST
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- rnorm(50, mean = 0.05)
+#' wmw.ref.dif.TOST(x, y, eqbound = 0.1, nboot = 500)
+#' }
 wmw.ref.dif.TOST <- function(
     x, y, q = .25, pts = NULL, nboot = 1000, alpha = .05, SEED = TRUE,
     plotit = T, xlab = 'Difference', ylab = 'Density', estfun = hdmq,
@@ -4207,7 +7815,50 @@ wmw.ref.dif.TOST <- function(
   ))
 }
 
-wmw.ref.mul.TOST <- function(x, y, refp = NULL, pts = NULL, q = seq(.6, .9, .1), center = FALSE,estfun = hdmq, 
+#' Test Symmetry at Multiple Points with TOST Extension
+#'
+#' @description
+#' Tests symmetry at multiple reference points with TOST equivalence testing.
+#' Extension of \code{wmw.ref.mul} with equivalence bounds.
+#'
+#' @inheritParams common-params
+#' @param x Observations from group 1.
+#' @param y Observations from group 2.
+#' @param refp Vector of reference points (default: NULL for quantile-based).
+#' @param pts Alias for refp (default: NULL).
+#' @param q Quantiles if refp=NULL (default: seq(0.6, 0.9, 0.1)).
+#' @param center Logical. If `TRUE`, centers at median (default: `FALSE`).
+#' @param estfun Quantile estimator (default: \code{hdmq}).
+#' @param alpha Significance level (default: 0.05).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param SEED Logical. If `TRUE`, sets random seed (default: `TRUE`).
+#' @param method Multiple comparison adjustment (default: 'BH').
+#' @param plotit Logical. If `TRUE`, plots distribution (default: `FALSE`).
+#' @param xlab X-axis label (default: 'Difference').
+#' @param ylab Y-axis label (default: 'Density').
+#' @param plotfun Plotting function (default: \code{kerSORT}).
+#' @param eqbound Equivalence bound for TOST (default: 0.05).
+#'
+#' @return Data frame with test results at each reference point including:
+#'   90% CIs, 95% CIs, p-values, adjusted p-values, and TOST equivalence results.
+#'
+#' @details
+#' Performs \code{wmw.ref.dif.TOST} at multiple reference points with
+#' family-wise error control. Provides comprehensive output including
+#' both difference testing and equivalence testing results.
+#'
+#' @seealso \code{\link{wmw.ref.dif.TOST}}, \code{\link{wmw.ref.mul}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' # Multiple points with TOST
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- rnorm(50, mean = 0.05)
+#' wmw.ref.mul.TOST(x, y, eqbound = 0.1, nboot = 500)
+#' }
+wmw.ref.mul.TOST <- function(x, y, refp = NULL, pts = NULL, q = seq(.6, .9, .1), center = FALSE,estfun = hdmq,
                              alpha = .05, nboot = 1000, SEED = TRUE, method = 'BH',plotit = FALSE, xlab = 'Difference', ylab = 'Density', plotfun = kerSORT,
                              eqbound = 0.05) {
   if (SEED) set.seed(2)
@@ -4270,6 +7921,90 @@ wmw.ref.mul.TOST <- function(x, y, refp = NULL, pts = NULL, q = seq(.6, .9, .1),
 
 
 # ==== pb2genMC ====
+#' Percentile Bootstrap for Two-Group Comparisons (Multicore Version)
+#'
+#' Computes a percentile bootstrap confidence interval for the difference
+#' between any two parameters for independent groups. Uses multicore processing
+#' via `mclapply` for improved performance. This is the parallel version of `pb2gen`.
+#'
+#' @inheritParams common-params
+#' @param pr Logical. If `TRUE`, prints progress message (default: `FALSE`).
+#' @param ... Additional arguments passed to the estimator function `est`.
+#'
+#' @details
+#' This function is identical to `pb2gen` except that it uses `mclapply` from
+#' the `parallel` package to process bootstrap samples in parallel across
+#' multiple CPU cores. This can provide substantial speedups, especially with
+#' large datasets or many bootstrap samples.
+#'
+#' The function is a general-purpose two-sample bootstrap that can compare any
+#' parameter between independent groups. By default, it compares M-estimators
+#' of location (`est = onestep`).
+#'
+#' Common choices for `est`:
+#' \itemize{
+#'   \item `onestep` - One-step M-estimator (default)
+#'   \item `mean` - Arithmetic mean
+#'   \item `median` - Median
+#'   \item `tmean` - Trimmed mean (use with `trim = 0.2`)
+#'   \item `mom` - Modified one-step M-estimator
+#'   \item `hd` - Harrell-Davis estimator (use with `q = 0.5` for median)
+#' }
+#'
+#' Missing values are automatically removed. The function constructs a
+#' percentile bootstrap confidence interval and computes a p-value for
+#' testing whether the difference equals zero.
+#'
+#' **Performance Note**: Multicore processing is most beneficial when:
+#' \itemize{
+#'   \item `nboot` is large (e.g., >= 2000)
+#'   \item The estimator function is computationally intensive
+#'   \item Multiple CPU cores are available
+#' }
+#'
+#' On single-core systems, `pb2gen` may be faster due to reduced overhead.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `est.1`: Estimate for group 1
+#'     \item `est.2`: Estimate for group 2
+#'     \item `ci`: Two-element vector with confidence interval bounds
+#'     \item `p.value`: P-value for testing H0: difference = 0
+#'     \item `sq.se`: Squared standard error of the bootstrap distribution
+#'     \item `n1`, `n2`: Sample sizes for groups 1 and 2
+#'   }
+#'
+#' @note
+#' The `parallel` package must be loaded for multicore functionality.
+#' Results may vary slightly across runs even with `SEED = TRUE` due to
+#' the random number generation in parallel processing.
+#'
+#' @seealso \code{\link{pb2gen}} for single-core version,
+#'   \code{\link{trimpb2}} for trimmed means specifically,
+#'   \code{\link{yuenbt}} for bootstrap-t method
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- rnorm(60, mean = 0.5)
+#'
+#' # Compare M-estimators (default) using multicore
+#' pb2genMC(x, y, nboot = 4000)
+#'
+#' # Compare means
+#' pb2genMC(x, y, est = mean, nboot = 4000)
+#'
+#' # Compare medians
+#' pb2genMC(x, y, est = median, nboot = 4000)
+#'
+#' # Compare trimmed means
+#' pb2genMC(x, y, est = mean, trim = 0.2, nboot = 4000)
+#'
+#' # Compare specific quantiles using Harrell-Davis
+#' pb2genMC(x, y, est = hd, q = 0.75, nboot = 4000)  # Third quartile
+#' }
  pb2genMC<-function(x,y,alpha=.05,nboot=2000,est=onestep,SEED=TRUE,pr=FALSE,...){
 #
 #   Compute a bootstrap confidence interval for the
@@ -4305,6 +8040,69 @@ list(est.1=est(x,...),est.2=est(y,...),ci=c(bvec[low],bvec[up]),p.value=sig.leve
 }
 
 # ==== pb2gen ====
+#' Percentile Bootstrap for Two-Group Comparisons (General Purpose)
+#'
+#' Computes a percentile bootstrap confidence interval for the difference
+#' between any two parameters for independent groups. This is a general-purpose
+#' two-sample bootstrap function.
+#'
+#' @inheritParams common-params
+#' @param ... Additional arguments passed to the estimator function `est`.
+#'
+#' @details
+#' This is a flexible function that can compare any parameter between two
+#' independent groups using the percentile bootstrap method. By default, it
+#' compares M-estimators of location (`est = onestep`).
+#'
+#' Common choices for `est`:
+#' \itemize{
+#'   \item `onestep` - One-step M-estimator (default)
+#'   \item `mean` - Arithmetic mean
+#'   \item `median` - Median
+#'   \item `tmean` - Trimmed mean (use with `trim = 0.2`, for example)
+#'   \item `mom` - Modified one-step M-estimator
+#'   \item `hd` - Harrell-Davis estimator (use with `q = 0.5` for median)
+#' }
+#'
+#' Missing values are automatically removed. The function uses `nboot` bootstrap
+#' samples (default: 2000) to construct the confidence interval and compute the
+#' p-value.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item `est.1`: Estimate for group 1
+#'     \item `est.2`: Estimate for group 2
+#'     \item `est.dif`: Estimated difference (est.1 - est.2)
+#'     \item `ci`: Two-element vector with confidence interval bounds
+#'     \item `p.value`: P-value for testing H0: difference = 0
+#'     \item `sq.se`: Squared standard error of the bootstrap distribution
+#'     \item `n1`, `n2`: Sample sizes for groups 1 and 2
+#'   }
+#'
+#' @seealso \code{\link{pb2genMC}}, \code{\link{trimpb2}}, \code{\link{yuenbt}}
+#'
+#' @export
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- rnorm(60, mean = 0.5)
+#'
+#' # Compare M-estimators (default)
+#' pb2gen(x, y)
+#'
+#' # Compare means
+#' pb2gen(x, y, est = mean)
+#'
+#' # Compare medians
+#' pb2gen(x, y, est = median)
+#'
+#' # Compare trimmed means
+#' pb2gen(x, y, est = mean, trim = 0.2)
+#'
+#' # Compare specific quantiles using Harrell-Davis
+#' pb2gen(x, y, est = hd, q = 0.25)  # First quartile
+#' }
 pb2gen<-function(x,y,alpha=.05,nboot=2000,est=onestep,SEED=TRUE,pr=FALSE,...){
 #
 #   Compute a bootstrap confidence interval for the

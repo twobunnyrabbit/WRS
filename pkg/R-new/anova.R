@@ -14,6 +14,39 @@
 # Functions: 57
 # ==============================================================================
 
+#' Rust-Fligner Rank-Based ANOVA
+#'
+#' Performs a Rust-Fligner ANOVA using ranks for comparing J independent groups.
+#' This is a robust nonparametric alternative to traditional ANOVA.
+#'
+#' @param x Data in list mode (each element is a group) or a matrix/data frame
+#'   where columns correspond to groups.
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{test}{The chi-square test statistic.}
+#'   \item{p.value}{The p-value for the test.}
+#'   \item{df}{Degrees of freedom (J-1).}
+#'
+#' @details
+#' The Rust-Fligner test is a rank-based procedure for testing equality of
+#' distributions across J independent groups. Missing values are automatically
+#' removed. The test assumes tied values occur with probability zero; a warning
+#' is issued if ties are detected.
+#'
+#' The test statistic has an asymptotic chi-square distribution with J-1 degrees
+#' of freedom.
+#'
+#' @seealso \code{\link{t1way}}, \code{\link{MEDanova}}
+#'
+#' @export
+#' @examples
+#' # Compare three groups
+#' set.seed(123)
+#' x1 <- rnorm(20, mean=0)
+#' x2 <- rnorm(20, mean=0.5)
+#' x3 <- rnorm(20, mean=1)
+#' rfanova(list(x1, x2, x3))
 rfanova<-function(x,grp=0){
 #
 #  Perform Rust-Fligner anova using ranks.
@@ -113,6 +146,40 @@ siglevel<-1-pchisq(test,df)
 list(test=test,p.value=siglevel,df=df)
 }
 
+#' Agresti-Pendergast Rank Test for Dependent Groups
+#'
+#' Performs an Agresti-Pendergast rank test for comparing J dependent (repeated
+#' measures) groups. This is a nonparametric alternative to repeated measures ANOVA.
+#'
+#' @param data Data in matrix form (n by J) or in list mode where each element
+#'   contains data for one group. For dependent groups, rows represent matched
+#'   observations.
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{FTEST}{The F test statistic.}
+#'   \item{df1}{Numerator degrees of freedom (J-1).}
+#'   \item{df2}{Denominator degrees of freedom ((J-1)(n-1)).}
+#'   \item{p.value}{The p-value for the test.}
+#'
+#' @details
+#' The Agresti-Pendergast test uses ranks to test for differences among J
+#' dependent groups. It is based on an F-statistic with (J-1) and (J-1)(n-1)
+#' degrees of freedom.
+#'
+#' For n <= 20, the function suggests using \code{bprm} instead for better
+#' small sample performance.
+#'
+#' @seealso \code{\link{rmanova}}, \code{\link{bprm}}
+#'
+#' @export
+#' @examples
+#' # Three dependent measurements
+#' set.seed(123)
+#' time1 <- rnorm(15, mean=10)
+#' time2 <- time1 + rnorm(15, mean=0.5, sd=0.5)
+#' time3 <- time1 + rnorm(15, mean=1, sd=0.5)
+#' apanova(cbind(time1, time2, time3))
 apanova<-function(data,grp=0){
 #
 #  Perform Agresti-Pendergast rank test for J dependent groups
@@ -146,6 +213,44 @@ siglevel<-1-pf(ftest,df1,df2)
 list(FTEST=ftest,df1=df1,df2=df2,p.value=siglevel)
 }
 
+#' Heteroscedastic One-Way Repeated Measures ANOVA for Trimmed Means
+#'
+#' Performs a heteroscedastic one-way repeated measures ANOVA comparing trimmed
+#' means across J dependent groups. Uses adjusted degrees of freedom to handle
+#' heteroscedasticity and violations of sphericity.
+#'
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{num.groups}{Number of groups being compared.}
+#'   \item{test}{The test statistic.}
+#'   \item{df}{Vector of degrees of freedom c(df1, df2).}
+#'   \item{p.value}{The p-value for the test.}
+#'   \item{tmeans}{Vector of trimmed means for each group.}
+#'   \item{ehat}{Epsilon-hat estimate for sphericity adjustment.}
+#'   \item{etil}{Epsilon-tilde estimate (adjusted version of epsilon-hat).}
+#'
+#' @details
+#' This function implements a heteroscedastic repeated measures ANOVA for trimmed
+#' means. It does not assume equal variances or sphericity. The degrees of freedom
+#' are adjusted using epsilon-hat and epsilon-tilde corrections based on the
+#' Winsorized covariance matrix.
+#'
+#' Data can be provided as an n by J matrix (rows are subjects, columns are
+#' conditions) or in list mode. Use the \code{grp} argument to select a subset
+#' of groups for comparison.
+#'
+#' @seealso \code{\link{rmanovab}}, \code{\link{apanova}}, \code{\link{bprm}}
+#'
+#' @export
+#' @examples
+#' # Three time points
+#' set.seed(123)
+#' n <- 20
+#' time1 <- rnorm(n, mean=10)
+#' time2 <- time1 + rnorm(n, mean=0.5, sd=1.2)
+#' time3 <- time1 + rnorm(n, mean=1.5, sd=1.5)
+#' rmanova(cbind(time1, time2, time3), tr=0.2)
 rmanova<-function(x,tr=.2,grp=c(1:length(x))){
 #
 #  A heteroscedastic one-way repeated measures ANOVA for trimmed means.
@@ -217,6 +322,38 @@ siglevel<-1-pf(test,df1,df2)
 list(num.groups=J,test=test,df=c(df1,df2),p.value=siglevel,tmeans=xvec,ehat=ehat,etil=etil)
 }
 
+#' Bootstrap-t for Repeated Measures ANOVA with Trimmed Means
+#'
+#' Performs a bootstrap-t test for comparing trimmed means of J dependent
+#' (repeated measures) groups. Provides an alternative to \code{rmanova} with
+#' better control of Type I error rates.
+#'
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{teststat}{The test statistic.}
+#'   \item{crit}{The critical value from the bootstrap distribution.}
+#'   \item{p.value}{The bootstrap p-value.}
+#'
+#' @details
+#' This function uses the bootstrap-t method to test for differences among J
+#' dependent groups using trimmed means. Data are centered before bootstrap
+#' resampling to impose the null hypothesis.
+#'
+#' The bootstrap samples are generated by resampling rows (subjects) with
+#' replacement. A fixed seed (set.seed(2)) is used for reproducibility.
+#'
+#' @seealso \code{\link{rmanova}}, \code{\link{t1waybt}}
+#'
+#' @export
+#' @examples
+#' # Three dependent measurements
+#' set.seed(123)
+#' n <- 20
+#' time1 <- rnorm(n, mean=10)
+#' time2 <- time1 + rnorm(n, mean=0.5, sd=1)
+#' time3 <- time1 + rnorm(n, mean=1, sd=1)
+#' rmanovab(cbind(time1, time2, time3), tr=0.2, nboot=500)
 rmanovab<-function(x,tr=.2,alpha=.05,grp=0,nboot=599){
 #
 #   A bootstrap-t for comparing the trimmed means of dependent groups.
@@ -260,6 +397,18 @@ pv=mean(test<=bvec)
 list(teststat=test,crit=crit,p.value=pv)
 }
 
+#' Compute Test Statistic for Bootstrap Sample (Internal Helper)
+#'
+#' Computes the test statistic for a bootstrap sample when comparing dependent
+#' groups using trimmed means. Used internally by \code{rmanovab}.
+#'
+#' @param isub Vector of bootstrap indices (integers from 1 to n).
+#' @param x Matrix of data (centered).
+#' @inheritParams common-params
+#'
+#' @return The test statistic value for the bootstrap sample.
+#'
+#' @keywords internal
 tsubrmanovab<-function(isub,x,tr){
 #
 #  Compute test statistic for trimmed means
@@ -275,6 +424,22 @@ tsub<-rmanovab1(x[isub,],tr=tr)$test
 tsub
 }
 
+#' Repeated Measures ANOVA Helper Function (Internal)
+#'
+#' Internal version of \code{rmanova} used by bootstrap procedures. Computes
+#' the test statistic without additional output formatting.
+#'
+#' @inheritParams rmanova
+#'
+#' @return A list with components:
+#'   \item{test}{The test statistic.}
+#'   \item{df}{Vector of degrees of freedom c(df1, df2).}
+#'   \item{p.value}{The p-value.}
+#'   \item{tmeans}{Vector of trimmed means.}
+#'   \item{ehat}{Epsilon-hat estimate.}
+#'   \item{etil}{Epsilon-tilde estimate.}
+#'
+#' @keywords internal
 rmanovab1<-function(x,tr=.2,grp=c(1:length(x))){
 #
 #  A heteroscedastic one-way repeated measures ANOVA for trimmed means.
@@ -342,6 +507,39 @@ siglevel<-1-pf(test,df1,df2)
 list(test=test,df=c(df1,df2),p.value=siglevel,tmeans=xvec,ehat=ehat,etil=etil)
 }
 
+#' Bishop-Dudewicz ANOVA - Stage 1 Sample Size Determination
+#'
+#' Determines the required sample size for each group in the first stage of
+#' the Bishop-Dudewicz two-stage ANOVA procedure to achieve specified power.
+#'
+#' @inheritParams common-params
+#' @param power Desired power (1 - beta) for the test (default: 0.9).
+#' @param delta Effect size parameter - the minimum detectable difference.
+#'
+#' @return A list with components:
+#'   \item{N}{Vector of required sample sizes for each group.}
+#'   \item{d}{Computed effect size parameter.}
+#'   \item{crit}{Critical value for the test.}
+#'
+#' @details
+#' The Bishop-Dudewicz procedure is a two-stage sampling method that guarantees
+#' a specified power for detecting differences among J groups. Stage 1 uses
+#' pilot data to determine how many additional observations are needed in each
+#' group.
+#'
+#' The required sample size for each group is based on the variance estimate
+#' from the pilot data and the specified effect size \code{delta}.
+#'
+#' @seealso \code{\link{bdanova2}}, \code{\link{anova1}}
+#'
+#' @export
+#' @examples
+#' # Pilot data from three groups
+#' set.seed(123)
+#' x1 <- rnorm(10, mean=0, sd=1)
+#' x2 <- rnorm(10, mean=0.5, sd=1.2)
+#' x3 <- rnorm(10, mean=1, sd=0.8)
+#' bdanova1(list(x1, x2, x3), delta=0.5, power=0.9)
 bdanova1<-function(x,alpha=.05,power=.9,delta=NA){
 #
 #  Do the first stage of a Bishop-Dudewicz ANOVA method.
@@ -391,6 +589,46 @@ N[j]<-max(c(nvec[j]+1,floor(svec[j]/d)+1))
 list(N=N,d=d,crit=crit)
 }
 
+#' Conventional One-Way ANOVA
+#'
+#' Performs a standard one-way ANOVA F-test comparing means across J independent
+#' groups. This is the classic parametric ANOVA assuming normality and equal
+#' variances.
+#'
+#' @param x Data in list mode (each element is a group), matrix, or data frame
+#'   where columns correspond to groups.
+#'
+#' @return A list with components:
+#'   \item{F.test}{The F test statistic.}
+#'   \item{p.value}{The p-value for the test.}
+#'   \item{df1}{Numerator degrees of freedom (J-1).}
+#'   \item{df2}{Denominator degrees of freedom (N-J).}
+#'   \item{MSBG}{Mean square between groups.}
+#'   \item{MSWG}{Mean square within groups.}
+#'
+#' @details
+#' This function implements the traditional one-way ANOVA F-test. It assumes:
+#' \itemize{
+#'   \item Normality within each group
+#'   \item Equal variances across groups (homoscedasticity)
+#'   \item Independent observations
+#' }
+#'
+#' For robust alternatives that don't require these assumptions, see
+#' \code{\link{t1way}}, \code{\link{MEDanova}}, or \code{\link{pbanova}}.
+#'
+#' Missing values are automatically removed.
+#'
+#' @seealso \code{\link{t1way}}, \code{\link{MEDanova}}, \code{\link{pbanova}}
+#'
+#' @export
+#' @examples
+#' # Three groups
+#' set.seed(123)
+#' x1 <- rnorm(20, mean=10, sd=2)
+#' x2 <- rnorm(20, mean=12, sd=2)
+#' x3 <- rnorm(20, mean=11, sd=2)
+#' anova1(list(x1, x2, x3))
 anova1<-function(x){
 #
 # conventional one-way anova
@@ -419,6 +657,43 @@ pvalue<-1-pf(FVAL,nu1,nu2)
 list(F.test=FVAL,p.value=pvalue,df1=nu1,df2=nu2,MSBG=MSBG,MSWG=MSWG)
 }
 
+#' Bishop-Dudewicz ANOVA - Stage 2 Test
+#'
+#' Performs the second stage of the Bishop-Dudewicz two-stage ANOVA procedure,
+#' combining pilot data with additional observations to test for group differences
+#' with guaranteed power.
+#'
+#' @param x1 Pilot data from stage 1 (list mode or matrix).
+#' @param x2 Additional data collected in stage 2 (list mode or matrix). If NULL,
+#'   only stage 1 sample size calculations are returned.
+#' @inheritParams bdanova1
+#'
+#' @return A list with components:
+#'   \item{test.stat}{The test statistic (if x2 is provided).}
+#'   \item{crit}{The critical value.}
+#'   \item{N}{Required sample sizes (if x2 is NULL).}
+#'   \item{d}{Effect size parameter (if x2 is NULL).}
+#'
+#' @details
+#' If \code{x2} is NULL, the function returns the required sample sizes from
+#' stage 1 (same as \code{bdanova1}).
+#'
+#' If \code{x2} is provided, the function combines the pilot data (x1) with the
+#' new observations (x2) and performs the test. The function checks that the
+#' sample sizes in x2 meet the requirements determined in stage 1.
+#'
+#' @seealso \code{\link{bdanova1}}, \code{\link{anova1}}
+#'
+#' @export
+#' @examples
+#' # Stage 1: Pilot data
+#' set.seed(123)
+#' x1_pilot <- list(rnorm(10), rnorm(10, 0.5), rnorm(10, 1))
+#' stage1 <- bdanova2(x1_pilot, delta=0.5)
+#'
+#' # Stage 2: Collect additional data and test
+#' # x2_additional <- list(rnorm(stage1$N[1]-10), rnorm(stage1$N[2]-10), ...)
+#' # bdanova2(x1_pilot, x2_additional, delta=0.5)
 bdanova2<-function(x1,x2=NULL,alpha=.05,power=.9,delta){
 #
 #  Do the second stage of the Bishop-Duewicz ANOVA
@@ -472,6 +747,58 @@ return(list(test.stat=ftil,crit=temp$crit))
 }
 }
 
+#' Heteroscedastic One-Way ANOVA for Trimmed Means (Welch-Type)
+#'
+#' Performs a heteroscedastic one-way ANOVA for trimmed means using a
+#' generalization of Welch's method. Does not assume equal variances across
+#' groups. This is the primary robust ANOVA function in the WRS package.
+#'
+#' @param x Data in matrix form (columns = groups), list mode, or a vector
+#'   (when used with \code{IV}).
+#' @param MAT Logical. If TRUE, \code{x} is a matrix with group indicators in
+#'   one column and data in another (default: FALSE).
+#' @param lev.col Column number indicating group membership when MAT=TRUE
+#'   (default: 1).
+#' @param var.col Column number containing the data values when MAT=TRUE
+#'   (default: 2).
+#' @param IV Vector of group identifiers. When specified, \code{x} should be
+#'   a vector of all data values.
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{TEST}{The test statistic.}
+#'   \item{nu1}{Numerator degrees of freedom.}
+#'   \item{nu2}{Denominator degrees of freedom.}
+#'   \item{n}{Vector of sample sizes for each group.}
+#'   \item{p.value}{The p-value for the test.}
+#'
+#' @details
+#' This function implements a heteroscedastic one-way ANOVA for trimmed means,
+#' generalizing Welch's test to trimmed means. It does not assume equal variances
+#' and uses adjusted degrees of freedom.
+#'
+#' The default 20% trimming provides good power while maintaining robustness.
+#' Setting tr=0 performs Welch's test on means (though this is not recommended
+#' for typical use).
+#'
+#' WARNING: Do not use this function to compare medians (tr=0.5); use
+#' \code{\link{MEDanova}} or \code{\link{Qanova}} instead.
+#'
+#' @seealso \code{\link{t1wayv2}}, \code{\link{t1waybt}}, \code{\link{t1wayF}},
+#'   \code{\link{MEDanova}}, \code{\link{pbanova}}
+#'
+#' @export
+#' @examples
+#' # Three groups in list mode
+#' set.seed(123)
+#' x1 <- rnorm(20, mean=0, sd=1)
+#' x2 <- rnorm(20, mean=0.5, sd=2)
+#' x3 <- rnorm(20, mean=1, sd=1.5)
+#' t1way(list(x1, x2, x3), tr=0.2)
+#'
+#' # Using a data frame with grouping variable
+#' df <- data.frame(score=c(x1,x2,x3), group=rep(1:3, each=20))
+#' t1way(df$score, IV=df$group)
 t1way<-function(x,tr=.2,grp=NA,MAT=FALSE,lev.col=1,var.col=2,IV=NULL,pr=TRUE){
 #
 #  A heteroscedastic one-way ANOVA for trimmed means
@@ -545,6 +872,62 @@ sig<-1-pf(TEST,nu1,nu2)
 list(TEST=TEST,nu1=nu1,nu2=nu2,n=nv,p.value=sig)
 }
 
+#' Heteroscedastic Three-Way ANOVA for Trimmed Means (Version 2 with P-Values)
+#'
+#' Performs a J by K by L three-way ANOVA on trimmed means for independent
+#' groups. Does not assume equal variances. Tests main effects and all
+#' interactions. This version computes p-values (unlike \code{t3way} which
+#' only provides critical values).
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param L Number of levels for Factor C.
+#' @param x Data in list mode (length J*K*L), matrix (columns = groups), or
+#'   matrix in long format (when MAT=TRUE).
+#' @param p Total number of groups (default: J*K*L).
+#' @param MAT Logical. If TRUE, \code{x} is a matrix with factor levels in
+#'   columns specified by \code{lev.col} and data in \code{var.col}.
+#' @param lev.col Column numbers for the three factors when MAT=TRUE (default: c(1,2,3)).
+#' @param var.col Column number for the outcome variable when MAT=TRUE (default: 4).
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{Qa}{Test statistic for main effect of Factor A.}
+#'   \item{Qa.p.value}{P-value for Factor A.}
+#'   \item{Qb}{Test statistic for main effect of Factor B.}
+#'   \item{Qb.p.value}{P-value for Factor B.}
+#'   \item{Qc}{Test statistic for main effect of Factor C.}
+#'   \item{Qc.p.value}{P-value for Factor C.}
+#'   \item{Qab}{Test statistic for A by B interaction.}
+#'   \item{Qab.p.value}{P-value for A by B interaction.}
+#'   \item{Qac}{Test statistic for A by C interaction.}
+#'   \item{Qac.p.value}{P-value for A by C interaction.}
+#'   \item{Qbc}{Test statistic for B by C interaction.}
+#'   \item{Qbc.p.value}{P-value for B by C interaction.}
+#'   \item{Qabc}{Test statistic for A by B by C interaction.}
+#'   \item{Qabc.p.value}{P-value for three-way interaction.}
+#'
+#' @details
+#' This function performs a heteroscedastic three-way ANOVA using trimmed means.
+#' It does not assume equal variances across groups.
+#'
+#' Data ordering in list mode: Groups are ordered with the third factor (C)
+#' varying fastest, then B, then A. For example:
+#' \itemize{
+#'   \item x[[1]] = (1,1,1), x[[2]] = (1,1,2), ..., x[[L]] = (1,1,L)
+#'   \item x[[L+1]] = (1,2,1), ..., x[[2*L]] = (1,2,L)
+#'   \item x[[K*L+1]] = (2,1,1), etc.
+#' }
+#'
+#' @seealso \code{\link{t3way}}, \code{\link{t2way}}, \code{\link{t2wayv2}}
+#'
+#' @export
+#' @examples
+#' # 2x2x2 design with 8 groups
+#' set.seed(123)
+#' x <- vector("list", 8)
+#' for(i in 1:8) x[[i]] <- rnorm(15, mean=i*0.2)
+#' t3wayv2(2, 2, 2, x, tr=0.2)
 t3wayv2<-function(J,K,L,x,tr=.2,grp=c(1:p),alpha=.05,p=J*K*L,MAT=FALSE,
 lev.col=c(1:3),var.col=4,pr=TRUE){
 #  Perform a J by K by L (three-way) anova on trimmed means where
@@ -665,6 +1048,65 @@ Qbc=Qbc$teststat,Qbc.crit=Qbc$crit,Qbc.p.value=Qbc.pv,
 Qabc=Qabc$teststat,Qabc.crit=Qabc$crit,Qabc.p.value=Qabc.pv)
 }
 
+#' Heteroscedastic Two-Way ANOVA for Trimmed Means
+#'
+#' Performs a J by K two-way ANOVA on trimmed means for independent groups.
+#' Does not assume equal variances. Tests main effects and interactions.
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param x Data in list mode (length J*K), matrix (columns = groups), or
+#'   vector (when used with IV1 and IV2).
+#' @param p Total number of groups (default: J*K).
+#' @param MAT Logical. If TRUE, \code{x} is a matrix with factor levels in
+#'   columns specified by \code{lev.col} and data in \code{var.col}.
+#' @param lev.col Column numbers for the two factors when MAT=TRUE (default: c(1,2)).
+#' @param var.col Column number for the outcome variable when MAT=TRUE (default: 3).
+#' @param IV1 Vector of first factor levels (when x is a vector of data).
+#' @param IV2 Vector of second factor levels (when x is a vector of data).
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{Qa}{Test statistic for main effect of Factor A.}
+#'   \item{Qa.crit}{Critical value for Factor A.}
+#'   \item{Qa.p.value}{P-value for Factor A.}
+#'   \item{Qb}{Test statistic for main effect of Factor B.}
+#'   \item{Qb.crit}{Critical value for Factor B.}
+#'   \item{Qb.p.value}{P-value for Factor B.}
+#'   \item{Qab}{Test statistic for A by B interaction.}
+#'   \item{Qab.crit}{Critical value for interaction.}
+#'   \item{Qab.p.value}{P-value for interaction.}
+#'
+#' @details
+#' This function performs a heteroscedastic two-way ANOVA using trimmed means.
+#' It uses the Johansen procedure and does not assume equal variances across
+#' groups.
+#'
+#' Data can be provided in several formats:
+#' \itemize{
+#'   \item List mode: x[[1]] = group (1,1), x[[2]] = group (1,2), ..., x[[K]] = group (1,K), x[[K+1]] = group (2,1), etc.
+#'   \item Matrix: Columns correspond to groups in the same order
+#'   \item Long format: Use MAT=TRUE with factor levels in lev.col and data in var.col
+#'   \item Vectors: Provide data in x with factor levels in IV1 and IV2
+#' }
+#'
+#' @seealso \code{\link{t2wayv2}}, \code{\link{t3way}}, \code{\link{t2waybt}},
+#'   \code{\link{bwtrim}}, \code{\link{sppbb}}
+#'
+#' @export
+#' @examples
+#' # 2x3 design with 6 groups
+#' set.seed(123)
+#' x <- vector("list", 6)
+#' for(i in 1:6) x[[i]] <- rnorm(15, mean=i*0.3)
+#' t2way(2, 3, x, tr=0.2)
+#'
+#' # Using IV vectors
+#' n <- 30
+#' data <- rnorm(n)
+#' factor1 <- rep(1:2, each=15)
+#' factor2 <- rep(1:3, times=10)
+#' t2way(2, 3, data, IV1=factor1, IV2=factor2)
 t2way<-function(J,K,x,tr=.2,grp=c(1:p),p=J*K,MAT=FALSE,
 lev.col=c(1:2),var.col=3,pr=TRUE,IV1=NULL,IV2=NULL){
 #  Perform a J by K  (two-way) ANOVA on trimmed means where
@@ -796,6 +1238,46 @@ Qb=Qb$teststat,B.p.value=B.p.value,df.B=dfB,
 Qab=Qab$teststat,AB.p.value=AB.p.value,df.AB=dfAB,means=tmeans)
 }
 
+#' Percentile Bootstrap One-Way ANOVA for Trimmed Means
+#'
+#' Tests the hypothesis that J independent groups have equal trimmed means
+#' using a percentile bootstrap method. Provides robust alternative to
+#' parametric ANOVA.
+#'
+#' @param win Amount of Winsorizing when WIN=TRUE (default: 0.1). Must be
+#'   less than or equal to \code{tr}.
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{test}{The test statistic.}
+#'   \item{crit.val}{Critical value from the bootstrap distribution.}
+#'   \item{p.value}{Bootstrap p-value.}
+#'   \item{con}{Contrast matrix used for testing.}
+#'   \item{num.sig}{Number of significant contrasts.}
+#'
+#' @details
+#' This function uses the percentile bootstrap to test for equality of trimmed
+#' means across J independent groups. It generates bootstrap samples from each
+#' group and computes the distribution of the test statistic under the null
+#' hypothesis.
+#'
+#' The number of bootstrap samples is determined automatically if not specified:
+#' 5000 for J >= 10, otherwise 2000.
+#'
+#' If WIN=TRUE, data are Winsorized before bootstrap resampling. This can
+#' improve performance but should only be used with tr >= 0.2 and n >= 15.
+#'
+#' @seealso \code{\link{t1way}}, \code{\link{t1waybt}}, \code{\link{MEDanova}},
+#'   \code{\link{pbanovag}}
+#'
+#' @export
+#' @examples
+#' # Three groups
+#' set.seed(123)
+#' x1 <- rnorm(25, mean=0, sd=1)
+#' x2 <- rnorm(25, mean=0.5, sd=1.2)
+#' x3 <- rnorm(25, mean=1, sd=0.8)
+#' pbanova(list(x1, x2, x3), tr=0.2, nboot=1000)
 pbanova<-function(x,tr=.2,alpha=.05,nboot=NA,grp=NA,WIN=FALSE,win=.1){
 #
 #   Test the hypothesis that J independent groups have
@@ -895,6 +1377,52 @@ if(sig==0)print("No significant result obtained: Fail to reject")
 list(test.vec=test,crit.vec=dvec[1:Jm])
 }
 
+#' Generalized Percentile Bootstrap ANOVA for Any Estimator
+#'
+#' Tests the hypothesis that J independent groups have equal measures of
+#' location (or scale) using the percentile bootstrap method. Generalizes
+#' \code{pbanova} to work with any estimator function.
+#'
+#' @param est Estimator function to use. Default is \code{onestep} (one-step
+#'   M-estimator). Other options include \code{mean}, \code{median}, \code{tmean},
+#'   \code{mom}, \code{mest}, \code{mad}, \code{winvar}, etc.
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#'   \item{test}{The test statistic.}
+#'   \item{crit.val}{Critical value from the bootstrap distribution.}
+#'   \item{p.value}{Bootstrap p-value.}
+#'   \item{con}{Contrast matrix used for testing.}
+#'   \item{num.sig}{Number of significant contrasts.}
+#'
+#' @details
+#' This function extends \code{pbanova} to work with any estimator function,
+#' not just trimmed means. The estimator can be any function that takes a
+#' vector and returns a scalar.
+#'
+#' Additional arguments to the estimator can be passed via \code{...}. For
+#' example, to use a trimmed mean with 10\% trimming, use
+#' \code{est=mean, trim=0.1}.
+#'
+#' The number of bootstrap samples is determined automatically if not specified:
+#' 5000 for J >= 10, otherwise 2000.
+#'
+#' @seealso \code{\link{pbanova}}, \code{\link{t1way}}, \code{\link{MEDanova}}
+#'
+#' @export
+#' @examples
+#' # Compare groups using one-step M-estimator
+#' set.seed(123)
+#' x1 <- rnorm(25, mean=0, sd=1)
+#' x2 <- rnorm(25, mean=0.5, sd=1.2)
+#' x3 <- rnorm(25, mean=1, sd=0.8)
+#' pbanovag(list(x1, x2, x3), est=onestep, nboot=1000)
+#'
+#' # Compare medians
+#' pbanovag(list(x1, x2, x3), est=median, nboot=1000)
+#'
+#' # Compare MADs (median absolute deviation)
+#' pbanovag(list(x1, x2, x3), est=mad, nboot=1000)
 pbanovag<-function(x,alpha=.05,nboot=NA,grp=NA,est=onestep,...){
 #
 #   Test the hypothesis that J independent groups have
@@ -984,6 +1512,45 @@ if(sig==0)print("No significant result obtained: Fail to reject")
 list(test.vec=test,crit.vec=dvec[1:Jm])
 }
 
+#' Heteroscedastic One-Way Random Effects ANOVA for Trimmed Means
+#'
+#' Performs a heteroscedastic one-way random effects ANOVA for trimmed means.
+#' This function tests whether all groups have a common trimmed mean, allowing
+#' for unequal variances across groups.
+#'
+#' @param x Data in matrix or list format. If matrix, groups correspond to columns.
+#'   If list, each element contains data for one group.
+#' @param tr Proportion of trimming (default is 0.2 for 20% trimming).
+#' @param grp Vector specifying which groups to compare. If NA (default), all groups
+#'   are compared. Use grp=c(1,3,4) to compare only groups 1, 3, and 4.
+#'
+#' @return A list with components:
+#'   \item{teststat}{The test statistic D}
+#'   \item{df}{Degrees of freedom (numerator and denominator)}
+#'   \item{p.value}{p-value for the test}
+#'   \item{rho}{Estimated Winsorized intraclass correlation}
+#'   \item{num.groups}{Number of groups being compared}
+#'
+#' @details
+#' The function uses a heteroscedastic approach that does not assume equal variances
+#' across groups. It computes trimmed means and Winsorized variances for each group,
+#' then performs an F-test with adjusted degrees of freedom.
+#'
+#' The null hypothesis is that all groups have a common trimmed mean. The test
+#' statistic follows an F-distribution under the null hypothesis.
+#'
+#' @export
+#' @examples
+#' # Example with matrix data
+#' x <- matrix(rnorm(60), ncol=3)
+#' rananova(x, tr=0.2)
+#'
+#' # Example with list data
+#' x <- list(rnorm(20), rnorm(25), rnorm(30))
+#' rananova(x)
+#'
+#' # Compare only groups 1 and 3
+#' rananova(x, grp=c(1,3))
 rananova<-function(x,tr=.2,grp=NA){
 #
 #  A heteroscedastic one-way random effects ANOVA for trimmed means.
@@ -1032,6 +1599,53 @@ rho<-sighat/(sighat+winmean(wvar,tr))
 list(teststat=D,df=c(nu1,nu2),p.value=sig,rho=rho,num.groups=J)
 }
 
+#' Two-Way ANOVA for Independent Groups Using Percentile Bootstrap
+#'
+#' Performs a two-way ANOVA for independent groups based on robust measures
+#' of location and a percentile bootstrap method. Tests main effects and
+#' interaction using bootstrap hypothesis testing.
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param x Data in matrix or list format. If list, x[[1]] contains data for
+#'   level (1,1), x[[2]] for level (1,2), etc. Groups are ordered by columns
+#'   of the cross-classification table.
+#' @param alpha Significance level (default is 0.05).
+#' @param nboot Number of bootstrap samples. If NA, defaults to 5000 (or 2000
+#'   if the number of contrasts is <= 4).
+#' @param grp Optional vector to rearrange groups. For example, grp=c(2,4,3,1)
+#'   for a 2x2 design indicates group 2 is (1,1), group 4 is (1,2), group 3 is
+#'   (2,1), and group 1 is (2,2).
+#' @param est Estimator to use (default is onestep M-estimator).
+#' @param ... Additional arguments passed to the estimator function.
+#'
+#' @return A list with components:
+#'   \item{testA}{Test statistics for Factor A main effect}
+#'   \item{crit.vecA}{Critical values for Factor A}
+#'   \item{testB}{Test statistics for Factor B main effect}
+#'   \item{crit.vecB}{Critical values for Factor B}
+#'   \item{testAB}{Test statistics for interaction}
+#'   \item{crit.vecAB}{Critical values for interaction}
+#'
+#' @details
+#' This function performs a heteroscedastic two-way ANOVA using a percentile
+#' bootstrap approach. It tests the main effects of both factors and their
+#' interaction. The default estimator is the one-step M-estimator, but other
+#' robust estimators can be specified.
+#'
+#' Missing values are automatically removed. The random seed is set to 2 for
+#' reproducibility. The function prints messages indicating significant results
+#' for each effect.
+#'
+#' @export
+#' @examples
+#' # Create data for 2x3 design
+#' set.seed(123)
+#' x <- list()
+#' for(i in 1:6) x[[i]] <- rnorm(20, mean=i)
+#'
+#' # Run two-way ANOVA
+#' result <- t2waypbg(J=2, K=3, x=x, nboot=500)
 t2waypbg<-function(J,K,x,alpha=.05,nboot=NA,grp=NA,est=onestep,...){
 #
 #   Two-way ANOVA for independent groups based on
@@ -1159,6 +1773,38 @@ print("No significant Interaction: Fail to reject")
 list(testA=testA,crit.vecA=dvecA,testB=testB,crit.vecB=dvecB,testAB=testAB,crit.vecAB=dvecAB)
 }
 
+#' Brunner-Dette-Munk Rank-Based One-Way ANOVA
+#'
+#' Performs the Brunner, Dette, and Munk rank-based ANOVA for comparing
+#' independent groups. This is a heteroscedastic rank-based method that does
+#' not assume equal variances.
+#'
+#' @param x Data in matrix or list format. If matrix, groups correspond to columns.
+#'   If list, each element contains data for one group.
+#' @param grp Vector specifying which groups to compare. If NA (default), all groups
+#'   are compared.
+#'
+#' @return Output from bdms1 function containing test statistics and p-values.
+#'
+#' @details
+#' Implements the Brunner, Dette, and Munk (1997) rank-based ANOVA method.
+#' This approach is robust to heteroscedasticity and does not require normality
+#' assumptions. The method uses a multivariate rank transformation approach.
+#'
+#' @references
+#' Brunner, E., Dette, H., & Munk, A. (1997). Box-type approximations in
+#' nonparametric factorial designs. Journal of the American Statistical
+#' Association, 92, 1494-1502.
+#'
+#' @export
+#' @examples
+#' # Example with matrix data
+#' x <- matrix(rnorm(60), ncol=3)
+#' bdm(x)
+#'
+#' # Example with list data
+#' x <- list(rnorm(20), rnorm(25), rnorm(30))
+#' bdm(x)
 bdm<-function(x,grp=NA){
 #
 # Perform the Brunner, Dette, Munk rank-based ANOVA
@@ -1180,6 +1826,45 @@ outA<-bdms1(xx,cona)
 outA
 }
 
+#' Choi-Marden Multivariate One-Way Rank-Based ANOVA
+#'
+#' Performs the Choi and Marden multivariate one-way rank-based ANOVA for
+#' comparing groups on multiple dependent measures. This method handles
+#' J independent groups with K dependent measures per group.
+#'
+#' @param J Number of independent groups.
+#' @param K Number of dependent measures.
+#' @param x Data in matrix or list format. Data should contain J*K groups
+#'   representing the J groups measured on K dependent variables.
+#' @param grp Vector specifying group ordering (default is 1:(J*K)).
+#' @param JK Total number of groups (default is J*K).
+#'
+#' @return A list with components:
+#'   \item{test.stat}{The Choi-Marden test statistic}
+#'   \item{df}{Degrees of freedom}
+#'   \item{p.value}{p-value for the test}
+#'
+#' @details
+#' Implements the Choi and Marden (1997) multivariate rank-based ANOVA.
+#' This method is designed for multivariate data where each group is measured
+#' on multiple dependent variables. The test uses spatial ranks and does not
+#' require multivariate normality.
+#'
+#' Missing values are automatically removed. The test statistic follows an
+#' approximate chi-squared distribution with K*(J-1) degrees of freedom.
+#'
+#' @references
+#' Choi, K., & Marden, J. (1997). An approach to multivariate rank tests in
+#' multivariate analysis of variance. Journal of the American Statistical
+#' Association, 92, 1581-1590.
+#'
+#' @export
+#' @examples
+#' # Example: 3 groups, 2 dependent measures
+#' set.seed(123)
+#' x <- list()
+#' for(i in 1:6) x[[i]] <- rnorm(20)
+#' cmanova(J=3, K=2, x=x)
 cmanova<-function(J,K,x,grp=c(1:JK),JK=J*K){
 #
 # Perform the Choi and Marden
@@ -1258,6 +1943,47 @@ sig.level<-1-pchisq(KW,df)
 list(test.stat=KW[1,1],df=df,p.value=sig.level)
 }
 
+#' Split-Plot Bootstrap Test for Main Effects in Dependent Groups
+#'
+#' Performs a percentile bootstrap test for main effects among dependent groups
+#' in a split-plot design. Tests whether all pairwise differences have a
+#' typical value of zero.
+#'
+#' @param J Number of levels for between-subjects factor.
+#' @param K Number of levels for within-subjects factor.
+#' @param x Data in matrix or list format. If list, x[[1]] contains data for
+#'   level (1,1), x[[2]] for level (1,2), ..., x[[K]] for level (1,K),
+#'   x[[K+1]] for level (2,1), etc. If matrix, columns correspond to groups.
+#' @param est Estimator to use (default is tmean for trimmed mean).
+#' @param JK Total number of groups (default is J*K).
+#' @param grp Vector specifying group ordering (default is 1:JK).
+#' @param nboot Number of bootstrap samples (default is 500).
+#' @param SEED Logical indicating whether to set random seed (default is TRUE).
+#' @param pr Logical indicating whether to print messages (default is TRUE).
+#' @param ... Additional arguments passed to the estimator function.
+#'
+#' @return A list with components:
+#'   \item{p.value}{p-values for the tests}
+#'   \item{center}{Estimated centers for the groups}
+#'
+#' @details
+#' This function analyzes split-plot designs where subjects are measured under
+#' multiple conditions (within-subjects factor) and there may be different groups
+#' of subjects (between-subjects factor). The analysis is based on all pairs of
+#' difference scores.
+#'
+#' Missing values are automatically removed. The random seed is set to 2 if
+#' SEED=TRUE for reproducibility.
+#'
+#' @export
+#' @examples
+#' # Create data for 2x3 split-plot design
+#' set.seed(123)
+#' x <- list()
+#' for(i in 1:6) x[[i]] <- rnorm(20)
+#'
+#' # Run split-plot bootstrap test
+#' result <- sppbb(J=2, K=3, x=x, nboot=100)
 sppbb<-function(J,K,x,est=tmean,JK=J*K,grp=c(1:JK),nboot=500,SEED=TRUE,pr=TRUE,...){
 #
 # A percentile bootstrap for main effects
@@ -1341,6 +2067,47 @@ temp<-rmdzero(x,est=est,nboot=nboot,...)
 list(p.value=temp$p.value,center=temp$center)
 }
 
+#' Two-Way ANOVA on Trimmed Means Without p-values
+#'
+#' Performs a J by K two-way ANOVA on trimmed means where all JK groups are
+#' independent. Returns test statistics and critical values but does not
+#' compute p-values for all tests (interaction uses critical value instead).
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param x Data in matrix or list format. Groups are ordered by columns of
+#'   the cross-classification table. x[[1]] is level (1,1), x[[2]] is (1,2), etc.
+#' @param tr Proportion of trimming (default is 0.2 for 20% trimming).
+#' @param grp Vector to rearrange group order if needed (default is 1:p).
+#' @param alpha Significance level for interaction critical value (default is 0.05).
+#' @param p Total number of groups (default is J*K).
+#'
+#' @return A list with components:
+#'   \item{Qa}{Test statistic for Factor A main effect}
+#'   \item{sig.A}{p-value for Factor A}
+#'   \item{Qb}{Test statistic for Factor B main effect}
+#'   \item{sig.B}{p-value for Factor B}
+#'   \item{Qab}{Test statistic for interaction}
+#'   \item{critinter}{Adjusted critical value for interaction}
+#'
+#' @details
+#' This function performs a heteroscedastic two-way ANOVA using trimmed means.
+#' Main effects are tested using F-tests with adjusted degrees of freedom.
+#' The interaction is tested using a chi-squared statistic with an adjusted
+#' critical value rather than a p-value.
+#'
+#' Missing values are automatically removed. The function uses Winsorized
+#' variances and does not assume equal variances across groups.
+#'
+#' @export
+#' @examples
+#' # Create data for 2x3 design
+#' set.seed(123)
+#' x <- list()
+#' for(i in 1:6) x[[i]] <- rnorm(20, mean=i)
+#'
+#' # Run two-way ANOVA
+#' result <- t2way.no.p(J=2, K=3, x=x)
 t2way.no.p<-function(J,K,x,tr=.2,grp=c(1:p),alpha=.05,p=J*K){
 #  Perform a J by K (two-way) anova on trimmed means where
 #  all jk groups are independent.
@@ -1431,6 +2198,43 @@ adcrit<-crit+hc
 list(Qa=Va,sig.A=sig.A,Qb=Vb,sig.B=sig.B,Qab=Vab,critinter=adcrit)
 }
 
+#' Two-Way ANOVA on Trimmed Means Using Bootstrap-t Method
+#'
+#' Performs a two-way ANOVA based on trimmed means using a bootstrap-t method
+#' for hypothesis testing. Tests main effects and interaction for independent
+#' groups.
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param x Data in matrix or list format. Groups are ordered as described in t2way.
+#' @param tr Proportion of trimming (default is 0.2 for 20% trimming).
+#' @param grp Vector to rearrange group order if needed (default is 1:p).
+#' @param p Total number of groups (default is J*K).
+#' @param nboot Number of bootstrap samples (default is 599).
+#' @param SEED Logical indicating whether to set random seed (default is TRUE).
+#'
+#' @return A list with components:
+#'   \item{A.p.value}{Bootstrap p-value for Factor A main effect}
+#'   \item{B.p.value}{Bootstrap p-value for Factor B main effect}
+#'   \item{AB.p.value}{Bootstrap p-value for interaction}
+#'
+#' @details
+#' This function uses a bootstrap-t approach to test hypotheses in a two-way
+#' ANOVA with independent groups. Data are centered by subtracting trimmed means,
+#' then bootstrap samples are drawn from the centered data.
+#'
+#' The random seed is set to 2 if SEED=TRUE for reproducibility. The function
+#' prints progress messages during bootstrap sampling.
+#'
+#' @export
+#' @examples
+#' # Create data for 2x3 design
+#' set.seed(123)
+#' x <- list()
+#' for(i in 1:6) x[[i]] <- rnorm(20, mean=i)
+#'
+#' # Run bootstrap two-way ANOVA
+#' result <- t2waybt(J=2, K=3, x=x, nboot=100)
 t2waybt<-function(J,K,x,tr=.2,grp=c(1:p),p=J*K,nboot=599,SEED=TRUE){
 #
 #   Two-way ANOVA based on trimmed means and a bootstrap-t method
@@ -1466,6 +2270,62 @@ pAB<-sum(tests$Qab<=TAB)/nboot
 list(A.p.value=pA,B.p.value=pB,AB.p.value=pAB)
 }
 
+#' Three-Way ANOVA on Trimmed Means for Independent Groups
+#'
+#' Performs a J by K by L three-way ANOVA on trimmed means where all JKL groups
+#' are independent. Tests all main effects, two-way interactions, and the
+#' three-way interaction.
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param L Number of levels for Factor C.
+#' @param x Data in list or matrix format. If list, x[[1]] contains data for
+#'   level (1,1,1), x[[2]] for (1,1,2), ..., x[[L]] for (1,1,L), x[[L+1]] for
+#'   (1,2,1), etc.
+#' @param tr Proportion of trimming (default is 0.2 for 20% trimming).
+#' @param grp Vector to rearrange group order if needed (default is 1:p).
+#' @param alpha Significance level (default is 0.05).
+#' @param p Total number of groups (default is J*K*L).
+#' @param MAT Logical; if TRUE, x is a matrix with columns for factor levels
+#'   (default is FALSE).
+#' @param lev.col Column numbers indicating factor levels when MAT=TRUE
+#'   (default is c(1:3)).
+#' @param var.col Column number for the dependent variable when MAT=TRUE
+#'   (default is 4).
+#' @param pr Logical indicating whether to print messages (default is TRUE).
+#' @param IV1 Optional vector specifying levels of Factor A (for alternative input).
+#' @param IV2 Optional vector specifying levels of Factor B (for alternative input).
+#' @param IV3 Optional vector specifying levels of Factor C (for alternative input).
+#'
+#' @return A list with components for each effect:
+#'   \item{Qa, Qb, Qc}{Test statistics for main effects A, B, C}
+#'   \item{Qa.crit, Qb.crit, Qc.crit}{Critical values for main effects}
+#'   \item{A.p.value, B.p.value, C.p.value}{p-values for main effects}
+#'   \item{Qab, Qac, Qbc}{Test statistics for two-way interactions}
+#'   \item{Qab.crit, Qac.crit, Qbc.crit}{Critical values for two-way interactions}
+#'   \item{AB.p.value, AC.p.value, BC.p.value}{p-values for two-way interactions}
+#'   \item{Qabc}{Test statistic for three-way interaction}
+#'   \item{Qabc.crit}{Critical value for three-way interaction}
+#'   \item{ABC.p.value}{p-value for three-way interaction}
+#'
+#' @details
+#' This function performs a heteroscedastic three-way ANOVA using trimmed means.
+#' It computes test statistics and p-values for all main effects, all two-way
+#' interactions, and the three-way interaction.
+#'
+#' The function can accept data in multiple formats: list mode, matrix with
+#' columns for groups, or matrix with factor level columns. When using IV1, IV2,
+#' and IV3, x should be a vector of dependent variable values.
+#'
+#' @export
+#' @examples
+#' # Create data for 2x2x2 design
+#' set.seed(123)
+#' x <- list()
+#' for(i in 1:8) x[[i]] <- rnorm(20)
+#'
+#' # Run three-way ANOVA
+#' result <- t3way(J=2, K=2, L=2, x=x)
 t3way<-function(J,K,L,x,tr=.2,grp=c(1:p),alpha=.05,p=J*K*L,MAT=FALSE,
 lev.col=c(1:3),var.col=4,pr=TRUE,IV1=NULL,IV2=NULL,IV3=NULL){
 #  Perform a J by K by L (three-way) anova on trimmed means where
@@ -1622,6 +2482,44 @@ BC.p.value=BC.p.value,
 Qabc=Qabc$teststat,Qabc.crit=Qabc$crit,ABC.p.value=ABC.p.value)
 }
 
+#' Brunner-Dette-Munk Rank-Based Two-Way ANOVA
+#'
+#' Performs the Brunner, Dette, and Munk rank-based ANOVA for a J by K
+#' two-way independent groups design. Tests main effects and interaction
+#' using rank-based methods.
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param x Data in matrix or list format. If matrix, groups correspond to columns.
+#'   If list, each element contains data for one group.
+#' @param grp Vector specifying group ordering (default is 1:p).
+#' @param p Total number of groups (default is J*K).
+#'
+#' @return A list with components:
+#'   \item{p.valueA}{p-value for Factor A main effect}
+#'   \item{p.valueB}{p-value for Factor B main effect}
+#'   \item{p.valueAB}{p-value for interaction}
+#'   \item{Relative.Effects}{Matrix of relative treatment effects}
+#'   \item{A.F}{F statistic for Factor A}
+#'   \item{B.F}{F statistic for Factor B}
+#'   \item{AB.F}{F statistic for interaction}
+#'
+#' @details
+#' Implements the Brunner, Dette, and Munk (1997) rank-based two-way ANOVA.
+#' This method is robust to heteroscedasticity and non-normality.
+#'
+#' @references
+#' Brunner, E., Dette, H., & Munk, A. (1997). Box-type approximations in
+#' nonparametric factorial designs. Journal of the American Statistical
+#' Association, 92, 1494-1502.
+#'
+#' @export
+#' @examples
+#' # Create data for 2x3 design
+#' set.seed(123)
+#' x <- list()
+#' for(i in 1:6) x[[i]] <- rnorm(20)
+#' bdm2way(J=2, K=3, x=x)
 bdm2way<-function(J,K,x,grp=c(1:p),p=J*K){
 #
 # Perform the Brunner, Dette, Munk rank-based ANOVA
@@ -1652,33 +2550,47 @@ list(p.valueA=outA$p.value,p.valueB=outB$p.value, p.valueAB=outAB$p.value,
 Relative.Effects=releff,A.F=outA$F,B.F=outB$F,AB.F=outAB$F)
 }
 
+#' Heteroscedastic One-Way ANOVA for Trimmed Means with Effect Size
+#'
+#' @description
+#' Performs a heteroscedastic one-way ANOVA for trimmed means using a
+#' generalization of Welch's method. Unlike \code{t1way}, this function also
+#' computes explanatory power and related effect sizes. Only use this function
+#' with equal sample sizes; use \code{t1wayv2} in general, which calls this
+#' function when sample sizes are equal.
+#'
+#' @param x Data matrix (with columns as groups if MAT=FALSE) or list where each
+#'   element is a vector for a group. Can also be a matrix with grouping column
+#'   if MAT=TRUE.
+#' @param tr Proportion to trim from each end (default: 0.2, meaning 20% from each tail)
+#' @param grp Numeric vector indicating which groups to compare. NA (default)
+#'   means all groups.
+#' @param MAT Logical. If FALSE (default), x is matrix with columns as groups or
+#'   a list. If TRUE, x is a matrix with separate columns for group levels and values.
+#' @param lev.col Column number indicating group levels when MAT=TRUE (default: 1)
+#' @param var.col Column number indicating data values when MAT=TRUE (default: 2)
+#'
+#' @return A list with components:
+#'   \item{TEST}{Test statistic (F-statistic)}
+#'   \item{nu1}{Numerator degrees of freedom}
+#'   \item{nu2}{Denominator degrees of freedom}
+#'   \item{p.value}{p-value for the test}
+#'   \item{Var.Explained}{Proportion of variance explained (R-squared analog)}
+#'   \item{Effect.Size}{Effect size (square root of variance explained)}
+#'
+#' @details
+#' The function uses Welch's heteroscedastic method for trimmed means. The
+#' explanatory effect size is computed as the ratio of between-group variance
+#' to total winsorized variance. If this ratio exceeds 1, the function computes
+#' it as the squared correlation between group means and individual values.
+#'
+#' Missing values are automatically removed. This function is designed for equal
+#' sample sizes; for unequal sample sizes, use \code{t1wayv2}.
+#'
+#' @seealso \code{\link{t1way}}, \code{\link{t1wayv2}}
+#'
+#' @export
 t1way.effect<-function(x,tr=.2,grp=NA,MAT=FALSE,lev.col=1,var.col=2){
-#
-# Same as t1way, but computes explanatory power and related effect size
-# Only use this function with = n's
-# Use t1wayv2 in general, which calls this function when sample sizes differ.
-#
-#  A heteroscedastic one-way ANOVA for trimmed means
-#  using a generalization of Welch's method.
-#
-#  The data are assumed to be stored in $x$ in a matrix or in list mode.
-#
-# MAT=F, if x is a matrix, columns correspond to groups.
-# if MAT=T, assumes argument
-# lev.col
-# indicates which column of x denotes the groups. And
-#  var.col indicates the column where the data are stored.
-#
-# if x has list mode:
-#  length(x) is assumed to correspond to the total number of groups.
-#  By default, the null hypothesis is that all groups have a common mean.
-#  To compare a subset of the groups, use grp to indicate which
-#  groups are to be compared. For example, if you type the
-#  command grp<-c(1,3,4), and then execute this function, groups
-#  1, 3, and 4 will be compared with the remaining groups ignored.
-#
-#  Missing values are automatically removed.
-#
 if(MAT){
 if(!is.matrix(x))stop("With MAT=T, data must be stored in a matrix")
 if(length(lev.col)!=1)stop("Argument lev.col should have 1 value")
@@ -1734,6 +2646,39 @@ list(TEST=TEST,nu1=nu1,nu2=nu2,p.value=sig,Var.Explained=e.pow,
 Effect.Size=sqrt(e.pow))
 }
 
+#' Power Analysis for ANOVA F Test
+#'
+#' Determines sample sizes or power when using the ANOVA F test. Given any three
+#' of the four parameters (groups, n, delta, sig.level, power), computes the
+#' fourth parameter.
+#'
+#' @param groups Number of groups (must be specified).
+#' @param n Sample size per group (NULL if to be calculated).
+#' @param delta Cohen's effect size: the sum of squared deviations among the
+#'   means divided by the within-group variance (NULL if to be calculated).
+#' @param sig.level Significance level (default is 0.05).
+#' @param power Statistical power (NULL if to be calculated).
+#'
+#' @return A list with components:
+#'   \item{groups}{Number of groups}
+#'   \item{n}{Sample size per group}
+#'   \item{delta}{Cohen's effect size}
+#'   \item{sig.level}{Significance level}
+#'   \item{power}{Statistical power}
+#'
+#' @details
+#' This function is a wrapper for power.anova.test that uses Cohen's delta
+#' as the effect size measure. Excluding the groups parameter, exactly one
+#' of the other parameters must be NULL, and the function will solve for that
+#' parameter.
+#'
+#' @export
+#' @examples
+#' # Find required sample size
+#' anova_power(groups=3, delta=0.5, sig.level=0.05, power=0.80)
+#'
+#' # Find power given sample size
+#' anova_power(groups=3, n=20, delta=0.5, sig.level=0.05)
 anova_power<-function(groups=NULL,n=NULL,delta=NULL,sig.level=0.05,power=NULL){
 #
 # Determine sample sizes or power when using the ANOVA F test.
@@ -1756,22 +2701,42 @@ list(groups=res[1]$groups,n=res[2]$n,delta=delta,
 sig.level=res[5]$sig.level,power=res[6]$power)
 }
 
+#' Heteroscedastic One-Way ANOVA with Factor Variable
+#'
+#' @description
+#' Performs a heteroscedastic one-way ANOVA for trimmed means using Welch's method.
+#' Similar to \code{t1way}, but designed to work with data stored in a data frame
+#' format with a separate factor variable for group identification.
+#'
+#' @param x Numeric vector containing the data to be analyzed
+#' @param fac Factor vector indicating group membership for each observation in x
+#' @param tr Proportion to trim from each end (default: 0.2, meaning 20% from each tail)
+#' @param nboot Number of bootstrap samples (default: 100, used when EP=TRUE)
+#' @param SEED Logical. If TRUE (default), set random seed for reproducibility
+#' @param EP Logical. If TRUE, compute explanatory effect size measure (default: FALSE)
+#' @param pr Logical. If TRUE (default), print message about EP option
+#'
+#' @return A list with components:
+#'   \item{TEST}{Test statistic (F-statistic)}
+#'   \item{nu1}{Numerator degrees of freedom}
+#'   \item{nu2}{Denominator degrees of freedom}
+#'   \item{p.value}{p-value for the test}
+#'   \item{Var.Explained}{Proportion of variance explained (NA if EP=FALSE)}
+#'   \item{Effect.Size}{Effect size, square root of variance explained (NA if EP=FALSE)}
+#'
+#' @details
+#' This function is a convenient wrapper for \code{t1way} that accepts data in
+#' data frame format. For example, if \code{dat} is a data frame with column 1
+#' containing outcome measures and column 2 containing a factor variable for groups,
+#' use \code{t1wayF(dat[,1], dat[,2])}.
+#'
+#' Missing values are automatically removed. When EP=TRUE, the function computes
+#' the explanatory effect size by calling \code{t1wayv2}.
+#'
+#' @seealso \code{\link{t1way}}, \code{\link{t1wayv2}}, \code{\link{t1way.effect}}
+#'
+#' @export
 t1wayF<-function(x,fac,tr=.2,nboot=100,SEED=TRUE,EP=FALSE,pr=TRUE){
-#
-# Same a t1way, but now the data are assumed to be
-# stored in a matrix or data frame where one of the columns contain
-# the data to be analyzed and another column contains the group
-# identification.
-#
-# For example, if dat is a data frame, with column 1 containing
-# the outcome measures of interest, and column 2 is a factor variable
-# indicating to  which group a value in column 1 belongs, then
-#  t1wayF(dat[,1],dat[,2])
-#  will test the hypothesis that all J groups have identical
-#  trimmed means.
-#
-#  Missing values are automatically removed.
-#
 if(!EP){
 if(pr)print('To get an estimate of the explanatory measure of effect size, set EP=TRUE')
 }
@@ -1812,22 +2777,37 @@ list(TEST=TEST,nu1=nu1,nu2=nu2,p.value=sig,Var.Explained=e.pow,
 Effect.Size=sqrt(e.pow))
 }
 
+#' Bootstrap-t One-Way ANOVA for Trimmed Means
+#'
+#' @description
+#' Tests the hypothesis of equal trimmed means across J independent groups using
+#' a bootstrap-t method. Provides better small sample performance compared to
+#' asymptotic methods.
+#'
+#' @param x Data in list mode (each element is a group) or matrix (columns are groups)
+#' @param tr Proportion to trim from each end (default: 0.2, meaning 20% from each tail)
+#' @param grp Numeric vector specifying subset of groups to compare. NA (default)
+#'   means all groups.
+#' @param nboot Number of bootstrap samples (default: 599)
+#' @param SEED Logical. If TRUE (default), set random seed for reproducibility
+#'
+#' @return A list with components:
+#'   \item{test}{Test statistic}
+#'   \item{p.value}{Bootstrap p-value}
+#'   \item{crit}{Critical value for the test}
+#'
+#' @details
+#' The bootstrap-t method centers each group by its trimmed mean and resamples
+#' from the centered distributions. This approach provides better control of
+#' Type I error rates in small samples compared to asymptotic methods.
+#'
+#' Missing values are automatically removed. If data is in matrix or data frame
+#' format, columns correspond to groups.
+#'
+#' @seealso \code{\link{t1way}}, \code{\link{t1wayv2}}, \code{\link{t1waybtv2}}
+#'
+#' @export
 t1waybt<-function(x,tr=.2,grp=NA,nboot=599,SEED=TRUE){
-#
-#   Test the hypothesis of equal trimmed means, corresponding to J independent
-#   groups, using a bootstrap-t bootstrap method.
-#
-#   The data are assumed to be stored in x in list mode
-#   or in a matrix. In the first case
-#   x[[1]] contains the data for the first group, x[[2]] the data
-#   for the second group, etc. Length(x)=the number of groups = J.
-#   If stored in a matrix, columns correspond to groups.
-#
-#   grp is used to specify some subset of the groups, if desired.
-#   By default, all J groups are used.
-#
-#   The default number of bootstrap samples is nboot=599
-#
 
 if(is.matrix(x)||is.data.frame(x))x<-listm(x)
 if(!is.list(x))stop("Data must be stored in a matrix or in list mode.")
@@ -1878,27 +2858,43 @@ pval<-mean(test$TEST<=testb,na.rm=TRUE)
 list(test=test$TEST,p.value=pval,Var.Explained=test$Var.Explained,Effect.Size=test$Effect.Size)
 }
 
+#' Bootstrap-t One-Way ANOVA for Trimmed Means (Version 2)
+#'
+#' @description
+#' Tests the hypothesis of equal trimmed means across J independent groups using
+#' a bootstrap-t method. This version supports both traditional list/matrix input
+#' and data frame input with factor variable specification.
+#'
+#' @param x Data in list mode (each element is a group), matrix (columns are groups),
+#'   or data frame (when g and dp are specified)
+#' @param tr Proportion to trim from each end (default: 0.2, meaning 20% from each tail)
+#' @param grp Numeric vector specifying subset of groups to compare. NA (default)
+#'   means all groups.
+#' @param g Column number in x containing the grouping factor (NULL by default).
+#'   When specified, x must be a data frame.
+#' @param dp Column number in x containing the dependent variable (NULL by default).
+#'   Required when g is specified.
+#' @param nboot Number of bootstrap samples (default: 599)
+#' @param SEED Logical. If TRUE (default), set random seed for reproducibility
+#'
+#' @return A list with components:
+#'   \item{test}{Test statistic}
+#'   \item{p.value}{Bootstrap p-value}
+#'   \item{crit}{Critical value for the test}
+#'
+#' @details
+#' This is an enhanced version of \code{t1waybt} that provides additional input
+#' flexibility. When g is NULL, x is treated as a matrix or list. When g is
+#' specified, column g of x is treated as a factor variable and column dp
+#' contains the dependent variable.
+#'
+#' The function prints progress messages during bootstrap sampling. Missing
+#' values are automatically removed.
+#'
+#' @seealso \code{\link{t1waybt}}, \code{\link{t1way}}, \code{\link{t1wayv2}}
+#'
+#' @export
 t1waybtv2<-function(x,tr=.2,grp=NA,g=NULL,dp=NULL,nboot=599,SEED=TRUE){
-#
-#   Test the hypothesis of equal trimmed mdeans, corresponding to J independent
-#   groups, using a bootstrap-t method.
-#
-#   The data are assumed to be stored in x in list mode
-#   or in a matrix. In the first case
-#   x[[1]] contains the data for the first group, x[[2]] the data
-#   for the second group, etc. Length(x)=the number of groups = J.
-#   If stored in a matrix, columns correspond to groups.
-#
-#   grp is used to specify some subset of the groups, if desired.
-#   By default, all J groups are used.
-#   g=NULL, x is assumed to be a matrix or have list mode
-#
-#   if g is specifed, it is assumed that column g of x is
-#   a factor variable and that the dependent variable of interest is in column
-#   dp of x, which can be a matrix or data frame.
-#
-#   The default number of bootstrap samples is nboot=599
-#
 if(!is.null(g)){
 if(is.null(dp))stop("Specify a value for dp, the column containing the data")
 x=fac2list(x[,dp],x[,g])
@@ -1952,28 +2948,49 @@ list(test=test$TEST,p.value=pval,Explanatory.Power=e.pow,
 Effect.Size=sqrt(e.pow))
 }
 
+#' Two-Way Independent Groups ANOVA for Trimmed Means (Version 2)
+#'
+#' @description
+#' Performs a J by K two-way ANOVA on trimmed means for completely independent
+#' groups designs. This version includes support for data frame input with
+#' factor variables.
+#'
+#' @param J Number of levels for first factor
+#' @param K Number of levels for second factor
+#' @param data Data in list mode (length J*K) or matrix (columns are groups).
+#'   Can also be a data frame when g and dp are specified.
+#' @param tr Proportion to trim from each end (default: 0.2, meaning 20% from each tail)
+#' @param grp Numeric vector specifying which groups to include (default: all groups)
+#' @param p Total number of groups, J*K (default: J*K)
+#' @param g Vector of length 2 specifying columns in data containing the two
+#'   factor variables (NULL by default). When specified, data must be a data frame.
+#' @param dp Column number in data containing the dependent variable (NULL by default).
+#'   Required when g is specified.
+#' @param pr Logical. If TRUE (default), print warning messages
+#'
+#' @return A list with components:
+#'   \item{Qa}{Test statistic for Factor A main effect}
+#'   \item{Qb}{Test statistic for Factor B main effect}
+#'   \item{Qab}{Test statistic for A*B interaction}
+#'   \item{A.p.value}{p-value for Factor A}
+#'   \item{B.p.value}{p-value for Factor B}
+#'   \item{AB.p.value}{p-value for interaction}
+#'   \item{A.df}{Degrees of freedom for Factor A}
+#'   \item{B.df}{Degrees of freedom for Factor B}
+#'   \item{AB.df}{Degrees of freedom for interaction}
+#'
+#' @details
+#' Data organization: In list mode, data[[1]] contains observations for level (1,1),
+#' data[[2]] for level (1,2), etc. The function tests main effects for both factors
+#' and their interaction using Welch-type statistics for trimmed means.
+#'
+#' Missing values are automatically removed. When g is specified, it should be a
+#' vector of length 2 indicating which columns contain the factor variables.
+#'
+#' @seealso \code{\link{t2way}}, \code{\link{t3way}}
+#'
+#' @export
 t2wayv2<-function(J,K,data,tr=.2,grp=c(1:p),p=J*K,g=NULL,dp=NULL,pr=TRUE){
-#  Perform a J by K  (two-way) anova on trimmed means where
-#  all groups are independent.
-#
-#  The R variable data is assumed to contain the raw
-#  data stored in list mode, or a matrix with columns
-#  corresponding to groups. If stored in list mode, data[[1]] contains the data
-#  for the first level of all three factors: level 1,1,.
-#  data[[2]] is assumed to contain the data for level 1 of the
-#  first factor and level 2 of the second factor: level 1,2
-#
-#  The default amount of trimming is tr=.2
-#
-#  It is assumed that data has length JK, the total number of
-#  groups being tested.
-#
-#   g=NULL, x is assumed to be a matrix or have list mode
-#
-#   if g is specifed, it is assumed that column g of x is
-#   a factor variable and that the dependent variable of interest is in column
-#   dp of x, which can be a matrix or data frame.
-#
 if(!is.null(g[1])){
 if(length(g)!=2)stop("Argument g should have two values")
 if(is.null(dp[1]))
@@ -2042,31 +3059,47 @@ Qb=Qb$teststat,B.p.value=B.p.value,
 Qab=Qab$teststat,AB.p.value=AB.p.value,means=tmeans)
 }
 
+#' Percentile Bootstrap for Interactions in Split-Plot Design
+#'
+#' @description
+#' Tests for interactions in a J by K split-plot (mixed) design using percentile
+#' bootstrap. The analysis examines whether differences among dependent groups
+#' (Factor B) vary across levels of the independent factor (Factor A).
+#'
+#' @param J Number of levels for Factor A (between-subjects factor)
+#' @param K Number of levels for Factor B (within-subjects factor)
+#' @param x Data in list mode (length J*K) or matrix (columns are groups).
+#'   For list mode: x[[1]] through x[[K]] are data for first level of Factor A
+#'   at all K levels of Factor B, x[[K+1]] through x[[2K]] are for second level
+#'   of Factor A, etc.
+#' @param est Estimator function to use (default: tmean for trimmed mean)
+#' @param JK Total number of groups, J*K (default: J*K)
+#' @param grp Numeric vector specifying which groups to include (default: all groups)
+#' @param nboot Number of bootstrap samples (default: 500)
+#' @param SEED Logical. If TRUE (default), set random seed for reproducibility
+#' @param pr Logical. If TRUE (default), print informational messages
+#' @param ... Additional arguments passed to the estimator function
+#'
+#' @return A list with components:
+#'   \item{test}{Test statistic for interaction}
+#'   \item{p.value}{Bootstrap p-value}
+#'   \item{crit.value}{Critical value}
+#'
+#' @details
+#' This function analyzes split-plot designs by computing difference scores among
+#' all pairs of dependent groups (Factor B levels) and testing whether these
+#' differences vary across the independent factor (Factor A levels).
+#'
+#' Data organization: For each subject, measurements at all K levels of Factor B
+#' are in the same row. Missing values are handled by listwise deletion within
+#' each level of Factor A.
+#'
+#' As of October 2014, the default estimator is tmean (trimmed mean).
+#'
+#' @seealso \code{\link{sppba}}, \code{\link{spp}}
+#'
+#' @export
 sppbi<-function(J,K,x,est=tmean,JK=J*K,grp=c(1:JK),nboot=500,SEED=TRUE,pr=TRUE,...){
-#
-# A percentile bootstrap for interactions
-# in a split-plot design.
-# The analysis is done by taking difference scores
-# among all pairs of dependent groups and seeing whether
-# these differences differ across levels of Factor A.
-#
-#  The R variable x is assumed to contain the raw
-#  data stored in list mode or in a matrix.
-#  If in list mode, x[[1]] contains the data
-#  for the first level of both factors: level 1,1.
-#  x[[2]] is assumed to contain the data for level 1 of the
-#  first factor and level 2 of the second: level 1,2
-#  x[[K]] is the data for level 1,K
-#  x[[K+1]] is the data for level 2,1, x[[2K]] is level 2,K, etc.
-#
-#  If the data are in a matrix, column 1 is assumed to
-#  correspond to x[[1]], column 2 to x[[2]], etc.
-#
-#
-#  When in list mode x is assumed to have length JK, the total number of
-#  groups being tested, but a subset of the data can be analyzed
-#  using grp
-#
 if(pr)print('As of Oct. 2014, argument est defaults to tmean')
        if(is.matrix(x)) {
                 y <- list()
@@ -2191,37 +3224,49 @@ sig.level<-1-sum(dv[bplus]>=dv[1:nboot])/nboot
 list(p.value=sig.level,psihat=tvec,con=con)
 }
 
+#' Percentile Bootstrap for Main Effects in Split-Plot Design
+#'
+#' @description
+#' Tests for main effects of the between-subjects factor (Factor A) in a J by K
+#' split-plot design using percentile bootstrap. Two analysis approaches are available.
+#'
+#' @param J Number of levels for Factor A (between-subjects factor)
+#' @param K Number of levels for Factor B (within-subjects factor)
+#' @param x Data in list mode (length J*K) or matrix (columns are groups).
+#'   Organization same as \code{sppbi}: x[[1]] through x[[K]] are for first level
+#'   of Factor A, x[[K+1]] through x[[2K]] for second level, etc.
+#' @param est Estimator function to use (default: tmean for trimmed mean)
+#' @param JK Total number of groups, J*K (default: J*K)
+#' @param grp Numeric vector specifying which groups to include (default: all groups)
+#' @param avg Logical. If TRUE (default), average K location measures for each level
+#'   of Factor A and test all pairwise differences. If FALSE, test K simultaneous
+#'   equalities (one for each level of Factor B).
+#' @param nboot Number of bootstrap samples (default: 500)
+#' @param SEED Logical. If TRUE (default), set random seed for reproducibility
+#' @param MC Logical. If TRUE, use parallel processing via mclapply (default: FALSE)
+#' @param MDIS Logical. Related to multivariate analysis (default: FALSE)
+#' @param pr Logical. If TRUE (default), print informational messages
+#' @param ... Additional arguments passed to the estimator function
+#'
+#' @return A list with components:
+#'   \item{p.value}{Bootstrap p-value for Factor A main effect}
+#'   \item{psihat}{Estimated contrasts}
+#'   \item{con}{Contrast matrix used}
+#'
+#' @details
+#' When avg=TRUE, the function averages the K location measures for each level of
+#' Factor A and tests whether all pairwise differences equal zero. When avg=FALSE,
+#' it tests K simultaneous hypotheses: for each level k of Factor B, whether
+#' theta_1k = ... = theta_Jk.
+#'
+#' Missing values are handled by listwise deletion within each level of Factor A.
+#' As of October 2014, the default estimator is tmean (trimmed mean).
+#'
+#' @seealso \code{\link{sppbi}}, \code{\link{spp}}
+#'
+#' @export
 sppba<-function(J,K,x,est=tmean,JK=J*K,grp=c(1:JK),avg=TRUE,nboot=500,SEED=TRUE,
 MC=FALSE,MDIS=FALSE,pr=TRUE,...){
-#
-# A percentile bootstrap for main effects
-# among independent groups in a split-plot design
-#
-# avg=T: The analysis is done by averaging K measures of
-# location for  each level of Factor A,
-# and then comparing averages by testing the hypothesis
-# that all pairwise differences are equal to zero.
-#
-# avg=F:   The analysis is done by testing whether $K$ equalities are
-# simultaneously true. For kth level of Factor B, the kth equality is
-# theta_{1k}= ... theta_{Jk}, k=1,...,K.
-#
-#  The R variable x is assumed to contain the raw
-#  data stored in list mode or in a matrix.
-#  If in list mode, x[[1]] contains the data
-#  for the first level of both factors: level 1,1.
-#  x[[2]] is assumed to contain the data for level 1 of the
-#  first factor and level 2 of the second: level 1,2
-#  x[[K]] is the data for level 1,K
-#  x[[K+1]] is the data for level 2,1, x[[2K]] is level 2,K, etc.
-#
-#  If the data are in a matrix, column 1 is assumed to
-#  correspond to x[[1]], column 2 to x[[2]], etc.
-#
-#  When in list mode x is assumed to have length JK, the total number of
-#  groups being tested, but a subset of the data can be analyzed
-#  using grp
-#
 if(pr)print('As of Oct. 2014 the argument est defaults to tmean')
        if(is.matrix(x)) {
                 y <- list()
@@ -2366,16 +3411,39 @@ sig.level<-1-sum(dv[bplus]>=dv[1:nboot])/nboot
 list(p.value=sig.level,psihat=tvec,con=con)
 }
 
+#' Multivariate ANOVA for Trimmed Means (Two Groups)
+#'
+#' @description
+#' Performs multivariate ANOVA (MANOVA) for two independent groups using trimmed
+#' means. Based on a generalization of the Yanagihara and Yuan (2005) approach
+#' to the multivariate Behrens-Fisher problem.
+#'
+#' @param x1 Matrix where rows are observations and columns are variables for group 1
+#' @param x2 Matrix where rows are observations and columns are variables for group 2
+#' @param tr Proportion to trim from each end (default: 0.2, meaning 20% from each tail)
+#'
+#' @return A list with components:
+#'   \item{test.stat}{Test statistic (F-statistic analog)}
+#'   \item{p.value}{p-value for the test}
+#'
+#' @details
+#' This function implements equation (2.7) from Yanagihara and Yuan (2005),
+#' "Three approximate solutions to the multivariate Behrens-Fisher problem,"
+#' Communications in Statistics--Simulation and Computation, 34, 975-988.
+#'
+#' The method extends the multivariate Behrens-Fisher test to trimmed means,
+#' allowing for heterogeneous covariance matrices between groups. Missing values
+#' are removed via listwise deletion.
+#'
+#' @references
+#' Yanagihara, H., & Yuan, K. H. (2005). Three approximate solutions to the
+#' multivariate Behrens-Fisher problem. Communications in Statistics--Simulation
+#' and Computation, 34, 975-988.
+#'
+#' @seealso \code{\link{MULtr.anova}}
+#'
+#' @export
 YYmanova<-function(x1,x2,tr=.2){
-#
-# Do MANOVA using generalization of
-# Yanagihara, H. \& Yuan, K. H. (2005).
-# Three approximate solutions to the
-#  multivariate Behrens-Fisher problem.  Communications in Statistics--
-# Simulation and Computation, 34, 975--988; see their eq. (2.7).
-#
-#  x1 and x2 are assumed to be matrices
-#
 x1=elimna(x1)
 x2=elimna(x2)
 s1=winall(x1,tr=tr)$cov
@@ -2408,19 +3476,40 @@ pv=1-pf(TF,p,nuhat)
 list(test.stat=TF,p.value=pv)
 }
 
+#' Multivariate ANOVA for Trimmed Means Using Johansen's Method
+#'
+#' @description
+#' Performs multivariate ANOVA (MANOVA) for J independent groups using trimmed
+#' means based on Johansen's method. Tests whether J groups have identical
+#' multivariate trimmed mean vectors.
+#'
+#' @param x Data in list mode where x[[j]] is an n_j by p matrix for group j,
+#'   or a matrix when J and p are specified (stored as expected by bwtrim)
+#' @param J Number of groups (NULL by default, required if x is a matrix)
+#' @param p Number of variables (NULL by default, required if x is a matrix)
+#' @param tr Proportion to trim from each end (default: 0.2, meaning 20% from each tail)
+#' @param alpha Significance level for critical value computation (default: 0.05)
+#'
+#' @return A list with components:
+#'   \item{test.stat}{Test statistic}
+#'   \item{crit.value}{Critical value at specified alpha level}
+#'
+#' @details
+#' When x is a list, length(x) = J (number of groups) and x[[j]] is an n_j by p
+#' matrix where p is the number of variables. When x is a matrix, both J and p
+#' must be specified.
+#'
+#' The method uses winsorized covariance matrices and weighted grand means. The
+#' test statistic follows an approximate chi-squared distribution with adjustment
+#' for trimmed data.
+#'
+#' To obtain a p-value, use the function \code{MULAOVp}. Missing values are
+#' removed via listwise deletion within each group.
+#'
+#' @seealso \code{\link{YYmanova}}, \code{\link{MULAOVp}}
+#'
+#' @export
 MULtr.anova<-function(x,J=NULL,p=NULL,tr=.2,alpha=.05){
-#
-#  Do Multivariate ANOVA with trimmed means using
-#  Johansen's method
-#
-#  x is assumed to have list mode with length(x)=J=number of groups and
-#  x[[j]] is an n_j-by-p  matrix, p is the number of variables.
-#
-#  x can also be a matrix when J and p are specified. It is assumed the data are stored in
-#   a matrix in the same manner expected by bwtrim.
-#
-#  To get a p-value, use the function MULAOVp
-#
 if(is.matrix(x) || is.data.frame(x)){
 if(is.null(J) && is.null(p))stop("Specify J or P")
 x=MAT2list(x,p=p,J=J)
@@ -2473,37 +3562,51 @@ test=test+W[[j]][k,m]*(groupm[[j]][m]-gmean[m])*(groupm[[j]][k]-gmean[k])
 list(test.stat=test,crit.value=crit)
 }
 
+#' Heteroscedastic One-Way ANOVA with Effect Size (Version 2)
+#'
+#' @description
+#' Performs a heteroscedastic one-way ANOVA for trimmed means using Welch's method
+#' and computes explanatory power and effect size. This is the recommended general
+#' version that handles both equal and unequal sample sizes. For unequal n, it
+#' calls \code{t1way.effect}.
+#'
+#' @param x Data in multiple formats: matrix (columns as groups if MAT=FALSE),
+#'   list (each element is a group), data frame, or vector (when IV is specified)
+#' @param tr Proportion to trim from each end (default: 0.2, meaning 20% from each tail)
+#' @param grp Numeric vector specifying subset of groups to compare. NA (default)
+#'   means all groups.
+#' @param MAT Logical. If FALSE (default), matrix columns are groups. If TRUE,
+#'   use lev.col and var.col to specify group and data columns.
+#' @param lev.col Column number indicating group levels when MAT=TRUE (default: 1)
+#' @param var.col Column number indicating data values when MAT=TRUE (default: 2)
+#' @param nboot Number of bootstrap samples for unequal n case (default: 100)
+#' @param SEED Logical. If TRUE (default), set random seed for reproducibility
+#' @param pr Logical. If TRUE (default), print informational messages
+#' @param IV Vector of group identifiers when x is a vector of all data (NULL by default)
+#' @param loc.fun Location function for computing group centers (default: median)
+#'
+#' @return A list with components:
+#'   \item{TEST}{Test statistic (F-statistic)}
+#'   \item{nu1}{Numerator degrees of freedom}
+#'   \item{nu2}{Denominator degrees of freedom}
+#'   \item{p.value}{p-value for the test}
+#'   \item{Var.Explained}{Proportion of variance explained (R-squared analog)}
+#'   \item{Effect.Size}{Effect size (square root of variance explained)}
+#'
+#' @details
+#' This is the recommended general-purpose function for one-way ANOVA with effect
+#' sizes. For equal sample sizes, the effect size is computed as the ratio of
+#' between-group to total winsorized variance. For unequal sample sizes, bootstrap
+#' resampling equalizes sample sizes before computing effect size.
+#'
+#' When IV is specified, x is treated as a vector containing all data and IV
+#' contains the corresponding group identifiers. Missing values are automatically
+#' removed.
+#'
+#' @seealso \code{\link{t1way}}, \code{\link{t1way.effect}}, \code{\link{t1wayF}}
+#'
+#' @export
 t1wayv2<-function(x,tr=.2,grp=NA,MAT=FALSE,lev.col=1,var.col=2,nboot=100,SEED=TRUE,pr=TRUE,IV=NULL,loc.fun=median){
-#
-# Same a t1way, but computes explanatory power and related effect size
-#
-# For n1!=n2, this function calls t1way.effect.
-#
-#  A heteroscedastic one-way ANOVA for trimmed means
-#  using a generalization of Welch's method.
-#
-#  The data are assumed to be stored in $x$ in a matrix or in list mode.
-#
-# MAT=F, if x is a matrix, columns correspond to groups.
-# if MAT=T, assumes argument
-# lev.col
-# indicates which column of x denotes the groups. And
-#  var.col indicates the column where the data are stored.
-#
-#  IV, if specified, taken to be the independent variable
-#      That is, the group id values
-#      and x is assumed to be a vector containing all of the data
-#
-# if x has list mode:
-#  length(x) is assumed to correspond to the total number of groups.
-#  By default, the null hypothesis is that all groups have a common mean.
-#  To compare a subset of the groups, use grp to indicate which
-#  groups are to be compared. For example, if you type the
-#  command grp<-c(1,3,4), and then execute this function, groups
-#  1, 3, and 4 will be compared with the remaining groups ignored.
-#
-#  Missing values are automatically removed.
-#
 if(SEED)set.seed(2)
 if(is.data.frame(x))x=as.matrix(x)
 if(MAT){
@@ -2575,6 +3678,40 @@ list(TEST=TEST,nu1=nu1,nu2=nu2,n=nv,p.value=sig,Explanatory.Power=e.pow,
 Effect.Size=sqrt(e.pow))
 }
 
+#' One-Way ANOVA for Medians Using Projection-Based Depth
+#'
+#' Tests the global hypothesis that J independent groups have equal medians.
+#' Performs well even when there are tied values, which is common with medians.
+#'
+#' @inheritParams common-params
+#'
+#' @return A list with components from \code{\link{pbadepth}}:
+#'   \item{test}{The test statistic.}
+#'   \item{p.value}{Bootstrap p-value.}
+#'   \item{est.1}{Estimates for first group vs all others.}
+#'   \item{est.2}{Estimates for second group vs all others.}
+#'   \item{...}{Additional estimates for each group.}
+#'
+#' @details
+#' This function is a wrapper for \code{pbadepth} that uses the Harrell-Davis
+#' estimator for medians. It is specifically designed to handle tied values,
+#' which frequently occur when comparing medians.
+#'
+#' The test uses projection-based depth and bootstrap resampling to generate
+#' the null distribution. The \code{op} parameter controls the number of
+#' outliers removed from each tail before analysis.
+#'
+#' @seealso \code{\link{Qanova}}, \code{\link{pbadepth}}, \code{\link{t1way}},
+#'   \code{\link{pbanova}}
+#'
+#' @export
+#' @examples
+#' # Three groups with tied values
+#' set.seed(123)
+#' x1 <- round(rnorm(30, mean=0))
+#' x2 <- round(rnorm(30, mean=0.5))
+#' x3 <- round(rnorm(30, mean=1))
+#' MEDanova(list(x1, x2, x3), nboot=500)
 MEDanova<-function(x,op=3,nboot=600,MC=FALSE,SEED=TRUE){
 #
 # Test global hypothesis that J independent groups
@@ -2588,6 +3725,43 @@ output=pbadepth(x,est=hd,allp=TRUE,SEED=SEED,op=op,nboot=nboot,MC=MC)
 output
 }
 
+#' One-Way ANOVA for Quantiles Using Projection-Based Depth
+#'
+#' Tests the global hypothesis that J independent groups have equal quantiles
+#' (default: medians). A generalization of \code{MEDanova} that works with any
+#' quantile. Performs well even when there are tied values.
+#'
+#' @inheritParams common-params
+#'
+#' @return A list with components from \code{\link{pbadepth}}:
+#'   \item{test}{The test statistic.}
+#'   \item{p.value}{Bootstrap p-value.}
+#'   \item{est.1}{Estimates for first group vs all others.}
+#'   \item{est.2}{Estimates for second group vs all others.}
+#'   \item{...}{Additional estimates for each group.}
+#'
+#' @details
+#' This function is a wrapper for \code{pbadepth} that uses the Harrell-Davis
+#' estimator for the qth quantile. It is specifically designed to handle tied
+#' values, which can occur when comparing quantiles.
+#'
+#' The test uses projection-based depth and bootstrap resampling. A warning is
+#' issued if any group has fewer than 20 observations, as Type I error control
+#' may be compromised with very small samples.
+#'
+#' @seealso \code{\link{MEDanova}}, \code{\link{pbadepth}}, \code{\link{t1way}}
+#'
+#' @export
+#' @examples
+#' # Compare medians (q=0.5) for three groups
+#' set.seed(123)
+#' x1 <- round(rnorm(30, mean=0))
+#' x2 <- round(rnorm(30, mean=0.5))
+#' x3 <- round(rnorm(30, mean=1))
+#' Qanova(list(x1, x2, x3), q=0.5, nboot=500)
+#'
+#' # Compare 75th percentiles
+#' Qanova(list(x1, x2, x3), q=0.75, nboot=500)
 Qanova<-function(x,q=.5,op=3,nboot=2000,MC=FALSE,SEED=TRUE){
 #
 # Test global hypothesis that J independent groups
@@ -2609,11 +3783,39 @@ output=pbadepth(x,est=hd,q=q,allp=TRUE,SEED=SEED,op=op,nboot=nboot,MC=MC,na.rm=T
 output
 }
 
+#' Bootstrap One-Way ANOVA for Trimmed Means Using Squared Ranks
+#'
+#' @description
+#' Performs one-way ANOVA for trimmed means with independent groups using a
+#' bootstrap method based on squared ranks. Method studied by Ozdemir et al.
+#'
+#' @param x Data in list mode (each element is a group) or matrix (columns are groups)
+#' @param alpha Significance level (default: 0.05)
+#' @param nboot Number of bootstrap samples (default: 599)
+#' @param tr Proportion to trim from each end (default: 0.2, meaning 20% from each tail)
+#' @param SEED Logical. If TRUE (default), set random seed for reproducibility
+#'
+#' @return A list with components:
+#'   \item{test.stat}{Test statistic}
+#'   \item{crit.value}{Bootstrap critical value at specified alpha}
+#'   \item{p.value}{Bootstrap p-value}
+#'
+#' @details
+#' This function uses the squared rank method with bootstrap resampling. Data
+#' are centered by their group trimmed means and bootstrap samples are drawn
+#' from the centered distributions. The test statistic is computed using
+#' \code{btsqrk}.
+#'
+#' Missing values are automatically removed. The method provides robust inference
+#' for comparing trimmed means across groups.
+#'
+#' @references
+#' Ozdemir et al. (method reference for squared rank bootstrap approach)
+#'
+#' @seealso \code{\link{t1waybt}}, \code{\link{t1way}}, \code{\link{btsqrk}}
+#'
+#' @export
 t1waybtsqrk<-function(x,alpha=.05,nboot=599,tr=0.2,SEED=TRUE){
-#
-#  One-way ANOVA for trimmed means, independent groups.
-#  Uses a method studied by Ozdemir et al.
-#
 if(SEED)set.seed(2)
 B=nboot
 if(is.matrix(x))x=listm(x)
@@ -2636,24 +3838,39 @@ pval<-mean(T<=TT,na.rm=TRUE)
 list(test.stat=T.test,crit.value=TT[b],p.value=pval)
 }
 
+#' ANOVA for Discrete/Categorical Data (Multinomial Distributions)
+#'
+#' @description
+#' Tests the global hypothesis that two or more independent groups have identical
+#' discrete (multinomial) distributions. Uses a generalization of the Storer-Kim
+#' method with bootstrap resampling.
+#'
+#' @param x Data in matrix form (rows are observations, columns are groups) or
+#'   list mode (each element is a group)
+#' @param nboot Number of bootstrap samples (default: 500)
+#' @param SEED Logical. If TRUE (default), set random seed for reproducibility
+#'
+#' @return A list with components:
+#'   \item{test}{Test statistic}
+#'   \item{p.value}{Bootstrap p-value}
+#'
+#' @details
+#' This method is designed for situations where sample sizes are relatively small
+#' and data are discrete/categorical. It can detect differences that might be
+#' missed when using only measures of location. Type I error control is excellent,
+#' even with n=10.
+#'
+#' The test uses multinomial resampling under the null hypothesis to generate
+#' the bootstrap distribution. For each category value, the function computes
+#' the variance of proportions across groups and sums these variances.
+#'
+#' As an alternative, consider using chi-squared test via \code{disc2.chi.sq}.
+#' This function requires the mc2d package for multinomial resampling.
+#'
+#' @seealso \code{\link{discANOVA.sub}}, \code{\link{disc2.chi.sq}}
+#'
+#' @export
 discANOVA<-function(x,nboot=500,SEED=TRUE){
-#
-#  Test the global hypothesis that for two or more independent groups,
-#  the corresponding discrete distributions are identical.
-#  That is, test the hypothesis that independent groups have identical
-#  multinomial distributions. A generalization of the Storer--Kim method is used.
-#
-#  Could also use a chi-squared test via the function: disc2.chi.sq
-#
-#  The method is designed for situations where the
-#  sample size is relatively small. The method can be sensitive to
-#  differences that are missed using a measure of location.
-#
-#  Control over the Type I error probability is excellent, even when n=10
-#
-#  x is a matrix with n rows and J columns
-#  or it can have list mode.
-#
 if(is.matrix(x) || is.data.frame(x))x=listm(x)
 library(mc2d)
 if(SEED)set.seed(2)
@@ -2686,9 +3903,31 @@ pv=1-mean(test>TB)-.5*mean(test==TB)
 list(test=test,p.value=pv)
 }
 
+#' Helper Function for discANOVA
+#'
+#' @description
+#' Internal helper function for \code{discANOVA} that computes the test statistic
+#' and proportion matrix for discrete/categorical data.
+#'
+#' @param x Data in list mode where each element is a group
+#'
+#' @return A list with components:
+#'   \item{test}{Test statistic (sum of variances across categories)}
+#'   \item{C1}{K by J matrix of proportions, where K is number of unique values
+#'     and J is number of groups}
+#'
+#' @details
+#' This function computes proportions for each unique value in each group,
+#' then calculates the variance of proportions across groups for each unique
+#' value. The test statistic is the sum of these variances.
+#'
+#' Missing values are removed. This is an internal function primarily called
+#' by \code{discANOVA}.
+#'
+#' @seealso \code{\link{discANOVA}}
+#'
+#' @export
 discANOVA.sub<-function(x){
-#
-#
 x=lapply(x,elimna)
 vals=lapply(x,unique)
 vals=sort(elimna(unique(list2vec(vals))))
@@ -2708,17 +3947,34 @@ for(i in 1:K)test=test+var(C1[i,])
 list(test=test,C1=C1)
 }
 
+#' Nested ANOVA for Trimmed Means (Design A)
+#'
+#' @description
+#' Performs a J-by-K nested ANOVA for trimmed means. Factor B is nested within
+#' Factor A. For each level of Factor A, computes trimmed means for each level
+#' of Factor B, then performs ANOVA on these trimmed means.
+#'
+#' @param x Data in list mode with length J. Each x[[j]] is a matrix with n_j
+#'   rows and K columns, where rows are observations and columns are levels of
+#'   Factor B nested within level j of Factor A.
+#' @param tr Proportion to trim from each end (default: 0.2, meaning 20% from each tail)
+#'
+#' @return Result from \code{t1way}: a list with test statistic, degrees of freedom,
+#'   and p-value
+#'
+#' @details
+#' This function implements a nested design where Factor B is nested within
+#' Factor A. The strategy is: for each fixed level of Factor A (j=1,...,J),
+#' compute the trimmed mean for each of the K levels of Factor B. These J*K
+#' trimmed means become the units of analysis in a one-way ANOVA.
+#'
+#' Data structure: x must be a list of length J. Each element x[[j]] is a matrix
+#' where rows are observations and columns correspond to the K levels of Factor B.
+#'
+#' @seealso \code{\link{anova.nestAP}}, \code{\link{t1way}}
+#'
+#' @export
 anova.nestA<-function(x,tr=.2){
-#
-# J-by-K  nested ANOVA
-#  x is assumed to have list mode with length J.
-#  x[[j]] is assumed to be a matrix with n_j rows and K columns
-#   j=1, ..., J
-#
-# Strategy: For fixed level of factor A compute trimmed mean for each
-# level of factor B and use these trimmed means as the unit of analysis
-#  That is, perform an ANOVA using these trimmed means
-#
 if(!is.list(x))stop('x should have list mode')
 y=list()
 J=length(x)
@@ -2727,15 +3983,34 @@ res=t1way(y,tr=tr)
 res
 }
 
+#' Nested ANOVA for Trimmed Means with Pooled Data (Design AP)
+#'
+#' @description
+#' Performs a J-by-K nested ANOVA for trimmed means where Factor B is nested
+#' within Factor A. Pools all data within each level of Factor A (across all
+#' levels of Factor B) before performing ANOVA.
+#'
+#' @param x Data in list mode with length J. Each x[[j]] is a matrix with n_j
+#'   rows and K columns, where rows are observations and columns are levels of
+#'   Factor B nested within level j of Factor A.
+#' @param tr Proportion to trim from each end (default: 0.2, meaning 20% from each tail)
+#'
+#' @return Result from \code{t1way}: a list with test statistic, degrees of freedom,
+#'   and p-value
+#'
+#' @details
+#' Unlike \code{anova.nestA}, which computes trimmed means separately for each
+#' level of Factor B, this function pools all observations within each level of
+#' Factor A (vectorizing the matrix across all K levels of Factor B) and then
+#' performs a one-way ANOVA on these J pooled groups.
+#'
+#' Data structure: x must be a list of length J. Each element x[[j]] is a matrix
+#' that gets converted to a vector for the analysis.
+#'
+#' @seealso \code{\link{anova.nestA}}, \code{\link{t1way}}
+#'
+#' @export
 anova.nestAP<-function(x,tr=.2){
-#
-# J-by-K  nested ANOVA
-#  x is assumed to have list mode with length J.
-#  x[[j]] is assumed to be a matrix with n_j rows and K columns
-#   j=1, ..., J
-#
-#  pool data for each level of A and do anova
-#
 if(!is.list(x))stop('x should have list mode')
 y=list()
 J=length(x)
@@ -2744,10 +4019,36 @@ res=t1way(y,tr=tr)
 res
 }
 
+#' Two-Way ANOVA for Medians with Tied Values
+#'
+#' @description
+#' Performs a J by K two-way ANOVA for medians using projection-based depth.
+#' Handles tied values well, which commonly occur with median-based analyses.
+#'
+#' @param J Number of levels for Factor A
+#' @param K Number of levels for Factor B
+#' @param x Data in list mode (length J*K) or matrix (columns are groups)
+#' @param alpha Significance level (default: 0.05)
+#' @param nboot Number of bootstrap samples (default: 2000)
+#' @param MC Logical. If TRUE, use parallel processing via mclapply (default: FALSE)
+#'
+#' @return A list with components:
+#'   \item{Fac.A}{Results for Factor A main effect (from pbadepth)}
+#'   \item{Fac.B}{Results for Factor B main effect (from pbadepth)}
+#'   \item{Fac.AB}{Results for A*B interaction (from pbadepth)}
+#'
+#' @details
+#' This function uses the Harrell-Davis estimator for medians with projection-based
+#' depth testing. It generates contrasts for main effects and interaction using
+#' \code{con2way}, then tests each effect using \code{pbadepth}.
+#'
+#' A warning is issued if any group has fewer than 20 observations, as Type I
+#' error control may be compromised. Total number of groups must equal J*K.
+#'
+#' @seealso \code{\link{Q3anova}}, \code{\link{pbadepth}}, \code{\link{con2way}}
+#'
+#' @export
 Q2anova<-function(J,K,x,alpha=.05,nboot=2000,MC=FALSE){
-#
-#  Two-way ANOVA for medians, tied values allowed.
-#
 if(is.matrix(x)|| is.data.frame(x))x=listm(x)
 if(J*K != length(x))stop('Total number of groups is not equal to JK')
 chkcar=NA
@@ -2763,10 +4064,42 @@ AB=pbadepth(x,est=hd,con=con$conAB,alpha=alpha,nboot=nboot,MC=MC)
 list(Fac.A=A,Fac.B=B,Fac.AB=AB)
 }
 
+#' Three-Way ANOVA for Medians with Tied Values
+#'
+#' @description
+#' Performs a J by K by L three-way ANOVA for medians using projection-based depth.
+#' Handles tied values well, which commonly occur with median-based analyses.
+#'
+#' @param J Number of levels for Factor A
+#' @param K Number of levels for Factor B
+#' @param L Number of levels for Factor C
+#' @param x Data in list mode (length J*K*L) or matrix (columns are groups)
+#' @param alpha Significance level (default: 0.05)
+#' @param nboot Number of bootstrap samples (default: 600)
+#' @param MC Logical. If TRUE, use parallel processing via mclapply (default: FALSE)
+#'
+#' @return A list with components:
+#'   \item{Fac.A}{Results for Factor A main effect}
+#'   \item{Fac.B}{Results for Factor B main effect}
+#'   \item{Fac.C}{Results for Factor C main effect}
+#'   \item{Fac.AB}{Results for A*B interaction}
+#'   \item{Fac.AC}{Results for A*C interaction}
+#'   \item{Fac.BC}{Results for B*C interaction}
+#'   \item{Fac.ABC}{Results for A*B*C three-way interaction}
+#'
+#' @details
+#' This function extends \code{Q2anova} to three-way designs. It uses the
+#' Harrell-Davis estimator for medians with projection-based depth testing.
+#' Contrasts for all main effects and interactions are generated using
+#' \code{con3way}, then tested using \code{pbadepth}.
+#'
+#' A warning is issued if any group has fewer than 20 observations, as Type I
+#' error control may be compromised. Total number of groups must equal J*K*L.
+#'
+#' @seealso \code{\link{Q2anova}}, \code{\link{pbadepth}}, \code{\link{con3way}}
+#'
+#' @export
 Q3anova<-function(J,K,L,x,alpha=.05,nboot=600,MC=FALSE){
-#
-#  Three-way ANOVA for medians, tied values allowed.
-#
 if(is.matrix(x)|| is.data.frame(x))x=listm(x)
 if(J*K*L != length(x))stop('Total number of groups is not equal to JKL')
 chkcar=NA
@@ -2786,11 +4119,38 @@ ABC=pbadepth(x,est=hd,con=con$conABC,alpha=alpha,nboot=nboot,MC=MC)
 list(Fac.A=A,Fac.B=B,Fac.C=C,Fac.AB=AB,Fac.AC=AC,Fac.BC=BC,Fac.ABC=ABC)
 }
 
+#' Brunner-Dette-Munk Test for One-Way Design
+#'
+#' @description
+#' Tests the null hypothesis from Brunner et al. (2016) for a one-way design
+#' using the rankFD package. Tests for differences in distributions across
+#' independent groups.
+#'
+#' @param x Data in list mode (each element is a group) or matrix (columns are groups)
+#'
+#' @return A list with components:
+#'   \item{test.stat}{ANOVA-type test statistic}
+#'   \item{df1}{Numerator degrees of freedom}
+#'   \item{df2}{Denominator degrees of freedom}
+#'   \item{p.value}{p-value for the test}
+#'   \item{q.hat}{Estimated relative effects from \code{bdm}}
+#'
+#' @details
+#' This function implements the method from Brunner et al. (2016) for testing
+#' the null hypothesis H0p (purely nonparametric hypothesis). It uses rank-based
+#' methods via the rankFD package.
+#'
+#' The function converts list data to a data frame with group indicators and
+#' calls \code{rankFD} with hypothesis='H0p'. It also computes relative effects
+#' using the \code{bdm} function.
+#'
+#' @references
+#' Brunner et al. (2016). [Complete reference for the BDM method]
+#'
+#' @seealso \code{\link{bdm}}
+#'
+#' @export
 bdmP<-function(x){
-#
-# Test the null hypothesis in Bruner et al. (2016)
-# for a one-way design
-#
 if(is.matrix(x))x=listm(x)
 J=length(x)
 library(rankFD)
@@ -2809,10 +4169,35 @@ w=as.vector(res$ANOVA.Type.Statistic)
 list(test.stat=w[1],df1=w[2],df2=w[3],p.value=w[4],q.hat=bdm(x)$q.hat)
 }
 
+#' Bootstrap Brown-Forsythe ANOVA
+#'
+#' @description
+#' Performs one-way ANOVA using a bootstrap version of the Brown-Forsythe test.
+#' Provides robust inference for heteroscedastic data.
+#'
+#' @param x Data in list mode (each element is a group), matrix, or data frame
+#' @param nboot Number of bootstrap samples (default: 1000)
+#' @param SEED Logical. If TRUE (default), set random seed for reproducibility
+#'
+#' @return A list with components:
+#'   \item{test.stat}{Brown-Forsythe test statistic}
+#'   \item{p.value}{Bootstrap p-value}
+#'
+#' @details
+#' This function implements a bootstrap version of the Brown-Forsythe ANOVA,
+#' which is robust to heterogeneous variances. Data are centered by their group
+#' means, and bootstrap samples are drawn from the centered distributions.
+#'
+#' The test statistic is computed using \code{BFANOVA}. Bootstrap resampling
+#' generates the null distribution, and the p-value is the proportion of bootstrap
+#' statistics at least as large as the observed statistic.
+#'
+#' Missing values are automatically removed.
+#'
+#' @seealso \code{\link{BFANOVA}}, \code{\link{t1way}}
+#'
+#' @export
 BFBANOVA<-function(x,nboot=1000,SEED=TRUE){
-#
-#  One-way ANOVA bootstrap version of Brown-Forsyhte
-#
 if(SEED)set.seed(2)
 if(is.data.frame(x))x=as.matrix(x)
 if(is.matrix(x))x<-listm(x)
@@ -2832,12 +4217,40 @@ pval<-mean(TV<=TT,na.rm=TRUE)
 list(test.stat=TV,p.value=pval)
 }
 
+#' Brown-Forsythe ANOVA
+#'
+#' @description
+#' Performs Brown-Forsythe one-way ANOVA, which is robust to heterogeneous
+#' variances. Can be generalized to trimmed means (though performance of trimmed
+#' version is not well established).
+#'
+#' @param x Data in list mode (each element is a group), matrix, or data frame
+#'
+#' @return A list with components:
+#'   \item{test.statistic}{Brown-Forsythe F-statistic}
+#'   \item{df1}{Numerator degrees of freedom}
+#'   \item{df2}{Denominator degrees of freedom}
+#'   \item{p.value}{p-value from F-distribution}
+#'
+#' @details
+#' The Brown-Forsythe test is a modification of the classical ANOVA F-test that
+#' provides better control of Type I error rates when variances are heterogeneous.
+#' It uses weighted group means with weights inversely proportional to group
+#' variances.
+#'
+#' The test statistic is: FS = sum(n*(ybar-YB)^2) / sum((1-n/N)*v)
+#' where n are group sizes, ybar are group means, YB is the grand mean, v are
+#' group variances, and N is total sample size.
+#'
+#' Note: While this can be generalized to trimmed means, the performance of such
+#' generalization is not well established.
+#'
+#' Missing values are automatically removed.
+#'
+#' @seealso \code{\link{BFBANOVA}}, \code{\link{t1way}}
+#'
+#' @export
 BFANOVA<-function(x){
-#
-#  Brown-Forsyhte ANOVA, generalized to trimmed means
-#
-#  (Not known whether a generalization to trimmed means performs relatively well.)
-#
 if(is.data.frame(x))x=as.matrix(x)
 if(is.matrix(x))x<-listm(x)
 J=length(x)
@@ -2864,12 +4277,43 @@ pv=1-pf(FS,df1,df2)
 list(test.statistic=FS,df1=df1,df2=df2,p.value=pv)
 }
 
+#' Confidence Interval for Explanatory Effect Size in One-Way ANOVA
+#'
+#' @description
+#' Computes a bootstrap confidence interval for the explanatory measure of effect
+#' size in one-way ANOVA. Provides interval estimate for the proportion of
+#' variance explained.
+#'
+#' @param x Data in list mode (each element is a group), matrix, or data frame
+#' @param alpha Significance level for confidence interval (default: 0.05 for 95% CI)
+#' @param tr Proportion to trim from each end (default: 0, no trimming)
+#' @param nboot Number of bootstrap samples (default: 500)
+#' @param SEED Logical. If TRUE (default), set random seed for reproducibility
+#' @param ITER Number of iterations for unequal sample sizes (default: 5).
+#'   Passed to yuenv2 for iteration to get estimate.
+#' @param adj Logical. If TRUE (default), apply bias correction adjustment for
+#'   number of groups (available for J <= 8)
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return A list with components:
+#'   \item{Effect.Size}{Point estimate of effect size (possibly adjusted)}
+#'   \item{ci}{Vector of length 2 containing lower and upper confidence limits}
+#'
+#' @details
+#' This function uses bootstrap resampling to construct a confidence interval
+#' for the explanatory effect size from \code{t1wayv2}. If the omnibus test is
+#' not significant at level alpha, the lower confidence limit is set to 0.
+#'
+#' When adj=TRUE and J <= 8, a bias correction factor is applied based on the
+#' number of groups. The correction factors are: c(1, 1.268757, 1.467181,
+#' 1.628221, 1.763191, 1.856621, 1.993326) for J-1 = 1 through 7.
+#'
+#' Missing values are automatically removed.
+#'
+#' @seealso \code{\link{t1wayv2}}, \code{\link{KS.ANOVA.ES}}
+#'
+#' @export
 t1way.EXES.ci<-function(x,alpha=.05,tr=0,nboot=500,SEED=TRUE,ITER=5,adj=TRUE,...){
-#
-# Confidence interval for explanatory measure of effect size
-#
-#  ITER:  yuenv2, for unequal sample sizes.  iterates to get estimate
-#
 if(is.data.frame(x))x=as.matrix(x)
 if(is.matrix(x))x=listm(x)
 J=length(x)
@@ -2902,15 +4346,39 @@ ci=fix[J1]*ci
 list(Effect.Size=chk$Effect.Size,ci=ci)
 }
 
+#' Kulinskaya-Staudte Effect Size for One-Way ANOVA
+#'
+#' @description
+#' Computes a measure of effect size for J independent groups based on a variation
+#' of the Kulinskaya and Staudte (2005) method. Provides a standardized measure
+#' of group differences.
+#'
+#' @param x Data in list mode (each element is a group), matrix, or data frame
+#' @param tr Proportion to trim from each end (default: 0.2, meaning 20% from each tail)
+#' @param adj Logical. If TRUE (default), rescale so that under a location shift
+#'   in one group only (assuming normality), the magnitude approximately matches
+#'   the magnitude when J=2 groups
+#'
+#' @return Numeric effect size value
+#'
+#' @details
+#' The effect size is computed as: es = (J/2) * sqrt(sum(q*(m-gmean)^2/v))
+#' where q are sample size proportions, m are trimmed means, gmean is the grand
+#' mean, and v are winsorized variances.
+#'
+#' When adj=TRUE and J <= 8, a scaling adjustment is applied to make effect sizes
+#' comparable across different numbers of groups. The adjustment factors are:
+#' c(1, 0.3832, 0.3086, 0.2689, 0.2427, 0.2230, 0.2067) for J-1 = 1 through 7.
+#'
+#' Missing values are automatically removed.
+#'
+#' @references
+#' Kulinskaya, E., & Staudte, R. G. (2005). [Complete reference]
+#'
+#' @seealso \code{\link{t1way.EXES.ci}}, \code{\link{anova.KMS.ND}}
+#'
+#' @export
 KS.ANOVA.ES<-function(x,tr=0.2,adj=TRUE){
-#
-#  J independent groups. Compute a measure of effect size
-#  based on a slight variation of a method in
-#  Kulinskaya and Staudte (2005)
-#
-# adj=TRUE:rescale so that under a shift of location in one group only, assuming normality, the
-# magnitude matches, approximately, the magnitude when there are J=2 groups
-#
 if(is.data.frame(x))x=as.matrix(x)
 if(is.matrix(x))x=listm(x)
 J=length(x)
@@ -2933,10 +4401,34 @@ else es=fix[J1]*es
 es
 }
 
+#' Generate Null Distribution for KMS ANOVA
+#'
+#' @description
+#' Generates the null distribution for the Kulinskaya-Staudte (KMS) ANOVA effect
+#' size measure. Used for hypothesis testing with \code{anova.KMS}.
+#'
+#' @param n Vector of sample sizes for each group
+#' @param tr Proportion to trim from each end (default: 0.2, meaning 20% from each tail)
+#' @param iter Number of iterations for simulation (default: 5000)
+#' @param nulldist Placeholder parameter for null distribution (currently unused in function body)
+#' @param SEED Logical. If TRUE (default), set random seed for reproducibility
+#'
+#' @return Numeric vector of length iter containing simulated effect sizes under
+#'   the null hypothesis
+#'
+#' @details
+#' This function simulates data under the null hypothesis of no group differences
+#' by generating samples from a g-and-h distribution (with g=0.75) for each group.
+#' For each iteration, it computes the KMS effect size using \code{KS.ANOVA.ES}.
+#'
+#' The resulting vector can be used to determine critical values or p-values for
+#' observed KMS effect sizes. The g-and-h distribution with g=0.75 provides a
+#' flexible distribution for the null.
+#'
+#' @seealso \code{\link{KS.ANOVA.ES}}, \code{\link{anova.KMS}}
+#'
+#' @export
 anova.KMS.ND<-function(n,tr=.2,iter=5000,nulldist=nulldist,SEED=TRUE){
-#
-# Null distribution for anova.KMS
-#
 if(SEED)set.seed(2)
 v=NA
 dat=list()
@@ -2948,13 +4440,40 @@ v[i]=KS.ANOVA.ES(dat,tr=tr)
 v
 }
 
+#' Plot KMS Effect Size Curve for 2x2 Design with Covariate
+#'
+#' @description
+#' For a 2-by-2 design with a covariate, plots the KMS measure of effect size
+#' associated with the two levels of the first factor as a function of the
+#' covariate. Visualizes interaction effects.
+#'
+#' @param x List of length 4 containing covariate values for each of the four groups
+#' @param y List of length 4 containing response values for each of the four groups
+#' @param pts Vector of covariate values at which to evaluate effect size
+#'   (NULL = use deciles from 10th to 90th percentile)
+#' @param SW Logical. If TRUE, switch rows and columns (default: FALSE)
+#' @param npts Number of points to use if pts is NULL (default: 15)
+#' @param xlab Label for x-axis (default: 'X')
+#' @param ylab Label for y-axis (default: 'Effect.Size')
+#'
+#' @return Creates a plot (no return value)
+#'
+#' @details
+#' This function compares KMS effect sizes for the two levels of the first factor
+#' in a 2x2 design, conditional on covariate values. For each point on the covariate,
+#' it computes effect sizes using \code{ancova.KMS} and plots the difference.
+#'
+#' The function expects exactly 4 groups in both x and y. Missing values are
+#' removed pairwise. When SW=TRUE, the groups are reordered as c(1,3,2,4) to
+#' switch the factor levels.
+#'
+#' The plot shows v1-v2 where v1 and v2 are effect sizes for the two levels of
+#' Factor A.
+#'
+#' @seealso \code{\link{t2way.KMS.interbt}}, \code{\link{ancova.KMS}}
+#'
+#' @export
 t2way.KMS.curve<-function(x,y,pts=NULL,SW=FALSE,npts=15,xlab='X',ylab='Effect.Size'){
-#
-# For a 2-by-2 design, compare
-# KMS measure of effect size  associated with the two levels of the first factor
-#    plots  an interaction effect when there is a covariate.
-#
-#  SW=TRUE, switches rows and column
 
 if(is.matrix(x) || is.data.frame(x))x=listm(x)
 if(is.matrix(y) || is.data.frame(y))y=listm(y)
@@ -2989,13 +4508,45 @@ plot(pts,v,xlab=xlab,ylab=ylab,type='n')
 lines(pts,v)
 }
 
+#' Bootstrap Test for KMS Interaction Effect in 2x2 Design with Covariate
+#'
+#' @description
+#' For a 2-by-2 design with a covariate, tests for interaction effects by comparing
+#' KMS effect sizes associated with the two levels of the first factor using
+#' bootstrap resampling.
+#'
+#' @param x List of length 4 containing covariate values for each of the four groups
+#' @param y List of length 4 containing response values for each of the four groups
+#' @param pts Vector of covariate values at which to evaluate effect size
+#'   (NULL = use deciles from 10th to 90th percentile)
+#' @param alpha Significance level (default: 0.05)
+#' @param nboot Number of bootstrap samples (default: 100)
+#' @param MC Logical. If TRUE, use parallel processing via mclapply (default: FALSE)
+#' @param SEED Logical. If TRUE (default), set random seed for reproducibility
+#' @param SW Logical. If TRUE, switch rows and columns (default: FALSE)
+#'
+#' @return A list with components:
+#'   \item{test}{Test statistic}
+#'   \item{p.value}{Bootstrap p-value}
+#'   \item{crit.value}{Bootstrap critical value at alpha level}
+#'   \item{pts}{Covariate points used in analysis}
+#'
+#' @details
+#' This function tests for interactions in a 2x2 design with a covariate by
+#' comparing KMS effect sizes. For each covariate value, it computes the difference
+#' in effect sizes between the two levels of Factor A using \code{ancova.KMS}.
+#'
+#' Bootstrap resampling generates the null distribution. The function expects
+#' exactly 4 groups in both x and y. Missing values are removed pairwise.
+#' When SW=TRUE, groups are reordered as c(1,3,2,4).
+#'
+#' The test uses the helper function \code{t2way.KMS.inter.sub} for bootstrap
+#' computations.
+#'
+#' @seealso \code{\link{t2way.KMS.curve}}, \code{\link{t2way.KMS.inter.sub}}, \code{\link{ancova.KMS}}
+#'
+#' @export
 t2way.KMS.interbt<-function(x,y,pts=NULL,alpha=.05,nboot=100,MC=FALSE,SEED=TRUE,SW=FALSE){
-#
-# For a 2-by-2 design, compare
-# KMS measure of effect size  associated with the two levels of the first factor
-#    to get an interaction effect when there is a covariate.
-#
-#  SW=TRUE, switches rows and column
 
 if(SEED)set.seed(2)
 if(is.matrix(x) || is.data.frame(x))x=listm(x)
@@ -3074,6 +4625,29 @@ n=as.vector(n)
 list(n=nn,Results=Results)
 }
 
+#' Helper Function for Two-Way KMS Interaction Bootstrap
+#'
+#' @description
+#' Internal helper function for \code{t2way.KMS.interbt} that extracts KMS effect
+#' sizes from ANCOVA analysis. Used in bootstrap computations.
+#'
+#' @param z Matrix with 4 columns: covariate and response for two groups
+#' @param pts Vector of covariate values at which to evaluate effect size
+#'
+#' @return Numeric vector of effect size estimates (second column from ancova.KMS results)
+#'
+#' @details
+#' This function is called internally by \code{t2way.KMS.interbt} during bootstrap
+#' resampling. It expects z to be a matrix where columns 1 and 2 contain the
+#' covariate and response for the first group, and columns 3 and 4 contain the
+#' covariate and response for the second group.
+#'
+#' The function calls \code{ancova.KMS} with plotit=FALSE and extracts the second
+#' column of results, which contains the effect size estimates.
+#'
+#' @seealso \code{\link{t2way.KMS.interbt}}, \code{\link{ancova.KMS}}
+#'
+#' @export
 t2way.KMS.inter.sub<-function(z,pts){
 ancova.KMS(z[,1],z[,2],z[,3],z[,4],pts=pts,plotit=FALSE)[,2]
 }
