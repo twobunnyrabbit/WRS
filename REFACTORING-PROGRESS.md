@@ -86,7 +86,7 @@
 - **Duplicate functions**: 0 (was 1,171, all resolved) ✅
 - **Total size**: ~2.4 MB across 20 modular files (was 4.4 MB before deduplication)
 - **Library calls optimized**: 325 removed, 233 remain (58% reduction) ✅
-- **Roxygen2 documentation**: 508 of ~1,500 functions (33.9%) 🔄
+- **Roxygen2 documentation**: 538 of ~1,500 functions (35.9%) 🔄
   - common-params.R created ✅
   - 00-utils-core.R: 53/53 (100%) ✅
   - location.R: 71/71 (100%) ✅
@@ -95,14 +95,14 @@
   - two-sample.R: 88/88 (100%) ✅
   - anova.R: 52/52 (100%) ✅
   - correlation.R: 82/82 (100%) ✅
-  - ancova.R: 69/125 (55.2%) 🔄
+  - ancova.R: 99/125 (79.2%) 🔄
 - **Status**: All 20 modules source successfully ✅
 - **Backward compatibility**: 100% maintained (23/23 tests pass) ✅
 
 ### Recently Completed (2025-12-31)
 
 **Phase 3 Week 8 - Advanced Analysis Module Documentation - IN PROGRESS** 🔄:
-- 🔄 Continued ancova.R documentation (69/125 functions, 55.2%) - **Major Progress!**
+- 🔄 Continued ancova.R documentation (99/125 functions, 79.2%) - **Excellent Progress!**
   - **Session 1**: Added 9 high-priority user-facing functions
     - Core ANCOVA variants: ancovaG, ancovam, ancovamp, ancovampG, ancovaV2
     - KMS effect size methods: ancova.KMS, ancova.KMSci, ancova.KMS.plot
@@ -112,13 +112,19 @@
     - ✅ Theil-Sen methods (4): ancts, anctsmcp, anctsmp, anctspb
     - ✅ Dependent effect sizes (2): ancovad.ES, ancovad.ESci
     - ✅ Other priority functions (4): ancpar, anc.plot.es, ancsm, anctgen
-- ⏳ Remaining in ancova.R: 56 functions (44.8%)
-  - Priority: Dependent measures ANCOVA (Danc*), specialized helper functions
-  - Additional: Detection methods, grid methods, parametric bootstrap variants
+  - **Session 3**: Added 13 dependent measures ANCOVA functions
+    - ✅ Effect size summaries (1): Dancova.ES.sum
+    - ✅ Multivariate dependent ANCOVA (2): Dancovamp, Dancovapb
+    - ✅ Specified points & improved methods (3): Dancovapts, DancovaV2, DancGLOBv2
+    - ✅ Theil-Sen dependent ANCOVA (3): Dancts, Danctspb, DanctspbMC
+    - ✅ OLS & specialized methods (4): Dancols, DancCR, Dancdet, Danc.grid
+- ⏳ Remaining in ancova.R: 26 functions (20.8%)
+  - Mostly helper/internal functions: DancGLOB helpers, Dancols helpers
+  - DEP* functions, QS* helpers, rmanc* functions, SE bootstrap helpers
 - ⏳ regression.R: 0/84 functions (0%)
 - ⏳ mcp.R: 0/98 functions (0%)
 - ⏳ covariance.R: 0/37 functions (0%)
-- 📊 Total Week 8 Progress: 37/344 functions documented (10.8%)
+- 📊 Total Week 8 Progress: 67/344 functions documented (19.5%)
 
 **Phase 3 Week 7 - Main Analysis Module Documentation - COMPLETE** ✅:
 - ✅ Completed bootstrap.R documentation (27/27 functions, 100%)
@@ -942,4 +948,4 @@ When resuming work:
 
 ---
 
-*Last updated: 2025-12-31 - Phase 3 Week 8 IN PROGRESS 🔄 (Phase 2 complete: 325 library() calls removed, 1,171 duplicates resolved. Phase 3: 508/~1,500 functions documented [33.9%]. Weeks 6-7 complete: 7 modules fully documented. Week 8 in progress: ancova.R 69/125 [55.2%] - documented high-priority user-facing functions including two-covariate methods (ancovap2.*), Theil-Sen ANCOVA (ancts*), dependent effect sizes (ancovad.*), and other priority functions (ancpar, anc.plot.es, ancsm, anctgen). Remaining: 56 ancova.R functions (priority: Danc* dependent measures) + 275 other module functions. All 23 backward compatibility tests passing, 100% compatible.)*
+*Last updated: 2025-12-31 - Phase 3 Week 8 IN PROGRESS 🔄 (Phase 2 complete: 325 library() calls removed, 1,171 duplicates resolved. Phase 3: 538/~1,500 functions documented [35.9%]. Weeks 6-7 complete: 7 modules fully documented. Week 8 in progress: ancova.R 99/125 [79.2%] - Session 3 completed all major dependent measures ANCOVA functions (Danc*): 13 functions including Dancova.ES.sum, Dancovamp, Dancovapb, Dancovapts, DancovaV2, DancGLOBv2, Dancts, Danctspb, DanctspbMC, Dancols, DancCR, Dancdet, Danc.grid. Remaining: 26 ancova.R functions (mostly helpers) + 245 other module functions. All 23 backward compatibility tests passing, 100% compatible.)*
