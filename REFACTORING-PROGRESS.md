@@ -176,38 +176,56 @@
 
 ### Next Steps (For Next Session)
 
-**Phase 3, Week 8: Continue Advanced Analysis Module Documentation** 🔄
-1. **Continue ancova.R** (88/125 functions remaining, 70.4%)
-   - High priority user-facing functions (~30):
-     - ✅ Core ANCOVA variants: ancovaG, ancovam, ancovamp, ancovampG, ancovaV2 COMPLETED
-     - ✅ KMS methods: ancova.KMS, ancova.KMSci, ancova.KMS.plot COMPLETED
-     - ✅ Effect sizes: ancova.ES COMPLETED
-     - ⏳ Two-covariate methods: ancovap2.KMS, ancovap2.KMSci, ancovap2.KMS.plot
-     - ⏳ Theil-Sen methods: ancts, anctsmcp, anctsmp, anctspb
-     - ⏳ Effect size variants: ancovad.ES, ancovad.ESci, anc.ES.sum
-     - ⏳ Other: ancsm, anctgen, anc.plot.es, ancpar, ancpb
-   - Dependent/repeated measures functions (~20):
-     - All Danc* functions: Dancova, Dancovamp, Dancdet, DancGLOB, Dancols, Dancts, Danctspb, etc.
-   - Specialized & helper functions (~38):
-     - Detection: ancdet, ancdet2C, ancdetM4 and helpers
-     - Grid methods: anc.grid, anc.grid.bin
-     - Linear methods: anclin, anclin.QS variants
-     - Multiple groups: ancmg, ancmg1 and variants
-     - Helper functions: DEPanc, oancpb, Qanc*, QS.anc*, rmanc.best*, CLASSanc, etc.
+**Phase 3, Week 8: Finish Advanced Analysis Module Documentation** 🔄
 
-2. **Document regression.R** (84 functions)
-   - Theil-Sen, LTS, M-regression, outlier-pruned methods
-   - Regression inference, two-group comparisons
+**Current Status**: 538/~1,500 functions documented (35.9%)
 
-3. **Document mcp.R** (98 functions)
-   - Multiple comparison procedures
-   - Linear contrasts, factorial MCP, repeated measures
+1. **Finish ancova.R** (26/125 functions remaining, 20.8%)
+   - ✅ All major user-facing functions COMPLETED
+   - ✅ All dependent measures ANCOVA (Danc*) functions COMPLETED
+   - Remaining 26 functions are mostly helper/internal functions:
+     - **Helper functions for standard error bootstraps** (3):
+       - ancova.ES.SEpb, ancovad.ES.SEpb, ancovap2.KMS.SEpb
+     - **Internal p-value helpers** (2):
+       - ancovaV2.pv, ancovaV2pv.sub
+     - **DancGLOB helper functions** (2):
+       - DancGLOB_pv, DancGLOB_sub (2 duplicate definitions)
+     - **Dancols helper functions** (3):
+       - Dancols_sub, Dancols_sub1, Dancols_sub2
+     - **DEP helper functions** (2):
+       - DEPanc, DEPancpb
+     - **Quantile ANCOVA helpers** (4):
+       - Qancsm, QSanc, QS.ancbse, QS.ancbse.sub
+     - **Repeated measures ANCOVA helpers** (7):
+       - rmanc.best, rmanc.best.crit, rmanc.best.crit.det, rmanc.best.DO, rmanc.best.ex, rmanc.best.PV, rmanc.bestPB
+     - **Other helpers** (3):
+       - oancpb, CLASSanc
+   - **Estimated time**: 1 session to complete all remaining functions
 
-4. **Document covariance.R** (37 functions)
-   - Robust covariance estimation
-   - OGK, MVE, MCD, winsorized/trimmed covariance
+2. **Document regression.R** (84 functions, 0% complete)
+   - Theil-Sen regression: tsreg, tshdreg, tsregS
+   - LTS regression: ltsreg, ltssub
+   - M-regression: opreg, regpre
+   - Regression inference: regci, regtest, reg1way
+   - Two-group comparisons: reg2ci, ancova variants
+   - Quantile regression smoothers (in regression-advanced.R)
+   - **Estimated time**: 2-3 sessions
 
-**Phase 3 Progress**: 508/~1,500 functions documented (33.9%)
+3. **Document mcp.R** (98 functions, 0% complete)
+   - Linear contrasts: linconb, linconpb, linconbt
+   - Factorial MCP: mcp2a, mcp2atm, mcp3atm
+   - Repeated measures: rmmcp, wmcp, rmmcppb
+   - Between-within: bwmcp, bwwmcp, bbwmcp
+   - **Estimated time**: 2-3 sessions
+
+4. **Document covariance.R** (37 functions, 0% complete)
+   - OGK: covogk
+   - MCD/MVE: covmcd, covmve
+   - Robust variants: wincov, skipcov, covmba
+   - **Estimated time**: 1 session
+
+**Phase 3, Week 8 Target**: Complete ancova.R + start regression.R
+**Phase 3, Week 9 Target**: Complete regression.R, mcp.R, covariance.R
 
 ### ✅ Phase 0: Preparation (COMPLETED - 2025-12-30)
 
