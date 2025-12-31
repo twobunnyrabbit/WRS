@@ -9755,6 +9755,33 @@ list(slope.test=res1,ancova=res2)
 }
 
 
+#' @title Dependent Groups ANCOVA Crossing Region (Johnson-Neyman)
+#'
+#' @description
+#' Determine the interval outside of which two dependent group regression lines cross.
+#' Uses optimization to find Johnson-Neyman crossing points.
+#'
+#' @inheritParams common_ancova_dep_params
+#'
+#' @details
+#' Helper function that uses numerical optimization (BFGS method) to find
+#' the covariate values where two OLS regression lines cross. Returns
+#' the interval bounds outside of which the lines have crossed.
+#'
+#' @return Numeric vector of length 2 with crossing interval bounds.
+#'
+#' @seealso \code{\link{Dancols}}
+#'
+#' @export
+#' @keywords ancova dependent internal
+#'
+#' @examples
+#' \dontrun{
+#'   x <- rnorm(30)
+#'   y1 <- 2*x + rnorm(30)
+#'   y2 <- 2.5*x + 0.5 + rnorm(30)
+#'   crossing <- DancCR(x, y1, x, y2)
+#' }
 # DancCR
 DancCR<-function(x1,y1,x2,y2){
 v=optim(0,Dancols_sub1,x1=x1,y1=y1,x2=x2,y2=y2,method='BFGS')$par
@@ -9764,6 +9791,51 @@ v=c(a,max(v))
 }
 
 
+#' @title Detailed Dependent Groups ANCOVA with Simultaneous Inference
+#'
+#' @description
+#' ANCOVA for dependent groups with detailed analysis including simultaneous
+#' confidence bands. Like Dancova but with more comprehensive output and visualization.
+#'
+#' @inheritParams common_ancova_dep_params
+#' @inheritParams common_ancova_params
+#' @param DIF Logical. Use difference scores if TRUE. Default is TRUE.
+#' @param alpha Significance level. Default is 0.05.
+#' @param plotit Logical. Create diagnostic plot. Default is TRUE.
+#' @param plot.dif Logical. Plot difference in estimates with simultaneous confidence band. Default is FALSE.
+#' @param pts Design points. If NA, automatically selected. Default is NA.
+#' @param sm Logical. Use smoothing. Default is FALSE.
+#' @param pr Logical. Print messages. Default is TRUE.
+#' @param MC Logical. Use multicore processing. Default is FALSE.
+#' @param npts Number of covariate values to use. Default is 25.
+#' @param p.crit Critical p-value for detection. Default is NULL (computed from nreps).
+#' @param nreps Number of replicates for p-value computation. Default is 2000.
+#' @param SEED Logical. Set random seed. Default is TRUE.
+#' @param SCAT Logical. Show scatter plot. Default is TRUE.
+#' @param xlab,ylab Axis labels.
+#' @param pch1,pch2 Plot characters for groups.
+#' @param ... Additional arguments.
+#'
+#' @details
+#' Provides more detailed analysis than Dancova. If plot.dif=TRUE, plots the
+#' difference in estimates with a confidence band having simultaneous
+#' probability coverage (1-alpha). Useful for comprehensive examination
+#' of where and how groups differ across covariate range.
+#'
+#' @return List with detailed test results and plots.
+#'
+#' @seealso \code{\link{Dancova}}, \code{\link{DancovaV2}}
+#'
+#' @export
+#' @keywords ancova dependent inference
+#'
+#' @examples
+#' \dontrun{
+#'   x <- rnorm(30)
+#'   y1 <- x + rnorm(30)
+#'   y2 <- x + 0.5 + rnorm(30)
+#'   result <- Dancdet(x, y1, x, y2, plot.dif = TRUE)
+#' }
 # Dancdet
 Dancdet<-function(x1,y1,x2,y2,fr1=1,fr2=1,tr=.2,DIF=TRUE,
 alpha=.05,plotit=TRUE,plot.dif=FALSE,pts=NA,sm=FALSE,
@@ -9892,6 +9964,47 @@ est1
 
 
 
+#' @title Global Test for Dependent Groups ANCOVA Version 2
+#'
+#' @description
+#' Global test comparing two dependent groups using nonparametric ANCOVA.
+#' Version 2 with improved bootstrap and flexible data input.
+#'
+#' @param xy Data matrix with columns [x1, y1, x2, y2]. Alternative to separate vectors.
+#' @param x1,y1 Covariate and outcome at time/condition 1.
+#' @param x2,y2 Covariate and outcome at time/condition 2.
+#' @inheritParams common_ancova_dep_params
+#' @param est Estimator function. Default is tmean.
+#' @param alpha Significance level. Default is 0.05.
+#' @param plotit Logical. Create plot. Default is TRUE.
+#' @param pts Design points. If NULL, selected using qvals. Default is NULL.
+#' @param qvals Quantiles for design point selection. Default is c(0.25, 0.5, 0.75).
+#' @param sm Logical. Use bootstrap bagging smoothing. Default is FALSE.
+#' @param DIF Logical. Analyze difference scores. Default is FALSE.
+#' @param LP Logical. Smooth running interval smoother with lplot. Default is TRUE.
+#' @param nboot Number of bootstrap samples. Default is 500.
+#' @param SEED Logical. Set random seed. Default is TRUE.
+#' @param nmin Minimum sample size at design points. Default is 12.
+#' @param MC Logical. Use multicore processing. Default is FALSE.
+#' @param ... Additional arguments.
+#'
+#' @details
+#' Flexible data input: can provide xy matrix or separate x1, y1, x2, y2 vectors.
+#' Compares dependent groups globally across covariate range using running interval
+#' smoother. If LP=TRUE, smooths the running interval estimates with lplot for visualization.
+#'
+#' @return List with global test results.
+#'
+#' @seealso \code{\link{Dancova}}, \code{\link{DancovaV2}}
+#'
+#' @export
+#' @keywords ancova dependent global-test
+#'
+#' @examples
+#' \dontrun{
+#'   xy <- cbind(rnorm(30), rnorm(30), rnorm(30), rnorm(30, 0.5))
+#'   result <- DancGLOBv2(xy = xy)
+#' }
 # DancGLOBv2
 DancGLOBv2<-function(xy=NULL,x1=NULL,y1=NULL,x2=NULL,y2=NULL,fr1=1,fr2=1,
 est=tmean,alpha=.05,plotit=TRUE,pts=NULL,qvals=c(.25,.5,.75),sm=FALSE,
@@ -9980,6 +10093,51 @@ pv
 }
 
 
+#' @title Grid-Based ANCOVA for Dependent Groups with Two Covariates
+#'
+#' @description
+#' Compare two dependent groups using grid-based ANCOVA with two covariates.
+#' Splits covariate space into regions and compares groups within each region.
+#'
+#' @param x Covariate matrix with 2 columns (two covariates required).
+#' @param y1,y2 Outcome vectors for the two dependent conditions.
+#' @param alpha Significance level. Default is 0.05.
+#' @param DIF Logical. Analyze difference scores. Default is TRUE.
+#' @param METHOD Comparison method: 'TR' (trimmed mean), 'TRPB' (percentile bootstrap),
+#'   'MED' (median), 'AD' (adaptive), or 'SIGN' (sign test). Default is 'TR'.
+#' @param AUTO Logical. Automatically select method. Default is TRUE.
+#' @param PVSD Logical. Use p-value standard deviation criterion. Default is FALSE.
+#' @param Qsplit1,Qsplit2 Quantiles for splitting first and second covariates.
+#'   Default is 0.5 (median split) for each.
+#' @param SV1,SV2 Alternatively, specific split values for covariates. Default is NULL.
+#' @param tr Trimming proportion for METHOD='TR'. Default is 0.2.
+#' @param PB Logical. Use percentile bootstrap. Default is FALSE.
+#' @param est Estimator function. Default is tmean.
+#' @param nboot Number of bootstrap samples. Default is 1000.
+#' @param xout Logical. Remove outliers. Default is FALSE.
+#' @param outfun Outlier detection function. Default is outpro.
+#' @param SEED Logical. Set random seed. Default is TRUE.
+#' @param ... Additional arguments.
+#'
+#' @details
+#' Splits the covariate space into a grid based on quantiles (Qsplit1, Qsplit2) or
+#' specific values (SV1, SV2). For example, Qsplit1=c(0.25, 0.5, 0.75) and Qsplit2=0.5
+#' creates a 4x2 grid. Compares dependent groups within each grid cell.
+#'
+#' @return List with grid intervals, grid structure, and effect sizes for each region.
+#'
+#' @seealso \code{\link{Dancova}}, \code{\link{Dancovamp}}
+#'
+#' @export
+#' @keywords ancova dependent multivariate grid
+#'
+#' @examples
+#' \dontrun{
+#'   x <- matrix(rnorm(100), 50, 2)
+#'   y1 <- rnorm(50)
+#'   y2 <- y1 + 0.5 + rnorm(50)
+#'   result <- Danc.grid(x, y1, y2, Qsplit1 = c(0.25, 0.75))
+#' }
 # Danc.grid
 Danc.grid<-function(x,y1,y2, alpha=.05,DIF=TRUE,METHOD='TR',AUTO=TRUE,PVSD=FALSE,
 Qsplit1=.5,Qsplit2=.5, SV1=NULL,SV2=NULL,
@@ -10099,6 +10257,48 @@ list(GRID.INTERVALS=GI,GRID=GRID, Effect.Sizes=ES)
 }
 
 
+#' @title Dependent Groups ANCOVA Using OLS Regression
+#'
+#' @description
+#' Compare OLS regression lines of two dependent groups at specified design points.
+#' Robust Johnson-Neyman method for dependent groups using ordinary least squares.
+#'
+#' @inheritParams common_ancova_dep_params
+#' @param pts Design points for comparison. If NULL, automatically selected. Default is NULL.
+#' @param alpha Significance level. Default is 0.05.
+#' @param plotit Logical. Create comparison plot. Default is TRUE.
+#' @param xout Logical. Remove outliers. Default is FALSE.
+#' @param outfun Outlier detection function. Default is out.
+#' @param nboot Number of bootstrap samples. Default is 100.
+#' @param SEED Logical. Set random seed. Default is TRUE.
+#' @param xlab,ylab Axis labels for plot.
+#' @param CR Logical. Determine Johnson-Neyman crossing interval. Default is FALSE.
+#' @param ... Additional arguments.
+#'
+#' @details
+#' Compares OLS regression lines at specified design points for dependent groups.
+#' If CR=TRUE, determines the interval outside of which the regression lines cross
+#' (analog of Johnson-Neyman method). For robust regression, use Dancts or Danctspb instead.
+#'
+#' @return List with components:
+#' \describe{
+#'   \item{output}{Test results at each design point}
+#'   \item{cross.interval}{(If CR=TRUE) Interval outside which lines have crossed}
+#'   \item{cr.quant.grp1}{(If CR=TRUE) Quantiles of group 1 at interval endpoints}
+#' }
+#'
+#' @seealso \code{\link{Dancts}}, \code{\link{Danctspb}}, \code{\link{ancJN}}
+#'
+#' @export
+#' @keywords ancova dependent regression
+#'
+#' @examples
+#' \dontrun{
+#'   x <- rnorm(30)
+#'   y1 <- 2*x + rnorm(30)
+#'   y2 <- 2.5*x + rnorm(30)  # Different slope
+#'   result <- Dancols(x, y1, x, y2, CR = TRUE)
+#' }
 # Dancols
 Dancols<-function(x1,y1,x2,y2,pts=NULL,fr1=1,fr2=1,alpha=.05,plotit=TRUE,xout=FALSE,outfun=out,nboot=100,SEED=TRUE,xlab='X',ylab='Y',CR=FALSE,...){
 #
