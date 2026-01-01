@@ -15,23 +15,61 @@
 # ============================================================================
 
 
+#' Confidence Intervals for Decile Differences (Dependent Groups)
+#'
+#' Computes confidence intervals for the difference between deciles of two
+#' dependent groups using the Harrell-Davis quantile estimator with bootstrap.
+#' The simultaneous probability coverage is 0.95.
+#'
+#' @param x Numeric vector for the first group.
+#' @param y Numeric vector for the second group (must have same length as \code{x}).
+#' @param nboot Number of bootstrap samples (default: 200).
+#' @param plotit Logical. If \code{TRUE}, creates a plot showing confidence intervals
+#'   and point estimates (default: \code{TRUE}).
+#' @param plotop Logical. If \code{TRUE}, plots using quantile positions (0.1, 0.2, ...)
+#'   instead of actual decile values (default: \code{FALSE}).
+#' @param SEED Logical. If \code{TRUE}, sets random seed for reproducibility (default: \code{TRUE}).
+#' @param pr Logical. If \code{TRUE}, prints messages including critical value (default: \code{TRUE}).
+#' @param xlab Label for x-axis in plot (default: "x (first group)").
+#' @param ylab Label for y-axis in plot (default: "Delta").
+#'
+#' @return A 9×6 matrix where each row corresponds to the i/10 quantile (i=1,...,9).
+#'   Columns are:
+#'   \itemize{
+#'     \item \code{est.1}: Estimated quantile for group 1
+#'     \item \code{est.2}: Estimated quantile for group 2
+#'     \item \code{est.dif}: Difference (group 1 - group 2)
+#'     \item \code{ci.lower}: Lower confidence limit
+#'     \item \code{ci.upper}: Upper confidence limit
+#'     \item \code{se}: Bootstrap standard error
+#'   }
+#'
+#' @details
+#' Uses the Harrell-Davis estimator for quantiles with bootstrap to construct
+#' simultaneous confidence intervals across all deciles. The approximate critical
+#' value is computed as 37/n^1.4 + 2.75, providing approximate 0.95 family-wise
+#' coverage probability.
+#'
+#' For more control over alpha level or specific quantiles, use \code{qcomdhd} or
+#' \code{qdec2ci}.
+#'
+#' Missing values are automatically removed.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{qcomdhd}}, \code{\link{qdec2ci}}, \code{\link{hd}}
+#'
+#' @export
+#' @examples
+#' # Compare depression scores before and after treatment
+#' before <- c(30, 35, 28, 41, 33, 29, 38, 32, 36, 31)
+#' after <- c(22, 28, 20, 31, 25, 21, 29, 24, 27, 23)
+#' result <- shiftdhd(before, after)
+#' # Examine decile differences
+#' result
 shiftdhd<-function(x,y,nboot=200,plotit=TRUE,plotop=FALSE,SEED=TRUE,pr=TRUE,xlab='x (first group)',
 ylab='Delta'){
-#
-#   Compute confidence intervals for the difference between deciles
-#   of two dependent groups. The simultaneous probability coverage is .95.
-#   The Harrell-Davis estimate of the qth quantile is used.
-#   The default number of bootstrap samples is nboot=200
-#
-#   The results are stored and returned in a 9 by 4 matrix,
-#   the ith row corresponding to the i/10 quantile.
-#   The first column is the lower end of the confidence interval.
-#   The second column is the upper end.
-#   The third column is the estimated difference between the deciles
-#   (second group minus first).
-#   The fourth column contains the estimated standard error.
-#
-#   No missing values are allowed.
 #
 if(pr){
 print("NOTE:  if the goal is to use an alpha value different from .05")
@@ -83,9 +121,20 @@ m
 }
 
 
+#' Bootstrap Helper for Q-Statistic (Dependent Groups)
+#'
+#' Internal function used by \code{qhat} when working with bootstrap estimates
+#' for dependent groups.
+#'
+#' @param isubx Bootstrap sample indices.
+#' @param x Numeric vector for first group.
+#' @param y Numeric vector for second group.
+#'
+#' @return Vector of predicted group classifications.
+#'
+#' @keywords internal
+#' @noRd
 qhatds1<-function(isubx,x,y){
-#
-#  function used by qhat  when working on bootstrap estimates.
 #
 xx<-x[isubx]
 yy<-y[isubx]
@@ -94,16 +143,54 @@ group
 }
 
 
+#' Q-Statistic Effect Size (Dependent Groups)
+#'
+#' Estimates Q, a nonparametric measure of effect size based on prediction accuracy,
+#' using the .632 bootstrap method for estimating prediction error. This version is
+#' for dependent groups.
+#'
+#' @param x Numeric vector for the first group.
+#' @param y Numeric vector for the second group (same length as \code{x}).
+#' @param nboot Number of bootstrap samples (default: 50).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item \code{app.error}: Apparent classification error rate
+#'     \item \code{qhat.632}: Q-statistic using .632 estimator (combines apparent
+#'       error with bootstrap cross-validation error)
+#'   }
+#'
+#' @details
+#' The Q-statistic measures effect size based on how well observations can be
+#' classified into their correct group using kernel density estimation. The .632
+#' estimator combines the optimistically biased apparent error rate with the
+#' pessimistically biased leave-one-out cross-validation estimate:
+#'
+#' Q.632 = 0.368 × (apparent error) + 0.632 × (cross-validation error)
+#'
+#' Values near 0 indicate perfect separation (large effect), values near 0.5
+#' indicate no separation (no effect), and values near 1 indicate perfect
+#' reverse separation.
+#'
+#' For dependent groups, the function uses paired observations and a kernel
+#' discriminant approach.
+#'
+#' @references
+#' Efron, B. & Tibshirani, R.J. (1993). An Introduction to the Bootstrap, pp. 252-254.
+#'
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{qhat}} for independent groups, \code{\link{disker}} for
+#'   kernel discriminant analysis
+#'
+#' @export
+#' @examples
+#' # Compare paired observations
+#' before <- rnorm(30, mean=10, sd=2)
+#' after <- before - rnorm(30, mean=1, sd=1.5)
+#' result <- qhatd(before, after)
+#' result$qhat.632  # Smaller values = larger effect
 qhatd<-function(x,y,nboot=50){
-#
-#   Estimate Q, a nonparametric measure of effect size, using
-#   the .632 method of estimating prediction error.
-#   (See Efron and Tibshirani, 1993, pp. 252--254)
-#
-#   The default number of bootstrap samples is nboot=50
-#
-#   This function is for dependent groups. For independent groups, use
-#   qhati
 #
 set.seed(2) # set seed of random number generator so that
 #             results can be duplicated.
@@ -125,19 +212,67 @@ list(app.error=aperror,qhat.632=regpre)
 }
 
 
+#' Q-Statistic Effect Size (Independent Groups)
+#'
+#' Estimates Q, a nonparametric measure of effect size based on prediction accuracy,
+#' using the .632 bootstrap method for estimating prediction error. This version is
+#' for independent groups.
+#'
+#' @param x Numeric vector for the first group.
+#' @param y Numeric vector for the second group (can be different length than \code{x}).
+#' @param nboot Number of bootstrap samples (default: 50).
+#' @param op Kernel density estimation method (default: 2):
+#'   \itemize{
+#'     \item \code{1}: Rosenblatt's shifted histogram
+#'     \item \code{2}: Adaptive kernel with expected frequency curve initialization
+#'   }
+#' @param SEED Logical. If \code{TRUE}, sets random seed for reproducibility (default: \code{TRUE}).
+#' @param pr.track Logical. If \code{TRUE}, prints iteration progress (default: \code{FALSE}).
+#'
+#' @return A list with component:
+#'   \itemize{
+#'     \item \code{qhat.632}: Q-statistic using .632 estimator (weighted average of
+#'       apparent error and cross-validation error)
+#'   }
+#'
+#' @details
+#' The Q-statistic measures effect size based on how well observations can be
+#' classified into their correct group using kernel density estimation. The .632
+#' estimator provides a bias-corrected estimate:
+#'
+#' Q.632 = 0.368 × (apparent error) + 0.632 × (cross-validation error)
+#'
+#' where apparent error is optimistically biased (too small) and cross-validation
+#' error is pessimistically biased (too large).
+#'
+#' Interpretation:
+#' \itemize{
+#'   \item Values near 0: Perfect separation (very large effect size)
+#'   \item Values near 0.5: No separation (no effect)
+#'   \item Values near 1: Perfect reverse separation
+#' }
+#'
+#' The function computes a pooled estimate by classifying observations from both
+#' groups and weighting by sample sizes.
+#'
+#' Missing values are automatically removed.
+#'
+#' @references
+#' Efron, B. & Tibshirani, R.J. (1993). An Introduction to the Bootstrap, pp. 252-254.
+#'
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{qhatd}} for dependent groups, \code{\link{disker}} for
+#'   kernel discriminant analysis
+#'
+#' @export
+#' @examples
+#' # Compare two independent groups
+#' group1 <- rnorm(50, mean=10, sd=3)
+#' group2 <- rnorm(60, mean=12, sd=3)
+#' result <- qhat(group1, group2)
+#' result$qhat.632  # Smaller values = larger effect
 qhat<-function(x,y,nboot=50,op=2,SEED=TRUE,pr.track=FALSE){
-#
-#   Estimate Q, a nonparametric measure of effect size, using
-#   the .632 method of estimating prediction error.
-#   (See Efron and Tibshirani, 1993, pp. 252--254)
-#
-#   The default number of bootstrap samples is nboot=50
-#
-#   Missing values are automatically removed
-#
-# op=1, use Rosenblatt's shifted histogram version of kernel estimate
-# op=2, use adaptive kernel estimate with initial estimate based
-#       on expected frequency curve.
 #
 x<-x[!is.na(x)]
 y<-y[!is.na(y)]
@@ -179,10 +314,66 @@ list(qhat.632=regpre)
 }
 
 
+#' AKP Robust Effect Size (Homoscedastic Cohen's d Analog)
+#'
+#' Computes a robust analog of Cohen's d based on trimmed means and winsorized
+#' variances. This is the homoscedastic version recommended by Algina, Keselman,
+#' and Penfield (2005).
+#'
+#' @param x Numeric vector for the first group.
+#' @param y Numeric vector for the second group.
+#' @param EQVAR Logical. If \code{TRUE}, assumes equal variances and pools the
+#'   standard deviation (default: \code{TRUE}). If \code{FALSE}, computes
+#'   heteroscedastic versions using each group's SD separately.
+#' @param tr Proportion of observations to trim from each tail (default: 0.2 for
+#'   20% trimming on each side).
+#'
+#' @return If \code{EQVAR=TRUE}, a single effect size value. If \code{EQVAR=FALSE},
+#'   a vector of length 2 with effect sizes using group 1 SD and group 2 SD as
+#'   denominators.
+#'
+#' @details
+#' The AKP effect size is a robust analog of Cohen's d that uses:
+#' \itemize{
+#'   \item Trimmed means instead of ordinary means (reduces sensitivity to outliers)
+#'   \item Winsorized variances instead of ordinary variances
+#'   \item A correction factor to make the expected value under normality equal to
+#'     the population effect size
+#' }
+#'
+#' The formula is:
+#' \deqn{d_{AKP} = c \times \frac{\bar{X}_t - \bar{Y}_t}{s_p}}
+#'
+#' where \eqn{\bar{X}_t} and \eqn{\bar{Y}_t} are trimmed means, \eqn{s_p} is the
+#' pooled winsorized standard deviation, and \eqn{c} is a correction factor.
+#'
+#' Under normality with equal population means and variances, this effect size has
+#' the same expected value as Cohen's d but is more robust to outliers and
+#' non-normality.
+#'
+#' Rough guidelines (similar to Cohen's d):
+#' \itemize{
+#'   \item Small effect: |d| = 0.2
+#'   \item Medium effect: |d| = 0.5
+#'   \item Large effect: |d| = 0.8
+#' }
+#'
+#' @references
+#' Algina, J., Keselman, H.J., & Penfield, R.D. (2005). An alternative to Cohen's
+#' standardized mean difference effect size: A robust parameter and confidence
+#' interval in the two independent groups case. Psychological Methods, 10, 317-328.
+#'
+#' @seealso \code{\link{akp.effect.ci}} for confidence intervals, \code{\link{KMS.ci}}
+#'   for heteroscedastic analog
+#'
+#' @export
+#' @examples
+#' # Compare two groups
+#' group1 <- c(10, 12, 8, 14, 11, 9, 13, 10, 12, 11)
+#' group2 <- c(14, 16, 13, 18, 15, 17, 16, 14, 15, 16)
+#' akp.effect(group1, group2)
 akp.effect<-function(x,y,EQVAR=TRUE,tr=.2){
 #
-# Computes the robust effect size suggested by
-#Algina, Keselman, Penfield Psych Methods, 2005, 317-328
 x<-elimna(x)
 y<-elimna(y)
 n1<-length(x)
@@ -203,11 +394,55 @@ dval
 }
 
 
+#' Bootstrap Confidence Interval for AKP Effect Size
+#'
+#' Computes bootstrap confidence intervals and p-value for the AKP robust effect
+#' size (homoscedastic analog of Cohen's d).
+#'
+#' @inheritParams common-params
+#' @param x Numeric vector for the first group.
+#' @param y Numeric vector for the second group.
+#' @param alpha Significance level for confidence interval (default: 0.05 for 95% CI).
+#' @param tr Proportion of trimming (default: 0.2).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param SEED Logical. If \code{TRUE}, sets random seed for reproducibility (default: \code{TRUE}).
+#' @param null.val Null hypothesis value for testing (default: 0, indicating no effect).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item \code{akp.effect}: Point estimate of the AKP effect size
+#'     \item \code{ci}: Bootstrap confidence interval (percentile method)
+#'     \item \code{p.value}: Two-sided p-value testing H0: effect size = null.val
+#'   }
+#'
+#' @details
+#' Uses percentile bootstrap to construct confidence intervals for the AKP effect
+#' size. The p-value is computed as twice the minimum of the proportion of bootstrap
+#' estimates less than or greater than the null value.
+#'
+#' The AKP effect size is a robust analog of Cohen's d that uses trimmed means and
+#' winsorized variances with a correction factor. See \code{\link{akp.effect}} for
+#' details on the effect size measure itself.
+#'
+#' @references
+#' Algina, J., Keselman, H.J., & Penfield, R.D. (2005). An alternative to Cohen's
+#' standardized mean difference effect size: A robust parameter and confidence
+#' interval in the two independent groups case. Psychological Methods, 10, 317-328.
+#'
+#' @seealso \code{\link{akp.effect}} for point estimates, \code{\link{ES.summary.CI}}
+#'   for multiple effect size measures
+#'
+#' @export
+#' @examples
+#' # Compare two groups with CI
+#' set.seed(123)
+#' group1 <- rnorm(30, mean=100, sd=15)
+#' group2 <- rnorm(35, mean=108, sd=15)
+#' result <- akp.effect.ci(group1, group2, nboot=500)
+#' result$akp.effect
+#' result$ci
+#' result$p.value
 akp.effect.ci<-function(x,y,alpha=.05,tr=.2,nboot=1000,SEED=TRUE,null.val=0){
-#
-# Computes the robust effect size for two-sample case using
-# Algina, Keselman, Penfield Pcyh Methods, 2005, 317-328
-#
 #
 if(SEED)set.seed(2)
 x=elimna(x)
@@ -232,9 +467,49 @@ list(akp.effect=est,ci=ci,p.value=pv)
 }
 
 
+#' Q-Statistic Effect Size Using Data Depth
+#'
+#' Computes the Q-statistic (proportion correctly classified) using data depth
+#' methods for classification. This is for multivariate data.
+#'
+#' @param x1 Matrix or data frame for the first group (rows are observations,
+#'   columns are variables).
+#' @param x2 Matrix or data frame for the second group (same number of columns as \code{x1}).
+#' @param depthfun Depth function to use for classification (default: \code{prodepth}
+#'   for projection depth). See \code{\link{discdepth}} for options.
+#' @param ... Additional arguments passed to the depth function.
+#'
+#' @return The apparent classification accuracy (proportion of observations correctly
+#'   classified into their true group). Values near 1 indicate perfect separation
+#'   (large effect), values near 0.5 indicate no separation (no effect).
+#'
+#' @details
+#' Uses data depth-based discriminant analysis to classify observations. For each
+#' observation, compares its depth in group 1 vs group 2 and assigns it to the
+#' group where it has greater depth.
+#'
+#' The Q-statistic is the proportion of observations correctly classified. This is
+#' the "apparent" classification accuracy (computed on the training data itself),
+#' which is optimistically biased. For bias-corrected estimates, use \code{\link{qhatdepPB}}
+#' which applies bootstrap cross-validation.
+#'
+#' This depth-based approach works for multivariate data and is robust to outliers.
+#' It provides a nonparametric alternative to classical discriminant analysis.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{qhatdepPB}} for bootstrap CI, \code{\link{qhat}} for
+#'   univariate kernel-based version, \code{\link{discdepth}} for depth discriminant
+#'
+#' @export
+#' @examples
+#' # Two bivariate groups
+#' set.seed(123)
+#' x1 <- cbind(rnorm(30, mean=0), rnorm(30, mean=0))
+#' x2 <- cbind(rnorm(35, mean=1), rnorm(35, mean=1))
+#' qhatDEP(x1, x2)  # Higher values = larger effect
 qhatDEP<-function(x1,x2,depthfun=prodepth,...){
-#
-#  Compute apparent probability of correct classification
 #
 x1<-x1[!is.na(x1)]
 x2<-x2[!is.na(x2)]
@@ -247,9 +522,55 @@ qhat
 }
 
 
+#' Bootstrap Confidence Interval for Depth-Based Q-Statistic
+#'
+#' Computes a bootstrap confidence interval for the Q-statistic (classification
+#' accuracy) using data depth methods for multivariate data.
+#'
+#' @param x1 Matrix or data frame for the first group.
+#' @param x2 Matrix or data frame for the second group.
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param alpha Significance level for confidence interval (default: 0.05 for 95% CI).
+#' @param depthfun Depth function to use (default: \code{prodepth} for projection depth).
+#' @param SEED Logical. If \code{TRUE}, sets random seed for reproducibility (default: \code{TRUE}).
+#' @param ... Additional arguments passed to the depth function.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item \code{estimate}: Point estimate of Q (apparent classification accuracy)
+#'     \item \code{ci}: Bootstrap percentile confidence interval
+#'   }
+#'
+#' @details
+#' Uses percentile bootstrap to construct a confidence interval for the depth-based
+#' Q-statistic. For each bootstrap sample:
+#' \enumerate{
+#'   \item Resample with replacement from each group independently
+#'   \item Compute the Q-statistic (proportion correctly classified)
+#' }
+#'
+#' The confidence interval is formed using the percentiles of the bootstrap distribution.
+#'
+#' This provides uncertainty quantification for the multivariate effect size measure
+#' based on classification accuracy using data depth.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{qhatDEP}} for point estimates, \code{\link{qhat}} for
+#'   univariate version, \code{\link{discdepth}}
+#'
+#' @export
+#' @examples
+#' # Two bivariate groups with CI
+#' set.seed(123)
+#' x1 <- cbind(rnorm(30, mean=0, sd=1), rnorm(30, mean=0, sd=1))
+#' x2 <- cbind(rnorm(35, mean=0.8, sd=1), rnorm(35, mean=0.8, sd=1))
+#' result <- qhatdepPB(x1, x2, nboot=200)
+#' result$estimate
+#' result$ci
 qhatdepPB<-function(x1,x2,nboot=500,alpha=.05,depthfun=prodepth,
 SEED=TRUE,...){
-#
 #
 if(SEED)set.seed(2)
 bvec=NA
@@ -400,20 +721,83 @@ output
 }
 
 
+#' Comprehensive Effect Size Summary (Independent Groups)
+#'
+#' Computes six different measures of effect size for comparing two independent
+#' groups, providing a comprehensive assessment from multiple perspectives.
+#'
+#' @param x Numeric vector for the first group.
+#' @param y Numeric vector for the second group.
+#' @param tr Proportion of trimming for AKP and QStr (default: 0.2).
+#' @param NULL.V Vector of null values for each effect size measure (default:
+#'   c(0, 0, 0.5, 0.5, 0.5, 0) for AKP, EP, QS, QStr, WMW, KMS respectively).
+#' @param REL.MAG Optional vector of length 3 specifying AKP values considered
+#'   small, medium, and large under normality (e.g., c(0.2, 0.5, 0.8)). If specified,
+#'   equivalent values for other effect sizes are computed via simulation.
+#' @param REL.M Alias for REL.MAG (for backward compatibility).
+#' @param n.est Number of observations to simulate when computing equivalent effect
+#'   sizes for REL.MAG (default: 1000000).
+#'
+#' @return A 6×5 matrix with rows for each effect size measure and columns:
+#'   \itemize{
+#'     \item \code{Est}: Point estimate of the effect size
+#'     \item \code{NULL}: Null hypothesis value (no effect)
+#'     \item \code{S}: Small effect benchmark
+#'     \item \code{M}: Medium effect benchmark
+#'     \item \code{L}: Large effect benchmark
+#'   }
+#'
+#' Row names indicate the six effect size measures:
+#' \itemize{
+#'   \item \code{AKP}: Homoscedastic robust analog of Cohen's d (trimmed means, winsorized variance)
+#'   \item \code{EP}: Explanatory power (proportion of variance explained)
+#'   \item \code{QS (median)}: Quantile shift based on median of X-Y distribution
+#'   \item \code{QStr}: Quantile shift based on trimmed mean of X-Y distribution
+#'   \item \code{WMW}: Wilcoxon-Mann-Whitney type measure, P(X<Y)
+#'   \item \code{KMS}: Robust heteroscedastic analog of Cohen's d
+#' }
+#'
+#' @details
+#' This function provides a comprehensive effect size assessment by computing six
+#' complementary measures:
+#'
+#' \strong{Standardized difference measures (like Cohen's d):}
+#' \itemize{
+#'   \item AKP: Assumes equal variances, robust to outliers via trimming/winsorizing
+#'   \item KMS: Allows unequal variances, robust via M-estimator and percentage bend variance
+#' }
+#'
+#' \strong{Probabilistic measures:}
+#' \itemize{
+#'   \item WMW: Probability that a random observation from X is less than one from Y
+#'   \item EP: Proportion of variance in combined data explained by group membership
+#' }
+#'
+#' \strong{Quantile shift measures:}
+#' \itemize{
+#'   \item QS: Based on median, robust to extreme values
+#'   \item QStr: Based on trimmed mean, balances robustness and efficiency
+#' }
+#'
+#' Default benchmarks for small/medium/large effects are based on simulation studies
+#' assuming normality. Custom benchmarks can be specified via REL.MAG.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{ES.summary.CI}} for confidence intervals, \code{\link{dep.ES.summary}}
+#'   for dependent groups, \code{\link{ESfun}} for individual effect size measures
+#'
+#' @export
+#' @examples
+#' # Compare two groups
+#' group1 <- rnorm(50, mean=100, sd=15)
+#' group2 <- rnorm(60, mean=110, sd=15)
+#' ES.summary(group1, group2)
+#'
+#' # With custom benchmarks
+#' ES.summary(group1, group2, REL.MAG=c(0.1, 0.3, 0.5))
 ES.summary<-function(x,y,tr=.2,NULL.V=c(0,0,.5,.5,.5,0),REL.MAG=NULL, REL.M=NULL,n.est=1000000){
-#
-# Estimate a collection of effect sizes:
-#  AKP: Homoscedastic robust analog of Cohen's d
-#  EP:  Explanatory power
-#  QS:  Quantile shift based on the median of the distribution of X-Y,
-#  QStr: Quantile shift based on the trimmed mean of the distribution of X-Y
-#  WMW:  P(X<Y)
-#  KMS:  Robust heteroscedastic analog  of Cohen's d
-#
-#  REL.M can be used to indicate what is a small, medium and large effect when
-#  using AKP under normality and homosecedasticity. An estimate of the corresponding
-#  values for the other measures of effect size is estimated based on
-#  n.est values sampled from a normal distribution
 #
 if(!is.null(REL.MAG)) REL.M=REL.MAG
 SM=c(.2,.14,.55,.55,.55,.1)
@@ -455,16 +839,82 @@ output
 }
 
 
+#' Comprehensive Effect Size Summary with Confidence Intervals
+#'
+#' Computes six different measures of effect size for comparing two independent
+#' groups along with bootstrap confidence intervals and p-values for each measure.
+#'
+#' @param x Numeric vector for the first group.
+#' @param y Numeric vector for the second group.
+#' @param tr Proportion of trimming for AKP and QStr (default: 0.2).
+#' @param QSfun Function to use for quantile shift (default: \code{median}).
+#' @param SEED Logical. If \code{TRUE}, sets random seed for reproducibility (default: \code{TRUE}).
+#' @param alpha Significance level for confidence intervals (default: 0.05 for 95% CI).
+#' @param nboot Number of bootstrap samples (default: 2000).
+#' @param method P-value adjustment method for multiple comparisons (default: "hoch"
+#'   for Hochberg's method). See \code{\link[stats]{p.adjust}} for options.
+#' @param NULL.V Vector of null values for each effect size measure (default:
+#'   c(0, 0, 0.5, 0.5, 0.5, 0) for AKP, EP, QS, QStr, WMW, KMS respectively).
+#' @param REL.MAG Optional vector of length 3 specifying AKP values considered
+#'   small, medium, and large under normality. If specified, equivalent values
+#'   for other effect sizes are computed via simulation.
+#' @param REL.M Alias for REL.MAG (for backward compatibility).
+#' @param n.est Number of observations to simulate when computing equivalent effect
+#'   sizes for REL.MAG (default: 1000000).
+#'
+#' @return A 6×9 matrix with rows for each effect size measure and columns:
+#'   \itemize{
+#'     \item \code{Est}: Point estimate of the effect size
+#'     \item \code{NULL}: Null hypothesis value (no effect)
+#'     \item \code{S}: Small effect benchmark
+#'     \item \code{M}: Medium effect benchmark
+#'     \item \code{L}: Large effect benchmark
+#'     \item \code{ci.low}: Lower confidence limit
+#'     \item \code{ci.up}: Upper confidence limit
+#'     \item \code{p.value}: Unadjusted p-value
+#'     \item \code{adj.p.value}: P-value adjusted for multiple comparisons
+#'   }
+#'
+#' Row names indicate the six effect size measures: AKP, EP, QS (median), QStr, WMW, KMS.
+#'
+#' @details
+#' This function extends \code{\link{ES.summary}} by adding bootstrap confidence
+#' intervals and hypothesis tests for each of the six effect size measures:
+#'
+#' \itemize{
+#'   \item \strong{AKP}: Percentile bootstrap CI
+#'   \item \strong{EP}: Percentile bootstrap CI, p-value from Yuen's test
+#'   \item \strong{QS}: Percentile bootstrap CI and p-value
+#'   \item \strong{QStr}: Percentile bootstrap CI and p-value
+#'   \item \strong{WMW}: CI and p-value from Cliff's analog (cidv2)
+#'   \item \strong{KMS}: Percentile bootstrap CI and p-value
+#' }
+#'
+#' P-values are adjusted for multiple comparisons using the specified method
+#' (default: Hochberg's step-up procedure which controls family-wise error rate).
+#'
+#' This comprehensive approach allows assessment of effect size from multiple
+#' perspectives with proper uncertainty quantification.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{ES.summary}} for point estimates only, \code{\link{dep.ES.summary.CI}}
+#'   for dependent groups, \code{\link{akp.effect.ci}}, \code{\link{KMS.ci}}
+#'
+#' @export
+#' @examples
+#' # Compare two groups with CIs
+#' set.seed(123)
+#' group1 <- rnorm(40, mean=100, sd=15)
+#' group2 <- rnorm(45, mean=108, sd=15)
+#' result <- ES.summary.CI(group1, group2, nboot=500)
+#' result
+#'
+#' # Check which effects are significant after adjustment
+#' result[result[,"adj.p.value"] < 0.05, ]
 ES.summary.CI<-function(x,y,tr=.2,QSfun=median,SEED=TRUE,alpha=.05,nboot=2000,method='hoch',
 NULL.V=c(0,0,.5,.5,.5,0),REL.MAG=NULL,REL.M=NULL,n.est=1000000){
-#
-# Estimate a collection of effect sizes:
-#  AKP: Homoscedastic robust analog of Cohen's d
-#  EP:  Explanatory power
-#  QS:  Quantile shift based on the median of the distribution of X-Y,
-#  QStr: Quantile shift based on the trimmed mean of the distribution of X-Y
-#  WMW:  P(X<Y)
-#  KMS:  Robust heteroscedastic analog  of Cohen's d
 #
 a=c('AKP','EP','QS','QStr','WMW','KMS')
 output=matrix(NA,ncol=9,nrow=6)
@@ -528,9 +978,54 @@ output
 }
 
 
+#' Multivariate Effect Size Summary
+#'
+#' For multivariate data (multiple variables), computes comprehensive effect size
+#' summaries for each variable separately when comparing two groups.
+#'
+#' @param x1 Matrix or data frame for the first group (rows are observations,
+#'   columns are variables).
+#' @param x2 Matrix or data frame for the second group (must have same number of
+#'   columns as \code{x1}).
+#'
+#' @return A list with p elements (one per variable), where each element contains
+#'   the output from \code{\link{ES.summary}} for that variable (a 6×5 matrix with
+#'   six effect size measures: AKP, EP, QS, QStr, WMW, KMS).
+#'
+#' @details
+#' This function applies \code{\link{ES.summary}} to each variable (column)
+#' independently. For variable j, it computes six effect size measures comparing
+#' group 1 vs group 2 on that variable:
+#' \itemize{
+#'   \item AKP: Robust Cohen's d analog
+#'   \item EP: Explanatory power
+#'   \item QS (median): Quantile shift based on median
+#'   \item QStr: Quantile shift based on trimmed mean
+#'   \item WMW: P(X<Y) probability
+#'   \item KMS: Heteroscedastic Cohen's d analog
+#' }
+#'
+#' This provides a comprehensive marginal (univariate) effect size assessment for
+#' each variable in a multivariate comparison. It does not assess multivariate
+#' effects directly.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{ES.summary}} for univariate effect sizes, \code{\link{ES.summary.CI}}
+#'   for confidence intervals
+#'
+#' @export
+#' @examples
+#' # Two groups, three variables
+#' set.seed(123)
+#' x1 <- cbind(rnorm(30, 100, 15), rnorm(30, 50, 10), rnorm(30, 25, 5))
+#' x2 <- cbind(rnorm(35, 105, 15), rnorm(35, 52, 10), rnorm(35, 25, 5))
+#' result <- MUL.ES.sum(x1, x2)
+#' result[[1]]  # Effect sizes for variable 1
+#' result[[2]]  # Effect sizes for variable 2
+#' result[[3]]  # Effect sizes for variable 3
 MUL.ES.sum<-function(x1,x2){
-#
-# For multivariate data, compute measures of effect for	each variable
 #
 V=list()
 p=ncol(x1)
@@ -539,31 +1034,73 @@ V
 }
 
 
+#' Pairwise Effect Sizes for Independent Groups
+#'
+#' Computes effect size measures for all pairwise comparisons (or specified contrasts)
+#' among J independent groups. For each contrast, pools observations with coefficient
+#' +1 and compares them to pooled observations with coefficient -1.
+#'
+#' @param x Data in matrix, data frame, or list mode. Each column (or list element)
+#'   represents one group.
+#' @param con Matrix of contrast coefficients with J rows (one per group). Each column
+#'   defines one contrast. If \code{NULL} (default), performs all pairwise comparisons.
+#' @param fun Function to compute effect sizes (default: \code{ES.summary}). Can also
+#'   use \code{ES.summary.CI} for confidence intervals or \code{ESfun} for a single
+#'   effect size measure.
+#' @param tr Proportion of trimming (default: 0.2). Passed to the effect size function.
+#' @param ... Additional arguments passed to \code{fun}.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item \code{con}: Matrix of contrast coefficients used
+#'     \item \code{effect.size}: List with one element per contrast, each containing
+#'       the output from \code{fun}
+#'   }
+#'
+#' @details
+#' For each column of the contrast matrix \code{con}:
+#' \enumerate{
+#'   \item Groups with coefficient +1 are pooled together
+#'   \item Groups with coefficient -1 are pooled together
+#'   \item The specified effect size function is applied to compare the two pooled groups
+#' }
+#'
+#' By default, uses \code{fun=ES.summary} which computes six effect size measures
+#' (AKP, EP, QS, QStr, WMW, KMS) for each comparison.
+#'
+#' For individual effect size measures, use \code{fun=ESfun} with the \code{method}
+#' argument:
+#' \itemize{
+#'   \item \code{method='EP'}: Explanatory power
+#'   \item \code{method='QS'}: Quantile shift (median)
+#'   \item \code{method='QStr'}: Quantile shift (trimmed mean)
+#'   \item \code{method='AKP'}: Robust Cohen's d analog
+#'   \item \code{method='WMW'}: P(X<Y) probability
+#'   \item \code{method='KMS'}: Heteroscedastic Cohen's d analog
+#' }
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{ES.summary}}, \code{\link{ES.summary.CI}}, \code{\link{ESfun}},
+#'   \code{\link{DEP.PAIR.ES}} for dependent groups, \code{\link{con.all.pairs}}
+#'
+#' @export
+#' @examples
+#' # Three independent groups, all pairwise comparisons
+#' set.seed(123)
+#' group1 <- rnorm(20, mean=100, sd=15)
+#' group2 <- rnorm(20, mean=105, sd=15)
+#' group3 <- rnorm(20, mean=110, sd=15)
+#' x <- cbind(group1, group2, group3)
+#'
+#' # Get comprehensive effect sizes for all pairs
+#' result <- IND.PAIR.ES(x)
+#' result$effect.size[[1]]  # Compare groups 1 vs 2
+#'
+#' # Get only AKP effect size
+#' result2 <- IND.PAIR.ES(x, fun=ESfun, method='AKP')
 IND.PAIR.ES<-function(x,con=NULL,fun=ES.summary,tr=.2,...){
-#
-#  J independent groups
-#  For each column of a specified matrix of linear contrast
-#  coefficients, pool the data having a contrast coefficient of 1 into one
-#  group, do the same for contrast coefficient of -1,
-#  then estimate measures of effect size.
-#
-#  Default, all pairwise comparisons using all of the measures of effect size
-#  via ES.summary
-#
-#  To get individual measures of effect size, use
-#  fun=ESfun and include the argument
-#  method.
-#  Example: fun=ESfun, method='EP' does explanatory power.
-# Choices for method are:
-#  EP: Explanatory power
-#  QS: Quantile shift based on the medians
-#  QStr: Based on trimmed means
-#  AKP: Robust analog of Cohen's d
-#  WMW:   P(X<Y)
-#  KMS:    Heteroscedastic analog of Cohen's d
-#
-#  Returns contrast coefficients followed by effect size measures for each column
-#  of con.
 #
 if(is.matrix(x) || is.data.frame(x))x=listm(x)
 CON=list()
@@ -586,14 +1123,72 @@ list(con=conmat,effect.size=CON)
 }
 
 
+#' Row-Column Effect Sizes for Factorial Design
+#'
+#' For a J×K factorial design, computes effect sizes for all pairwise comparisons
+#' among levels of Factor B (columns) within each level of Factor A (rows), and
+#' vice versa.
+#'
+#' @param J Number of levels for Factor A (rows).
+#' @param K Number of levels for Factor B (columns).
+#' @param x Data in matrix, data frame, or list mode. If matrix/data frame, should
+#'   have JK columns arranged as: Factor B levels 1...K for Factor A level 1, then
+#'   Factor B levels 1...K for Factor A level 2, etc.
+#' @param fun Function to compute effect sizes (default: \code{ES.summary}). See
+#'   \code{\link{IND.PAIR.ES}} for options.
+#' @param tr Proportion of trimming (default: 0.2). Passed to the effect size function.
+#' @param ... Additional arguments passed to \code{fun}.
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item \code{A}: List with J elements. Element j contains effect sizes for
+#'       all pairwise comparisons among levels of Factor B at level j of Factor A.
+#'     \item \code{B}: List with K elements. Element k contains effect sizes for
+#'       all pairwise comparisons among levels of Factor A at level k of Factor B.
+#'   }
+#'
+#' @details
+#' This function provides a comprehensive effect size analysis for a two-way
+#' factorial design by computing:
+#' \enumerate{
+#'   \item For each level of Factor A: All pairwise effect sizes among Factor B levels
+#'   \item For each level of Factor B: All pairwise effect sizes among Factor A levels
+#' }
+#'
+#' This is useful for understanding simple effects and interaction patterns. If
+#' Factor B effect sizes differ across levels of Factor A (or vice versa), this
+#' suggests an interaction.
+#'
+#' The \code{fun} argument controls which effect size measures are computed. Default
+#' is \code{ES.summary} which provides six measures (AKP, EP, QS, QStr, WMW, KMS)
+#' for each comparison.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{IND.PAIR.ES}} for the pairwise comparison engine,
+#'   \code{\link{ES.summary}} for effect size measures, \code{\link{inter.ES}}
+#'   for interaction effect sizes
+#'
+#' @export
+#' @examples
+#' # 2x3 factorial design
+#' set.seed(123)
+#' J <- 2  # Factor A levels
+#' K <- 3  # Factor B levels
+#' # Create data: interaction present
+#' x <- list()
+#' x[[1]] <- rnorm(20, 100, 15)  # A1,B1
+#' x[[2]] <- rnorm(20, 105, 15)  # A1,B2
+#' x[[3]] <- rnorm(20, 110, 15)  # A1,B3
+#' x[[4]] <- rnorm(20, 100, 15)  # A2,B1
+#' x[[5]] <- rnorm(20, 100, 15)  # A2,B2
+#' x[[6]] <- rnorm(20, 100, 15)  # A2,B3
+#'
+#' result <- RCES(J, K, x)
+#' result$A[[1]]  # Factor B comparisons at Factor A level 1
+#' result$B[[1]]  # Factor A comparisons at Factor B level 1
 RCES<-function(J,K,x,fun=ES.summary,tr=.2,...){
-#
-# For each level of Factor A, estimate effect sizes for all pairwise comparisons
-#  among the levels of B
-#
-#  Do the same of Factor B
-#
-#  argument fun, see the function IND.PAIR.ES
 #
 if(is.data.frame(x))x=as.matrix(x)
 if(is.matrix(x))x<-listm(x)
@@ -613,26 +1208,78 @@ list(A=A,B=B)
 }
 
 
+#' Interaction Effect Size for 2×2 Design
+#'
+#' Computes effect size measures for an interaction in a 2×2 factorial design by
+#' comparing the distribution of Factor B differences at level 1 of Factor A vs
+#' level 2 of Factor A.
+#'
+#' @param x Data in matrix, data frame, or list mode with 4 groups arranged as:
+#'   A1B1, A1B2, A2B1, A2B2.
+#' @param method Effect size method to use (default: "EP" for explanatory power).
+#'   Options:
+#'   \itemize{
+#'     \item \code{'DNT'}: De Neve and Thas method (WMW-type)
+#'     \item \code{'PH'}: Patel-Hoel method (Cliff's analog)
+#'     \item \code{'EP'}: Explanatory power
+#'     \item \code{'QS'}: Quantile shift based on median
+#'     \item \code{'QStr'}: Quantile shift based on trimmed mean
+#'     \item \code{'AKP'}: Robust Cohen's d analog
+#'     \item \code{'WMW'}: Wilcoxon-Mann-Whitney type measure
+#'     \item \code{'KMS'}: Heteroscedastic Cohen's d analog
+#'   }
+#' @param iter Number of iterations for sampling when dataset is large (default: 5).
+#' @param SEED Logical. If \code{TRUE}, sets random seed for reproducibility (default: \code{TRUE}).
+#' @param tr Proportion of trimming for AKP and QStr methods (default: 0.2).
+#' @param pr Logical. If \code{TRUE}, prints progress (default: \code{FALSE}).
+#'
+#' @return Effect size estimate for the interaction. Interpretation depends on the
+#'   method chosen (see Details).
+#'
+#' @details
+#' For a 2×2 design, an interaction means the Factor B effect differs across levels
+#' of Factor A. This function quantifies interaction effect size by:
+#' \enumerate{
+#'   \item At Factor A level 1: Estimate distribution of all pairwise differences
+#'     between Factor B levels (X_{A1B1} - X_{A1B2})
+#'   \item At Factor A level 2: Estimate distribution of all pairwise differences
+#'     between Factor B levels (X_{A2B1} - X_{A2B2})
+#'   \item Compute an effect size comparing these two distributions
+#' }
+#'
+#' If the total number of pairwise differences exceeds 1000, the function samples
+#' subsets and averages the effect size estimates across iterations.
+#'
+#' Different methods provide different perspectives:
+#' \itemize{
+#'   \item \strong{DNT, PH, WMW}: Probabilistic measures (e.g., P(D1 < D2))
+#'   \item \strong{EP}: Proportion of variance explained by the interaction
+#'   \item \strong{QS, QStr}: Quantile shift measures
+#'   \item \strong{AKP, KMS}: Standardized difference measures (like Cohen's d)
+#' }
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{interES.2by2}} for multiple effect sizes simultaneously,
+#'   \code{\link{ESfun}} for individual effect size computation, \code{\link{RCES}}
+#'   for simple effects
+#'
+#' @export
+#' @examples
+#' # 2x2 design with interaction
+#' set.seed(123)
+#' x <- list()
+#' x[[1]] <- rnorm(20, 100, 15)  # A1,B1
+#' x[[2]] <- rnorm(20, 110, 15)  # A1,B2 (large B effect at A1)
+#' x[[3]] <- rnorm(20, 100, 15)  # A2,B1
+#' x[[4]] <- rnorm(20, 102, 15)  # A2,B2 (small B effect at A2)
+#'
+#' # Different effect size measures for the interaction
+#' inter.ES(x, method='EP')   # Explanatory power
+#' inter.ES(x, method='AKP')  # Robust Cohen's d analog
+#' inter.ES(x, method='QS')   # Quantile shift
 inter.ES<-function(x,method='EP',iter=5,SEED=TRUE,tr=.2,pr=FALSE){
-#
-#
-# Measures of effect size for an  interaction in a 2-by-2 design
-# For  level 1 of Factor A, estimate the distribution of the
-#  the typical difference for levels 1  and 2 Factor B
-#  Do the same for level 2 of Factor A, and compute  a measure of
-#  effect size based on these two distributions.
-#
-# Choices for the argument method:
-# 'DNT', 'PH,`EP',`QS',`QStr',`AKP',`WMW',`KMS'
-# DNT= De Neve and Thas  method
-# PH=Patel--Hoel
-# EP=explanatory power,
-#  QS= quantile shift (median,
-#  QStr= quantile shift (trimmed mean) ,
-#  AKP =trimmed mean version of Cohen's d,
-# WMW= Wilcoxon type measure
-# KMS=heteroscedastic analog of Cohen's d
-#
 #
 if(is.matrix(x))x=listm(x)
 ef=NA
@@ -909,23 +1556,78 @@ list(B=B)
 }
 
 
+#' Effect Size Summary for Dependent Groups
+#'
+#' Computes four different measures of effect size for comparing two dependent
+#' groups (repeated measures or matched pairs) based on difference scores.
+#'
+#' @param x Numeric vector. If \code{y} is provided, this is the first group/time point.
+#'   If \code{y=NULL}, this should contain the difference scores.
+#' @param y Numeric vector for the second group/time point, or \code{NULL} if \code{x}
+#'   contains difference scores (default: \code{NULL}).
+#' @param tr Proportion of trimming for AKP (default: 0.2).
+#' @param alpha Significance level (default: 0.05) - currently not used in this version.
+#' @param REL.MAG Optional vector of length 3 specifying AKP values considered small,
+#'   medium, and large under normality (default: c(0.1, 0.3, 0.5)). Equivalent values
+#'   for other effect sizes are computed via simulation.
+#' @param SEED Logical. If \code{TRUE}, sets random seed for simulations (default: \code{TRUE}).
+#' @param nboot Number of bootstrap samples (default: 2000) - currently not used in this version.
+#'
+#' @return A 4×5 matrix with rows for each effect size measure and columns:
+#'   \itemize{
+#'     \item \code{NULL}: Null hypothesis value (no effect)
+#'     \item \code{Est}: Point estimate of the effect size
+#'     \item \code{S}: Small effect benchmark
+#'     \item \code{M}: Medium effect benchmark
+#'     \item \code{L}: Large effect benchmark
+#'   }
+#'
+#' Row names indicate the four effect size measures:
+#' \itemize{
+#'   \item \code{AKP}: Robust standardized difference (analog of Cohen's d for paired data)
+#'   \item \code{QS (median)}: Quantile shift based on median of difference scores
+#'   \item \code{QStr}: Quantile shift based on trimmed mean of difference scores
+#'   \item \code{SIGN}: P(X<Y), probability that first observation is less than second
+#' }
+#'
+#' @details
+#' For dependent groups, effect sizes are based on the distribution of difference
+#' scores (X - Y). The four measures assess different aspects:
+#'
+#' \itemize{
+#'   \item \strong{AKP}: Standardized mean difference using robust estimators (trimmed
+#'     mean and winsorized variance). Analogous to Cohen's d but more robust.
+#'   \item \strong{QS}: Proportion of difference distribution below the median. Values
+#'     < 0.5 indicate X tends to be larger than Y.
+#'   \item \strong{QStr}: Similar to QS but based on trimmed mean, balancing robustness
+#'     and efficiency.
+#'   \item \strong{SIGN}: Probability that a randomly selected pair has X < Y. Related
+#'     to the sign test.
+#' }
+#'
+#' Default benchmarks assume normality and are based on simulation. Custom benchmarks
+#' can be specified via REL.MAG.
+#'
+#' For confidence intervals and p-values, use \code{\link{dep.ES.summary.CI}}.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{dep.ES.summary.CI}} for confidence intervals, \code{\link{ES.summary}}
+#'   for independent groups, \code{\link{D.akp.effect}}, \code{\link{depQS}}
+#'
+#' @export
+#' @examples
+#' # Pre-post comparison
+#' before <- c(85, 90, 88, 92, 87, 89, 91, 86, 90, 88)
+#' after <- c(88, 93, 90, 95, 91, 92, 94, 89, 93, 91)
+#' dep.ES.summary(before, after)
+#'
+#' # Using difference scores directly
+#' diff_scores <- before - after
+#' dep.ES.summary(diff_scores)
 dep.ES.summary<-function(x,y=NULL,tr=.2, alpha=.05, REL.MAG=NULL,SEED=TRUE,nboot=2000){
 #
-#
-# For two dependent groups,
-# compute confidence intervals for four measures of effect size based on difference scores:
-#
-#  AKP: robust standardized difference similar to  Cohen's d
-#  QS:  Quantile shift based on the median of the distribution of difference scores,
-#  QStr: Quantile shift based on the trimmed mean of the distribution of X-Y
-#  SIGN:  P(X<Y), probability that for a random pair, the first is less than the second.
-#
-#  y=NULL: Assume difference scores stored in x or only a single distribution is being used.
-#
-#  REL.MAG: suppose it is decided that AKP values .1, .3 and .5 are viewed as small, medium and large under normality Then
-#
-# REL.MAG=c(.1,.3,.5)  the default,
-# means that the function will compute the corresponding values for the measures of effect size used here.
 
 ecom=c(0.10,  0.54,  0.54,  0.46, 0.30,  0.62,
    0.62,  0.38, 0.50,  0.69,  0.69,  0.31)
@@ -981,28 +1683,77 @@ output
 }
 
 
+#' Effect Size Summary with Confidence Intervals (Dependent Groups)
+#'
+#' Computes four different measures of effect size for comparing two dependent
+#' groups along with bootstrap confidence intervals and p-values for each measure.
+#'
+#' @param x Numeric vector. If \code{y} is provided, this is the first group/time point.
+#'   If \code{y=NULL}, this should contain the difference scores.
+#' @param y Numeric vector for the second group/time point, or \code{NULL} if \code{x}
+#'   contains difference scores (default: \code{NULL}).
+#' @param tr Proportion of trimming for AKP (default: 0.2).
+#' @param alpha Significance level for confidence intervals (default: 0.05 for 95% CI).
+#' @param REL.MAG Optional vector of length 3 specifying AKP values considered small,
+#'   medium, and large under normality (default: c(0.1, 0.3, 0.5)). Equivalent values
+#'   for other effect sizes are computed via simulation.
+#' @param SEED Logical. If \code{TRUE}, sets random seed for reproducibility (default: \code{TRUE}).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param AUTO Logical. Passed to binomial confidence interval computation for SIGN
+#'   effect size (default: \code{FALSE}).
+#'
+#' @return A 4×8 matrix with rows for each effect size measure and columns:
+#'   \itemize{
+#'     \item \code{NULL}: Null hypothesis value (no effect)
+#'     \item \code{Est}: Point estimate of the effect size
+#'     \item \code{S}: Small effect benchmark
+#'     \item \code{M}: Medium effect benchmark
+#'     \item \code{L}: Large effect benchmark
+#'     \item \code{ci.low}: Lower confidence limit
+#'     \item \code{ci.up}: Upper confidence limit
+#'     \item \code{p.value}: P-value for testing no effect
+#'   }
+#'
+#' Row names indicate the four effect size measures: AKP, QS (median), QStr, SIGN.
+#'
+#' @details
+#' This function extends \code{\link{dep.ES.summary}} by adding bootstrap confidence
+#' intervals and hypothesis tests for each of the four effect size measures based on
+#' difference scores:
+#'
+#' \itemize{
+#'   \item \strong{AKP}: Percentile bootstrap CI and p-value from D.akp.effect.ci
+#'   \item \strong{QS (median)}: Percentile bootstrap CI and p-value from depQSci
+#'   \item \strong{QStr}: Percentile bootstrap CI and p-value based on trimmed mean
+#'   \item \strong{SIGN}: Exact binomial CI and p-value (P(X<Y) based on signs)
+#' }
+#'
+#' The benchmarks for small/medium/large effects are computed by simulating from
+#' normal distributions with specified standardized mean differences (REL.MAG) and
+#' determining equivalent values for the other effect size measures.
+#'
+#' This provides a comprehensive assessment of paired data effect sizes with proper
+#' uncertainty quantification.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{dep.ES.summary}} for point estimates only, \code{\link{ES.summary.CI}}
+#'   for independent groups, \code{\link{D.akp.effect.ci}}, \code{\link{depQSci}}
+#'
+#' @export
+#' @examples
+#' # Pre-post comparison with CIs
+#' set.seed(123)
+#' before <- rnorm(25, mean=100, sd=15)
+#' after <- before + rnorm(25, mean=5, sd=10)
+#' result <- dep.ES.summary.CI(before, after, nboot=500)
+#' result
+#'
+#' # Check significance
+#' result[result[,"p.value"] < 0.05, ]
 dep.ES.summary.CI<-function(x,y=NULL,tr=.2, alpha=.05, REL.MAG=NULL,SEED=TRUE,nboot=1000,AUTO=FALSE){
 #
-#
-# For two dependent groups,
-# compute confidence intervals for four measures of effect size based on difference scores:
-#
-#  AKP: robust standardized difference similar to  Cohen's d
-#  QS:  Quantile shift based on the median of the distribution of difference scores,
-#  QStr: Quantile shift based on the trimmed mean of the distribution of X-Y
-#  SIGN:  P(X<Y), probability that for a random pair, the first is less than the second.
-#
-#  OPT=TRUE: No effect, difference scores are symmetric about zero.
-#  Under normality, suppose a shift of .2, .5 and .8 standard deviation of the difference score
-#  is considered small, medium and large. The corresponding values for QS and SIGN are printed.
-#
-#  y=NULL: Assume difference scores stored in x or only a single distribution is being used.
-#
-#  REL.MAG: suppose it is decided that AKP values .1, .3 and .5 are viewed as small, medium and large under normality Then
-#
-#  if OPT=T and
-# REL.MAG=c(.1,.3,.5)  the default,
-# means that the function will compute the corresponding values for the measures of effect size used here.
 
 ecom=c(0.10,  0.54,  0.54,  0.46, 0.30,  0.62,
    0.62,  0.38, 0.50,  0.69,  0.69,  0.31)
@@ -1259,13 +2010,75 @@ list(con=con, output=CON)
 }
 
 
+#' Pairwise Effect Sizes for Dependent Groups
+#'
+#' Computes effect size measures for all pairwise comparisons among J dependent
+#' groups (repeated measures). For each pair, computes effect sizes based on the
+#' difference scores.
+#'
+#' @param x Data in matrix, data frame, or list mode. Each column (or list element)
+#'   represents one repeated measure/time point. Rows are matched observations.
+#' @param tr Proportion of trimming for AKP effect size (default: 0.2).
+#' @param CI Logical. If \code{TRUE}, computes bootstrap confidence intervals and
+#'   p-values for each effect size (default: \code{FALSE}).
+#' @param REL.MAG Optional vector of length 3 specifying AKP values considered small,
+#'   medium, and large under normality (default: c(0.1, 0.3, 0.5)). Equivalent values
+#'   for other effect sizes are computed via simulation.
+#' @param SEED Logical. If \code{TRUE}, sets random seed for reproducibility (default: \code{TRUE}).
+#'
+#' @return A list with components:
+#'   \itemize{
+#'     \item \code{groups.compared}: Matrix with 2 columns showing which groups were
+#'       compared in each row
+#'     \item \code{Effect.size.estimates}: List with one element per pairwise comparison,
+#'       each containing output from \code{dep.ES.summary} (if \code{CI=FALSE}) or
+#'       \code{dep.ES.summary.CI} (if \code{CI=TRUE})
+#'   }
+#'
+#' @details
+#' For J dependent groups, computes all J(J-1)/2 pairwise comparisons. For each pair
+#' of groups (i,j), computes effect sizes based on the distribution of difference
+#' scores X_i - X_j using four measures:
+#' \itemize{
+#'   \item \strong{AKP}: Robust standardized difference (analog of Cohen's d)
+#'   \item \strong{QS (median)}: Quantile shift based on median of differences
+#'   \item \strong{QStr}: Quantile shift based on trimmed mean of differences
+#'   \item \strong{SIGN}: P(X_i < X_j), probability first is less than second
+#' }
+#'
+#' When \code{CI=FALSE}, provides point estimates with small/medium/large benchmarks.
+#' When \code{CI=TRUE}, adds bootstrap confidence intervals and p-values.
+#'
+#' This function is useful for repeated measures designs where you want to assess
+#' the magnitude of change between all time points or conditions.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{dep.ES.summary}}, \code{\link{dep.ES.summary.CI}},
+#'   \code{\link{IND.PAIR.ES}} for independent groups
+#'
+#' @export
+#' @examples
+#' # Four time points (repeated measures)
+#' set.seed(123)
+#' n <- 20
+#' time1 <- rnorm(n, mean=100, sd=15)
+#' time2 <- time1 + rnorm(n, mean=3, sd=10)
+#' time3 <- time2 + rnorm(n, mean=2, sd=10)
+#' time4 <- time3 + rnorm(n, mean=1, sd=10)
+#' x <- cbind(time1, time2, time3, time4)
+#'
+#' # Get effect sizes for all pairwise comparisons
+#' result <- DEP.PAIR.ES(x)
+#' result$groups.compared  # Shows which groups were compared
+#' result$Effect.size.estimates[[1]]  # Time 1 vs Time 2
+#'
+#' # With confidence intervals
+#' result_ci <- DEP.PAIR.ES(x, CI=TRUE)
 DEP.PAIR.ES<-function(x,tr=.2,CI=FALSE,
 REL.MAG=NULL,
 SEED=TRUE){
-#
-#  J dependent groups
-#  For each pair of groups, compute a collection of  effect sizes
-#  based on difference scores
 #
 if(is.matrix(x) || is.data.frame(x))x=listm(x)
 J=length(x)

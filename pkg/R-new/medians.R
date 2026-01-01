@@ -7,6 +7,63 @@
 
 
 # ==== msmed ====
+#' Test Linear Contrasts Using Medians
+#'
+#' @description
+#' Performs hypothesis tests for a set of linear contrasts using sample medians
+#' with heteroscedastic standard errors based on the McKean-Schrader method.
+#' Tests whether median-based linear contrasts equal zero for independent groups.
+#'
+#' @param x Data in matrix or list mode. If a matrix, columns represent groups.
+#'   If a list, each element is a group. Can also be a vector if y is specified.
+#' @param y Optional second group when comparing exactly two groups. Default is NA.
+#' @param con A J × d matrix of contrast coefficients where J is the number of groups
+#'   and d is the number of contrasts. If con=0 (default), all pairwise comparisons
+#'   are performed.
+#' @param alpha Nominal alpha level for confidence intervals (default: 0.05).
+#'
+#' @return A list with components:
+#' \item{test}{Matrix with columns: Group(s), test statistic, critical value,
+#'   standard error, p-value, and adjusted p-value.}
+#' \item{psihat}{Matrix with columns: Group(s)/contrast number, estimate,
+#'   CI lower bound, CI upper bound.}
+#'
+#' @details
+#' The function uses sample medians and McKean-Schrader standard errors to test
+#' linear contrasts among independent groups. When con=0, all pairwise comparisons
+#' are performed automatically. The test statistic follows an asymptotic normal
+#' distribution under the null hypothesis.
+#'
+#' When tied values are detected, a warning is issued suggesting the use of
+#' \code{medpb} (bootstrap method) instead, as ties can affect the validity
+#' of the McKean-Schrader standard errors.
+#'
+#' For multiple comparisons, the critical value is adjusted using the maximum
+#' modulus distribution, and both unadjusted and adjusted p-values are provided.
+#'
+#' @references
+#' McKean, J. W., & Schrader, R. M. (1984). A comparison of methods for
+#' studentizing the sample median. Communications in Statistics-Simulation
+#' and Computation, 13(6), 751-773.
+#'
+#' @seealso \code{\link{medpb}}, \code{\link{med2g}}, \code{\link{med1way}}
+#'
+#' @examples
+#' # Compare three independent groups
+#' set.seed(123)
+#' x1 <- rnorm(20, mean = 0)
+#' x2 <- rnorm(20, mean = 0.5)
+#' x3 <- rnorm(20, mean = 1)
+#' data <- list(x1, x2, x3)
+#'
+#' # All pairwise comparisons
+#' msmed(data)
+#'
+#' # Custom contrast: compare group 1 vs average of groups 2 and 3
+#' con <- matrix(c(1, -0.5, -0.5), ncol = 1)
+#' msmed(data, con = con)
+#'
+#' @export
 msmed<-function(x,y=NA,con=0,alpha=.05){
 #
 # Test a set of linear contrasts using Medians
@@ -101,6 +158,72 @@ list(test=test,psihat=psihat)
 }
 
 # ==== med2way ====
+#' Two-Way ANOVA for Medians with Independent Groups
+#'
+#' @description
+#' Performs a J × K (two-way) ANOVA for medians with all groups independent,
+#' allowing for heteroscedasticity. Tests main effects for factors A and B,
+#' as well as the A × B interaction.
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param x Data in list mode. Length should equal J×K, with x[[1]] containing
+#'   data for level (1,1), x[[2]] for level (1,2), etc.
+#' @param grp Vector specifying the order of groups if data are not in the
+#'   default order. For example, grp=c(2,4,3,1) for a 2×2 design indicates
+#'   x[[2]] is level (1,1), x[[4]] is level (1,2), etc.
+#' @param p Total number of groups (should equal J×K). Used for validation.
+#' @param ADJ.P.VALUE Logical; if TRUE (default), compute adjusted p-values
+#'   via simulation. If FALSE, use asymptotic chi-square/F distributions.
+#' @param iter Number of simulation iterations for adjusted p-values when
+#'   ADJ.P.VALUE=TRUE (default: 5000).
+#' @inheritParams common_params
+#'
+#' @return A list with components:
+#' \item{test.A}{Test statistic for Factor A main effect.}
+#' \item{p.val.A}{P-value for Factor A.}
+#' \item{test.B}{Test statistic for Factor B main effect.}
+#' \item{p.val.B}{P-value for Factor B.}
+#' \item{test.AB}{Test statistic for A × B interaction.}
+#' \item{p.val.AB}{P-value for interaction.}
+#'
+#' @details
+#' This function extends \code{\link{med1way}} to two-way factorial designs
+#' with independent groups. It uses McKean-Schrader standard errors for medians
+#' and constructs test statistics that allow for heteroscedasticity.
+#'
+#' For Factor A and B main effects, weighted test statistics are constructed
+#' similar to one-way ANOVA for medians. The interaction test uses a chi-square
+#' statistic based on deviations from the additive model.
+#'
+#' When \code{ADJ.P.VALUE=TRUE}, p-values are computed via simulation to account
+#' for the sampling distribution of the test statistics under the null hypothesis.
+#' When FALSE, asymptotic distributions are used (F for main effects, chi-square
+#' for interaction).
+#'
+#' A warning is issued if tied values are detected, suggesting the use of
+#' \code{m2way} (bootstrap method) instead.
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @seealso \code{\link{med1way}}, \code{\link{m2way}}, \code{\link{t2way}}
+#'
+#' @examples
+#' # Two-way ANOVA for medians
+#' set.seed(123)
+#' # 2x3 design: 2 levels of A, 3 levels of B
+#' data <- list(
+#'   rnorm(15, mean = 0),    # A1,B1
+#'   rnorm(15, mean = 0.5),  # A1,B2
+#'   rnorm(15, mean = 0.3),  # A1,B3
+#'   rnorm(15, mean = 1),    # A2,B1
+#'   rnorm(15, mean = 1.5),  # A2,B2
+#'   rnorm(15, mean = 1.2)   # A2,B3
+#' )
+#'
+#' med2way(J = 2, K = 3, x = data, iter = 2000)
+#'
+#' @export
 med2way<-function(J,K,x,grp=c(1:p),p=J*K, ADJ.P.VALUE=TRUE, iter=5000,SEED=TRUE){
 #
 #  Perform a J by K (two-way) anova on  medians where
@@ -192,6 +315,25 @@ list(test.A=Va,p.val.A=sig.A,test.B=Vb,p.val.B=sig.B,test.AB=Vab,p.val.AB=sig.AB
 }
 
 # ==== med2way.sub ====
+#' Helper Function for Two-Way Median ANOVA (Internal)
+#'
+#' @description
+#' Internal helper function used by \code{\link{med2way.crit}} to compute
+#' test statistics for two-way ANOVA on medians. Not intended for direct use.
+#'
+#' @inheritParams med2way
+#'
+#' @return A list with test statistics and p-values for Factor A, Factor B,
+#'   and A × B interaction (same structure as \code{\link{med2way}}).
+#'
+#' @details
+#' This function performs the same computations as \code{\link{med2way}} but
+#' without p-value adjustments or simulation options. It is called repeatedly
+#' during simulation to determine critical values for the adjusted p-values.
+#'
+#' @seealso \code{\link{med2way}}, \code{\link{med2way.crit}}
+#'
+#' @keywords internal
 med2way.sub<-function(J,K,x,grp=c(1:p),p=J*K){
 #
 #  Perform a J by K (two-way) anova on  medians where
@@ -276,6 +418,34 @@ list(test.A=Va,p.val.A=sig.A,test.B=Vb,p.val.B=sig.B,test.AB=Vab,p.val.AB=sig.AB
 }
 
 # ==== med2way.crit ====
+#' Estimate Null Distribution for Two-Way Median ANOVA (Internal)
+#'
+#' @description
+#' Internal helper function that simulates the null distribution for
+#' \code{\link{med2way}} test statistics via Monte Carlo. Used to compute
+#' adjusted p-values. Not intended for direct use.
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param n Matrix (J×K) of sample sizes for each group.
+#' @param iter Number of simulation iterations.
+#' @inheritParams common_params
+#'
+#' @return A list with components:
+#' \item{A.dist}{Vector of simulated test statistics for Factor A under the null.}
+#' \item{B.dist}{Vector of simulated test statistics for Factor B under the null.}
+#' \item{AB.dist}{Vector of simulated test statistics for A × B interaction under the null.}
+#'
+#' @details
+#' For each iteration, data are generated from a standard normal distribution
+#' with sample sizes matching the original data. Test statistics are computed
+#' using \code{\link{med2way.sub}}. The resulting empirical distributions are
+#' used by \code{\link{med2way}} to compute adjusted p-values that account for
+#' the sampling distribution under the null hypothesis.
+#'
+#' @seealso \code{\link{med2way}}, \code{\link{med2way.sub}}
+#'
+#' @keywords internal
 med2way.crit<-function(J,K,n,iter,SEED=TRUE){
 #
 # Estimate the null distribution for med2way
@@ -296,6 +466,59 @@ list(A.dist=A.dist,B.dist=B.dist,AB.dist=AB.dist)
 }
 
 # ==== med1way ====
+#' Heteroscedastic One-Way ANOVA for Medians
+#'
+#' @description
+#' Performs a one-way ANOVA for comparing medians across J independent groups,
+#' allowing for heteroscedasticity (unequal variances). Uses a test statistic
+#' based on weighted medians with McKean-Schrader standard errors.
+#'
+#' @inheritParams common_params
+#' @param x Data in matrix or list mode. If a matrix, columns represent groups.
+#'   If a list, each element is a group.
+#' @param crit Optional critical value. If NA (default), the critical value
+#'   is determined via simulation for the specified alpha level. Specifying
+#'   a value reduces execution time but no p-value is computed.
+#' @param iter Number of simulation iterations for determining the critical
+#'   value when crit=NA (default: 5000).
+#' @param pr Logical; if TRUE, print progress messages (default: TRUE).
+#'
+#' @return A list with components:
+#' \item{TEST}{Test statistic value.}
+#' \item{crit.val}{Critical value for the test.}
+#' \item{p.value}{P-value (only when crit=NA).}
+#'
+#' @details
+#' The test statistic is a weighted sum of squared deviations of group medians
+#' from the weighted grand median, divided by J-1. Weights are the inverse
+#' squared McKean-Schrader standard errors.
+#'
+#' When \code{crit=NA}, the critical value is determined via simulation under
+#' the null hypothesis of equal medians, assuming normality with group-specific
+#' variances estimated from the data. The simulation approach accounts for the
+#' dependence of the critical value on sample sizes.
+#'
+#' The test allows for heteroscedasticity, making it more robust than classical
+#' ANOVA when variances are unequal across groups.
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @seealso \code{\link{med2way}}, \code{\link{msmed}}, \code{\link{t1way}}
+#'
+#' @examples
+#' # One-way ANOVA for medians
+#' set.seed(123)
+#' g1 <- rnorm(20, mean = 0, sd = 1)
+#' g2 <- rnorm(25, mean = 0.5, sd = 1.5)
+#' g3 <- rnorm(30, mean = 1, sd = 2)
+#' data <- list(g1, g2, g3)
+#'
+#' med1way(data, iter = 2000)
+#'
+#' # Compare subset of groups
+#' med1way(data, grp = c(1, 3))
+#'
+#' @export
 med1way<-function(x,grp=NA,alpha=.05,crit=NA,iter=5000,SEED=TRUE,pr=TRUE){
 #
 #  A heteroscedastic one-way ANOVA for medians.
@@ -355,6 +578,36 @@ list(TEST=TEST,crit.val=crit.val,p.value=temp$p.value)
 }
 
 # ==== med1way.crit ====
+#' Determine Critical Value for One-Way Median ANOVA (Internal)
+#'
+#' @description
+#' Internal helper function that determines critical values for \code{\link{med1way}}
+#' via simulation under normality. Used to account for the dependence of critical
+#' values on sample sizes. Not intended for direct use.
+#'
+#' @param n Vector of sample sizes for each group.
+#' @inheritParams common_params
+#' @param iter Number of simulation iterations (default: 1000).
+#' @param TEST Optional observed test statistic value. If provided, a p-value
+#'   is computed (default: NA).
+#'
+#' @return A list with components:
+#' \item{crit.val}{Critical value for the specified alpha level.}
+#' \item{p.value}{P-value if TEST is specified, otherwise NA.}
+#'
+#' @details
+#' For each iteration, data are generated from standard normal distributions
+#' with sample sizes matching the input. The test statistic from \code{\link{med1way}}
+#' is computed for each simulated dataset. The critical value is the (1-alpha)
+#' quantile of the simulated distribution.
+#'
+#' If an observed test statistic is provided via TEST, a p-value is computed
+#' as the proportion of simulated statistics that are less than or equal to
+#' the observed value.
+#'
+#' @seealso \code{\link{med1way}}
+#'
+#' @keywords internal
 med1way.crit<-function(n,alpha=.05,iter=1000,TEST=NA,SEED=TRUE){
 #
 #  Determine the critical value for the function
@@ -388,6 +641,60 @@ list(crit.val=crit.val,p.value=pval)
 }
 
 # ==== bpmed ====
+#' Bootstrap Percentile Method for Median Contrasts (Bonett-Price SE)
+#'
+#' @description
+#' Tests linear contrasts among medians of independent groups using the
+#' Bonett-Price standard error estimator. Similar to \code{\link{msmed}} but
+#' uses a different method for estimating standard errors.
+#'
+#' @inheritParams common_params
+#' @param x Data in matrix or list mode. If a matrix, columns represent groups.
+#'   If a list, each element is a group.
+#' @param con A J × d matrix of contrast coefficients. If con=0 (default),
+#'   all pairwise comparisons are performed.
+#'
+#' @return A list with components:
+#' \item{test}{Matrix with columns: Group(s), test statistic, critical value,
+#'   and standard error.}
+#' \item{psihat}{Matrix with columns: Group(s)/contrast number, estimate,
+#'   CI lower bound, CI upper bound.}
+#'
+#' @details
+#' This function is similar to \code{\link{msmed}} but uses the Bonett-Price
+#' method for estimating the standard error of the median, implemented in
+#' \code{\link{bpmedse}}. The Bonett-Price method may provide better coverage
+#' in small samples compared to the McKean-Schrader method.
+#'
+#' Test statistics are computed as the difference in medians divided by the
+#' pooled standard error. For multiple comparisons, critical values are
+#' adjusted using the studentized maximum modulus distribution.
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @references
+#' Price, R. M., & Bonett, D. G. (2001). Estimating the variance of the
+#' sample median. Journal of Statistical Computation and Simulation,
+#' 68(3), 295-305.
+#'
+#' @seealso \code{\link{msmed}}, \code{\link{bpmedse}}, \code{\link{medpb}}
+#'
+#' @examples
+#' # Compare three groups using Bonett-Price SE
+#' set.seed(123)
+#' x1 <- rnorm(20, mean = 0)
+#' x2 <- rnorm(20, mean = 0.5)
+#' x3 <- rnorm(20, mean = 1)
+#' data <- list(x1, x2, x3)
+#'
+#' # All pairwise comparisons
+#' bpmed(data)
+#'
+#' # Custom contrast
+#' con <- matrix(c(1, -0.5, -0.5), ncol = 1)
+#' bpmed(data, con = con)
+#'
+#' @export
 bpmed<-function(x,con=0,alpha=.05){
 #
 if(is.data.frame(x))x=as.matrix(x)
@@ -463,6 +770,47 @@ list(test=test,psihat=psihat)
 }
 
 # ==== bpmedse ====
+#' Bonett-Price Standard Error for the Median
+#'
+#' @description
+#' Computes the standard error of the sample median using the method
+#' recommended by Price and Bonett (2001).
+#'
+#' @param x Numeric vector of data.
+#'
+#' @return Numeric standard error estimate for the median.
+#'
+#' @details
+#' The Bonett-Price method estimates the standard error by constructing
+#' a confidence interval for the median and converting it to a standard
+#' error estimate. It uses the binomial distribution to determine the
+#' appropriate order statistics, then computes:
+#'
+#' SE = (U - L) / (2 * z),
+#'
+#' where U and L are the upper and lower confidence bounds from order
+#' statistics, and z is the normal critical value corresponding to the
+#' confidence level.
+#'
+#' This method tends to provide better coverage in small to moderate
+#' samples compared to asymptotic methods.
+#'
+#' Missing values are automatically removed before computation.
+#'
+#' @references
+#' Price, R. M., & Bonett, D. G. (2001). Estimating the variance of the
+#' sample median. Journal of Statistical Computation and Simulation,
+#' 68(3), 295-305.
+#'
+#' @seealso \code{\link{bpmed}}, \code{\link{msmedse}}
+#'
+#' @examples
+#' # Standard error for median
+#' set.seed(123)
+#' x <- rnorm(50, mean = 5, sd = 2)
+#' bpmedse(x)
+#'
+#' @export
 bpmedse<-function(x){
 #
 # compute standard error of the median using method
@@ -482,6 +830,68 @@ se
 }
 
 # ==== exmed ====
+#' Exact Median Contrasts with Simulation-Based Critical Values
+#'
+#' @description
+#' Tests linear contrasts among medians of independent groups using simulation
+#' to determine critical values that provide exact familywise error control
+#' under normality (when iteration count is sufficiently large).
+#'
+#' @inheritParams common_params
+#' @param x Data in matrix or list mode. If a matrix, columns represent groups.
+#'   If a list, each element is a group. Can also be a vector if y is specified.
+#' @param y Optional second group when comparing exactly two groups. Default is NA.
+#' @param con A J × d matrix of contrast coefficients. If con=0 (default),
+#'   all pairwise comparisons are performed.
+#' @param iter Number of simulation iterations for determining critical values
+#'   (default: 1000). Larger values provide more accurate control of Type I error.
+#' @param se.fun Function for estimating standard errors. Default is
+#'   \code{\link{bpmedse}} (Bonett-Price method). Can also use
+#'   \code{\link{msmedse}} (McKean-Schrader method).
+#'
+#' @return A list with components:
+#' \item{test}{Matrix with columns: Group(s), test statistic, critical value,
+#'   standard error, and p-value (unadjusted).}
+#' \item{psihat}{Matrix with columns: Group(s)/contrast number, estimate,
+#'   CI lower bound (adjusted for FWE), CI upper bound (adjusted for FWE).}
+#'
+#' @details
+#' This function provides exact control over the familywise error rate (FWE)
+#' under normality by simulating the null distribution of the test statistics.
+#' For each iteration, data are generated from standard normal distributions
+#' with sample sizes matching the original data, and the maximum absolute
+#' test statistic is recorded. The (1-alpha) quantile of this distribution
+#' is used as the critical value.
+#'
+#' \strong{Advantages}:
+#' \itemize{
+#'   \item Exact FWE control under normality (assuming sufficient iterations)
+#'   \item Accounts for dependence among test statistics
+#'   \item Provides both adjusted CIs and unadjusted p-values
+#' }
+#'
+#' The confidence intervals are simultaneous intervals with coverage 1-alpha.
+#' Individual p-values are provided but are not adjusted for multiplicity.
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @seealso \code{\link{msmed}}, \code{\link{bpmed}}, \code{\link{medpb}}
+#'
+#' @examples
+#' # Compare three groups with exact FWE control
+#' set.seed(123)
+#' x1 <- rnorm(20, mean = 0)
+#' x2 <- rnorm(20, mean = 0.5)
+#' x3 <- rnorm(20, mean = 1)
+#' data <- list(x1, x2, x3)
+#'
+#' # All pairwise comparisons (500 iterations for speed)
+#' exmed(data, iter = 500)
+#'
+#' # Using McKean-Schrader SE instead
+#' exmed(data, se.fun = msmedse, iter = 500)
+#'
+#' @export
 exmed<-function(x,y=NA,con=0,alpha=.05,iter=1000,se.fun=bpmedse,SEED=TRUE){
 #
 # Test a set of linear contrasts using medians
@@ -598,6 +1008,33 @@ list(test=test,psihat=psihat)
 }
 
 # ==== msmedsub ====
+#' Simulate Studentized Critical Values for Median Contrasts (Internal)
+#'
+#' @description
+#' Internal helper function for \code{\link{exmed}} that simulates studentized
+#' critical values for median contrasts under normality and homoscedasticity.
+#' Not intended for direct use.
+#'
+#' @param n Vector of sample sizes for each group.
+#' @param con A J × d matrix of contrast coefficients. If con=0 (default),
+#'   all pairwise comparisons are performed.
+#' @inheritParams common_params
+#' @param se.fun Function for estimating standard errors (default: \code{\link{bpmedse}}).
+#' @param iter Number of simulation iterations (default: 1000).
+#'
+#' @return A sorted vector of maximum absolute studentized test statistics
+#'   from the simulated null distribution.
+#'
+#' @details
+#' For each iteration, data are generated from standard normal distributions
+#' with the specified sample sizes. Medians and standard errors are computed,
+#' then test statistics are calculated for each contrast. The maximum absolute
+#' test statistic is recorded. The returned vector can be used to determine
+#' critical values at any alpha level.
+#'
+#' @seealso \code{\link{exmed}}
+#'
+#' @keywords internal
 msmedsub<-function(n,con=0,alpha=.05,se.fun=bpmedse,iter=1000,SEED=TRUE){
 #
 # Determine a Studentized critical value, assuming normality
@@ -649,6 +1086,29 @@ testmax
 }
 
 # ==== medpb.old ====
+#' Old Version of Bootstrap Median Comparisons (Deprecated)
+#'
+#' @description
+#' Deprecated version of \code{\link{medpb}} using Rom's method for FWER control.
+#' Retained for backward compatibility. Use \code{\link{medpb}} instead, which
+#' offers more flexible FWER control methods.
+#'
+#' @inheritParams medpb
+#'
+#' @return Same as \code{\link{medpb}}.
+#'
+#' @details
+#' This is the original implementation of \code{medpb} that used Rom's method
+#' for familywise error rate control. The current version (\code{\link{medpb}})
+#' defaults to Hochberg's method but offers multiple options via the \code{method}
+#' parameter.
+#'
+#' The main difference is that this version does not include adjusted p-values
+#' in the output, while the current version does.
+#'
+#' @seealso \code{\link{medpb}}
+#'
+#' @keywords internal
 medpb.old<-function(x,alpha=.05,nboot=NA,grp=NA,est=median,con=0,bhop=FALSE,
 SEED=TRUE,...){
 #
@@ -775,6 +1235,71 @@ list(output=output,con=con,num.sig=num.sig)
 }
 
 # ==== medpb ====
+#' Multiple Comparisons for Independent Groups Using Bootstrap Medians
+#'
+#' @description
+#' Performs multiple comparisons among J independent groups using medians
+#' (or other location estimators) with percentile bootstrap inference.
+#' Controls familywise error rate (FWER) using adjustable methods.
+#'
+#' @inheritParams common_params
+#' @param x Data in matrix or list mode. If a matrix, columns represent groups.
+#'   If a list, each element is a group.
+#' @param est Measure of location to use (default: median). Can be any function
+#'   that computes a location estimate.
+#' @param ... Optional arguments passed to the estimator function \code{est}.
+#' @param con A J × d matrix of contrast coefficients. If con=0 (default),
+#'   all pairwise comparisons are performed.
+#' @param bhop Logical; if TRUE, use Benjamini-Hochberg procedure for FDR control
+#'   instead of FWER control (default: FALSE).
+#' @param method Method for FWER control. Options: 'hoch' (Hochberg, default),
+#'   'rom' (Rom), 'holm' (Holm), 'BY' (Benjamini-Yekutieli).
+#'
+#' @return A list with components:
+#' \item{output}{Matrix with columns: Group(s), p-value, comparison estimate,
+#'   CI lower bound, CI upper bound, and adjusted p-value.}
+#' \item{con}{The contrast matrix used.}
+#' \item{num.sig}{Number of significant comparisons at the alpha level.}
+#'
+#' @details
+#' This function uses percentile bootstrap to perform multiple comparisons among
+#' independent groups. For each comparison, bootstrap samples are drawn independently
+#' from each group, and the difference in location estimates is computed.
+#'
+#' The p-value is computed by determining the proportion of bootstrap replicates
+#' where the estimated difference is on the opposite side of zero compared to
+#' the observed difference.
+#'
+#' FWER control methods:
+#' \itemize{
+#'   \item Hochberg (default): Step-up procedure, more powerful than Holm
+#'   \item Rom: Improved version of Holm's procedure
+#'   \item Holm: Step-down procedure
+#'   \item BY: Benjamini-Yekutieli for dependent tests
+#' }
+#'
+#' When \code{bhop=TRUE}, the Benjamini-Hochberg FDR procedure is used instead.
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @seealso \code{\link{msmed}}, \code{\link{med2g}}, \code{\link{linconb}}
+#'
+#' @examples
+#' # Compare three groups
+#' set.seed(123)
+#' x1 <- rnorm(20, mean = 0)
+#' x2 <- rnorm(20, mean = 0.5)
+#' x3 <- rnorm(20, mean = 1)
+#' data <- list(x1, x2, x3)
+#'
+#' # All pairwise comparisons with median
+#' medpb(data, nboot = 1000)
+#'
+#' # Custom contrast with trimmed mean
+#' con <- matrix(c(1, -0.5, -0.5), ncol = 1)
+#' medpb(data, con = con, est = mean, trim = 0.2, nboot = 1000)
+#'
+#' @export
 medpb<-function(x,alpha=.05,nboot=NA,grp=NA,est=median,con=0,bhop=FALSE,method='hoch',
 SEED=TRUE,...){
 #
@@ -903,6 +1428,46 @@ list(output=output,con=con,num.sig=num.sig)
 }
 
 # ==== med2g ====
+#' Compare Medians of Two Independent Groups Using Bootstrap
+#'
+#' @description
+#' Tests the hypothesis that two independent groups have equal medians using
+#' a percentile bootstrap method. Provides a bootstrap p-value and confidence
+#' interval for the difference in medians.
+#'
+#' @inheritParams common_params
+#' @param x Numeric vector for first group.
+#' @param y Numeric vector for second group.
+#'
+#' @return A list with components:
+#' \item{p.value}{Bootstrap p-value for test of equal medians.}
+#' \item{est.1}{Sample median of first group.}
+#' \item{est.2}{Sample median of second group.}
+#' \item{est.dif}{Difference in sample medians (group 1 - group 2).}
+#' \item{ci.low}{Lower confidence limit for the difference.}
+#' \item{ci.up}{Upper confidence limit for the difference.}
+#'
+#' @details
+#' The function generates bootstrap samples from each group independently and
+#' computes the median for each sample. The p-value is computed by determining
+#' the proportion of bootstrap replicates where group 1 median exceeds group 2
+#' median, adjusting for ties and converting to a two-sided test.
+#'
+#' The confidence interval is obtained from the empirical distribution of
+#' bootstrap differences using the percentile method.
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @seealso \code{\link{msmed}}, \code{\link{medpb}}, \code{\link{msmedci}}
+#'
+#' @examples
+#' # Compare medians of two groups
+#' set.seed(123)
+#' x <- rnorm(25, mean = 0)
+#' y <- rnorm(30, mean = 0.5)
+#' med2g(x, y, nboot = 1000)
+#'
+#' @export
 med2g<-function(x,y,alpha=.05,nboot=2000,SEED=TRUE,...){
 #
 #   Compare medians of two independent groups using percentile bootstrap
@@ -935,6 +1500,52 @@ list(p.value=test,est.1=mvec[1],est.2=mvec[2],est.dif=mvec[1]-mvec[2],ci.low=cil
 }
 
 # ==== msmedci ====
+#' Confidence Interval for the Median Using McKean-Schrader Method
+#'
+#' @description
+#' Computes a confidence interval for the population median using the
+#' McKean-Schrader standard error. Also provides a hypothesis test for
+#' whether the median equals a specified null value.
+#'
+#' @inheritParams common_params
+#' @param x Numeric vector of data.
+#' @param nullval Null hypothesis value for the median (default: 0).
+#'
+#' @return A list with components:
+#' \item{test}{Test statistic for H0: median = nullval.}
+#' \item{ci.low}{Lower confidence limit for the median.}
+#' \item{ci.hi}{Upper confidence limit for the median.}
+#' \item{p.value}{Two-sided p-value for the test.}
+#' \item{median}{Sample median.}
+#'
+#' @details
+#' The function uses the McKean-Schrader method to estimate the standard error
+#' of the sample median. The test statistic is computed as (median - nullval) / SE,
+#' and p-values are based on the standard normal distribution.
+#'
+#' Confidence intervals are constructed as median ± critical value × SE, where
+#' the critical value is from the standard normal distribution.
+#'
+#' This approach is appropriate when the sample median is approximately normally
+#' distributed, which holds for reasonably large samples from continuous distributions.
+#'
+#' @references
+#' McKean, J. W., & Schrader, R. M. (1984). A comparison of methods for
+#' studentizing the sample median. Communications in Statistics-Simulation
+#' and Computation, 13(6), 751-773.
+#'
+#' @seealso \code{\link{medcipb}}, \code{\link{msmed}}
+#'
+#' @examples
+#' # CI for median
+#' set.seed(123)
+#' x <- rnorm(50, mean = 5, sd = 2)
+#' msmedci(x)
+#'
+#' # Test if median equals 5
+#' msmedci(x, nullval = 5)
+#'
+#' @export
 msmedci<-function(x,alpha=.05,nullval=0){
 #
 # Confidence interval for the median
@@ -949,6 +1560,51 @@ list(test=test,ci.low=ci.low,ci.hi=ci.hi,p.value=p.value,median=est)
 }
 
 # ==== medcipb ====
+#' Bootstrap Confidence Interval for the Median
+#'
+#' @description
+#' Computes a percentile bootstrap confidence interval for the median of a
+#' single variable. Optionally performs a hypothesis test if a null value
+#' is specified.
+#'
+#' @inheritParams common_params
+#' @param x Numeric vector of data.
+#' @param null.val Optional null hypothesis value for the median. If specified,
+#'   a bootstrap p-value is computed (default: NA).
+#'
+#' @return A list with components:
+#' \item{Est.}{Sample median.}
+#' \item{ci.low}{Lower confidence limit.}
+#' \item{ci.up}{Upper confidence limit.}
+#' \item{p.value}{Bootstrap p-value (only if null.val is specified).}
+#'
+#' @details
+#' The function generates bootstrap samples by resampling with replacement
+#' from the original data. For each bootstrap sample, the median is computed.
+#'
+#' The confidence interval is obtained using the percentile method: the
+#' alpha/2 and 1-alpha/2 quantiles of the bootstrap distribution.
+#'
+#' If a null value is specified, the p-value is computed by determining
+#' the proportion of bootstrap medians greater than the null value, adjusting
+#' for ties, and converting to a two-sided test.
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' For the Harrell-Davis estimator version, see \code{\link{hdpb}}.
+#'
+#' @seealso \code{\link{msmedci}}, \code{\link{hdpb}}, \code{\link{onesampb}}
+#'
+#' @examples
+#' # Bootstrap CI for median
+#' set.seed(123)
+#' x <- rnorm(30, mean = 5, sd = 2)
+#' medcipb(x, nboot = 1000)
+#'
+#' # Test if median equals 5
+#' medcipb(x, null.val = 5, nboot = 1000)
+#'
+#' @export
 medcipb<-function(x,alpha=.05,null.val=NA,nboot=500,SEED=TRUE,...){
 #
 #   Bootstrap confidence interval for the median of single variable.
@@ -978,6 +1634,66 @@ list(Est.=est,ci.low=cilow,ci.up=ciup,p.value=test)
 }
 
 # ==== medr ====
+#' Robust Median Comparisons Using Depth-Based Methods
+#'
+#' @description
+#' Tests the hypothesis that pairwise differences among groups have location
+#' equal to zero using a depth-based multivariate approach. Provides a global
+#' test that accounts for the dependence among all pairwise comparisons.
+#'
+#' @inheritParams common_params
+#' @param x Data in matrix or list mode. If a matrix, columns represent groups.
+#'   If a list, each element is a group.
+#' @param est Measure of location to use (default: median).
+#' @param ... Optional arguments passed to the estimator function \code{est}.
+#' @param op Method for computing depth (default: 1). Options:
+#'   \itemize{
+#'     \item 1: Mahalanobis depth
+#'     \item 2: Mahalanobis depth based on MCD covariance matrix
+#'     \item 3: Projection depth
+#'     \item 4: Projection depth using FORTRAN implementation
+#'   }
+#' @param MM Logical; for projection depth, use modified algorithm (see \code{\link{pdis}}).
+#' @param cop Integer; for projection depth, method for computing center (see \code{\link{pdis}}).
+#' @param pr Logical; if TRUE (default), print progress messages.
+#'
+#' @return A list with components:
+#' \item{p.value}{Overall p-value for the global test.}
+#' \item{output}{Matrix showing group pairs and estimated pairwise differences.}
+#'
+#' @details
+#' This function treats the vector of all pairwise differences as a multivariate
+#' observation and uses data depth to construct a global test. The null hypothesis
+#' is that all pairwise differences have median (or other location measure) equal
+#' to zero.
+#'
+#' \strong{Procedure}:
+#' \enumerate{
+#'   \item Compute all pairwise differences in location estimates
+#'   \item Generate bootstrap samples and compute pairwise differences
+#'   \item Use depth-based methods to compare observed differences to bootstrap null distribution
+#' }
+#'
+#' The test accounts for the dependence among pairwise comparisons by treating
+#' them jointly in a multivariate space. Depth is measured relative to the
+#' bootstrap distribution centered at the observed differences.
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @seealso \code{\link{medpb}}, \code{\link{pdis}}, \code{\link{mahalanobis}}
+#'
+#' @examples
+#' # Global test for median differences
+#' set.seed(123)
+#' x1 <- rnorm(20, mean = 0)
+#' x2 <- rnorm(20, mean = 0)
+#' x3 <- rnorm(20, mean = 0)
+#' data <- list(x1, x2, x3)
+#'
+#' # Using Mahalanobis depth
+#' medr(data, nboot = 500)
+#'
+#' @export
 medr<-function(x,est=median,alpha=.05,nboot=500,grp=NA,op=1,MM=FALSE,cop=3,pr=TRUE,
 SEED=TRUE,...){
 #
@@ -1069,6 +1785,75 @@ list(p.value=sig.level,output=output)
 }
 
 # ==== medind ====
+#' Independence Test Based on Quantile Regression for Median
+#'
+#' @description
+#' Tests whether a regression relationship exists between predictors and a
+#' response by testing if the regression surface is a flat horizontal plane.
+#' Uses a quantile regression approach with the median (or other quantiles).
+#'
+#' @param x Matrix or data frame of predictor variables (can have 1-8 columns).
+#' @param y Numeric vector of response variable.
+#' @param qval Quantile to use (default: 0.5 for median). Can also use 0.25 or 0.75.
+#' @inheritParams common_params
+#' @param nboot Number of simulations for computing p-value when com.pval=TRUE
+#'   (default: 1000).
+#' @param com.pval Logical; if TRUE, compute p-value via simulation. If FALSE
+#'   (default), use approximate critical values from stored tables.
+#' @param pr Logical; if TRUE (default), print informational messages.
+#' @param xout Logical; if TRUE, remove outliers from predictors before testing
+#'   (default: FALSE).
+#' @param outfun Function for detecting outliers when xout=TRUE (default: \code{\link{out}}).
+#' @param ... Additional arguments passed to \code{outfun}.
+#'
+#' @return A list with components:
+#' \item{test.stat}{The test statistic value.}
+#' \item{crit.value}{Critical value for the test.}
+#' \item{p.value}{P-value (only if com.pval=TRUE).}
+#' \item{Decision}{Character string: "Reject" or "Fail To Reject".}
+#'
+#' @details
+#' This function tests the null hypothesis that the predictors have no
+#' relationship with the response at the specified quantile level. It is
+#' based on a modification of the method by He and Zhu (2003).
+#'
+#' \strong{Null hypothesis}: The qval-th quantile of Y is constant regardless
+#' of the values of X (i.e., the quantile regression surface is flat).
+#'
+#' Approximate critical values are available for:
+#' \itemize{
+#'   \item Sample sizes: 10 ≤ n ≤ 400
+#'   \item Number of predictors: p = 1, ..., 8
+#'   \item Quantiles: 0.25, 0.5, 0.75
+#'   \item Alpha levels: 0.01, 0.025, 0.05, 0.10
+#' }
+#'
+#' If data characteristics fall outside these ranges, set com.pval=TRUE to
+#' compute a p-value via simulation (which increases computation time).
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @references
+#' He, X., & Zhu, L. X. (2003). A lack-of-fit test for quantile regression.
+#' Journal of the American Statistical Association, 98(464), 1013-1022.
+#'
+#' @seealso \code{\link{qreg}}, \code{\link{medcipb}}
+#'
+#' @examples
+#' # Test for median regression relationship
+#' set.seed(123)
+#' n <- 50
+#' x <- rnorm(n)
+#' y <- 2 * x + rnorm(n)  # Linear relationship
+#'
+#' # Should reject (relationship exists)
+#' medind(x, y, qval = 0.5)
+#'
+#' # No relationship
+#' y2 <- rnorm(n)
+#' medind(x, y2, qval = 0.5)
+#'
+#' @export
 medind<-function(x,y,qval=.5,nboot=1000,com.pval=FALSE,SEED=TRUE,alpha=.05,pr=TRUE,
 xout=FALSE,outfun=out,...){
 #
@@ -1348,6 +2133,27 @@ list(test.stat=test,crit.value=crit.val,p.value=p.val,Decision=Decision)
 }
 
 # ==== medindsub ====
+#' Helper Function for Median Independence Test (Internal)
+#'
+#' @description
+#' Internal helper function for \code{\link{medind}} that computes the test
+#' statistic for a single dataset. Used during simulation. Not intended for
+#' direct use.
+#'
+#' @param x Matrix of predictor variables.
+#' @param y Numeric vector of response variable.
+#' @param qval Quantile level (default: 0.5 for median).
+#'
+#' @return Numeric test statistic value.
+#'
+#' @details
+#' Computes the test statistic for the quantile regression independence test
+#' without storing critical values or computing p-values. Called repeatedly
+#' during simulation in \code{\link{medind}}.
+#'
+#' @seealso \code{\link{medind}}
+#'
+#' @keywords internal
 medindsub<-function(x,y,qval=.5){
 #
 x<-as.matrix(x)
@@ -1381,6 +2187,43 @@ test
 }
 
 # ==== msmedse ====
+#' McKean-Schrader Standard Error for the Median
+#'
+#' @description
+#' Computes the standard error of the sample median using the method
+#' recommended by McKean and Schrader (1984).
+#'
+#' @param x Numeric vector of data.
+#'
+#' @return Numeric standard error estimate for the median.
+#'
+#' @details
+#' The McKean-Schrader method estimates the standard error by computing
+#' an empirical confidence interval for the median and converting it to
+#' a standard error. Specifically, it uses the 99% confidence interval
+#' bounds and divides by the appropriate normal critical value.
+#'
+#' A warning is issued if tied values are detected, as ties can make the
+#' standard error estimate highly inaccurate, even with large samples.
+#' In such cases, consider using bootstrap methods instead.
+#'
+#' Missing values are automatically removed before computation.
+#'
+#' @references
+#' McKean, J. W., & Schrader, R. M. (1984). A comparison of methods for
+#' studentizing the sample median. Communications in Statistics-Simulation
+#' and Computation, 13(6), 751-773.
+#'
+#' @seealso \code{\link{msmedci}}, \code{\link{msmed}}
+#'
+#' @examples
+#' # Standard error for median
+#' set.seed(123)
+#' x <- rnorm(50, mean = 5, sd = 2)
+#' msmedse(x)
+#'
+#' @keywords internal
+#' @export
 msmedse<-function(x){
 #
 # Compute  standard error of the median using method
@@ -1402,7 +2245,70 @@ sqse<-sqrt(sqse)
 sqse
 }
 
-# ==== medpb2 ====
+# ==== med2mcp ====
+#' Multiple Comparisons for Two-Way ANOVA Using Medians
+#'
+#' @description
+#' Performs multiple comparisons for a J × K factorial design using medians
+#' with percentile bootstrap methods. Tests main effects for factors A and B,
+#' as well as interaction contrasts.
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param x Data in list mode. Length should equal J×K, with x[[1]] containing
+#'   data for level (1,1), x[[2]] for level (1,2), etc.
+#' @param grp Vector specifying the order of groups if data are not in the
+#'   default order.
+#' @param p Total number of groups (should equal J×K). Used for validation.
+#' @inheritParams common_params
+#' @param bhop Logical; if TRUE, use Benjamini-Hochberg FDR control instead of
+#'   FWER control (default: FALSE).
+#' @param pr Logical; if TRUE (default), print progress messages.
+#'
+#' @return A list with components:
+#' \item{Factor.A}{Results for Factor A main effect comparisons (from \code{medpb}).}
+#' \item{Factor.B}{Results for Factor B main effect comparisons (from \code{medpb}).}
+#' \item{Factor.AB}{Results for A × B interaction contrasts (from \code{medpb}).}
+#' \item{bhop}{Value of bhop parameter used.}
+#' \item{SEED}{Value of SEED parameter used.}
+#'
+#' @details
+#' This function performs bootstrap multiple comparisons for two-way factorial
+#' designs with independent groups. It generates appropriate contrast matrices
+#' for Factor A main effects, Factor B main effects, and A × B interactions
+#' using \code{\link{con2way}}, then applies \code{\link{medpb}} to perform
+#' the comparisons.
+#'
+#' For each set of contrasts, percentile bootstrap confidence intervals and
+#' p-values are computed. FWER control is applied separately to each family
+#' of tests (Factor A, Factor B, and interaction).
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @seealso \code{\link{med2way}}, \code{\link{medpb}}, \code{\link{con2way}}
+#'
+#' @examples
+#' # Two-way multiple comparisons
+#' set.seed(123)
+#' # 2x3 design
+#' data <- list(
+#'   rnorm(15, mean = 0),    # A1,B1
+#'   rnorm(15, mean = 0.5),  # A1,B2
+#'   rnorm(15, mean = 0.3),  # A1,B3
+#'   rnorm(15, mean = 1),    # A2,B1
+#'   rnorm(15, mean = 1.8),  # A2,B2  (interaction effect)
+#'   rnorm(15, mean = 1.2)   # A2,B3
+#' )
+#'
+#' result <- med2mcp(J = 2, K = 3, x = data, nboot = 1000)
+#'
+#' # View Factor A comparisons
+#' result$Factor.A
+#'
+#' # View interaction comparisons
+#' result$Factor.AB
+#'
+#' @export
 med2mcp<-function(J,K,x,grp=c(1:p),p=J*K,nboot=NA,alpha=.05,SEED=TRUE,pr=TRUE,
 bhop=FALSE){
 #
@@ -1449,6 +2355,86 @@ list(Factor.A=Factor.A,Factor.B=Factor.B,Factor.AB=Factor.AB,bhop=bhop,SEED=FALS
 }
 
 # ==== dmedpb ====
+#' Bootstrap Comparisons for Medians of Dependent Groups
+#'
+#' @description
+#' Performs multiple comparisons for medians (or other location measures) of
+#' dependent (repeated measures) groups using percentile bootstrap. Can analyze
+#' either difference scores or marginal distributions.
+#'
+#' @inheritParams common_params
+#' @param x Data in matrix or list mode. If a matrix, rows are subjects and
+#'   columns are repeated measures. For two groups only, can be a vector with
+#'   y specified.
+#' @param y Optional second group for two-group comparison (default: NULL).
+#' @param est Measure of location to use (default: median).
+#' @param ... Optional arguments passed to the estimator function \code{est}.
+#' @param con A J × d matrix of contrast coefficients. If con=0 (default),
+#'   all pairwise comparisons are performed.
+#' @param dif Logical; if TRUE, analyze difference scores. If FALSE (default),
+#'   analyze marginal distributions.
+#' @param hoch Logical; if TRUE (default), use Hochberg's method for FWER control.
+#' @param plotit Logical; if TRUE (default), create plots of results.
+#' @param xlab Label for x-axis in plots (default: "Group 1").
+#' @param ylab Label for y-axis in plots (default: "Group 2").
+#' @param ylab.ebar Label for y-axis in error bar plot.
+#' @param pr Logical; if TRUE (default), print progress messages.
+#' @param BA Logical; related to Bland-Altman plot option.
+#' @param PCI Logical; if TRUE and dif=TRUE with est=median, plot confidence
+#'   intervals for difference scores (default: FALSE).
+#' @param EBAR Alias for PCI (default: PCI).
+#'
+#' @return A list with components:
+#' \item{output}{Matrix with columns: comparison info, p-value, estimate,
+#'   CI lower bound, CI upper bound, critical p-value.}
+#' \item{con}{The contrast matrix used.}
+#' \item{num.sig}{Number of significant comparisons.}
+#'
+#' @details
+#' This function extends \code{\link{medpb}} to repeated measures designs.
+#' It wraps \code{\link{rmmcppb}} with defaults set for median comparisons
+#' and handles tied values appropriately.
+#'
+#' \strong{Analysis modes}:
+#' \itemize{
+#'   \item \code{dif=TRUE}: Analyzes difference scores using \code{rmmcppbd}.
+#'     Appropriate when interest is in within-subject changes.
+#'   \item \code{dif=FALSE}: Analyzes marginal distributions. Tests whether
+#'     location measures differ while accounting for dependence.
+#' }
+#'
+#' The bootstrap procedure resamples subjects (rows) with replacement, preserving
+#' the dependence structure within subjects.
+#'
+#' FWER is controlled using Hochberg's sequentially rejective procedure by default,
+#' which is more powerful than Holm's method while maintaining strong FWER control.
+#'
+#' Missing values are automatically removed (listwise deletion).
+#'
+#' @seealso \code{\link{rmmcppb}}, \code{\link{rmmcppbd}}, \code{\link{medpb}}
+#'
+#' @examples
+#' # Two dependent groups
+#' set.seed(123)
+#' n <- 30
+#' pre <- rnorm(n, mean = 100, sd = 15)
+#' post <- pre + rnorm(n, mean = 5, sd = 10)  # Correlated
+#'
+#' # Using difference scores
+#' dmedpb(pre, post, dif = TRUE, nboot = 1000, plotit = FALSE)
+#'
+#' # Using marginal distributions
+#' dmedpb(pre, post, dif = FALSE, nboot = 1000, plotit = FALSE)
+#'
+#' # Multiple dependent groups
+#' data <- matrix(rnorm(30 * 4), ncol = 4)
+#' data[, 2] <- data[, 1] + rnorm(30, mean = 2, sd = 5)
+#' data[, 3] <- data[, 1] + rnorm(30, mean = 4, sd = 5)
+#' data[, 4] <- data[, 1] + rnorm(30, mean = 6, sd = 5)
+#'
+#' dmedpb(data, dif = TRUE, nboot = 1000, plotit = FALSE)
+#'
+#' @export
 dmedpb<-function(x,y=NULL,alpha=.05,con=0,est=median,plotit=TRUE,dif=FALSE,grp=NA,
 hoch=TRUE,nboot=NA,xlab="Group 1",ylab="Group 2",ylab.ebar=NULL,
 pr=TRUE,SEED=TRUE,BA=FALSE,PCI=FALSE,EBAR=PCI,...){
@@ -1662,7 +2648,70 @@ plotCI(output[,2],ali=output[,5],aui=output[,6],xlab='Difference',ylab=ylab.ebar
 list(output=output,con=con,num.sig=num.sig)
 }
 
-# ==== medhd2g ====
+# ==== med.effect ====
+#' Robust Effect Size Based on Median and Robust Variance
+#'
+#' @description
+#' Computes a robust analog of Cohen's d using the median (or Harrell-Davis
+#' estimator) and a robust measure of variance (percentage bend midvariance
+#' by default).
+#'
+#' @param x Numeric vector for first group.
+#' @param y Numeric vector for second group.
+#' @param HD Logical; if TRUE (default), use Harrell-Davis estimator for median.
+#'   If FALSE, use sample median.
+#' @param eq.var Logical; if FALSE (default), use explanatory measure of effect
+#'   size (variance of estimates / variance of pooled data). If TRUE, use analog
+#'   of Cohen's d (difference / pooled standard deviation).
+#' @param nboot Number of bootstrap samples when sample sizes are unequal and
+#'   eq.var=FALSE (default: 100).
+#' @param loc.fun Location function to summarize bootstrap effect sizes when
+#'   sample sizes are unequal (default: median).
+#' @param varfun Variance function to use (default: pbvar, percentage bend variance).
+#'
+#' @return Numeric effect size value.
+#'
+#' @details
+#' This function provides two types of robust effect sizes:
+#'
+#' \strong{Standardized difference (eq.var=TRUE)}:
+#' The difference in medians divided by the pooled robust standard deviation,
+#' analogous to Cohen's d but using robust estimates.
+#'
+#' \strong{Explanatory measure (eq.var=FALSE)}:
+#' The square root of the ratio of the variance of the two location estimates
+#' to the robust variance of the pooled data. This measures the proportion of
+#' variability in the pooled data explained by group differences.
+#'
+#' When sample sizes are equal and eq.var=FALSE, the effect size is computed
+#' directly. When sample sizes are unequal, bootstrap resampling is used to
+#' create equal-sized samples, and the median effect size across bootstrap
+#' samples is reported.
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @references
+#' Wilcox, R. R. (2022). Introduction to Robust Estimation and Hypothesis
+#' Testing (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{MED.ES}}, \code{\link{akp.effect}}, \code{\link{pbvar}}
+#'
+#' @examples
+#' # Effect size using medians
+#' set.seed(123)
+#' x <- rnorm(30, mean = 0, sd = 1)
+#' y <- rnorm(30, mean = 0.8, sd = 1)
+#'
+#' # Explanatory measure
+#' med.effect(x, y, HD = FALSE, eq.var = FALSE)
+#'
+#' # Cohen's d analog
+#' med.effect(x, y, HD = FALSE, eq.var = TRUE)
+#'
+#' # Using Harrell-Davis estimator
+#' med.effect(x, y, HD = TRUE)
+#'
+#' @export
 med.effect<-function(x,y,HD=TRUE,eq.var=FALSE,nboot=100,loc.fun=median,varfun=pbvar){
 #
 #  Compute robust analog of Cohen's d using
@@ -1709,6 +2758,28 @@ dval
 }
 
 # ==== med.effect.sub ====
+#' Helper Function for Median Effect Size (Internal)
+#'
+#' @description
+#' Internal helper function for \code{\link{med.effect}} when sample sizes
+#' are unequal. Computes effect size for resampled equal-sized groups.
+#' Not intended for direct use.
+#'
+#' @param x Numeric vector for first group.
+#' @param y Numeric vector for second group.
+#' @param HD Logical; if TRUE, use Harrell-Davis estimator. If FALSE, use median.
+#' @param varfun Variance function to use (default: \code{\link{pbvar}}).
+#'
+#' @return Numeric variance ratio (not square-rooted).
+#'
+#' @details
+#' Computes the ratio of the variance of the two location estimates to the
+#' variance of the pooled data. Called repeatedly by \code{\link{med.effect}}
+#' when sample sizes are unequal, with equal-sized bootstrap samples.
+#'
+#' @seealso \code{\link{med.effect}}
+#'
+#' @keywords internal
 med.effect.sub<-function(x,y,HD,varfun=pbvar){
 if(HD){
 e1=hd(x)
@@ -1722,7 +2793,50 @@ val=var(c(e1,e2))/varfun(c(x,y))
 val
 }
 
-# ==== MEDanova ====
+# ==== medcurve ====
+#' Median Curve for Functional Data
+#'
+#' @description
+#' Computes the median curve for functional data by identifying the curve
+#' with maximum depth according to the functional boxplot method.
+#'
+#' @param x Matrix or data frame where each row is a functional observation
+#'   (curve) and columns represent time points or locations.
+#'
+#' @return Numeric vector representing the median curve (same length as number
+#'   of columns in x).
+#'
+#' @details
+#' The median curve is defined as the observation with the highest depth
+#' according to the band depth criterion used in functional boxplots
+#' (see \code{\link{FBplot}}).
+#'
+#' If multiple curves tie for maximum depth, the result is the pointwise
+#' average of those curves.
+#'
+#' This provides a robust center for functional data that is less sensitive
+#' to outlying curves than the pointwise mean.
+#'
+#' @references
+#' Sun, Y., & Genton, M. G. (2011). Functional boxplots. Journal of
+#' Computational and Graphical Statistics, 20(2), 316-334.
+#'
+#' @seealso \code{\link{FBplot}}, \code{\link{dmedian}}
+#'
+#' @examples
+#' # Median curve for functional data
+#' set.seed(123)
+#' # Generate 20 curves with 50 time points each
+#' t_points <- seq(0, 1, length.out = 50)
+#' curves <- matrix(nrow = 20, ncol = 50)
+#' for (i in 1:20) {
+#'   curves[i, ] <- sin(2 * pi * t_points) + rnorm(50, sd = 0.2)
+#' }
+#'
+#' med_curve <- medcurve(curves)
+#' plot(t_points, med_curve, type = "l", lwd = 2)
+#'
+#' @export
 medcurve<-function(x){
 #
 # returns the median curve for functional data
@@ -1735,6 +2849,62 @@ est
 }
 
 # ==== dmedian ====
+#' Depth-Based Multivariate Median (Deepest Point)
+#'
+#' @description
+#' Computes the multivariate median as the deepest point in the data cloud
+#' according to a specified depth function. Provides a unique median for
+#' multivariate data.
+#'
+#' @param x Matrix or data frame with two or more columns (multivariate data).
+#' @param depfun Depth function to use (default: \code{\link{pdepth}} for
+#'   projection depth). Another option is \code{\link{zdepth}} (zonoid depth).
+#' @param ... Additional arguments passed to the depth function.
+#'
+#' @return A list with component:
+#' \item{center}{The observation(s) with maximum depth (multivariate median).}
+#'
+#' @details
+#' The depth-based median is defined as the data point with the highest depth
+#' value. Unlike coordinate-wise medians (which may not correspond to any
+#' actual data point), this approach identifies an actual observation from
+#' the dataset.
+#'
+#' \strong{Depth functions}:
+#' \itemize{
+#'   \item \code{pdepth}: Projection depth (default) - computationally intensive
+#'     but provides good affine-equivariant properties
+#'   \item \code{zdepth}: Zonoid depth - faster but less robust
+#' }
+#'
+#' For continuous variables, this typically returns a unique median. For
+#' discrete or tied data, multiple points may achieve maximum depth.
+#'
+#' This median has good robustness properties and is affine-equivariant
+#' (for appropriate depth functions), making it suitable for multivariate
+#' location estimation.
+#'
+#' @references
+#' Liu, R. Y., Parelius, J. M., & Singh, K. (1999). Multivariate analysis
+#' by data depth: Descriptive statistics, graphics and inference. The Annals
+#' of Statistics, 27(3), 783-858.
+#'
+#' @seealso \code{\link{pdepth}}, \code{\link{zdepth}}, \code{\link{medcurve}}
+#'
+#' @examples
+#' # Depth-based median for bivariate data
+#' set.seed(123)
+#' x <- matrix(rnorm(100), ncol = 2)
+#'
+#' # Using projection depth (default)
+#' result <- dmedian(x)
+#' result$center
+#'
+#' # Visualize
+#' plot(x, main = "Bivariate Data with Depth Median")
+#' points(result$center[1], result$center[2], pch = 19, col = "red", cex = 2)
+#'
+#' @export
 dmedian<-function(x,depfun=pdepth,...){
 #
 # Compute the median based on the deepest point for the multivariate
@@ -1751,7 +2921,71 @@ id=which(val==max(val))
 list(center=x[id,])
 }
 
-# ==== WMW2med ====
+# ==== medpb.es ====
+#' Multiple Comparisons for Medians with Effect Sizes
+#'
+#' @description
+#' Performs multiple comparisons for medians (or other location estimators)
+#' across J independent groups using percentile bootstrap, with shift-type
+#' effect sizes (Q statistics) reported for each comparison.
+#'
+#' @inheritParams common_params
+#' @param x Data in matrix or list mode. If a matrix, columns represent groups.
+#'   If a list, each element is a group.
+#' @param est Measure of location to use (default: median).
+#' @param ... Optional arguments passed to the estimator function \code{est}.
+#' @param con A J × d matrix of contrast coefficients. If con=0 (default),
+#'   all pairwise comparisons are performed.
+#' @param bhop Logical; if TRUE, use Benjamini-Hochberg FDR control instead
+#'   of FWER control (default: FALSE).
+#' @param INT Logical; advanced option for interaction contrasts (default: FALSE).
+#'
+#' @return A list with components:
+#' \item{output}{Matrix with columns: Group(s), p-value, estimate difference,
+#'   CI lower bound, CI upper bound, effect size (Q), and critical p-value.}
+#' \item{con}{The contrast matrix used.}
+#' \item{num.sig}{Number of significant comparisons.}
+#'
+#' @details
+#' This function extends \code{\link{medpb}} by adding shift-type effect sizes
+#' to the output. The effect size Q is a probability-based measure:
+#'
+#' For two groups with difference D = X - Y, let M be the population median of D,
+#' and let F be the distribution of D - M. Then Q = F(M).
+#'
+#' \strong{Interpretation of Q}:
+#' \itemize{
+#'   \item Q = 0.5: No effect (median difference is zero)
+#'   \item Q > 0.5: Positive shift (group 1 tends to be larger)
+#'   \item Q < 0.5: Negative shift (group 2 tends to be larger)
+#'   \item Distance from 0.5 indicates magnitude of effect
+#' }
+#'
+#' This effect size represents how far the distribution has shifted from the
+#' null hypothesis of no difference, expressed as a quantile of the centered
+#' distribution.
+#'
+#' FWER control uses Rom's method by default. When \code{bhop=TRUE}, the
+#' Benjamini-Hochberg FDR procedure is used instead.
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @seealso \code{\link{medpb}}, \code{\link{qhat}}, \code{\link{med.effect}}
+#'
+#' @examples
+#' # Compare three groups with effect sizes
+#' set.seed(123)
+#' x1 <- rnorm(20, mean = 0)
+#' x2 <- rnorm(20, mean = 0.8)
+#' x3 <- rnorm(20, mean = 1.5)
+#' data <- list(x1, x2, x3)
+#'
+#' result <- medpb.es(data, nboot = 1000)
+#'
+#' # View results with effect sizes
+#' result$output
+#'
+#' @export
 medpb.es<-function(x,alpha=.05,nboot=NA,grp=NA,est=median,con=0,bhop=FALSE,
 SEED=TRUE,INT=FALSE,...){
 #
@@ -1890,6 +3124,69 @@ list(output=output,con=con,num.sig=num.sig)
 }
 
 # ==== dlinmed ====
+#' Distribution and Test for Linear Combination of Dependent Medians
+#'
+#' @description
+#' For dependent (repeated measures) variables, computes a linear combination
+#' of the variables, plots its distribution, and tests whether the median
+#' of the linear combination equals zero.
+#'
+#' @param x Data in matrix or list mode. If a matrix, columns are dependent
+#'   variables (repeated measures).
+#' @param con Vector of contrast coefficients. Must sum to zero.
+#' @param xlab Label for x-axis in plot (default: 'DV').
+#' @param ylab Label for y-axis in plot (default: '').
+#' @param sym.test Logical; if TRUE, also perform symmetry test for the
+#'   distribution (default: FALSE).
+#' @param plotit Logical; if TRUE (default), plot the distribution.
+#'
+#' @return A list with components:
+#' \item{median}{Sample median of the linear combination.}
+#' \item{n}{Sample size.}
+#' \item{ci.low}{Lower confidence limit for the median.}
+#' \item{ci.up}{Upper confidence limit for the median.}
+#' \item{p.value}{P-value for test that median equals zero.}
+#' \item{Q.effect}{Effect size based on quantile shift.}
+#' \item{sym.test}{Results of symmetry test (only if sym.test=TRUE).}
+#'
+#' @details
+#' This function creates a new variable Y = sum(con * X) where X represents
+#' the dependent variables and con are the contrast coefficients. It then:
+#'
+#' \enumerate{
+#'   \item Plots the distribution of Y using adaptive kernel density estimation
+#'   \item Tests H0: median(Y) = 0 using \code{\link{sintv2}}
+#'   \item Computes a Q effect size measuring the quantile shift
+#'   \item Optionally tests for symmetry of the distribution
+#' }
+#'
+#' The contrast coefficients must sum to zero for the test to be meaningful
+#' as a comparison among the dependent variables.
+#'
+#' Missing values are removed (listwise deletion).
+#'
+#' @seealso \code{\link{sintv2}}, \code{\link{depQS}}, \code{\link{Dqdif}},
+#'   \code{\link{dmedpb}}
+#'
+#' @examples
+#' # Test difference between two time points
+#' set.seed(123)
+#' n <- 30
+#' time1 <- rnorm(n, mean = 100)
+#' time2 <- time1 + rnorm(n, mean = 5, sd = 10)  # Correlated
+#' data <- cbind(time1, time2)
+#'
+#' # Test time2 - time1
+#' con <- c(-1, 1)
+#' result <- dlinmed(data, con)
+#'
+#' # Three time points: test linear trend
+#' time3 <- time1 + rnorm(n, mean = 10, sd = 10)
+#' data3 <- cbind(time1, time2, time3)
+#' con_trend <- c(-1, 0, 1)  # Linear trend contrast
+#' dlinmed(data3, con_trend)
+#'
+#' @export
 dlinmed<-function(x,con,xlab='DV',ylab='',sym.test=FALSE,plotit=TRUE){
 #
 #
@@ -1925,6 +3222,59 @@ p.value=mt$p.value,Q.effect=Q$Q.effect,sym.test=sym)
 }
 
 # ==== wwmed ====
+#' Two-Way Within-Within ANOVA for Medians with Multiple Comparisons
+#'
+#' @description
+#' Performs all multiple comparisons for a J × K (two-way) within-subjects
+#' (repeated measures) design using medians. Tests main effects for both
+#' factors and interaction effects.
+#'
+#' @param J Number of levels for Factor A (within-subjects).
+#' @param K Number of levels for Factor B (within-subjects).
+#' @param x Data in matrix mode. Rows are subjects, columns are the J×K
+#'   repeated measures in standard order.
+#' @inheritParams common_params
+#'
+#' @return A list with components:
+#' \item{Factor_A}{Results for Factor A main effect comparisons (from \code{\link{sintv2mcp}}).}
+#' \item{Factor_B}{Results for Factor B main effect comparisons (from \code{\link{sintv2mcp}}).}
+#' \item{Factor_AB}{Results for A × B interaction contrasts (from \code{\link{sintv2mcp}}).}
+#'
+#' @details
+#' This function is a wrapper for \code{\link{sintv2mcp}} that generates
+#' appropriate contrast matrices for a two-way within-subjects design using
+#' \code{\link{con2way}}, then performs multiple comparisons on the medians
+#' of linear combinations of the dependent variables.
+#'
+#' Each subject is measured under all J×K conditions. The standard order for
+#' columns is: (1,1), (1,2), ..., (1,K), (2,1), (2,2), ..., (J,K).
+#'
+#' For each comparison, a sign test confidence interval is computed for the
+#' median of the contrast. FWER is controlled separately for each family of
+#' tests (Factor A, Factor B, and interaction).
+#'
+#' Missing values are handled via listwise deletion.
+#'
+#' @seealso \code{\link{sintv2mcp}}, \code{\link{con2way}}, \code{\link{wwwmed}},
+#'   \code{\link{dmedpb}}
+#'
+#' @examples
+#' # Two-way within-subjects design
+#' set.seed(123)
+#' n <- 20
+#' # 2x2 design: 4 measurements per subject
+#' data <- matrix(rnorm(n * 4), nrow = n, ncol = 4)
+#' # Add some main effects and interaction
+#' data[, 2] <- data[, 2] + 0.5  # B effect
+#' data[, 3] <- data[, 3] + 0.8  # A effect
+#' data[, 4] <- data[, 4] + 1.5  # A + B + AB
+#'
+#' result <- wwmed(J = 2, K = 2, x = data)
+#'
+#' # View Factor A comparisons
+#' result$Factor_A
+#'
+#' @export
 wwmed<-function(J,K,x,alpha=.05){
 #
 # Do all multiple comparisons for a within-by-within design
@@ -1938,6 +3288,63 @@ list(Factor_A=A,Factor_B=B,Factor_AB=AB)
 }
 
 # ==== wwwmed ====
+#' Three-Way Within-Within-Within ANOVA for Medians with Multiple Comparisons
+#'
+#' @description
+#' Performs all multiple comparisons for a J × K × L (three-way) within-subjects
+#' (repeated measures) design using medians. Tests main effects, two-way
+#' interactions, and three-way interaction.
+#'
+#' @param J Number of levels for Factor A (within-subjects).
+#' @param K Number of levels for Factor B (within-subjects).
+#' @param L Number of levels for Factor C (within-subjects).
+#' @param x Data in matrix mode. Rows are subjects, columns are the J×K×L
+#'   repeated measures in standard order.
+#' @inheritParams common_params
+#'
+#' @return A list with components:
+#' \item{Factor_A}{Results for Factor A main effect comparisons.}
+#' \item{Factor_B}{Results for Factor B main effect comparisons.}
+#' \item{Factor_C}{Results for Factor C main effect comparisons.}
+#' \item{Factor_AB}{Results for A × B interaction contrasts.}
+#' \item{Factor_AC}{Results for A × C interaction contrasts.}
+#' \item{Factor_BC}{Results for B × C interaction contrasts.}
+#' \item{Factor_ABC}{Results for A × B × C three-way interaction contrasts.}
+#'
+#' @details
+#' This function extends \code{\link{wwmed}} to three-way within-subjects
+#' designs. It uses \code{\link{con3way}} to generate appropriate contrast
+#' matrices for all main effects, two-way interactions, and the three-way
+#' interaction, then applies \code{\link{sintv2mcp}} to perform multiple
+#' comparisons on medians.
+#'
+#' Each subject is measured under all J×K×L conditions. The standard order for
+#' columns follows nested loops: varying C fastest, then B, then A.
+#'
+#' For each comparison, a sign test confidence interval is computed for the
+#' median of the contrast. FWER is controlled separately for each family of
+#' tests.
+#'
+#' Missing values are handled via listwise deletion.
+#'
+#' @seealso \code{\link{wwmed}}, \code{\link{sintv2mcp}}, \code{\link{con3way}},
+#'   \code{\link{dmedpb}}
+#'
+#' @examples
+#' # Three-way within-subjects design
+#' set.seed(123)
+#' n <- 15
+#' # 2x2x2 design: 8 measurements per subject
+#' data <- matrix(rnorm(n * 8), nrow = n, ncol = 8)
+#' # Add some main effects
+#' data[, 5:8] <- data[, 5:8] + 1  # Factor A effect
+#'
+#' result <- wwwmed(J = 2, K = 2, L = 2, x = data)
+#'
+#' # View Factor A comparisons
+#' result$Factor_A
+#'
+#' @export
 wwwmed<-function(J,K,L,x,alpha=.05){
 #
 # Do all multiple comparisons for a within-by-within design
@@ -1955,6 +3362,50 @@ list(Factor_A=A,Factor_B=B,Factor_C=C,Factor_AB=AB,Factor_AC=AC,Factor_BC=BC,Fac
 }
 
 # ==== runstest.med ====
+#' Runs Test Based on Median
+#'
+#' @description
+#' Performs a runs test for randomness based on whether values are below or
+#' above the sample median. Tests the null hypothesis that the sequence is
+#' random.
+#'
+#' @param x Numeric vector representing a time series or sequence.
+#'
+#' @return P-value from the runs test.
+#'
+#' @details
+#' This function converts the data into a binary sequence based on whether
+#' each value is below (0) or above (1) the sample median. It then applies
+#' the runs test using \code{runs.test} from the tseries package.
+#'
+#' The runs test examines whether the number of runs (sequences of consecutive
+#' 0s or 1s) is consistent with randomness. Too few runs suggests positive
+#' autocorrelation (clustering of similar values), while too many runs suggests
+#' negative autocorrelation (alternating pattern).
+#'
+#' \strong{Null hypothesis}: The sequence is random (values above and below
+#' the median occur in random order).
+#'
+#' \strong{Alternative hypothesis}: The sequence is not random (there is a
+#' pattern or autocorrelation).
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @note Requires the tseries package to be installed.
+#'
+#' @seealso \code{runs.test} in package tseries
+#'
+#' @examples
+#' # Random sequence (should not reject)
+#' set.seed(123)
+#' x_random <- rnorm(50)
+#' runstest.med(x_random)
+#'
+#' # Sequence with positive autocorrelation (should reject)
+#' x_clustered <- rep(c(rep(-1, 5), rep(1, 5)), 5)
+#' runstest.med(x_clustered)
+#'
+#' @export
 runstest.med<-function(x){
 #
 # runs test based on whether values are	< or > than the	median
@@ -1969,7 +3420,83 @@ p=runs.test(as.factor(g))
 p[3]
 }
 
-# ==== oph.astig.datasetconvexpoly.median ====
+# ==== oph.astig.medianconvexpoly ====
+#' Bivariate Median Confidence Regions for Ophthalmology Astigmatism Data
+#'
+#' @description
+#' Specialized function for computing bootstrap confidence regions for bivariate
+#' medians of prediction errors in astigmatism studies. Handles multiple
+#' measurement methods/formulas simultaneously, designed specifically for
+#' ophthalmology applications.
+#'
+#' @param m Matrix or data frame with an even number of columns. Each pair of
+#'   consecutive columns represents one measurement formula/method (first two
+#'   columns = formula 1, next two = formula 2, etc.).
+#' @inheritParams common_params
+#' @param plotit Logical; if TRUE (default), create plots of confidence regions.
+#' @param xlab Label for x-axis in plots (default: 'V1').
+#' @param ylab Label for y-axis in plots (default: 'V2').
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param MC Logical; if TRUE, use parallel processing via \code{\link{pdisMC}}
+#'   for projection depth (default: FALSE).
+#'
+#' @return A list with components:
+#' \item{centers}{List of bivariate median coordinates for each formula, with
+#'   sample sizes.}
+#' \item{conf.region.points}{List of matrices containing (x,y) coordinates of
+#'   confidence region boundaries for each formula.}
+#' \item{p.values}{List of p-values testing if median equals (0,0) for each formula.}
+#'
+#' @details
+#' This function is tailored for ophthalmology research on astigmatism, where
+#' prediction errors from different formulas are compared. Each formula produces
+#' bivariate errors (e.g., prediction error in two meridians).
+#'
+#' \strong{Procedure for each formula}:
+#' \enumerate{
+#'   \item Compute bivariate median using \code{\link{smeancr.cord.oph}}
+#'   \item Generate bootstrap samples and compute bootstrap medians
+#'   \item Construct confidence region using projection depth and convex hull
+#'   \item Test if (0,0) lies within the confidence region
+#' }
+#'
+#' The confidence level is adjusted based on sample size to improve coverage:
+#' smaller samples use lower nominal alpha for better actual coverage.
+#'
+#' Special handling for zeros: If more than one value in a column equals zero,
+#' small jitter is added (divided by 100) to avoid computational issues while
+#' keeping values very close to zero.
+#'
+#' When multiple formulas are analyzed, results are displayed in a 2×2 grid
+#' of plots.
+#'
+#' @note This is a specialized function for ophthalmology applications. For
+#' general bivariate median inference, see \code{\link{smeancr}} or
+#' \code{\link{dmedian}}.
+#'
+#' @seealso \code{\link{smeancr.cord.oph}}, \code{\link{pdis}}, \code{\link{dmedian}}
+#'
+#' @examples
+#' # Simulated astigmatism prediction errors for 2 formulas
+#' set.seed(123)
+#' n <- 50
+#' # Formula 1: two error components
+#' formula1_v1 <- rnorm(n, mean = 0.1, sd = 0.5)
+#' formula1_v2 <- rnorm(n, mean = -0.05, sd = 0.4)
+#' # Formula 2: two error components
+#' formula2_v1 <- rnorm(n, mean = -0.2, sd = 0.6)
+#' formula2_v2 <- rnorm(n, mean = 0.15, sd = 0.5)
+#'
+#' # Combine into matrix
+#' data <- cbind(formula1_v1, formula1_v2, formula2_v1, formula2_v2)
+#'
+#' # Compute confidence regions
+#' result <- oph.astig.medianconvexpoly(data, nboot = 200, plotit = FALSE)
+#'
+#' # View median for first formula
+#' result$centers[[1]]
+#'
+#' @export
 oph.astig.medianconvexpoly<-function(m,alpha=.05,plotit=TRUE,xlab='V1',ylab='V2',nboot=500,MC=FALSE,
 SEED=TRUE){
 #
@@ -2058,6 +3585,54 @@ list(centers=CENTERS,conf.region.points=region,p.values=pv)
 }
 
 # ==== MED.ES ====
+#' One-Sample Effect Size Based on Median
+#'
+#' @description
+#' Computes a one-sample effect size analogous to Cohen's d, using the median
+#' and either median absolute deviation (MAD) or Winsorized standard deviation
+#' (rescaled to estimate the population standard deviation under normality).
+#'
+#' @param x Numeric vector of data.
+#' @param tr Trimming proportion for Winsorized standard deviation if MAD equals
+#'   zero (default: 0.25).
+#' @param null.val Null hypothesis value to subtract from the median (default: 0).
+#' @param est Estimator for location (default: median).
+#'
+#' @return Numeric effect size value: (est(x) - null.val) / scale, where scale
+#'   is MAD if non-zero, otherwise Winsorized SD.
+#'
+#' @details
+#' This function computes a standardized effect size for a single sample, measuring
+#' how many standard deviations the location estimate is from the null value.
+#'
+#' The scale estimate is MAD (median absolute deviation) rescaled by a factor
+#' that makes it consistent for estimating the standard deviation under normality.
+#' If MAD equals zero (can occur with highly discrete data or many ties), the
+#' Winsorized standard deviation is used instead, also rescaled for consistency
+#' with the normal distribution.
+#'
+#' This provides a robust alternative to (mean - null.val) / SD for effect
+#' size calculation, resistant to outliers and heavy-tailed distributions.
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @seealso \code{\link{med.effect}}, \code{\link{akp.effect}}, \code{\link{mad}}
+#'
+#' @examples
+#' # One-sample effect size
+#' set.seed(123)
+#' x <- rnorm(50, mean = 5, sd = 2)
+#'
+#' # Effect size relative to 0
+#' MED.ES(x, null.val = 0)
+#'
+#' # Effect size relative to 5
+#' MED.ES(x, null.val = 5)
+#'
+#' # Using trimmed mean instead of median
+#' MED.ES(x, null.val = 0, est = function(x) mean(x, trim = 0.2))
+#'
+#' @export
 MED.ES<-function(x,tr=.25,null.val=0,est=median){
 #
 # One-sample effect size analog of Cohen's d based on the median

@@ -20,6 +20,73 @@
 # ============================================================================
 # lintestMC
 # ============================================================================
+
+#' Test Linearity of Regression Surface (Parallel Processing)
+#'
+#' Tests the hypothesis that the regression surface is a plane using parallel
+#' processing via \code{mclapply}. This is the multicore version of
+#' \code{\link{lintest}}.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param regfun Robust regression function to use (default: \code{tsreg}).
+#'   If using \code{tshdreg}, be sure to include \code{RES=TRUE}.
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{dstat}{The Kolmogorov-Smirnov type test statistic}
+#'   \item{wstat}{The Cramér-von Mises type test statistic}
+#'   \item{p.value.d}{Bootstrap p-value for the KS-type statistic}
+#'   \item{p.value.w}{Bootstrap p-value for the CvM-type statistic}
+#' }
+#'
+#' @details
+#' This function implements the linearity test of Stute, Thies, and Zhu (1998)
+#' using parallel processing for the bootstrap. The test assesses whether the
+#' regression function is a plane (linear in all predictors).
+#'
+#' The method constructs an empirical process based on residuals and compares
+#' it to its expected value under linearity. Two test statistics are computed:
+#' \itemize{
+#'   \item \code{dstat}: Maximum absolute deviation (Kolmogorov-Smirnov type)
+#'   \item \code{wstat}: Mean squared deviation (Cramér-von Mises type)
+#' }
+#'
+#' Bootstrap is used to approximate the null distribution. The function uses
+#' \code{mclapply} for parallel processing, making it faster than
+#' \code{\link{lintest}} for large datasets or many bootstrap samples.
+#'
+#' **Important**: When using \code{tshdreg} as the regression function, you
+#' must include \code{RES=TRUE} to ensure residuals are available.
+#'
+#' @references
+#' Stute, W., Thies, S., & Zhu, L.-X. (1998). Model checks for regression: An
+#' innovation process approach. \emph{Annals of Statistics}, 26, 1916-1934.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{lintest}} for non-parallel version,
+#'   \code{\link{regtest}} for testing specific parameters
+#'
+#' @examples
+#' \dontrun{
+#' # Linear relationship (should not reject)
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- 1 + 2*x[,1] - x[,2] + rnorm(100)
+#' lintestMC(x, y, nboot=500)
+#'
+#' # Nonlinear relationship (should reject)
+#' y2 <- x[,1]^2 + rnorm(100)
+#' lintestMC(x, y2, nboot=500)
+#'
+#' # Using tshdreg
+#' lintestMC(x, y, regfun=tshdreg, RES=TRUE, nboot=500)
+#' }
+#'
+#' @export
 lintestMC<-function(x,y,regfun=tsreg,nboot=500,alpha=.05,xout=FALSE,outfun=out,...){
 #
 # Test the hypothesis that the regression surface is a plane.
@@ -384,6 +451,87 @@ list(coef=new$coef,residuals=resid,w=wt)
 # ============================================================================
 # reglev
 # ============================================================================
+
+#' Detect Regression Leverage Points
+#'
+#' Identifies good and bad leverage points in regression using the Rousseeuw
+#' and van Zomeren (1990) method. This diagnostic tool helps detect influential
+#' observations and regression outliers.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param plotit Logical; if \code{TRUE} (default), creates a diagnostic plot
+#'   of robust distances vs. standardized residuals.
+#' @param SEED Logical; if \code{TRUE} (default), sets random seed for
+#'   reproducibility.
+#' @param DIS Logical; if \code{TRUE}, returns robust Mahalanobis distances
+#'   in output (default: \code{FALSE}).
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{levpoints}{Row numbers of leverage points (outliers in predictor space)}
+#'   \item{regout}{Row numbers of regression outliers (large standardized residuals)}
+#'   \item{bad.lev.points}{Row numbers of bad leverage points (both leverage and
+#'     regression outliers - high influence points)}
+#'   \item{keep}{Row numbers of observations to keep (excluding bad leverage points)}
+#'   \item{dis}{Robust Mahalanobis distances (if \code{DIS=TRUE}, otherwise \code{NULL})}
+#'   \item{stanres}{Standardized residuals from LMS regression}
+#'   \item{crit}{Critical value for leverage (97.5th percentile of chi-square)}
+#' }
+#'
+#' @details
+#' The function uses least median of squares (LMS) regression to identify outliers:
+#'
+#' **Leverage Points**: Observations with robust Mahalanobis distance exceeding
+#' \eqn{\sqrt{\chi^2_{0.975, p}}}, where p is the number of predictors. These are
+#' outliers in the predictor space.
+#'
+#' **Regression Outliers**: Observations with standardized residuals exceeding 2.5
+#' in absolute value. These don't fit the regression model well.
+#'
+#' **Bad Leverage Points**: Observations that are both leverage points AND
+#' regression outliers. These are the most problematic as they have high influence
+#' on the regression fit and don't follow the overall pattern.
+#'
+#' The standardized residuals use a robust scale estimator based on the median
+#' absolute residual with a finite-sample correction factor.
+#'
+#' If a plot is requested, it shows:
+#' - X-axis: Robust Mahalanobis distance
+#' - Y-axis: Standardized residuals
+#' - Vertical line at the leverage cutoff
+#' - Horizontal lines at ±2.5 for regression outlier cutoffs
+#'
+#' @references
+#' Rousseeuw, P.J. & van Zomeren, B.C. (1990). Unmasking multivariate outliers
+#' and leverage points. \emph{Journal of the American Statistical Association},
+#' 85, 633-639.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @family robust regression diagnostics
+#' @seealso \code{\link{lmsreg}} for LMS regression, \code{\link{reg.reglev}}
+#'   for interactive version
+#' @export
+#' @examples
+#' \dontrun{
+#' # Simple example
+#' set.seed(123)
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50, sd=0.5)
+#'
+#' # Add a bad leverage point
+#' x[1,] <- c(5, 5)  # leverage point
+#' y[1] <- 20        # also regression outlier
+#'
+#' # Detect leverage points
+#' result <- reglev(x, y)
+#' result$bad.lev.points  # Should identify row 1
+#'
+#' # Without plot
+#' reglev(x, y, plotit=FALSE)
+#' }
 reglev<-function(x,y,plotit=TRUE,SEED=TRUE,DIS=FALSE){
 #
 #  Search for good and bad leverage points using the
@@ -564,6 +712,63 @@ regboot
 # ============================================================================
 # hratio
 # ============================================================================
+
+#' Compute Half-Slope Ratios
+#'
+#' Computes a matrix of half-slope ratios for regression diagnostics. This
+#' method divides the data based on each predictor and compares regression
+#' slopes in the two halves, helping detect interactions and non-constant
+#' regression relationships.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param regfun Regression function to use (default: \code{bmreg}). Must return
+#'   coefficients in \code{regfun$coef} with intercept as first element.
+#'
+#' @return A p by p matrix of half-slope ratios where:
+#' - Row i: half-slope ratios when data is split based on the i-th predictor
+#' - Column j: ratio of slopes for the j-th predictor
+#' - Element [i,j]: ratio of slope for predictor j in upper half vs. lower half
+#'   when split by predictor i
+#'
+#' @details
+#' For each predictor variable:
+#' 1. Order observations by that predictor
+#' 2. Split data into two halves (lower and upper)
+#' 3. Fit regression model to each half
+#' 4. Compute ratio of slopes: (upper half slope) / (lower half slope)
+#'
+#' **Interpretation**:
+#' - Ratio near 1: slope is similar in both halves (good)
+#' - Ratio far from 1: slope differs between halves, suggesting:
+#'   - Non-constant relationship
+#'   - Interaction effects
+#'   - Possible need for transformation
+#'
+#' The diagonal elements [i,i] show whether predictor i's relationship with y
+#' changes across the range of predictor i. Off-diagonal elements [i,j] show
+#' whether predictor j's relationship with y changes across the range of
+#' predictor i.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @family robust regression diagnostics
+#' @seealso \code{\link{bmreg}}, \code{\link{reglev}}
+#' @export
+#' @examples
+#' \dontrun{
+#' # Example with constant relationship
+#' set.seed(123)
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50, sd=0.5)
+#' hratio(x, y)  # Should have ratios near 1
+#'
+#' # Example with interaction
+#' y2 <- x[,1] + 2*x[,2] + 3*x[,1]*x[,2] + rnorm(50, sd=0.5)
+#' hratio(x, y2)  # Ratios will deviate from 1
+#' }
 hratio<-function(x,y,regfun=bmreg){
 #
 #   Compute a p by p matrix of half-slope ratios
@@ -610,6 +815,68 @@ hmat
 # ============================================================================
 # mbmreg
 # ============================================================================
+
+#' Modified Bounded M-Regression
+#'
+#' Computes a modified bounded M-regression estimator using Huber's psi function
+#' with Schweppe weights. Regression outliers (identified via LMS) are given
+#' zero weight, providing strong protection against outliers.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param iter Maximum number of iterations for convergence (default: 20).
+#' @param bend Bending constant for Huber's psi (default: \code{2*sqrt((p+1)/n)}).
+#' @inheritParams opreg
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients (intercept, slopes).}
+#'   \item{residuals}{Residuals from the final fit.}
+#'   \item{w}{Final weights assigned to each observation.}
+#' }
+#'
+#' @details
+#' This is the modified M-regression estimator described in Wilcox (2022), Chapter 8.
+#' The procedure:
+#'
+#' 1. **Initial outlier detection**: Uses LMS regression to identify regression
+#'    outliers (standardized residuals > 2.5). These get weight 0 throughout.
+#'
+#' 2. **Iterative reweighting**:
+#'    - Computes Schweppe weights: \eqn{w_i = \nu_i \psi(r_i / \sigma \nu_i)}
+#'    - Where \eqn{\nu_i = \sqrt{1 - h_{ii}}} (leverages from hat matrix)
+#'    - \eqn{\psi} is Huber's psi function with tuning constant \code{bend}
+#'    - Scale \eqn{\sigma} estimated robustly from residuals
+#'
+#' 3. **Convergence**: Iterates until coefficient changes < 0.0001
+#'
+#' The Schweppe weighting down-weights high leverage points more than low
+#' leverage points, providing better finite-sample performance than standard
+#' M-estimation. Regression outliers identified initially maintain zero weight,
+#' protecting against severe outliers.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press. Chapter 8.
+#'
+#' @family robust regression functions
+#' @seealso \code{\link{bmreg}} for standard bounded M-regression,
+#'   \code{\link{lmsreg}} for least median of squares
+#' @export
+#' @examples
+#' \dontrun{
+#' # Simple example
+#' set.seed(123)
+#' x <- matrix(rnorm(50), ncol=1)
+#' y <- 2*x + rnorm(50, sd=0.5)
+#' y[1:3] <- y[1:3] + 10  # add outliers
+#' mbmreg(x, y)
+#'
+#' # Multiple regression
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50)
+#' mbmreg(x, y)
+#' }
 mbmreg<-function(x,y,iter=20,bend=2*sqrt(ncol(x)+1)/nrow(x),xout=FALSE,outfun=outpro,...){
 #
 # Compute a bounded M regression estimator using
@@ -683,6 +950,69 @@ rval
 # ============================================================================
 # depreg
 # ============================================================================
+
+#' Depth-Based Regression (Univariate)
+#'
+#' Computes the depth regression estimator for simple linear regression (one
+#' predictor). The method finds the regression line with maximum regression depth,
+#' providing a robust alternative to least squares.
+#'
+#' @param x A numeric vector of the predictor variable (or single-column matrix).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @inheritParams opreg
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients: \code{c(intercept, slope)}.}
+#'   \item{residuals}{Residuals from the fit.}
+#' }
+#'
+#' @details
+#' The depth regression estimator finds the line with maximum regression depth.
+#' For each pair of points (i,j):
+#' 1. Compute the line passing through both points
+#' 2. Calculate the regression depth of this line
+#' 3. Select the line(s) with maximum depth
+#' 4. Average coefficients if multiple lines achieve maximum depth
+#'
+#' **Regression depth** of a line measures how "central" it is relative to the
+#' data cloud. A line with high depth is surrounded by many data points,
+#' making it resistant to outliers.
+#'
+#' This method provides:
+#' - High breakdown point (up to 33%)
+#' - Robustness to outliers in both x and y
+#' - Equivariance under affine transformations
+#'
+#' **Note**: This function only supports simple linear regression (one predictor).
+#' For multiple predictors, use \code{\link{mdepreg}}.
+#'
+#' @references
+#' Rousseeuw, P.J. & Hubert, M. (1999). Regression depth. \emph{Journal of the
+#' American Statistical Association}, 94, 388-433.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @family robust regression functions
+#' @seealso \code{\link{mdepreg}} for multiple regression, \code{\link{tsreg}}
+#'   for Theil-Sen regression
+#' @export
+#' @examples
+#' \dontrun{
+#' # Simple linear regression
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2*x + 1 + rnorm(50, sd=0.5)
+#' depreg(x, y)
+#'
+#' # With outliers
+#' y[1:3] <- y[1:3] + 10
+#' depreg(x, y)  # Robust to outliers
+#'
+#' # Compare with least squares
+#' lm(y ~ x)$coef  # Affected by outliers
+#' }
 depreg<-function(x,y,xout=FALSE,outfun=out,...){
 #
 # Compute the depth regression estimator.
@@ -728,6 +1058,66 @@ list(coef=coef,residuals=res)
 # ============================================================================
 # tsgreg
 # ============================================================================
+
+#' Theil-Sen Regression for Groups
+#'
+#' Computes the Theil-Sen regression estimator using all pairwise slopes,
+#' which is particularly useful when data are divided into groups or when
+#' you want the most robust version of Theil-Sen estimation.
+#'
+#' @param x A numeric vector of the predictor variable.
+#' @param y A numeric vector of the dependent variable (same length as x).
+#' @param tries Number of slope pairs to compute (default: all possible pairs
+#'   = \code{n*(n-1)/2}).
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients: \code{c(intercept, slope)}.}
+#'   \item{residuals}{Residuals from the fit.}
+#' }
+#'
+#' @details
+#' This function computes the Theil-Sen estimator by:
+#' 1. Computing slopes for all (or \code{tries}) pairs of distinct points
+#' 2. Taking the median of these slopes as the robust slope estimate
+#' 3. Computing intercept as median of \eqn{y_i - \hat{\beta} x_i}
+#'
+#' The Theil-Sen estimator:
+#' - Has a breakdown point of approximately 29%
+#' - Is highly resistant to outliers
+#' - Provides good efficiency for normal data
+#' - Is distribution-free
+#'
+#' **Note**: This version uses simple median of all pairwise slopes. For
+#' handling tied x-values or when speed is important, consider
+#' \code{\link{tsreg}} or \code{\link{tshdreg}}.
+#'
+#' @references
+#' Sen, P.K. (1968). Estimates of the regression coefficient based on Kendall's tau.
+#' \emph{Journal of the American Statistical Association}, 63, 1379-1389.
+#'
+#' Theil, H. (1950). A rank-invariant method of linear and polynomial regression
+#' analysis. \emph{Indagationes Mathematicae}, 12, 85-91.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @family robust regression functions
+#' @seealso \code{\link{tsreg}} for faster Theil-Sen with iteration,
+#'   \code{\link{tshdreg}} for Harrell-Davis version
+#' @export
+#' @examples
+#' \dontrun{
+#' # Simple example
+#' set.seed(123)
+#' x <- 1:50
+#' y <- 2*x + rnorm(50, sd=2)
+#' tsgreg(x, y)
+#'
+#' # With outliers
+#' y[1:3] <- y[1:3] + 20
+#' tsgreg(x, y)  # Robust result
+#' }
 tsgreg<-function(x,y,tries=(length(y)^2-length(y))/2){
 #
 #
@@ -829,6 +1219,68 @@ twolsregsub<-function(isub, x, y)
 # ============================================================================
 # regi
 # ============================================================================
+
+#' Conditional Regression Comparison Based on Third Variable
+#'
+#' Splits data into two groups based on whether a third variable \code{z} is
+#' less than or greater than a specified point, then plots smoothed regression
+#' lines for each group. Optionally tests whether the regression coefficients
+#' differ between groups.
+#'
+#' @param x Numeric vector of predictor values.
+#' @param y Numeric vector of response values (same length as \code{x}).
+#' @param z Numeric vector of conditioning variable (same length as \code{x}).
+#' @param pt Split point for \code{z} (default: \code{median(z)}).
+#' @param fr Span parameter for running mean smoother (default: 0.8).
+#' @param est Location estimator for smoothing (default: \code{onestep}).
+#' @param regfun Regression function for testing (default: \code{tsreg}).
+#'   Only used if \code{testit=TRUE}.
+#' @param testit Logical; if TRUE, performs formal test of regression
+#'   equality via \code{\link{reg2ci}} and plots fitted lines (default: FALSE).
+#' @param ... Additional arguments passed to \code{runmean2g} or \code{regfun}.
+#'
+#' @return If \code{testit=FALSE}, returns "Done" after plotting. If
+#'   \code{testit=TRUE}, returns the output from \code{\link{reg2ci}}, which
+#'   includes confidence intervals for the difference in regression
+#'   coefficients.
+#'
+#' @details
+#' This function is useful for exploring whether the relationship between
+#' \code{x} and \code{y} changes depending on the value of a third variable
+#' \code{z}. The data are split at \code{pt} (default: median of \code{z}),
+#' and smoothed regression curves are plotted for each group.
+#'
+#' When \code{testit=TRUE}, the function additionally:
+#' \itemize{
+#'   \item Fits regression lines using \code{regfun} to each group
+#'   \item Overlays these fitted lines on the plot (solid for z < pt, dashed for z >= pt)
+#'   \item Computes bootstrap confidence intervals for coefficient differences via \code{\link{reg2ci}}
+#' }
+#'
+#' The smoothing uses \code{\link{runmean2g}}, which applies a running mean
+#' smoother separately to each group and plots both on the same axes.
+#'
+#' @seealso \code{\link{reg2ci}} for comparing regression coefficients,
+#'   \code{\link{runmean2g}} for two-group running means
+#'
+#' @examples
+#' \dontrun{
+#' # Example: Does the x-y relationship differ for low vs high z?
+#' set.seed(123)
+#' x <- rnorm(100)
+#' z <- rnorm(100)
+#' # Create different slopes for low vs high z
+#' y <- ifelse(z < median(z), 2*x + rnorm(100), 0.5*x + rnorm(100))
+#'
+#' # Visual comparison with smooths
+#' regi(x, y, z)
+#'
+#' # Formal test with fitted lines
+#' result <- regi(x, y, z, testit=TRUE)
+#' print(result)
+#' }
+#'
+#' @export
 regi<-function(x,y,z,pt=median(z),fr=.8,est=onestep,regfun=tsreg,testit=FALSE,...){
 #
 # split the data according to whether z is < or > pt, then
@@ -854,6 +1306,70 @@ output
 # ============================================================================
 # linchk
 # ============================================================================
+
+#' Test Linearity by Splitting Data on Predictor Value
+#'
+#' Splits the data into two groups based on whether a specified predictor
+#' variable is less than or equal to a split point, then tests whether the
+#' regression coefficients (particularly slopes) are equal across the two groups.
+#'
+#' @param x Numeric matrix of predictor variables (n by p).
+#' @param y Numeric vector of response values (length n).
+#' @param sp Split point value for the predictor specified by \code{pv}.
+#' @param pv Column number of the predictor to use for splitting (default: 1).
+#' @param regfun Robust regression function to use (default: \code{tsreg}).
+#' @inheritParams common-params
+#' @param pr Logical; if TRUE, prints which predictor is being used for
+#'   splitting (default: TRUE).
+#'
+#' @return A list (output from \code{\link{reg2ci}}) containing:
+#' \describe{
+#'   \item{ci.dif}{Confidence intervals for differences in coefficients}
+#'   \item{p.value}{P-value for test of equal coefficients}
+#'   \item{est.1}{Coefficient estimates for group where predictor <= sp}
+#'   \item{est.2}{Coefficient estimates for group where predictor > sp}
+#' }
+#'
+#' @details
+#' This function tests for nonlinearity or interaction effects by checking
+#' whether the regression relationship changes when a predictor crosses a
+#' threshold value. The data are split into two groups:
+#' \itemize{
+#'   \item Group 1: Observations where \code{x[, pv] <= sp}
+#'   \item Group 2: Observations where \code{x[, pv] > sp}
+#' }
+#'
+#' The function then calls \code{\link{reg2ci}} to:
+#' 1. Estimate regression coefficients separately for each group using \code{regfun}
+#' 2. Compute bootstrap confidence intervals for the difference in coefficients
+#' 3. Test the null hypothesis that coefficients are equal across groups
+#'
+#' If the confidence intervals for slope differences exclude zero, this suggests
+#' that the relationship between predictors and response changes across the
+#' split point, indicating nonlinearity or an interaction with the splitting
+#' variable.
+#'
+#' @seealso \code{\link{reg2ci}} for two-group regression comparison,
+#'   \code{\link{lintest}} for general linearity testing,
+#'   \code{\link{regi}} for conditional regression with smoothing
+#'
+#' @examples
+#' \dontrun{
+#' # Generate data with different slopes above/below median
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol=2)
+#' # Slope changes when x[,1] > 0
+#' y <- ifelse(x[,1] <= 0, 2*x[,1] + x[,2], 0.5*x[,1] + x[,2]) + rnorm(100)
+#'
+#' # Test if slopes differ when splitting x[,1] at 0
+#' result <- linchk(x, y, sp=0, pv=1)
+#' print(result$p.value)
+#'
+#' # Try different split point
+#' linchk(x, y, sp=median(x[,1]), pv=1)
+#' }
+#'
+#' @export
 linchk<-function(x,y,sp,pv=1,regfun=tsreg,plotit=TRUE,nboot=599,alpha=.05,pr=TRUE,xout=FALSE){
 #
 # Split the data into two groups according to whether
@@ -872,6 +1388,28 @@ temp
 # ============================================================================
 # lintests1
 # ============================================================================
+
+#' Internal Helper for Linearity Test Bootstrap
+#'
+#' Computes R-values for a single bootstrap sample in the linearity test.
+#' This function is called by \code{\link{lintestMC}} and \code{\link{lintest}}.
+#'
+#' @param vstar Vector of standardized random values for bootstrap.
+#' @param yhat Fitted values from the regression.
+#' @param res Residuals from the regression.
+#' @param mflag Matrix indicating ordering relationships between observations.
+#' @param x Matrix of predictor variables.
+#' @param regfun Regression function to use.
+#' @param ... Additional arguments passed to \code{regfun}.
+#'
+#' @return Vector of R-values for the bootstrap sample.
+#'
+#' @details
+#' This is an internal function used in the bootstrap implementation of the
+#' Stute et al. (1998) linearity test. It should not be called directly by users.
+#'
+#' @keywords internal
+#' @noRd
 lintests1<-function(vstar,yhat,res,mflag,x,regfun,...){
 ystar<-yhat+res*vstar
 bres<-regfun(x,ystar,...)$residuals
@@ -885,6 +1423,58 @@ rval
 # ============================================================================
 # lsfitci
 # ============================================================================
+
+#' Bootstrap Confidence Intervals for Least Squares Regression
+#'
+#' Computes bootstrap confidence intervals for intercept and slopes in ordinary
+#' least squares regression. For a single predictor, uses an adjusted percentile
+#' method that handles heteroscedasticity well.
+#'
+#' @inheritParams common_params
+#' @param nboot Number of bootstrap samples (default: 599).
+#' @param SEED Logical; if TRUE, sets random seed for reproducibility (default: TRUE).
+#' @param ... Additional arguments passed to \code{outfun}.
+#'
+#' @return A list with components:
+#' \item{intercept.ci}{Vector of length 2 giving the confidence interval for the intercept.}
+#' \item{slope.ci}{Matrix with one row per predictor. Columns are lower and upper CI bounds.}
+#' \item{crit.level}{Bonferroni-adjusted significance level when p > 1 (NULL when p=1).}
+#' \item{p.values}{Matrix of p-values for each slope when p > 1 (NA when p=1).}
+#'
+#' @details
+#' This function is designed specifically for ordinary least squares regression
+#' and provides better performance than \code{regci} with \code{regfun=lsfit} when n < 250.
+#'
+#' For a single predictor (\code{p=1}), the function uses an adjusted percentile
+#' bootstrap method that provides accurate coverage even under heteroscedasticity.
+#' The adjustment varies with sample size to maintain nominal coverage.
+#'
+#' For multiple predictors (\code{p>1}), uses standard percentile bootstrap with
+#' Bonferroni correction to control family-wise error rate.
+#'
+#' \strong{Important}: The adjusted method for p=1 has been calibrated only for
+#' \code{alpha=0.05}. If a different alpha is specified with p=1, it will be
+#' reset to 0.05 with a warning.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}.
+#' Academic Press.
+#'
+#' @seealso \code{\link{regci}}, \code{\link{lsfitNci}}, \code{\link{rregci}}
+#'
+#' @examples
+#' # Single predictor with heteroscedastic errors
+#' set.seed(123)
+#' x <- rnorm(100)
+#' y <- 2 + 3*x + rnorm(100, sd=abs(x))  # Heteroscedastic errors
+#' lsfitci(x, y, nboot=500)
+#'
+#' # Multiple predictors
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- 1 + 2*x[,1] - x[,2] + rnorm(100)
+#' lsfitci(x, y, nboot=500)
+#'
+#' @export
 lsfitci<-function(x,y,nboot=599,alpha=.05,SEED=TRUE,xout=FALSE,outfun=out){
 #
 #   Compute a confidence interval for the slope parameters of
@@ -987,6 +1577,77 @@ p.values=pmat)
 # ============================================================================
 # lsfitNci
 # ============================================================================
+
+#' Heteroscedasticity-Consistent Confidence Intervals for OLS Regression
+#'
+#' Computes confidence intervals for ordinary least squares (OLS) regression
+#' coefficients using the HC3 heteroscedasticity-consistent standard errors
+#' recommended by Long and Ervin (2000).
+#'
+#' @param x Numeric vector or matrix of predictor variable(s).
+#' @param y Numeric vector of the response variable.
+#' @param alpha Significance level for confidence intervals (default: 0.05 for 95% CIs).
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{ci}{Matrix with columns: parameter index, lower CI limit, upper CI limit}
+#'   \item{stand.errors}{Vector of HC3 heteroscedasticity-consistent standard errors}
+#' }
+#'
+#' @details
+#' This function performs ordinary least squares regression but uses
+#' heteroscedasticity-consistent (robust) standard errors for inference,
+#' specifically the HC3 estimator of Long and Ervin (2000).
+#'
+#' **HC3 Standard Errors**:
+#' The HC3 estimator adjusts for heteroscedasticity (non-constant error variance)
+#' and leverage points. It modifies residuals as:
+#' \deqn{r_i^* = r_i / (1 - h_i)^2}
+#' where \eqn{r_i} are OLS residuals and \eqn{h_i} are leverage values (diagonal
+#' elements of the hat matrix).
+#'
+#' **When to use**:
+#' - Ordinary least squares regression (not robust regression)
+#' - Suspect heteroscedasticity (non-constant variance)
+#' - Want valid inference without assuming homoscedasticity
+#' - Alternative to weighted least squares when weights unknown
+#'
+#' **Advantages over classical OLS inference**:
+#' - Valid even when errors have non-constant variance
+#' - Accounts for leverage points
+#' - No need to specify variance structure
+#' - Better small-sample properties than HC0, HC1, HC2
+#'
+#' The function prints confidence intervals and returns both intervals and
+#' standard errors.
+#'
+#' @references
+#' Long, J.S., & Ervin, L.H. (2000). Using heteroscedasticity consistent standard
+#' errors in the linear regression model. \emph{The American Statistician}, 54, 217-224.
+#'
+#' MacKinnon, J.G., & White, H. (1985). Some heteroskedasticity-consistent
+#' covariance matrix estimators with improved finite sample properties.
+#' \emph{Journal of Econometrics}, 29, 305-325.
+#'
+#' @seealso \code{\link{lsfitci}} for bootstrap-based OLS inference,
+#'   \code{\link{regci}} for robust regression with bootstrap inference
+#'
+#' @examples
+#' # OLS with heteroscedastic errors
+#' set.seed(123)
+#' x <- rnorm(100)
+#' y <- 2 + 3*x + rnorm(100, sd=abs(x))  # Variance increases with |x|
+#'
+#' # HC3 confidence intervals
+#' result <- lsfitNci(x, y)
+#' print(result$ci)
+#'
+#' # Multiple predictors
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- 1 + 2*x[,1] - x[,2] + rnorm(100, sd=abs(x[,1]))
+#' lsfitNci(x, y, alpha=0.01)  # 99% confidence intervals
+#'
+#' @export
 lsfitNci<-function(x,y,alpha=.05){
 #
 # Compute confidence interval for least squares
@@ -1019,6 +1680,82 @@ list(ci=ci,stand.errors=sqrt(diag(hc3)))
 # ============================================================================
 # taureg
 # ============================================================================
+
+#' Correlation-Based Regression using Kendall's Tau
+#'
+#' Computes correlations between a response variable and each predictor using
+#' Kendall's tau (or another specified correlation function). Useful for screening
+#' predictors and identifying potentially important variables for regression.
+#'
+#' @param m Numeric matrix of predictor variables (n by p).
+#' @param y Numeric vector of the response variable (length n).
+#' @param corfun Correlation function to use (default: \code{tau} for Kendall's tau).
+#'   Must return a list with components \code{$cor} and \code{$p.value}.
+#'   Alternatives: \code{pbcor}, \code{wincor}, \code{scor}.
+#' @param ... Additional arguments passed to \code{corfun}.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{cor}{Vector of correlations between y and each column of m}
+#'   \item{p.value}{Vector of two-sided p-values for testing each correlation = 0}
+#' }
+#'
+#' @details
+#' This function is useful for exploring relationships between a response
+#' variable and multiple predictors using robust correlation measures. It
+#' computes the correlation between y and each column of m separately.
+#'
+#' **Kendall's Tau** (default):
+#' - Robust to outliers and heavy-tailed distributions
+#' - Based on concordance/discordance of pairs
+#' - Range: [-1, 1]
+#' - Interpretation similar to Pearson correlation but more robust
+#'
+#' **Alternative correlation functions**:
+#' - \code{pbcor}: Percentage bend correlation (robust alternative to Pearson)
+#' - \code{wincor}: Winsorized correlation
+#' - \code{scor}: Spearman's rho (rank-based)
+#' - Any function returning \code{$cor} and \code{$p.value}
+#'
+#' **Use cases**:
+#' - Variable screening in high-dimensional regression
+#' - Identifying important predictors before model building
+#' - Exploratory data analysis
+#' - When relationship may be monotonic but not linear
+#'
+#' **Note**: This is not a regression fit but rather a correlation analysis.
+#' For actual regression using correlation-based methods, see \code{\link{correg}}
+#' or \code{\link{scorreg}}.
+#'
+#' @references
+#' Kendall, M.G. (1938). A new measure of rank correlation. \emph{Biometrika},
+#' 30, 81-93.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{tau}} for Kendall's tau,
+#'   \code{\link{pbcor}} for percentage bend correlation,
+#'   \code{\link{correg}} for correlation-based regression fitting
+#'
+#' @examples
+#' # Correlation analysis with multiple predictors
+#' set.seed(123)
+#' x1 <- rnorm(100)
+#' x2 <- rnorm(100)
+#' x3 <- rnorm(100)
+#' y <- 2*x1 - x2 + rnorm(100)
+#' m <- cbind(x1, x2, x3)
+#'
+#' # Kendall's tau for each predictor
+#' result <- taureg(m, y)
+#' print(result$cor)
+#' print(result$p.value)
+#'
+#' # Using percentage bend correlation
+#' taureg(m, y, corfun=pbcor)
+#'
+#' @export
 taureg<-function(m,y,corfun=tau,...){
 #
 #    Compute Kendall's tau between y and each of the
@@ -1045,8 +1782,62 @@ list(cor=tauvec,p.value=siglevel)
 }
 
 # ============================================================================
-# correg.sub
+# lintest
 # ============================================================================
+
+#' Test Linearity of Regression Surface
+#'
+#' Tests the hypothesis that the regression surface is a plane (i.e., that the
+#' true regression function is linear) using the method of Stute et al. (1998).
+#'
+#' @inheritParams common_params
+#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
+#'   Must return residuals in \code{$residuals}.
+#' @param nboot Number of bootstrap samples (default: 500).
+#' @param SEED Logical; if TRUE, sets random seed for reproducibility (default: TRUE).
+#' @param ... Additional arguments passed to \code{regfun} and \code{outfun}.
+#'
+#' @return A list with components:
+#' \item{dstat}{Kolmogorov-Smirnov-type test statistic (maximum absolute deviation).}
+#' \item{wstat}{Cramér-von Mises-type test statistic (mean squared deviation).}
+#' \item{p.value.d}{P-value for the KS-type statistic.}
+#' \item{p.value.w}{P-value for the CvM-type statistic.}
+#'
+#' @details
+#' This function implements the linearity test of Stute, Thies, and Zhu (1998),
+#' which tests whether the conditional expectation E(Y|X) is a linear function of X.
+#' Under the null hypothesis of linearity, the regression function is a plane.
+#'
+#' The test constructs two statistics:
+#' \itemize{
+#'   \item{\code{dstat}: }{Kolmogorov-Smirnov-type statistic based on maximum absolute deviation}
+#'   \item{\code{wstat}: }{Cramér-von Mises-type statistic based on mean squared deviation}
+#' }
+#'
+#' Both statistics compare the empirical process based on residuals to its expected
+#' value under linearity. Bootstrap is used to determine critical values.
+#'
+#' @references
+#' Stute, W., Thies, S., & Zhu, L.-X. (1998). Model checks for regression: An innovation
+#' process approach. \emph{Journal of the American Statistical Association}, 93, 141-149.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}.
+#' Academic Press.
+#'
+#' @seealso \code{\link{regtest}}, \code{\link{tsreg}}, \code{\link{linchk}}
+#'
+#' @examples
+#' # Test linearity with Theil-Sen regression
+#' set.seed(123)
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- 2*x[,1] - x[,2] + rnorm(50)  # Linear relationship
+#' lintest(x, y, nboot=500)
+#'
+#' # Test with nonlinear relationship
+#' y2 <- x[,1]^2 + rnorm(50)  # Nonlinear
+#' lintest(x, y2, nboot=500)
+#'
+#' @export
 lintest<-function(x,y,regfun=tsreg,nboot=500,alpha=.05,xout=FALSE,SEED=TRUE,
 outfun=out,...){
 #
@@ -1100,6 +1891,60 @@ list(dstat=dstat,wstat=wstat,p.value.d=p.value.d,p.value.w=p.value.w)
 # ============================================================================
 # regtest
 # ============================================================================
+
+#' Test Hypotheses About Regression Parameters
+#'
+#' Tests the hypothesis that a subset of regression parameters (slopes) equals
+#' specified constants using a bootstrap-based confidence ellipsoid approach with
+#' Mahalanobis distance.
+#'
+#' @inheritParams common_params
+#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
+#' @param nboot Number of bootstrap samples (default: 600).
+#' @param plotit Logical; if TRUE and testing 2 parameters, plots the confidence
+#'   ellipsoid with null hypothesis point (default: TRUE).
+#' @param grp Vector of predictor indices to test (default: all predictors).
+#'   For example, \code{grp=c(1,3)} tests the 1st and 3rd slopes.
+#' @param nullvec Vector of null hypothesis values corresponding to parameters
+#'   in \code{grp} (default: all zeros).
+#' @param SEED Logical; if TRUE, sets random seed for reproducibility (default: TRUE).
+#' @param pr Logical; if TRUE, prints progress messages (default: TRUE).
+#' @param ... Additional arguments passed to \code{regfun} and \code{outfun}.
+#'
+#' @return A list with components:
+#' \item{test}{Test statistic (Mahalanobis distance).}
+#' \item{crit}{Bootstrap critical value at level \code{alpha}.}
+#' \item{p.value}{Bootstrap p-value.}
+#' \item{nullvec}{Vector of null hypothesis values tested.}
+#' \item{est}{Estimated values of the tested parameters.}
+#' \item{n}{Sample size.}
+#'
+#' @details
+#' By default, tests whether all slope parameters equal zero (overall regression test).
+#' Use \code{grp} to test specific subsets of parameters. The method constructs a
+#' bootstrap confidence ellipsoid using Mahalanobis distance and compares the null
+#' hypothesis point to this region.
+#'
+#' When \code{plotit=TRUE} and exactly 2 parameters are tested, produces a scatterplot
+#' of bootstrap slope estimates with the confidence region boundary and null hypothesis
+#' point marked with a square.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}.
+#' Academic Press.
+#'
+#' @seealso \code{\link{regci}}, \code{\link{reg1way}}, \code{\link{tsreg}}
+#'
+#' @examples
+#' # Test overall regression (all slopes = 0)
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- 2*x[,1] - x[,2] + rnorm(50)
+#' regtest(x, y, nboot=500)
+#'
+#' # Test first slope only
+#' regtest(x, y, grp=1, nullvec=0, nboot=500)
+#'
+#' @export
 regtest<-function(x,y,regfun=tsreg,nboot=600,alpha=.05,plotit=TRUE,
 grp=c(1:ncol(x)),nullvec=c(rep(0,length(grp))),xout=FALSE,outfun=outpro,SEED=TRUE,pr=TRUE,...){
 #
@@ -1171,6 +2016,62 @@ list(test=test,crit=crit,p.value=sig.level,nullvec=nullvec,est=estsub,n=length(y
 # ============================================================================
 # reg2ci
 # ============================================================================
+
+#' Compare Two Independent Regression Lines
+#'
+#' Computes bootstrap confidence intervals for the differences in regression parameters
+#' (intercepts and slopes) between two independent groups.
+#'
+#' @param x Predictor matrix or vector for group 1 (n1 x p).
+#' @param y Response vector for group 1.
+#' @param x1 Predictor matrix or vector for group 2 (n2 x p).
+#' @param y1 Response vector for group 2.
+#' @inheritParams common_params
+#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
+#'   Any function that returns coefficients in \code{$coef}.
+#' @param nboot Number of bootstrap samples (default: 599).
+#' @param SEED Logical; if TRUE, sets random seed for reproducibility (default: TRUE).
+#' @param plotit Logical; if TRUE and p=1, plots both regression lines (default: TRUE).
+#' @param xlab X-axis label for plot (default: "X").
+#' @param ylab Y-axis label for plot (default: "Y").
+#' @param pr Logical; if TRUE, prints progress messages (default: FALSE).
+#' @param ... Additional arguments passed to \code{regfun} and \code{outfun}.
+#'
+#' @return A list with components:
+#' \item{n}{Vector of sample sizes for the two groups.}
+#' \item{output}{Matrix with rows for each parameter difference. Columns are:
+#'   \code{Parameter} (parameter index, 0=intercept), \code{ci.lower} (lower CI),
+#'   \code{ci.upper} (upper CI), \code{p.value} (two-sided test),
+#'   \code{Group 1} (group 1 estimate), \code{Group 2} (group 2 estimate).}
+#'
+#' @details
+#' This function compares regression lines from two independent samples by constructing
+#' bootstrap confidence intervals for the difference in each parameter. The percentile
+#' bootstrap method is used.
+#'
+#' P-values test whether each parameter difference equals zero (i.e., whether the
+#' corresponding intercepts or slopes are equal across groups).
+#'
+#' When \code{plotit=TRUE} and there is a single predictor, the function plots both
+#' regression lines: group 1 as a solid line with points, group 2 as a dashed line
+#' with "+" symbols.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}.
+#' Academic Press.
+#'
+#' @seealso \code{\link{reg1way}}, \code{\link{regci}}, \code{\link{tsreg}}
+#'
+#' @examples
+#' # Compare regression lines for two groups
+#' set.seed(123)
+#' x1 <- rnorm(50)
+#' y1 <- 2 + 3*x1 + rnorm(50)
+#' x2 <- rnorm(50)
+#' y2 <- 1 + 2*x2 + rnorm(50)
+#' reg2ci(x1, y1, x2, y2, nboot=500)
+#'
+#' @export
 reg2ci<-function(x,y,x1,y1,regfun=tsreg,nboot=599,alpha=.05,plotit=TRUE,SEED=TRUE,
 xout=FALSE,outfun=outpro,xlab="X",ylab="Y",pr=FALSE,...){
 #
@@ -1378,6 +2279,66 @@ list(estimates=mout)
 # ============================================================================
 # regout
 # ============================================================================
+
+#' Detect Regression Outliers Using Boxplot Rule on Residuals
+#'
+#' Identifies regression outliers by fitting a robust regression line and
+#' applying a boxplot rule to the residuals. Points with outlying residuals
+#' are flagged and optionally plotted.
+#'
+#' @param x Numeric vector or matrix of predictor values.
+#' @param y Numeric vector of response values.
+#' @param regest Robust regression function to use for fitting (default: \code{stsreg}).
+#' @param plotit Logical; if TRUE, creates a scatterplot with the regression
+#'   line and marks outliers with circles (default: TRUE).
+#' @param mbox Logical; if TRUE, uses Carling's modification of the boxplot
+#'   rule; if FALSE, uses ideal fourths with conventional boxplot rule
+#'   (default: TRUE).
+#'
+#' @return A list with component:
+#' \describe{
+#'   \item{out.id}{Vector of indices for outlying observations.}
+#' }
+#'
+#' @details
+#' This function:
+#' 1. Fits a robust regression line using \code{regest}
+#' 2. Computes residuals from the fit
+#' 3. Applies \code{\link{outbox}} to identify outlying residuals
+#' 4. Returns indices of outliers and optionally plots the data
+#'
+#' The boxplot rule identifies outliers as observations with residuals beyond
+#' the "fences" (typically 1.5 × IQR from the quartiles). When \code{mbox=TRUE},
+#' Carling's modification adjusts the rule to better control the false positive
+#' rate under normality.
+#'
+#' Outliers are marked with "o" symbols in the plot, making it easy to visually
+#' identify observations that deviate from the fitted robust regression line.
+#'
+#' @seealso \code{\link{outbox}} for boxplot-based outlier detection,
+#'   \code{\link{stsreg}} for S-type Theil-Sen regression,
+#'   \code{\link{reglev}} for leverage point detection
+#'
+#' @examples
+#' \dontrun{
+#' # Generate data with outliers
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2*x + rnorm(50)
+#' y[1:3] <- y[1:3] + 5  # Add outliers
+#'
+#' # Detect and plot outliers
+#' result <- regout(x, y)
+#' print(result$out.id)  # Indices of outliers
+#'
+#' # Without plotting
+#' regout(x, y, plotit=FALSE)
+#'
+#' # Using different regression estimator
+#' regout(x, y, regest=tsreg)
+#' }
+#'
+#' @export
 regout<-function(x,y,regest=stsreg,plotit=TRUE,mbox=TRUE){
 #
 # Check for regression outliers by fitting a
@@ -1399,6 +2360,61 @@ list(out.id=flag)
 # ============================================================================
 # stsregp1
 # ============================================================================
+
+#' S-Type Theil-Sen Regression (Single Predictor)
+#'
+#' Computes an S-type modification of the Theil-Sen regression estimator for
+#' a single predictor variable. The modification chooses the slope that minimizes
+#' a robust scale measure of the residuals.
+#'
+#' @param x Numeric vector of predictor values (single predictor only).
+#' @param y Numeric vector of response values.
+#' @param sc Robust scale estimator to minimize (default: \code{pbvar}).
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of coefficients (intercept, slope).}
+#'   \item{residuals}{Residuals from the fit.}
+#' }
+#'
+#' @details
+#' This function is a specialized version of S-type regression for the single
+#' predictor case. It:
+#' 1. Computes all pairwise slopes (as in standard Theil-Sen)
+#' 2. For each candidate slope, calculates the robust scale (\code{sc}) of residuals
+#' 3. Selects the slope that minimizes this scale
+#' 4. Determines the intercept using medians
+#'
+#' The S-type modification provides better efficiency than median-of-slopes
+#' while maintaining high breakdown point. The scale function \code{sc} is
+#' typically a robust variance estimator like percentage bend variance
+#' (\code{\link{pbvar}}).
+#'
+#' **Note**: This version is limited to a single predictor. For multiple predictors,
+#' use \code{\link{stsreg}} which employs a Gauss-Seidel algorithm.
+#'
+#' @seealso \code{\link{stsreg}} for general S-type Theil-Sen regression,
+#'   \code{\link{tsreg}} for standard Theil-Sen,
+#'   \code{\link{pbvar}} for percentage bend variance
+#'
+#' @examples
+#' \dontrun{
+#' # Simple linear regression
+#' x <- rnorm(50)
+#' y <- 2*x + rnorm(50, sd=0.5)
+#' stsregp1(x, y)
+#'
+#' # With outliers - S-type is more efficient than median-of-slopes
+#' y[1:5] <- y[1:5] + 5
+#' fit <- stsregp1(x, y)
+#' print(fit$coef)
+#'
+#' # Using different scale estimator
+#' stsregp1(x, y, sc=winvar)
+#' }
+#'
+#' @export
 stsregp1<-function(x,y,sc=pbvar,xout=FALSE,outfun=out,...){
 #
 # Compute the S-type modification of
@@ -1440,6 +2456,78 @@ list(coef=coef,residuals=res)
 # ============================================================================
 # stsreg
 # ============================================================================
+
+#' S-Type Theil-Sen Regression (General)
+#'
+#' Computes S-type regression coefficients using a modification of the
+#' Theil-Sen estimator. For multiple predictors, uses a Gauss-Seidel
+#' algorithm to iteratively refine slope estimates.
+#'
+#' @param x Numeric vector or matrix of predictor values (n by p).
+#' @param y Numeric vector of response values (length n).
+#' @inheritParams common-params
+#' @param iter Maximum number of Gauss-Seidel iterations for multiple
+#'   predictors (default: 10).
+#' @param sc Robust scale function for selecting slopes (default: \code{pbvar}).
+#' @param varfun Robust variance function for final residuals (default: \code{pbvar}).
+#' @param corfun Robust correlation function used in iterations (default: \code{pbcor}).
+#' @param plotit Logical; currently unused (default: FALSE).
+#' @param ... Additional arguments passed to \code{outfun}.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients (intercept, slopes).}
+#'   \item{residuals}{Residuals from the final fit.}
+#'   \item{Strength.Assoc}{Measures of association strength (correlation-like).}
+#' }
+#'
+#' @details
+#' The S-type Theil-Sen estimator improves upon the standard Theil-Sen
+#' (median-of-pairwise-slopes) by selecting slopes that minimize a robust
+#' scale measure of residuals. This provides:
+#' \itemize{
+#'   \item Higher efficiency than standard Theil-Sen
+#'   \item Maintained high breakdown point (up to 50%)
+#'   \item Better performance with skewed error distributions
+#' }
+#'
+#' **Algorithm**:
+#' - **Single predictor**: Uses \code{\link{stsregp1}} to compute all pairwise
+#'   slopes and select the one minimizing \code{sc(residuals)}.
+#' - **Multiple predictors**: Employs Gauss-Seidel iterations:
+#'   1. Initialize slopes using \code{\link{tsp1reg}} for each predictor
+#'   2. Iteratively update each slope holding others fixed
+#'   3. Continue until convergence or \code{iter} iterations reached
+#'
+#' The correlation function \code{corfun} is used to compute association
+#' strength measures returned in \code{Strength.Assoc}.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{stsregp1}} for single predictor version,
+#'   \code{\link{tsreg}} for standard Theil-Sen,
+#'   \code{\link{tstsreg}} for S-type with outlier removal
+#'
+#' @examples
+#' \dontrun{
+#' # Single predictor
+#' x <- rnorm(50)
+#' y <- 2*x + rnorm(50)
+#' stsreg(x, y)
+#'
+#' # Multiple predictors
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50)
+#' fit <- stsreg(x, y)
+#' print(fit$coef)
+#'
+#' # With outlier removal
+#' stsreg(x, y, xout=TRUE)
+#' }
+#'
+#' @export
 stsreg<-function(x,y,xout=FALSE,outfun=outpro,iter=10,sc=pbvar,varfun=pbvar,
 corfun=pbcor,plotit=FALSE,...){
 #
@@ -1502,8 +2590,65 @@ list(coef=coef,residuals=res,Strength.Assoc=stre,Explanatory.Power=e.pow)
 }
 
 # ============================================================================
-# regbootg
+# rregci
 # ============================================================================
+
+#' Bootstrap Confidence Intervals for Robust Regression
+#'
+#' Computes bootstrap confidence intervals for regression parameters using
+#' robust M-regression methods. Default is the Coakley-Hettmansperger estimator
+#' (bounded influence M-regression with Schweppe weights).
+#'
+#' @inheritParams common_params
+#' @param regfun Robust regression function to use (default: \code{chreg} for
+#'   Coakley-Hettmansperger). Any function that returns coefficients in \code{$coef}.
+#' @param nboot Number of bootstrap samples (default: 599).
+#' @param ... Additional arguments passed to \code{regfun}.
+#'
+#' @return A matrix with one row per parameter (intercept, then slopes) and columns:
+#' \item{ci.lower}{Lower confidence interval bound.}
+#' \item{ci.upper}{Upper confidence interval bound.}
+#' \item{Estimate}{Point estimate of the parameter.}
+#' \item{S.E.}{Bootstrap standard error.}
+#' \item{p-value}{Two-sided p-value testing if parameter equals zero.}
+#'
+#' @details
+#' This function provides bootstrap confidence intervals for robust regression
+#' estimators. The default Coakley-Hettmansperger estimator (\code{chreg}) uses
+#' bounded influence M-regression with Schweppe weights, providing good robustness
+#' to outliers and leverage points.
+#'
+#' Other robust regression functions can be specified via \code{regfun}, such as
+#' \code{bireg} (bisquare M-regression) or \code{bmreg} (modified M-regression).
+#'
+#' For least squares regression with n < 250, use \code{lsfitci} instead for
+#' better performance.
+#'
+#' @references
+#' Coakley, C.W., & Hettmansperger, T.P. (1993). A bounded influence, high breakdown,
+#' efficient regression estimator. \emph{Journal of the American Statistical Association},
+#' 88, 872-880.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}.
+#' Academic Press.
+#'
+#' @seealso \code{\link{chreg}}, \code{\link{bireg}}, \code{\link{bmreg}},
+#' \code{\link{regci}}, \code{\link{lsfitci}}
+#'
+#' @examples
+#' # Robust regression CIs with outliers
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 + 3*x + rnorm(50)
+#' y[1:3] <- y[1:3] + 10  # Add outliers
+#' rregci(x, y, nboot=500)
+#'
+#' # Multiple predictors with bisquare regression
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- 1 + 2*x[,1] - x[,2] + rnorm(50)
+#' rregci(x, y, regfun=bireg, nboot=500)
+#'
+#' @export
 rregci<-function(x,y,regfun=chreg,nboot=599,alpha=.05, ...){
 #
 #   Compute a .95 confidence interval for each of the parameters of
@@ -1591,6 +2736,74 @@ list(coef=coef,residuals=res)
 # ============================================================================
 # wreg
 # ============================================================================
+
+#' Wilcoxon Rank-Based Regression
+#'
+#' Computes the Wilcoxon R-estimator for regression, a rank-based robust
+#' regression method. For multiple predictors, uses the Gauss-Seidel algorithm
+#' to iterate to a solution.
+#'
+#' @param x A numeric matrix of predictor variables (n by p), or a vector for
+#'   simple linear regression.
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param iter Maximum number of iterations for the Gauss-Seidel algorithm when
+#'   p > 1 (default: 10).
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients: \code{c(intercept, slopes)}.}
+#'   \item{residuals}{Residuals from the fit.}
+#' }
+#'
+#' @details
+#' The Wilcoxon R-estimator minimizes the dispersion of residuals based on
+#' Wilcoxon rank scores, providing a robust alternative to least squares.
+#'
+#' **For simple regression (p=1)**:
+#' - Uses \code{\link{wsp1reg}} to find the slope that minimizes
+#'   \eqn{\sum_{i<j} |r_i - r_j|} where \eqn{r_i} are residuals
+#' - Intercept is the median of residuals
+#'
+#' **For multiple regression (p>1)**:
+#' - Uses Gauss-Seidel iterative algorithm
+#' - In each iteration, updates one slope at a time holding others fixed
+#' - Continues until convergence (change < 0.0001) or \code{iter} reached
+#' - Initial values from univariate Wilcoxon regressions
+#'
+#' Properties:
+#' - Distribution-free (no normality assumption)
+#' - Resistant to outliers in y
+#' - Asymptotically as efficient as least squares for normal data
+#' - Related to Kendall's tau
+#'
+#' @references
+#' Hettmansperger, T.P. & McKean, J.W. (2011). \emph{Robust Nonparametric
+#' Statistical Methods} (2nd ed.). CRC Press.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @family robust regression functions
+#' @seealso \code{\link{wsp1reg}} for simple Wilcoxon regression,
+#'   \code{\link{tsreg}} for Theil-Sen regression
+#' @export
+#' @examples
+#' \dontrun{
+#' # Simple Wilcoxon regression
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2*x + rnorm(50)
+#' wreg(x, y)
+#'
+#' # Multiple regression
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50)
+#' wreg(x, y)
+#'
+#' # With outliers
+#' y[1:3] <- y[1:3] + 10
+#' wreg(x, y)  # Robust result
+#' }
 wreg<-function(x,y,iter=10){
 #
 #  Compute Wilcoxon R estimate
@@ -1760,6 +2973,68 @@ wrregfun
 # ============================================================================
 # opregpb
 # ============================================================================
+
+#' Bootstrap Inference for Outlier-Pruned Regression
+#'
+#' Performs bootstrap hypothesis testing and confidence intervals for regression
+#' parameters after removing outliers using projection-type outlier detection.
+#' Combines Theil-Sen regression with robust outlier removal.
+#'
+#' @inheritParams common_params
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param om Logical; if TRUE and p > 1, performs omnibus test of all parameters
+#'   (default: TRUE). If FALSE, only individual parameter tests.
+#' @param ADJ Logical; if TRUE, adjusts p-values as described in Wilcox (2022)
+#'   Section 11.1.5 (default: TRUE).
+#' @param SEED Logical; if TRUE, sets random seed for reproducibility (default: TRUE).
+#' @param nullvec Vector of null hypothesis values for each parameter, including
+#'   intercept (default: all zeros).
+#' @param plotit Logical; if TRUE, creates diagnostic plots (default: TRUE).
+#' @param opdis Outlier distance type: 1 for projection distance, 2 for Mahalanobis
+#'   distance (default: 2).
+#' @param gval Critical value for projection-type outlier detection
+#'   (default: sqrt(qchisq(0.95, p+1))).
+#'
+#' @return A list with components:
+#' \item{n}{Sample size.}
+#' \item{n.keep}{Number of observations retained after outlier removal.}
+#' \item{regci}{Matrix of CIs and p-values for each parameter.}
+#' \item{test}{Omnibus test statistic (if \code{om=TRUE} and p > 1).}
+#' \item{crit}{Critical value for omnibus test.}
+#' \item{p.value}{P-value for omnibus test.}
+#' \item{adjusted.p.value}{Adjusted omnibus p-value (if \code{ADJ=TRUE}).}
+#'
+#' @details
+#' This function implements a two-stage procedure:
+#' \enumerate{
+#'   \item{Detect and remove outliers using projection-based methods (default: Mahalanobis distance)}
+#'   \item{Apply Theil-Sen regression to the remaining data}
+#'   \item{Use bootstrap to construct CIs and test hypotheses}
+#' }
+#'
+#' When \code{om=TRUE} and there are multiple predictors, an omnibus test examines
+#' whether all parameters simultaneously equal their null values. Individual parameter
+#' tests are always provided.
+#'
+#' The \code{ADJ=TRUE} option applies corrections described in Wilcox (2022) to improve
+#' Type I error control when outliers are present.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}.
+#' Academic Press. (See Section 11.1.5)
+#'
+#' @seealso \code{\link{opreg}}, \code{\link{opregpbMC}} (parallel version),
+#' \code{\link{regci}}, \code{\link{outpro}}
+#'
+#' @examples
+#' # Bootstrap inference with outlier removal
+#' set.seed(123)
+#' x <- rnorm(100)
+#' y <- 2 + 3*x + rnorm(100)
+#' y[1:5] <- y[1:5] + 20  # Add outliers
+#' opregpb(x, y, nboot=500)
+#'
+#' @export
 opregpb<-function(x,y,nboot=1000,alpha=.05,om=TRUE,ADJ=TRUE,SEED=TRUE,
 nullvec=rep(0,ncol(x)+1),plotit=TRUE,opdis=2,gval=sqrt(qchisq(.95,ncol(x)+1))){
 #
@@ -1874,6 +3149,87 @@ list(output=output,om.pval=om.pval,adj.om.pval=adj.pval)
 # ============================================================================
 # ltsgreg
 # ============================================================================
+
+#' Least Trimmed Absolute Value Regression
+#'
+#' Computes a robust regression estimator that minimizes the sum of the smallest
+#' absolute residuals. This is a variant of least trimmed squares (LTS) regression
+#' using absolute values instead of squared residuals.
+#'
+#' @param x Numeric vector or matrix of predictor variable(s).
+#' @param y Numeric vector of the response variable.
+#' @param tr Trimming proportion (default: 0.2). The fraction of largest absolute
+#'   residuals to trim. Must be between 0 and 0.5.
+#' @param h Number of observations to use in the fit (default: \code{NA}, computed
+#'   as \code{n - floor(tr*n)}). If specified, overrides \code{tr}.
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients (intercept, slopes)}
+#'   \item{residuals}{Vector of residuals from the fitted model}
+#' }
+#'
+#' @details
+#' This function minimizes the sum of the \code{h} smallest absolute residuals,
+#' where \code{h = n - floor(tr*n)}. This provides robustness to outliers while
+#' using absolute deviations instead of squared deviations.
+#'
+#' **Method**:
+#' 1. Uses \code{ltsReg} from the \code{robustbase} package for initial estimates
+#' 2. Refines estimates using Nelder-Mead optimization
+#' 3. Minimizes: sum of h smallest |residual| values
+#'
+#' **Properties**:
+#' - **Breakdown point**: Approximately (1-h/n) ≈ \code{tr}
+#' - **Robustness**: High resistance to outliers
+#' - **L1 criterion**: Uses absolute values (more robust than L2/squared)
+#'
+#' **When to use**:
+#' - Heavy-tailed error distributions
+#' - Presence of outliers in Y direction
+#' - Want breakdown protection with L1-type estimator
+#' - Alternative to \code{\link{ltsreg}} (which uses L2)
+#'
+#' **Trimming proportion**:
+#' - Default (0.2): 20% trimming, good balance of robustness and efficiency
+#' - Larger \code{tr}: more robustness, lower efficiency
+#' - Smaller \code{tr}: higher efficiency, less robustness
+#' - Maximum \code{tr}: 0.5 (50% breakdown point)
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{ltsreg}} for least trimmed squares (L2 version),
+#'   \code{\link{tsreg}} for Theil-Sen regression,
+#'   \code{\link{opreg}} for outlier-pruned regression
+#'
+#' @examples
+#' \dontrun{
+#' # Simple robust regression
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 + 3*x + rnorm(50)
+#'
+#' # Add outliers
+#' y[1:5] <- y[1:5] + 10
+#'
+#' # Fit with 20% trimming
+#' fit <- ltsgreg(x, y, tr=0.2)
+#' print(fit$coef)
+#'
+#' # More aggressive trimming (30%)
+#' fit2 <- ltsgreg(x, y, tr=0.3)
+#' print(fit2$coef)
+#'
+#' # Multiple predictors
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- 1 + 2*x[,1] - x[,2] + rt(50, df=3)
+#' ltsgreg(x, y)
+#' }
+#'
+#' @export
 ltsgreg<-function(x, y, tr = 0.2, h = NA,xout=FALSE,outfun=outpro,...)
 {
         #
@@ -1926,6 +3282,88 @@ val
 # ============================================================================
 # qreg
 # ============================================================================
+
+#' Quantile Regression using Koenker-Bassett Method
+#'
+#' Computes quantile regression using the Koenker-Bassett approach. This function
+#' estimates the \code{qval}-th conditional quantile of Y given X. Default uses
+#' the \code{rq} function from the \code{quantreg} package.
+#'
+#' @param x Numeric vector or matrix of predictor variable(s). For multiple
+#'   predictors, rows represent observations and columns represent variables.
+#' @param y Numeric vector of the dependent variable.
+#' @param qval Quantile to estimate (default: 0.5 for median regression).
+#'   Must be between 0 and 1.
+#' @param q Alternative parameter name for \code{qval} (default: \code{NULL}).
+#'   If specified, overrides \code{qval}.
+#' @param pr Logical. If \code{TRUE}, prints progress messages (default: \code{FALSE}).
+#' @inheritParams common-params
+#' @param plotit Logical. If \code{TRUE} and there is a single predictor, creates
+#'   a scatterplot with the quantile regression line (default: \code{FALSE}).
+#' @param xlab Label for x-axis when \code{plotit=TRUE} (default: "X").
+#' @param ylab Label for y-axis when \code{plotit=TRUE} (default: "Y").
+#' @param op Operation code for the old version (default: 1). Only used when \code{v2=FALSE}.
+#' @param v2 Logical. If \code{TRUE}, uses the \code{rq} function from
+#'   \code{quantreg} package (default: \code{TRUE}). If \code{FALSE}, uses
+#'   an older, slower implementation.
+#' @param method Fitting method passed to \code{rq} (default: 'br' for Barrodale-Roberts).
+#'   Can also use 'scad' for variable selection (Wu & Liu, 2009).
+#' @param WARN Logical. If \code{FALSE}, suppresses warnings from \code{rq}
+#'   (default: \code{FALSE}).
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients (intercept, slopes)}
+#'   \item{residuals}{Vector of residuals from the quantile regression fit}
+#' }
+#'
+#' @details
+#' Quantile regression estimates conditional quantiles rather than conditional
+#' means. For \code{qval=0.5}, this gives median regression, which is robust to
+#' outliers in Y. Other quantiles can be used to model different parts of the
+#' conditional distribution.
+#'
+#' The Koenker-Bassett approach minimizes a weighted sum of absolute deviations:
+#' \deqn{\sum_{i} \rho_{\tau}(y_i - x_i'\beta)}
+#' where \eqn{\rho_{\tau}} is the check function that weights positive and
+#' negative residuals differently based on the quantile \eqn{\tau}.
+#'
+#' When \code{v2=TRUE} (default), the function uses the highly optimized \code{rq}
+#' function from the \code{quantreg} package. The \code{method} parameter controls
+#' the algorithm used. The 'scad' method implements variable selection via SCAD
+#' penalty (Wu & Liu, 2009).
+#'
+#' @references
+#' Koenker, R. & Bassett, G. (1978). Regression quantiles. \emph{Econometrica}, 46, 33-50.
+#'
+#' Wu, Y. & Liu, Y. (2009). Variable selection in quantile regression.
+#' \emph{Statistica Sinica}, 19, 801-817.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{Qreg}} for an alternative quantile regression implementation,
+#'   \code{\link[quantreg]{rq}} for the underlying quantreg function
+#'
+#' @examples
+#' # Median regression (50th percentile)
+#' set.seed(123)
+#' x <- rnorm(100)
+#' y <- 2 + 3*x + rt(100, df=3)  # Heavy-tailed errors
+#' result <- qreg(x, y, qval=0.5)
+#' result$coef
+#'
+#' # Compare different quantiles
+#' q10 <- qreg(x, y, qval=0.1)
+#' q50 <- qreg(x, y, qval=0.5)
+#' q90 <- qreg(x, y, qval=0.9)
+#'
+#' # Multiple predictors with 75th percentile
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- 1 + 2*x[,1] - x[,2] + rnorm(100)
+#' qreg(x, y, qval=0.75)
+#'
+#' @export
 qreg<-function(x, y,qval=.5, q=NULL,pr=FALSE,xout=FALSE, outfun=outpro,plotit=FALSE,xlab="X",ylab="Y",op=1,v2=TRUE,method='br',WARN=FALSE,...)
 {
 #
@@ -1985,6 +3423,128 @@ list(coef = coef, residuals = res)
 # ============================================================================
 # kerreg
 # ============================================================================
+
+#' Kernel Regression with Epanechnikov Kernel
+#'
+#' Computes local weighted regression using the Epanechnikov kernel. For one
+#' predictor, the function calls \code{\link{locreg}}; for multiple predictors,
+#' it implements kernel regression with automatic bandwidth selection.
+#'
+#' @param x A numeric vector or matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param pyhat Logical; if \code{TRUE}, returns the predicted values (default: \code{FALSE}).
+#' @param pts For univariate case: points at which to compute fitted values. If
+#'   \code{NA} (default), uses a grid of \code{np} equally spaced points.
+#' @param plotit Logical; if \code{TRUE} (default), creates a plot of the fitted
+#'   regression surface. For bivariate predictors, creates a 3D perspective plot;
+#'   for univariate predictors, creates a scatterplot with fitted line.
+#' @param theta Rotation angle for 3D perspective plot (default: 50). Only used
+#'   when \code{plotit=TRUE} and there are 2 predictors.
+#' @param phi Colatitude angle for 3D perspective plot (default: 25). Only used
+#'   when \code{plotit=TRUE} and there are 2 predictors.
+#' @param expand Expansion factor for z-axis in perspective plot (default: 0.5).
+#' @param scale Logical; if \code{TRUE}, scales the 3D plot to fit in the viewing box
+#'   (default: \code{FALSE}).
+#' @param zscale Logical; if \code{TRUE}, standardizes all variables (x and y) using
+#'   median and MAD before fitting (default: \code{FALSE}).
+#' @param eout Logical; if \code{TRUE}, removes outliers from the combined (x,y)
+#'   data before fitting (default: \code{FALSE}).
+#' @param xout Logical; if \code{TRUE}, removes outliers from predictor space
+#'   before fitting (default: \code{FALSE}). Cannot be used with \code{eout=TRUE}.
+#' @param outfun Function for detecting outliers (default: \code{out}). Only used
+#'   if \code{xout=TRUE} or \code{eout=TRUE}.
+#' @param np For univariate case: number of points for plotting (default: 100).
+#' @param xlab Label for x-axis (default: "X").
+#' @param ylab Label for y-axis (default: "Y").
+#' @param zlab Label for z-axis in 3D plot (default: "Z").
+#' @param varfun Function for computing variance (default: \code{pbvar}). Currently
+#'   not used in returned output.
+#' @param e.pow Logical; if \code{TRUE}, computes explanatory power (default: \code{TRUE}).
+#'   Currently not used in returned output.
+#' @param pr Logical; if \code{TRUE} (default), prints informational messages.
+#' @param ticktype Type of tick marks for perspective plot (default: "simple").
+#' @param pch Plotting character for scatterplot points (default: '.').
+#' @param ... Additional arguments passed to the outlier detection function.
+#'
+#' @return
+#' If \code{pyhat=TRUE}, returns a vector of fitted values. If \code{pyhat=FALSE}
+#' (default), returns \code{NULL} but produces a plot if \code{plotit=TRUE}.
+#'
+#' @details
+#' The \code{kerreg} function implements local weighted regression using the
+#' Epanechnikov kernel, which is optimal in a mean squared error sense among
+#' kernels of bounded support.
+#'
+#' **For univariate predictors (p=1):**
+#' The function calls \code{\link{locreg}} internally. See \code{\link{locreg}}
+#' for details on bandwidth selection and estimation.
+#'
+#' **For multivariate predictors (p>1):**
+#' The method performs the following steps:
+#' \enumerate{
+#'   \item Standardizes each predictor by dividing by \code{min(SD, IQR/1.34)}
+#'   \item Selects bandwidth using the formula: \code{h = A * n^(-1/(p+4))} where
+#'         A is a dimension-dependent constant
+#'   \item For each observation, fits a local linear regression using weighted
+#'         least squares with Epanechnikov kernel weights
+#'   \item The Epanechnikov kernel is: \code{K(u) = 0.5*(p+2)*(1-u^2)/c_p} for
+#'         \code{u < 1}, and 0 otherwise, where \code{c_p} is a normalizing constant
+#' }
+#'
+#' The bandwidth is chosen to balance bias and variance according to theory
+#' developed by Fan (1993). The method requires at least \code{p+1} observations
+#' within the kernel support to compute each local fit.
+#'
+#' **Outlier Handling:**
+#' \itemize{
+#'   \item \code{xout=TRUE}: Removes outliers in predictor space before fitting
+#'   \item \code{eout=TRUE}: Removes outliers in the joint (x,y) space
+#'   \item \code{zscale=TRUE}: Robust standardization before outlier detection
+#' }
+#'
+#' **Note**: Cannot specify both \code{xout=TRUE} and \code{eout=TRUE} simultaneously.
+#'
+#' @references
+#' Fan, J. (1993). Local linear regression smoothers and their minimax efficiencies.
+#' \emph{Annals of Statistics}, 21, 196-217.
+#'
+#' Bjerve, S. and Doksum, K.A. (1993). Correlation curves: Measures of association
+#' as functions of covariate values. \emph{Annals of Statistics}, 21, 890-902.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{locreg}} for univariate local regression,
+#'   \code{\link{rplot}} for robust regression plotting,
+#'   \code{\link{lplot}} for LOWESS smoothing
+#'
+#' @examples
+#' \dontrun{
+#' # Univariate kernel regression
+#' set.seed(123)
+#' x <- seq(0, 2*pi, length.out=100)
+#' y <- sin(x) + rnorm(100, sd=0.2)
+#' kerreg(x, y, plotit=TRUE)
+#'
+#' # Get fitted values
+#' yhat <- kerreg(x, y, pyhat=TRUE, plotit=FALSE)
+#'
+#' # Bivariate predictors with 3D visualization
+#' x <- matrix(runif(200, -2, 2), ncol=2)
+#' y <- x[,1]^2 + x[,2]^2 + rnorm(100, sd=0.3)
+#' kerreg(x, y, theta=45, phi=20)
+#'
+#' # With outlier removal
+#' x <- rnorm(100)
+#' y <- 2 + 3*x + rnorm(100, sd=0.5)
+#' y[1:5] <- y[1:5] + 5  # Add outliers
+#' kerreg(x, y, eout=TRUE)
+#'
+#' # Robust standardization before fitting
+#' kerreg(x, y, zscale=TRUE, plotit=TRUE)
+#' }
+#'
+#' @export
 kerreg<-function(x,y,pyhat=FALSE,pts=NA,plotit=TRUE,theta=50,phi=25,expand=.5,
 scale=FALSE,zscale=FALSE,eout=FALSE,xout=FALSE,outfun=out,np=100,xlab="X",ylab="Y",zlab="Z",
 varfun=pbvar,e.pow=TRUE,pr=TRUE,ticktype="simple",pch='.',...){
@@ -2094,6 +3654,25 @@ m
 # ============================================================================
 # snmreg.sub
 # ============================================================================
+
+#' Internal Helper for Skipped Regression Optimization
+#'
+#' Computes the variance of residuals for a given set of regression slopes
+#' in the skipped regression algorithm. Used internally by \code{\link{snmreg}}.
+#'
+#' @param X Matrix with predictors in first p columns and response in last column.
+#' @param theta Vector of slope parameters to evaluate.
+#'
+#' @return Robust variance of residuals (via \code{\link{pbvar}}) for the
+#'   given slopes.
+#'
+#' @details
+#' This function is called repeatedly by the optimization routine in
+#' \code{\link{snmreg}} to find slopes that minimize a robust residual variance.
+#' It should not be called directly by users.
+#'
+#' @keywords internal
+#' @noRd
 snmreg.sub<-function(X,theta){
 np<-ncol(X)
 p<-np-1
@@ -2110,6 +3689,70 @@ val
 # ============================================================================
 # tstsreg
 # ============================================================================
+
+#' Modified Theil-Sen Regression with Outlier Removal
+#'
+#' Computes a modified Theil-Sen regression estimator by first using an S-type
+#' initial estimate to identify and remove outlying residuals, then applying
+#' standard Theil-Sen regression to the remaining data.
+#'
+#' @param x Numeric vector or matrix of predictor values (n by p).
+#' @param y Numeric vector of response values (length n).
+#' @param sc Robust scale function for S-type estimation (default: \code{pbvar}).
+#' @inheritParams common-params
+#' @param iter Number of iterations for S-type regression (default: 5).
+#' @param plotit Logical; currently unused (default: FALSE).
+#' @param ... Additional arguments passed to \code{outfun}.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients (intercept, slopes).}
+#'   \item{residuals}{Residuals from the final Theil-Sen fit.}
+#' }
+#'
+#' @details
+#' This two-stage robust regression procedure:
+#' 1. **Stage 1 (Outlier identification)**: Fits an S-type Theil-Sen regression
+#'    using \code{\link{stsreg}} to get initial residuals.
+#' 2. **Stage 2 (Outlier removal)**: Identifies observations with standardized
+#'    residuals exceeding 2 (in MAD units: |residual - median| / MAD > 2).
+#' 3. **Stage 3 (Final fit)**: Applies standard Theil-Sen regression
+#'    (\code{\link{tsreg}}) to the remaining observations.
+#'
+#' This approach combines:
+#' - The efficiency of S-type estimation for initial outlier detection
+#' - The simplicity and robustness of standard Theil-Sen for the final fit
+#' - Improved performance when a small fraction of outliers is present
+#'
+#' The method is particularly useful when you expect some contamination but
+#' want to ensure the final estimates are computed on relatively clean data.
+#'
+#' @seealso \code{\link{stsreg}} for S-type Theil-Sen,
+#'   \code{\link{tsreg}} for standard Theil-Sen,
+#'   \code{\link{tssnmreg}} for combining Theil-Sen with skipped regression
+#'
+#' @examples
+#' \dontrun{
+#' # Data with a few outliers
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2*x + rnorm(50)
+#' y[1:3] <- y[1:3] + 10  # Add outliers
+#'
+#' # Standard Theil-Sen (may be affected by outliers)
+#' tsreg(x, y)
+#'
+#' # Modified version with outlier removal
+#' tstsreg(x, y)
+#'
+#' # Multiple predictors
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50)
+#' y[1:5] <- y[1:5] + 8
+#' tstsreg(x, y)
+#' }
+#'
+#' @export
 tstsreg<-function(x,y,sc=pbvar,xout=FALSE,outfun=outpro,iter=5,plotit=FALSE,...){
 #
 # Compute a modified Theil-Sen regression estimator.
@@ -2143,6 +3786,75 @@ list(coef=temp$coef,residuals=temp$res)
 # ============================================================================
 # tssnmreg
 # ============================================================================
+
+#' Hybrid Theil-Sen and Skipped Regression with Outlier Removal
+#'
+#' Combines skipped regression with Theil-Sen estimation by first using
+#' skipped regression to identify outliers, then applying standard Theil-Sen
+#' to the remaining clean data.
+#'
+#' @param x Numeric vector or matrix of predictor values (n by p).
+#' @param y Numeric vector of response values (length n).
+#' @param sc Robust scale function for skipped regression (default: \code{pbvar}).
+#' @inheritParams common-params
+#' @param plotit Logical; currently unused (default: FALSE).
+#' @param ... Additional arguments passed to \code{outfun}.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients (intercept, slopes).}
+#'   \item{residuals}{Residuals from the final Theil-Sen fit.}
+#' }
+#'
+#' @details
+#' This hybrid approach proceeds in three stages:
+#' 1. **Stage 1**: Fits skipped regression (\code{\link{snmreg}}) which uses
+#'    Nelder-Mead optimization with a "skipped" correlation approach.
+#' 2. **Stage 2**: Identifies outliers as observations with standardized
+#'    residuals exceeding 2 (in MAD units).
+#' 3. **Stage 3**: Applies standard Theil-Sen regression (\code{\link{tsreg}})
+#'    to the remaining observations after outlier removal.
+#'
+#' **Why this hybrid?**
+#' - Skipped regression (\code{snmreg}) is effective at handling outliers
+#'   in both x and y directions
+#' - Theil-Sen provides simple, distribution-free inference once outliers
+#'   are removed
+#' - The combination leverages strengths of both methods
+#'
+#' The method is particularly useful when:
+#' - You suspect leverage points (outliers in predictor space)
+#' - You want the simplicity of Theil-Sen for final inference
+#' - Initial outlier identification needs to handle multivariate outliers
+#'
+#' @seealso \code{\link{snmreg}} for skipped regression,
+#'   \code{\link{tsreg}} for standard Theil-Sen,
+#'   \code{\link{tstsreg}} for S-type Theil-Sen with outlier removal
+#'
+#' @examples
+#' \dontrun{
+#' # Data with leverage points
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2*x + rnorm(50)
+#' # Add leverage points
+#' x[1:3] <- x[1:3] + 5
+#' y[1:3] <- y[1:3] - 5
+#'
+#' # Standard Theil-Sen (affected by leverage)
+#' tsreg(x, y)
+#'
+#' # Hybrid approach (more robust)
+#' tssnmreg(x, y)
+#'
+#' # Multiple predictors
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50)
+#' x[1:5,] <- x[1:5,] + 4  # Leverage points
+#' tssnmreg(x, y)
+#' }
+#'
+#' @export
 tssnmreg<-function(x,y,sc=pbvar,xout=FALSE,outfun=out,plotit=FALSE,...){
 #
 # Compute a modified Theil--Sen regression estimator.
@@ -2174,6 +3886,86 @@ list(coef=temp$coef,residuals=temp$res)
 # ============================================================================
 # gyreg
 # ============================================================================
+
+#' Robust Regression with Outlier Detection Based on Residual Scale
+#'
+#' Computes robust regression estimates by identifying and removing observations
+#' with large scaled residuals using a data-adaptive threshold based on the
+#' comparison of empirical and theoretical quantile functions.
+#'
+#' @param x A numeric vector or matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param rinit Initial robust regression function to use (default: \code{lmsreg}).
+#'   Must return residuals in \code{rinit$res}.
+#' @param K Threshold multiplier for flagging outliers based on scaled residuals
+#'   (default: 2.5). Observations with \code{|residual|/MAD > K} are candidates
+#'   for removal.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients from the refit (intercept, slopes).}
+#'   \item{res}{Residuals from the final least squares fit after outlier removal.}
+#' }
+#'
+#' @details
+#' The \code{gyreg} function implements a two-stage robust regression procedure:
+#'
+#' **Stage 1 - Initial Fit and Outlier Detection:**
+#' \enumerate{
+#'   \item Fits an initial robust regression using \code{rinit} (default: least median of squares)
+#'   \item Computes scaled residuals: \code{res.scale = |residual| / MAD(residuals)}
+#'   \item Flags observations where \code{res.scale >= K}
+#' }
+#'
+#' **Stage 2 - Adaptive Outlier Removal:**
+#' \enumerate{
+#'   \item For flagged observations, compares empirical quantiles to theoretical
+#'         normal quantiles
+#'   \item Computes the maximum deviation: \code{dval = max(pnorm(sorted.residuals[i]) - i/n)}
+#'   \item Removes the top \code{floor(n * dval)} most extreme observations
+#'   \item Refits using ordinary least squares on the retained observations
+#' }
+#'
+#' This adaptive approach determines the number of outliers to remove based on
+#' the data rather than using a fixed threshold. The method is particularly
+#' effective when outliers cause substantial deviations from normality in the
+#' residual distribution.
+#'
+#' The final fit uses ordinary least squares rather than a robust method,
+#' which is appropriate after outlier removal but may be sensitive to any
+#' remaining leverage points.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{lmsreg}} for least median of squares regression,
+#'   \code{\link{opreg}} for outlier-pruned regression with different detection method,
+#'   \code{\link{chreg}} for Coakley-Hettmansperger robust regression
+#'
+#' @examples
+#' \dontrun{
+#' # Simple regression with outliers
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 + 3*x + rnorm(50, sd=0.5)
+#' y[1:3] <- y[1:3] + 5  # Add outliers
+#'
+#' # Standard robust regression
+#' result <- gyreg(x, y)
+#' print(result$coef)
+#'
+#' # Multiple predictors
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- 1 + 2*x[,1] - x[,2] + rnorm(50, sd=0.3)
+#' y[1:5] <- y[1:5] + 4  # Add outliers
+#' gyreg(x, y)
+#'
+#' # Using different initial estimator and threshold
+#' gyreg(x, y, rinit=ltsreg, K=3.0)
+#' }
+#'
+#' @export
 gyreg<-function(x,y,rinit=lmsreg,K=2.5){
 xy=elimna(cbind(x,y))
 p=ncol(as.matrix(x))
@@ -2623,8 +4415,78 @@ coef=coef,residuals=res,Strength.Assoc=stre,Explanatory.Power=e.pow)
 }
 
 # ============================================================================
-# regbootMC
+# snmreg
 # ============================================================================
+
+#' Skipped Nelder-Mead Regression S-Estimator
+#'
+#' Computes a regression S-estimator using the Nelder-Mead optimization method.
+#' The S-estimator minimizes a robust scale measure (percentage bend midvariance)
+#' of residuals, providing high breakdown point protection.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param SEED Logical; if \code{TRUE} (default), sets random seed for reproducibility
+#'   (currently not used, retained for compatibility).
+#' @inheritParams opreg
+#' @param initreg Initial regression function for starting values (default: \code{MMreg}).
+#'   Must return coefficients in \code{$coef}.
+#' @param ... Additional arguments passed to \code{outfun} if \code{xout=TRUE}.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients: \code{c(intercept, slopes)}.}
+#'   \item{residuals}{Residuals from the fit.}
+#' }
+#'
+#' @details
+#' S-estimators minimize a robust scale of residuals:
+#' \deqn{\min_{\beta} s(r_1, \ldots, r_n)}
+#' where \eqn{r_i = y_i - x_i'\beta} are residuals and \eqn{s} is a robust
+#' scale estimator (percentage bend midvariance).
+#'
+#' This implementation:
+#' 1. Optionally removes outliers using projection-based detection
+#' 2. Gets initial values from \code{initreg} (default: MM-regression)
+#' 3. Uses Nelder-Mead simplex method to minimize scale of residuals
+#' 4. Computes intercept as median of residuals
+#'
+#' **Properties**:
+#' - High breakdown point (up to 50%)
+#' - Robust to outliers in both x and y
+#' - Affine equivariant
+#' - Computationally intensive due to optimization
+#'
+#' The "skipped" aspect refers to optional outlier removal before fitting.
+#'
+#' @references
+#' Rousseeuw, P.J. & Yohai, V.J. (1984). Robust regression by means of
+#' S-estimators. \emph{Robust and Nonlinear Time Series Analysis}, 256-272.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @family robust regression functions
+#' @seealso \code{\link{MMreg}} for MM-regression, \code{\link{ltsreg}} for LTS,
+#'   \code{\link{outpro}} for outlier detection
+#' @export
+#' @examples
+#' \dontrun{
+#' # Simple S-regression
+#' set.seed(123)
+#' x <- matrix(rnorm(50), ncol=1)
+#' y <- 2*x + rnorm(50, sd=0.5)
+#' snmreg(x, y)
+#'
+#' # With outliers
+#' y[1:5] <- y[1:5] + 10
+#' snmreg(x, y)
+#'
+#' # Multiple regression with outlier removal
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- x[,1] + 2*x[,2] + rnorm(50)
+#' snmreg(x, y, xout=TRUE)
+#' }
 snmreg<-function(x,y,SEED=TRUE,xout=FALSE,outfun=outpro,initreg=MMreg,...){
 #
 # Compute regression S-estimator via Nelder-Mead method
@@ -2659,6 +4521,80 @@ list(coef = coef, residuals = res)
 # ============================================================================
 # mopreg
 # ============================================================================
+
+#' Multiple Outcome Outlier-Pruned Regression
+#'
+#' Performs regression for multiple outcome variables, optionally removing
+#' multivariate outliers using projection-based outlier detection before fitting.
+#' This extends outlier-pruned regression to handle multiple dependent variables
+#' simultaneously.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric matrix of outcome variables (n by q), where q is the number
+#'   of outcomes.
+#' @param regfun Regression function to apply to each outcome (default: \code{tsreg}).
+#'   Must return coefficients in \code{$coef}.
+#' @param cop Type of correlation/covariance for outlier detection (default: 3).
+#'   See \code{\link{outpro}} for options.
+#' @param KEEP Logical; if \code{TRUE} (default), keeps all observations (no outlier
+#'   removal). If \code{FALSE}, removes outliers before regression.
+#' @param MC Logical; if \code{TRUE}, uses parallel processing via \code{\link{outproMC}}
+#'   for outlier detection (default: \code{FALSE}).
+#' @param STAND Logical; if \code{TRUE} (default), standardizes data before outlier
+#'   detection.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Matrix of regression coefficients (p+1 by q). Each column contains
+#'     coefficients for one outcome: \code{c(intercept, slopes)}.}
+#'   \item{residuals}{Matrix of residuals (n by q). Each column contains residuals
+#'     for one outcome.}
+#' }
+#'
+#' @details
+#' This function extends outlier-pruned regression to multiple outcomes:
+#'
+#' 1. **If \code{KEEP=FALSE}**: Detects multivariate outliers in the combined
+#'    (X, Y) space using projection-based methods. Outliers are removed before
+#'    any regression.
+#'
+#' 2. **For each outcome**: Applies \code{regfun} to predict that outcome from X,
+#'    using only the retained observations.
+#'
+#' The outlier detection considers all variables (predictors and all outcomes)
+#' jointly, which can be more powerful than detecting outliers separately for
+#' each outcome.
+#'
+#' **Use cases**:
+#' - Multivariate regression with multiple correlated outcomes
+#' - Protecting all analyses from the same set of outlying cases
+#' - Ensuring consistency across multiple outcome models
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @family robust regression functions
+#' @seealso \code{\link{opreg}} for single outcome version,
+#'   \code{\link{outpro}} for outlier detection details,
+#'   \code{\link{tsreg}} for Theil-Sen regression
+#' @export
+#' @examples
+#' \dontrun{
+#' # Multiple outcomes
+#' set.seed(123)
+#' x <- matrix(rnorm(100), ncol=2)
+#' y1 <- x[,1] + 2*x[,2] + rnorm(50)
+#' y2 <- 2*x[,1] - x[,2] + rnorm(50)
+#' y <- cbind(y1, y2)
+#'
+#' # Without outlier removal
+#' result1 <- mopreg(x, y, KEEP=TRUE)
+#'
+#' # With outlier removal
+#' y[1:3,] <- y[1:3,] + 10  # Add outliers
+#' result2 <- mopreg(x, y, KEEP=FALSE)
+#' }
 mopreg<-function(x,y,regfun=tsreg,cop=3,KEEP=TRUE,MC=FALSE,STAND=TRUE){
 #
 # Do multiple (outcomes) regression on points not labled outliers
@@ -2717,6 +4653,77 @@ list(coef=a)
 # ============================================================================
 # mdepreg
 # ============================================================================
+
+#' Multivariate Depth-Based Regression
+#'
+#' Computes regression coefficients using multivariate depth methods via the
+#' \code{mrfDepth} package. This extends depth-based regression to handle
+#' multiple predictors by finding the deepest regression hyperplane.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @inheritParams opreg
+#' @param RES Logical; if \code{TRUE}, computes and returns residuals
+#'   (default: \code{FALSE}).
+#' @param ... Additional arguments passed to \code{outfun} if \code{xout=TRUE}.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{n}{Original sample size before any outlier removal.}
+#'   \item{n.keep}{Number of observations retained after outlier removal
+#'     (same as \code{n} if \code{xout=FALSE}).}
+#'   \item{coef}{Vector of regression coefficients: \code{c(intercept, slopes)}.}
+#'   \item{residuals}{Residuals (if \code{RES=TRUE}, otherwise \code{NA}).}
+#' }
+#'
+#' @details
+#' This function uses regression depth via the \code{mrfDepth} package to find
+#' the "deepest" regression hyperplane in the (X, y) space.
+#'
+#' The method:
+#' 1. Combines predictors and outcome: \eqn{(X_1, \ldots, X_p, y)}
+#' 2. Computes the regression depth median using \code{rdepthmedian()}
+#' 3. Returns the deepest hyperplane coefficients
+#'
+#' **Regression depth** measures how "central" a hyperplane is relative to the
+#' data cloud. The deepest hyperplane is most representative of the overall
+#' data pattern and is highly resistant to outliers.
+#'
+#' **Properties**:
+#' - High breakdown point (up to 33%)
+#' - Affine equivariant
+#' - Robust to outliers in both predictors and outcome
+#' - No distributional assumptions
+#'
+#' **Note**: Requires the \code{mrfDepth} package. For simple regression
+#' (one predictor), \code{\link{depreg}} may be faster.
+#'
+#' @references
+#' Rousseeuw, P.J. & Hubert, M. (1999). Regression depth. \emph{Journal of the
+#' American Statistical Association}, 94, 388-433.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @family robust regression functions
+#' @seealso \code{\link{depreg}} for simple regression, \code{\link{tsreg}}
+#'   for Theil-Sen regression
+#' @export
+#' @examples
+#' \dontrun{
+#' # Requires mrfDepth package
+#' if (require(mrfDepth)) {
+#'   # Multiple regression
+#'   set.seed(123)
+#'   x <- matrix(rnorm(100), ncol=2)
+#'   y <- x[,1] + 2*x[,2] + rnorm(50)
+#'   mdepreg(x, y, RES=TRUE)
+#'
+#'   # With outliers
+#'   y[1:5] <- y[1:5] + 15
+#'   mdepreg(x, y, RES=TRUE)
+#' }
+#' }
 mdepreg<-function(x,y,xout=FALSE,outfun=out,RES=FALSE,...){
 #
 # multiple depth regression
@@ -3001,6 +5008,87 @@ list(output=output,om.pval=om.pval,adj.om.pval=adj.pval)
 # ============================================================================
 # opregMC
 # ============================================================================
+
+#' Outlier-Pruned Regression (Parallel Processing)
+#'
+#' Performs regression after removing outliers detected by the projection-based
+#' outlier detection method \code{\link{outproMC}}. Uses parallel processing for
+#' outlier detection.
+#'
+#' @param x Numeric vector or matrix of predictor variable(s).
+#' @param y Numeric vector of the dependent variable.
+#' @param regfun Regression function to use (default: \code{tsreg}).
+#'   Can be any function that returns coefficients in \code{$coef}.
+#' @param cop Critical outlier detection parameter passed to \code{outproMC}.
+#'   Larger values make detection less sensitive (default: 3).
+#' @param fast Logical. Currently not used (default: \code{FALSE}).
+#' @param pr Logical. If \code{TRUE} and \code{fast=TRUE}, prints coefficients
+#'   (default: \code{TRUE}).
+#' @param prres Logical. If \code{TRUE} and \code{fast=TRUE}, prints residuals
+#'   (default: \code{FALSE}).
+#' @param STAND Logical. If \code{TRUE}, standardizes data before outlier
+#'   detection (default: \code{TRUE}).
+#' @param xout Logical. Included for compatibility but not used; outlier
+#'   detection is always performed (default: \code{FALSE}).
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients (intercept, slopes)}
+#'   \item{residuals}{Vector of residuals for all observations (including outliers)}
+#' }
+#'
+#' @details
+#' This function first uses \code{\link{outproMC}} (projection-based outlier
+#' detection with multicore processing) to identify outliers in the joint space
+#' of predictors and response. Then it fits the regression using only the
+#' non-outlier points.
+#'
+#' The residuals are computed for all observations, including those flagged as
+#' outliers, so you can see how well the robust fit predicts the outlying cases.
+#'
+#' **Outlier Detection**: Uses projection pursuit methods to detect outliers
+#' in high-dimensional space. The \code{cop} parameter controls sensitivity:
+#' - Larger \code{cop}: fewer points flagged as outliers (more conservative)
+#' - Smaller \code{cop}: more points flagged as outliers (more aggressive)
+#' - Default (3): reasonable balance for most applications
+#'
+#' **When to use**:
+#' - High-dimensional regression with potential outliers
+#' - When you want automatic outlier removal
+#' - As a more robust alternative to \code{\link{opreg}}
+#'
+#' This is the parallel processing version, faster than \code{\link{opreg}}
+#' for large datasets.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{opreg}} for non-parallel version,
+#'   \code{\link{outproMC}} for the outlier detection method,
+#'   \code{\link{opregpb}} for bootstrap inference
+#'
+#' @examples
+#' \dontrun{
+#' # Regression with outliers
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- 1 + 2*x[,1] - x[,2] + rnorm(100)
+#'
+#' # Add some outliers
+#' y[1:5] <- y[1:5] + 10
+#' x[1:5,] <- x[1:5,] + 3
+#'
+#' # Fit with automatic outlier removal
+#' fit <- opregMC(x, y)
+#' print(fit$coef)
+#'
+#' # Compare with regular tsreg (influenced by outliers)
+#' fit.regular <- tsreg(x, y)
+#' print(fit.regular$coef)
+#' }
+#'
+#' @export
 opregMC<-function(x,y,regfun=tsreg,cop=3,fast=FALSE,pr=TRUE,prres=FALSE,STAND=TRUE,xout=FALSE){
 #
 # Do regression on points not labled outliers
@@ -3029,6 +5117,88 @@ list(coef=coef,residuals=residuals)
 # ============================================================================
 # bkreg
 # ============================================================================
+
+#' Binary Kernel Regression
+#'
+#' Computes a kernel-based estimator for binary (0/1) response regression.
+#' Estimates P(Y=1|X=x) nonparametrically using kernel density estimation.
+#'
+#' @param x Numeric vector or matrix of predictor variable(s).
+#' @param y Numeric vector of binary responses (should contain only 0 and 1).
+#' @param kerfun Kernel density estimation function (default: \code{akerd}).
+#'   Must support \code{pyhat=TRUE} and \code{pts} arguments.
+#' @param pyhat Logical. If \code{TRUE}, returns estimated probabilities;
+#'   if \code{FALSE}, returns "Done" message (default: \code{FALSE}).
+#' @inheritParams common-params
+#' @param plotit Logical. If \code{TRUE}, creates a plot of the fitted
+#'   probabilities (default: \code{TRUE}).
+#' @param xlab Label for x-axis in plots (default: "X").
+#' @param ylab Label for y-axis in plots (default: "Y").
+#' @param zlab Label for z-axis in 3D plots (default: "Z").
+#' @param pr Logical. If \code{TRUE}, prints warnings about scaling for
+#'   2-predictor case (default: \code{TRUE}).
+#' @param theta Viewing angle for 3D plot (default: 50).
+#' @param phi Colatitude angle for 3D plot (default: 25).
+#' @param duplicate How to handle duplicate points in \code{interp}
+#'   (default: "error"). See \code{\link[akima]{interp}}.
+#' @param expand Expansion factor for 3D plot (default: 0.5).
+#' @param scale Logical. If \code{TRUE}, scales z-axis in 3D plot (default: \code{FALSE}).
+#' @param ticktype Type of axis ticks for 3D plot (default: "simple").
+#'
+#' @return If \code{pyhat=TRUE}, returns a numeric vector of estimated probabilities
+#'   P(Y=1|X=x) for each observation. If \code{pyhat=FALSE}, returns "Done".
+#'
+#' @details
+#' This function implements a nonparametric estimator for binary regression
+#' based on the method of Signorini and Jones (2004). The estimator uses
+#' kernel density estimation to estimate the conditional probability:
+#'
+#' \deqn{P(Y=1|X=x) = \frac{n_1 f(x|Y=1)}{n_1 f(x|Y=1) + n_0 f(x|Y=0)}}
+#'
+#' where \eqn{f(x|Y=1)} and \eqn{f(x|Y=0)} are kernel density estimates
+#' for the predictor distributions in each response group, and \eqn{n_1},
+#' \eqn{n_0} are the sample sizes in each group.
+#'
+#' **Visualization**:
+#' - For 1 predictor: creates a 2D plot showing data points and fitted curve
+#' - For 2 predictors: creates a 3D surface plot (requires \code{akima} package)
+#'
+#' **When to use**:
+#' - Binary response variable (logistic-type problems)
+#' - Want nonparametric alternative to logistic regression
+#' - Relationship between predictors and log-odds may be nonlinear
+#' - Small to moderate sample sizes (kernel methods can be unstable with sparse data)
+#'
+#' @references
+#' Signorini, D.F., & Jones, M.C. (2004). Kernel estimators for univariate
+#' binary regression. \emph{Journal of the American Statistical Association},
+#' 99, 119-126.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{akerd}} for the default kernel density estimator,
+#'   \code{\link{kerreg}} for continuous response kernel regression
+#'
+#' @examples
+#' \dontrun{
+#' # Simulated binary response data
+#' set.seed(123)
+#' x <- rnorm(100)
+#' p <- plogis(1 + 2*x)  # True probabilities
+#' y <- rbinom(100, 1, p)  # Binary outcomes
+#'
+#' # Fit and visualize
+#' probs <- bkreg(x, y, pyhat=TRUE, plotit=TRUE)
+#'
+#' # Two predictors with 3D plot
+#' x <- matrix(rnorm(200), ncol=2)
+#' p <- plogis(1 + x[,1] - 0.5*x[,2])
+#' y <- rbinom(100, 1, p)
+#' bkreg(x, y, pyhat=FALSE, plotit=TRUE, scale=TRUE)
+#' }
+#'
+#' @export
 bkreg<-function(x,y,kerfun=akerd,pyhat=FALSE,plotit=TRUE,xlab="X",ylab="Y",
 zlab="Z",xout=FALSE,outfun=outpro,pr=TRUE,theta=50,phi=25,duplicate="error",
 expand=.5,scale=FALSE,ticktype="simple",...){
@@ -3151,6 +5321,69 @@ mout
 # ============================================================================
 # regci
 # ============================================================================
+
+#' Bootstrap Confidence Intervals for Regression Parameters
+#'
+#' Computes bootstrap confidence intervals for each parameter (intercept and slopes)
+#' in a linear regression equation using the percentile bootstrap method.
+#'
+#' @inheritParams common_params
+#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
+#'   Any function that returns coefficients in \code{$coef} (intercept first, then slopes).
+#' @param nboot Number of bootstrap samples (default: 599).
+#' @param SEED Logical; if TRUE, sets random seed for reproducibility (default: TRUE).
+#' @param pr Logical; if TRUE, prints progress messages (default: TRUE).
+#' @param null.val Vector of null hypothesis values for each parameter (default: all zeros).
+#'   Length should equal number of parameters (p+1).
+#' @param method P-value adjustment method for slopes (default: 'hoch' for Hochberg).
+#'   Passed to \code{p.adjust()}.
+#' @param plotit Logical; if TRUE and there are exactly 2 predictors, plots the
+#'   bootstrap confidence region (default: FALSE).
+#' @param xlab X-axis label for plot (default: "Predictor 1").
+#' @param ylab Y-axis label for plot (default: "Predictor 2").
+#' @param WARNS Logical; if FALSE, suppresses warnings during bootstrap (default: FALSE).
+#' @param LABELS Logical; if TRUE, uses variable names from x as labels (default: FALSE).
+#' @param ... Additional arguments passed to \code{regfun} and \code{outfun}.
+#'
+#' @return A list with components:
+#' \item{regci}{Matrix with rows for each parameter and columns:
+#'   \code{ci.low} (lower CI bound), \code{ci.up} (upper CI bound),
+#'   \code{Estimate} (point estimate), \code{S.E.} (bootstrap standard error),
+#'   \code{p-value} (two-sided p-value), \code{p.adj} (adjusted p-values for slopes).}
+#' \item{n}{Sample size after removing missing values.}
+#' \item{n.keep}{Sample size after removing leverage points (if \code{xout=TRUE}).}
+#'
+#' @details
+#' The function uses percentile bootstrap to construct confidence intervals for
+#' regression parameters. P-values test whether each parameter differs from the
+#' corresponding value in \code{null.val} (default 0). For slopes, adjusted p-values
+#' control family-wise error rate using the specified method.
+#'
+#' When using least squares regression with n < 250, consider using \code{lsfitci}
+#' instead for better performance.
+#'
+#' If duplicate y-values are detected with Theil-Sen regression, the function suggests
+#' using \code{tshdreg} which may have better power.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}.
+#' Academic Press.
+#'
+#' @seealso \code{\link{tsreg}}, \code{\link{lsfitci}}, \code{\link{regtest}},
+#' \code{\link{reg2ci}}
+#'
+#' @examples
+#' # Theil-Sen regression with bootstrap CIs
+#' x <- matrix(rnorm(50), ncol=1)
+#' y <- 2 + 3*x + rnorm(50)
+#' regci(x, y)
+#'
+#' # Multiple predictors with leverage point removal
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- 1 + 2*x[,1] - x[,2] + rnorm(50)
+#' regci(x, y, xout=TRUE, nboot=500)
+#'
+#' @export
 regci<-function(x,y,regfun=tsreg,nboot=599,alpha=.05,SEED=TRUE,pr=TRUE,null.val=NULL,method='hoch',
 xout=FALSE,outfun=outpro,plotit=FALSE,xlab="Predictor 1",ylab="Predictor 2",WARNS=FALSE,LABELS=FALSE,...){
 #
@@ -3270,6 +5503,69 @@ pe
 # ============================================================================
 # reg1way
 # ============================================================================
+
+#' One-Way ANOVA for Independent Regression Lines
+#'
+#' Tests the hypothesis that regression parameters (intercepts and slopes) are equal
+#' across two or more independent groups using a bootstrap-based Johansen-type MANOVA
+#' approach.
+#'
+#' @param x List of predictor matrices, one per group. \code{x[[j]]} contains the
+#'   n_j x p predictor matrix for group j.
+#' @param y List of response vectors, one per group. \code{y[[j]]} contains the
+#'   response values for group j.
+#' @inheritParams common_params
+#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
+#' @param nboot Number of bootstrap samples per group (default: 100).
+#' @param SEED Logical; if TRUE, sets random seed for reproducibility (default: TRUE).
+#' @param STAND Logical; if TRUE, standardizes predictors before outlier detection (default: TRUE).
+#' @param AD Logical; if TRUE, computes adjusted critical value and p-value using
+#'   Johansen correction (default: FALSE).
+#' @param pr Logical; if TRUE, prints progress messages and warnings (default: TRUE).
+#' @param ... Additional arguments passed to \code{regfun} and \code{outfun}.
+#'
+#' @return A list with components:
+#' \item{n}{Vector of sample sizes per group after removing missing values.}
+#' \item{n.keep}{Vector of sample sizes per group after removing leverage points.}
+#' \item{test.stat}{Johansen-type test statistic (follows chi-squared distribution).}
+#' \item{crit.value}{Critical value at level \code{alpha}.}
+#' \item{adjusted.crit}{Johansen-adjusted critical value (if \code{!xout} or \code{AD=TRUE}).}
+#' \item{p.value}{Unadjusted p-value.}
+#' \item{adjusted.p.value}{Johansen-adjusted p-value (if \code{!xout} or \code{AD=TRUE}).}
+#' \item{est}{Data frame of estimated regression parameters for each group.}
+#'
+#' @details
+#' This function performs a one-way ANOVA comparing regression lines across J independent
+#' groups. It tests whether all intercepts and slopes are equal across groups. The test
+#' uses bootstrap estimates of standard errors combined with a Johansen MANOVA-type
+#' test statistic.
+#'
+#' If \code{xout=TRUE}, leverage points are removed using \code{outfun} (default: MVE method).
+#' The function automatically suggests using \code{xout=TRUE} if it is not specified.
+#'
+#' The Johansen adjustment (controlled by \code{AD} parameter or automatically applied when
+#' \code{xout=FALSE}) provides improved Type I error control when samples are small.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}.
+#' Academic Press.
+#'
+#' Johansen, S. (1980). The Welch-James approximation to the distribution of the
+#' residual sum of squares in a weighted linear regression. \emph{Biometrika}, 67, 85-92.
+#'
+#' @seealso \code{\link{reg1wayMC}} (parallel version), \code{\link{regci}},
+#' \code{\link{reg2ci}}, \code{\link{tsreg}}
+#'
+#' @examples
+#' # Compare regression lines for two groups
+#' set.seed(123)
+#' x1 <- matrix(rnorm(50), ncol=1)
+#' y1 <- 2 + 3*x1 + rnorm(50)
+#' x2 <- matrix(rnorm(50), ncol=1)
+#' y2 <- 1 + 2*x2 + rnorm(50)
+#' reg1way(list(x1, x2), list(y1, y2), nboot=100)
+#'
+#' @export
 reg1way<-function(x,y,regfun=tsreg,nboot=100,SEED=TRUE,xout=FALSE,outfun=outpro,STAND=TRUE,AD=FALSE,alpha=.05,pr=TRUE,...){
 #
 #  Test hypothesis that for two or more independent groups, all regression parameters
@@ -3386,6 +5682,81 @@ list(n=nv,n.keep=nv.keep,test.stat=F,crit.value=crit,adjusted.crit=critad,p.valu
 # ============================================================================
 # reg1wayMC
 # ============================================================================
+#' Compare Regression Lines Across Multiple Independent Groups (Parallel Processing)
+#'
+#' Tests the hypothesis that two or more independent groups have identical
+#' regression parameters using bootstrap estimation and a Johansen MANOVA-type
+#' test statistic. This is the multicore version of \code{\link{reg1way}}.
+#'
+#' @param x A list of length J, where each element is a numeric matrix of predictors
+#'   for one group. All groups must have the same number of predictors.
+#' @param y A list of length J, where each element is a numeric vector of the
+#'   dependent variable for one group.
+#' @param regfun Robust regression function to use (default: \code{tsreg}).
+#'   Common alternatives: \code{tshdreg}, \code{chreg}, \code{ltsreg}, \code{opreg}.
+#' @param STAND Logical. If \code{TRUE}, standardizes predictors when detecting
+#'   outliers (default: \code{TRUE}).
+#' @param AD Logical. If \code{TRUE}, applies an adjusted critical value to control
+#'   Type I error when leverage points are present (default: \code{FALSE}).
+#'   Ignored when \code{xout=TRUE}.
+#' @param pr Logical. If \code{TRUE}, prints warnings and suggestions (default: \code{TRUE}).
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{test}{The test statistic value}
+#'   \item{p.value}{Bootstrap p-value for the global test}
+#'   \item{n.all}{Original sample sizes before any outlier removal}
+#'   \item{n.keep}{Sample sizes after outlier removal (if \code{xout=TRUE})}
+#'   \item{param.est}{Matrix of regression coefficient estimates (rows = groups, columns = parameters)}
+#'   \item{Var.Explained}{Matrix of explanatory power for each group}
+#'   \item{crit}{Critical value (unadjusted or adjusted if \code{AD=TRUE})}
+#' }
+#'
+#' @details
+#' This function extends robust regression comparison to multiple independent groups.
+#' It uses bootstrap to estimate the standard errors of regression coefficients and
+#' constructs a Johansen-type MANOVA test statistic.
+#'
+#' The procedure:
+#' 1. Fits robust regression for each group
+#' 2. Uses bootstrap to estimate standard errors
+#' 3. Constructs a test statistic based on the weighted sum of squared differences
+#' 4. Compares to bootstrap null distribution
+#'
+#' When \code{AD=TRUE} and \code{xout=FALSE}, an adjusted critical value is used
+#' to protect against Type I error inflation due to leverage points. The adjustment
+#' is based on simulation results.
+#'
+#' The function uses \code{mclapply} for parallel processing, making it faster than
+#' \code{\link{reg1way}} for large datasets or many bootstrap samples.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{reg1way}} for non-parallel version,
+#'   \code{\link{reg2ci}} for two-group comparisons,
+#'   \code{\link{reg1wayISOMC}} for isotonic version
+#'
+#' @examples
+#' \dontrun{
+#' # Compare regression lines across three groups
+#' set.seed(123)
+#' x1 <- matrix(rnorm(50), ncol=1)
+#' y1 <- 1 + 2*x1 + rnorm(50)
+#'
+#' x2 <- matrix(rnorm(50), ncol=1)
+#' y2 <- 1.5 + 2*x2 + rnorm(50)  # Same slope, different intercept
+#'
+#' x3 <- matrix(rnorm(50), ncol=1)
+#' y3 <- 1 + 3*x3 + rnorm(50)  # Different slope
+#'
+#' result <- reg1wayMC(list(x1, x2, x3), list(y1, y2, y3), nboot=100)
+#' print(result$p.value)
+#' }
+#'
+#' @export
 reg1wayMC<-function(x,y,regfun=tsreg,nboot=100,SEED=TRUE,xout=FALSE,outfun=outpro,
 STAND=TRUE,alpha=.05,pr=TRUE,AD=FALSE,...){
 #
@@ -3504,6 +5875,84 @@ list(n=nv.all,n.keep=nv.keep,test.stat=F,crit.value=crit,adjusted.crit=critad,p.
 # ============================================================================
 # reg2ciMC
 # ============================================================================
+#' Compare Two Independent Regression Lines (Parallel Processing)
+#'
+#' Computes bootstrap confidence intervals for the difference in regression
+#' parameters between two independent groups using parallel processing.
+#' This is the multicore version of \code{\link{reg2ci}}.
+#'
+#' @param x Numeric vector or matrix of predictor variable(s) for the first group.
+#' @param y Numeric vector of the dependent variable for the first group.
+#' @param x1 Numeric vector or matrix of predictor variable(s) for the second group.
+#' @param y1 Numeric vector of the dependent variable for the second group.
+#' @param regfun Robust regression function to use (default: \code{tsreg}).
+#'   Must return coefficients in \code{regfun$coef} with intercept as first element.
+#' @param plotit Logical. If \code{TRUE}, creates a scatterplot with both
+#'   regression lines (default: \code{TRUE}).
+#' @param pr Logical. If \code{TRUE}, prints progress messages (default: \code{FALSE}).
+#' @param xlab Label for x-axis when \code{plotit=TRUE} (default: "X").
+#' @param ylab Label for y-axis when \code{plotit=TRUE} (default: "Y").
+#' @inheritParams common-params
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{n}{Sample sizes for both groups}
+#'   \item{ci}{Matrix with columns: Param, ci.low, ci.hi for each regression parameter}
+#'   \item{p.value}{P-values for testing difference = 0 for each parameter}
+#'   \item{Est.1}{Regression coefficient estimates for group 1}
+#'   \item{Est.2}{Regression coefficient estimates for group 2}
+#'   \item{Est.dif}{Difference in estimates (group 1 - group 2)}
+#' }
+#'
+#' @details
+#' This function compares regression lines between two independent groups using
+#' a percentile bootstrap to construct confidence intervals for the differences
+#' in parameters. The function uses \code{mclapply} for parallel processing.
+#'
+#' The bootstrap procedure:
+#' 1. Resamples each group independently with replacement
+#' 2. Refits the regression models
+#' 3. Computes the difference in parameters
+#' 4. Constructs percentile confidence intervals from the bootstrap distribution
+#'
+#' P-values are computed from the proportion of bootstrap samples where the
+#' difference has opposite sign from zero.
+#'
+#' When \code{plotit=TRUE}, creates a scatterplot with both regression lines
+#' overlaid. Points from different groups can be distinguished visually.
+#'
+#' The function uses \code{mclapply} for parallel processing, making it faster than
+#' \code{\link{reg2ci}} for large datasets or many bootstrap samples.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{reg2ci}} for non-parallel version,
+#'   \code{\link{difreg}} for dependent groups,
+#'   \code{\link{reg1wayMC}} for comparing more than two groups
+#'
+#' @examples
+#' \dontrun{
+#' # Compare two independent groups
+#' set.seed(123)
+#' x1 <- rnorm(50)
+#' y1 <- 1 + 2*x1 + rnorm(50)
+#' x2 <- rnorm(50)
+#' y2 <- 2 + 3*x2 + rnorm(50)  # Different intercept and slope
+#'
+#' result <- reg2ciMC(x1, y1, x2, y2, nboot=500)
+#' print(result$ci)
+#'
+#' # Multiple predictors
+#' x1 <- matrix(rnorm(100), ncol=2)
+#' y1 <- 1 + 2*x1[,1] - x1[,2] + rnorm(50)
+#' x2 <- matrix(rnorm(100), ncol=2)
+#' y2 <- 1.5 + 2.5*x2[,1] - 1.5*x2[,2] + rnorm(50)
+#' reg2ciMC(x1, y1, x2, y2, nboot=500)
+#' }
+#'
+#' @export
 reg2ciMC<-function(x,y,x1,y1,regfun=tsreg,nboot=599,alpha=.05,plotit=TRUE,SEED=TRUE,
 xout=FALSE,outfun=outpro,pr=FALSE,xlab='X',ylab='Y',...){
 #
@@ -3708,6 +6157,82 @@ list(n=nv,n.keep=nv.keep,test.stat=F,crit.value=crit,p.value=pval,est=est)
 # ============================================================================
 # reg1wayISOMC
 # ============================================================================
+
+#' One-Way Regression ANOVA with Isotonic Bootstrap (Parallel Processing)
+#'
+#' Tests the hypothesis that regression parameters are equal across J independent
+#' groups using bootstrap standard errors and a Johansen-type MANOVA statistic.
+#' This is the parallel processing (multicore) version using \code{mclapply}.
+#'
+#' @param x List of length J, where \code{x[[j]]} is an n_j by p matrix of
+#'   predictors for group j.
+#' @param y List of length J, where \code{y[[j]]} is a vector of length n_j
+#'   containing the response values for group j.
+#' @param regfun Regression function to use (default: \code{tsreg}).
+#' @inheritParams common-params
+#' @param STAND Logical; if TRUE, standardizes the test statistic (default: TRUE).
+#' @param pr Logical; if TRUE, prints a reminder about using \code{xout=TRUE}
+#'   (default: TRUE).
+#' @param ... Additional arguments passed to \code{regfun}.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{test}{The test statistic value.}
+#'   \item{crit.val}{Critical value for the test at level \code{alpha}.}
+#'   \item{p.value}{Bootstrap p-value for the test.}
+#'   \item{n}{Vector of sample sizes for each group (before outlier removal).}
+#'   \item{n.keep}{Vector of sample sizes for each group (after outlier removal).}
+#' }
+#'
+#' @details
+#' This function extends one-way regression ANOVA to multiple groups using
+#' a robust approach:
+#'
+#' **Null Hypothesis**: All J groups have identical regression coefficients
+#' (both intercepts and slopes).
+#'
+#' **Algorithm**:
+#' 1. For each group j = 1, ..., J:
+#'    - Optionally remove leverage points using \code{outfun} if \code{xout=TRUE}
+#'    - Estimate regression coefficients using \code{regfun}
+#'    - Bootstrap to estimate standard errors (using parallel processing)
+#' 2. Compute Johansen-type test statistic comparing coefficient estimates
+#' 3. Determine significance via bootstrap critical value
+#'
+#' The isotonic bootstrap is used to ensure better finite-sample performance.
+#' Parallel processing via \code{mclapply} makes this feasible even with
+#' large \code{nboot}.
+#'
+#' **Important**: This is a global test. If rejected, use post-hoc methods
+#' like \code{\link{reg2ciMC}} for pairwise comparisons.
+#'
+#' @seealso \code{\link{reg1wayISO}} for non-parallel version,
+#'   \code{\link{reg1way}} for standard one-way regression test,
+#'   \code{\link{reg2ciMC}} for pairwise comparisons
+#'
+#' @examples
+#' \dontrun{
+#' # Three groups with different regression relationships
+#' set.seed(123)
+#' x <- list()
+#' y <- list()
+#' for(j in 1:3) {
+#'   x[[j]] <- matrix(rnorm(100), ncol=2)
+#'   # Different slopes for each group
+#'   y[[j]] <- j * x[[j]][,1] + 2*x[[j]][,2] + rnorm(50)
+#' }
+#'
+#' # Test for equal regression coefficients
+#' result <- reg1wayISOMC(x, y, nboot=500)
+#' print(result$p.value)
+#'
+#' # If significant, do pairwise comparisons
+#' if(result$p.value < 0.05) {
+#'   reg2ciMC(x[[1]], y[[1]], x[[2]], y[[2]])
+#' }
+#' }
+#'
+#' @export
 reg1wayISOMC<-function(x,y,regfun=tsreg,nboot=100,SEED=TRUE,xout=FALSE,outfun=outpro,
 STAND=TRUE,alpha=.05,pr=TRUE,...){
 #
@@ -3805,6 +6330,120 @@ list(n=nv.all,n.keep=nv.keep,test.stat=F,crit.value=crit,p.value=pval,est=est)
 # ============================================================================
 # tsregNW
 # ============================================================================
+
+#' Theil-Sen Regression Using Gauss-Seidel Algorithm
+#'
+#' Computes the Theil-Sen regression estimator using the Gauss-Seidel algorithm
+#' for multiple predictors. This iterative method provides robust regression
+#' estimates with high breakdown point and efficiency.
+#'
+#' @param x A numeric vector or matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param xout Logical; if \code{TRUE}, removes outliers from predictor space
+#'   before fitting (default: \code{FALSE}).
+#' @param outfun Function for detecting outliers in predictor space (default: \code{out}).
+#'   Only used if \code{xout=TRUE}.
+#' @param iter Maximum number of iterations for Gauss-Seidel algorithm (default: 10).
+#' @param varfun Function for computing variance in explanatory power calculation
+#'   (default: \code{pbvar}).
+#' @param corfun Function for computing correlation in explanatory power calculation
+#'   (default: \code{pbcor}).
+#' @param plotit Logical; if \code{TRUE}, creates plots during outlier detection
+#'   (default: \code{FALSE}). Only used if \code{xout=TRUE}.
+#' @param tol Convergence tolerance for the Gauss-Seidel algorithm (default: 0.0001).
+#'   Iteration stops when the maximum absolute change in coefficients is less than \code{tol}.
+#' @param ... Additional arguments passed to the outlier detection function.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients: \code{c(intercept, slope_1, ..., slope_p)}.}
+#'   \item{residuals}{Always \code{NULL} in current implementation.}
+#'   \item{Strength.Assoc}{Strength of association, computed as \code{sqrt(Explanatory.Power)}.}
+#'   \item{Explanatory.Power}{Measure of explanatory power, computed as the ratio
+#'     \code{varfun(fitted.values) / varfun(y)}, or the squared correlation if
+#'     this ratio exceeds 1. Returns \code{NULL} if \code{varfun(y) = 0}.}
+#' }
+#'
+#' @details
+#' The Theil-Sen estimator is a robust regression method based on the median of
+#' slopes between all pairs of points. For multiple predictors, this function
+#' uses the Gauss-Seidel algorithm to iteratively refine the estimates.
+#'
+#' **Algorithm:**
+#' \enumerate{
+#'   \item **Initialization**: For each predictor \code{j}, compute the univariate
+#'         Theil-Sen slope between \code{x[,j]} and \code{y}
+#'   \item **Gauss-Seidel Iteration**: For each predictor \code{j} in turn:
+#'         \itemize{
+#'           \item Compute partial residuals: \code{r[,j] = y - X %*% beta - alpha + beta[j] * x[,j]}
+#'           \item Update \code{beta[j]} using univariate Theil-Sen on \code{(x[,j], r[,j])}
+#'         }
+#'   \item Update the intercept: \code{alpha = median(y - X %*% beta)}
+#'   \item Repeat step 2-3 until convergence or \code{iter} iterations reached
+#' }
+#'
+#' **Convergence**: The algorithm stops when the maximum absolute change in any
+#' coefficient is less than \code{tol}, or after \code{iter} iterations.
+#'
+#' **For univariate regression (p=1):**
+#' The function calls \code{\link{tsp1reg}} directly, which computes the exact
+#' Theil-Sen estimator as the median of all pairwise slopes.
+#'
+#' **Explanatory Power:**
+#' The function computes a robust measure of fit using the specified variance
+#' function (default: percentage bend variance). If the ratio of fitted value
+#' variance to response variance exceeds 1 (which can occur with robust variance
+#' estimators), it falls back to the squared correlation.
+#'
+#' **Advantages:**
+#' - High breakdown point (up to 29.3% for large samples)
+#' - Robust to outliers in both x and y
+#' - Asymptotically normal with good efficiency
+#' - Resistant to leverage points when combined with \code{xout=TRUE}
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' Theil, H. (1950). A rank-invariant method of linear and polynomial regression
+#' analysis, I, II, III. \emph{Proceedings of the Koninklijke Nederlandse Akademie
+#' van Wetenschappen A}, 53, 386-392, 521-525, 1397-1412.
+#'
+#' Sen, P.K. (1968). Estimates of the regression coefficient based on Kendall's tau.
+#' \emph{Journal of the American Statistical Association}, 63, 1379-1389.
+#'
+#' @seealso \code{\link{tsreg}} for standard Theil-Sen implementation,
+#'   \code{\link{tsp1reg}} for univariate Theil-Sen,
+#'   \code{\link{tshdreg}} for Theil-Sen with Harrell-Davis quantile estimator,
+#'   \code{\link{regci}} for confidence intervals
+#'
+#' @examples
+#' \dontrun{
+#' # Simple linear regression
+#' set.seed(123)
+#' x <- rnorm(50)
+#' y <- 2 + 3*x + rnorm(50, sd=0.5)
+#' result <- tsregNW(x, y)
+#' print(result$coef)
+#' print(result$Explanatory.Power)
+#'
+#' # Multiple regression
+#' x <- matrix(rnorm(150), ncol=3)
+#' y <- 1 + 2*x[,1] - x[,2] + 0.5*x[,3] + rnorm(50, sd=0.3)
+#' tsregNW(x, y)
+#'
+#' # With outliers - use outlier removal
+#' y[1:5] <- y[1:5] + 5
+#' tsregNW(x, y, xout=TRUE)
+#'
+#' # Adjust convergence criteria
+#' tsregNW(x, y, iter=20, tol=0.00001)
+#'
+#' # Using different robust variance estimator
+#' tsregNW(x, y, varfun=winvar)
+#' }
+#'
+#' @export
 tsregNW<-function(x,y,xout=FALSE,outfun=out,iter=10,varfun=pbvar,
 corfun=pbcor,plotit=FALSE,tol=.0001,...){
 #
@@ -4016,6 +6655,75 @@ list(n=nv,n.keep=nv.keep,output=outp)
 # ============================================================================
 # chregF
 # ============================================================================
+
+#' Fast Coakley-Hettmansperger Robust Regression
+#'
+#' Computes Coakley and Hettmansperger's robust regression estimators with
+#' a streamlined implementation. This is a faster variant of \code{\link{chreg}}
+#' that performs a single iteration rather than iterating to convergence.
+#'
+#' @param x A numeric matrix of predictor variables (n by p).
+#' @param y A numeric vector of the dependent variable (length n).
+#' @param bend Bending constant for Huber's Psi function (default: 1.345).
+#' @param SEED Logical. If \code{TRUE}, sets random seed for reproducibility
+#'   (default: \code{FALSE}). The seed is set to 12 when \code{TRUE}.
+#' @inheritParams common-params
+#' @param outfun Outlier detection function (default: \code{out}). See
+#'   \code{\link{chreg}} for other options.
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{coef}{Vector of regression coefficients (intercept followed by slopes)}
+#'   \item{residuals}{Vector of residuals from the fit}
+#' }
+#'
+#' @details
+#' This function implements the Coakley-Hettmansperger (1993) robust regression
+#' method with a single-iteration approximation. The method provides protection
+#' against both leverage points and outliers in Y.
+#'
+#' The algorithm:
+#' 1. Computes an initial LTS (Least Trimmed Squares) estimate
+#' 2. Computes Mallows weights based on Mahalanobis distance of predictors
+#' 3. Computes Huber Psi weights based on standardized residuals
+#' 4. Updates the coefficient estimates using weighted least squares
+#'
+#' Unlike \code{\link{chreg}} which iterates to convergence, \code{chregF}
+#' performs only a single update step, making it faster but potentially less
+#' accurate. Use \code{chregF} when speed is important and you're willing to
+#' accept a less refined estimate.
+#'
+#' The Mallows weighting downweights high-leverage points, while the Huber
+#' Psi function provides robustness to outliers in the dependent variable.
+#'
+#' @references
+#' Coakley, C.W. and Hettmansperger, T.P. (1993). A bounded influence, high
+#' breakdown, efficient regression estimator. \emph{Journal of the American
+#' Statistical Association}, 88, 872-880.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{chreg}} for the fully iterated version,
+#'   \code{\link{bmreg}} for bounded M-regression,
+#'   \code{\link{ltsreg}} for LTS regression
+#'
+#' @examples
+#' # Simple regression - fast approximation
+#' set.seed(123)
+#' x <- rnorm(100)
+#' y <- 2 + 3*x + rnorm(100)
+#' y[1:5] <- y[1:5] + 10  # Add outliers
+#' result <- chregF(x, y, SEED=TRUE)
+#' result$coef
+#'
+#' # Multiple regression with leverage points
+#' x <- matrix(rnorm(100), ncol=2)
+#' y <- 1 + 2*x[,1] - x[,2] + rnorm(50)
+#' x[1:3,] <- x[1:3,] + 5  # Add leverage points
+#' chregF(x, y, xout=TRUE)
+#'
+#' @export
 chregF<-function(x,y,bend=1.345,SEED=FALSE,xout=FALSE,outfun=out,...){
 #
 # Compute Coakley Hettmansperger robust regression estimators
@@ -4161,6 +6869,96 @@ pvalue,est.1=est1,est.2=est2,estimate.dif = est)
 # ============================================================================
 # difregOLS
 # ============================================================================
+
+#' Compare OLS Regression Parameters for Dependent Groups
+#'
+#' Computes bootstrap confidence intervals and tests for comparing ordinary
+#' least squares (OLS) regression parameters between two dependent (paired) groups.
+#' This is the OLS-specific version of \code{\link{difreg}}.
+#'
+#' @param x1 Numeric vector or matrix of predictor variable(s) for the first group.
+#' @param y1 Numeric vector of the dependent variable for the first group.
+#' @param x2 Numeric vector or matrix of predictor variable(s) for the second group.
+#' @param y2 Numeric vector of the dependent variable for the second group.
+#' @param regfun Regression function (default: \code{lsfit} for OLS).
+#'   Should not be changed unless using a specific OLS variant.
+#' @inheritParams common-params
+#' @param plotit Logical. If \code{TRUE}, creates a scatterplot with both
+#'   regression lines (default: \code{FALSE}).
+#' @param xlab Label for x-axis when \code{plotit=TRUE} (default: "X").
+#' @param ylab Label for y-axis when \code{plotit=TRUE} (default: "Y").
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{n}{Original sample size before any outlier removal}
+#'   \item{n.keep}{Sample size after outlier removal (if \code{xout=TRUE})}
+#'   \item{est.dif}{Difference in estimates (group 1 - group 2)}
+#'   \item{est.1}{OLS coefficient estimates for group 1}
+#'   \item{est.2}{OLS coefficient estimates for group 2}
+#'   \item{test.stat}{t-statistics for each parameter difference}
+#'   \item{standard.error}{Bootstrap standard errors}
+#'   \item{p.values}{Two-sided p-values for each parameter difference}
+#'   \item{conf.intervals}{Matrix with columns: Param, ci.low, ci.hi}
+#' }
+#'
+#' @details
+#' This function compares OLS regression parameters between two dependent (paired)
+#' groups using bootstrap methods. It's specifically designed for OLS regression
+#' with paired/repeated measures data.
+#'
+#' **Method**:
+#' 1. Bootstrap resamples preserve pairing by resampling entire rows
+#' 2. Fits OLS to each group in each bootstrap sample
+#' 3. Computes differences in parameters
+#' 4. Uses bootstrap SE and t-distribution for inference
+#'
+#' **Inference**: Unlike \code{\link{difreg}} which uses percentile bootstrap,
+#' this function uses bootstrap standard errors with t-distribution critical values.
+#' This provides both confidence intervals and p-values.
+#'
+#' **When to use**:
+#' - OLS regression (not robust regression)
+#' - Paired/repeated measures design (pre-post, matched pairs, etc.)
+#' - Want parametric-style inference with bootstrap SEs
+#' - Comparing specific parameters (intercepts, slopes)
+#'
+#' **Comparison with alternatives**:
+#' - \code{\link{difreg}}: For robust regression (tsreg, chreg, etc.)
+#' - \code{\link{DregGOLS}}: For global test of all parameters
+#' - \code{\link{reg2ci}}: For independent groups
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press. Chapter 10.
+#'
+#' @seealso \code{\link{difreg}} for robust regression version,
+#'   \code{\link{DregGOLS}} for global test,
+#'   \code{\link{reg2ci}} for independent groups
+#'
+#' @examples
+#' \dontrun{
+#' # Pre-post intervention data
+#' set.seed(123)
+#' n <- 50
+#' x1 <- rnorm(n)
+#' y1 <- 1 + 2*x1 + rnorm(n)
+#' x2 <- x1 + rnorm(n, sd=0.3)
+#' y2 <- 1.5 + 2.5*x2 + rnorm(n)
+#'
+#' # Compare OLS regression parameters
+#' result <- difregOLS(x1, y1, x2, y2, nboot=500)
+#' print(result$p.values)
+#' print(result$conf.intervals)
+#'
+#' # Multiple predictors
+#' x1 <- matrix(rnorm(100), ncol=2)
+#' y1 <- 1 + 2*x1[,1] - x1[,2] + rnorm(50)
+#' x2 <- x1 + matrix(rnorm(100, sd=0.2), ncol=2)
+#' y2 <- 1.5 + 2.2*x2[,1] - 1.1*x2[,2] + rnorm(50)
+#' difregOLS(x1, y1, x2, y2, nboot=500, plotit=FALSE)
+#' }
+#'
+#' @export
 difregOLS<-function(x1,y1,x2,y2,regfun=lsfit,xout=FALSE,outfun=outpro,nboot=200,
 alpha=.05,SEED=TRUE,plotit=FALSE,xlab='X',ylab='Y',...){
 #
@@ -4279,6 +7077,80 @@ sqsd
 # ============================================================================
 # difreg
 # ============================================================================
+
+#' Compare Two Dependent Regression Lines
+#'
+#' Computes bootstrap confidence intervals for the difference in regression
+#' parameters between two dependent groups (e.g., repeated measures at two time
+#' points on the same subjects).
+#'
+#' @param x1 Numeric vector or matrix of predictor variable(s) for the first group.
+#' @param y1 Numeric vector of the dependent variable for the first group.
+#' @param x2 Numeric vector or matrix of predictor variable(s) for the second group.
+#' @param y2 Numeric vector of the dependent variable for the second group.
+#' @inheritParams common-params
+#' @param regfun Robust regression function to use (default: \code{tsreg}).
+#'   Common alternatives: \code{tshdreg}, \code{chreg}, \code{ltsreg}, \code{opreg}.
+#' @param plotit Logical. If \code{TRUE}, creates a scatterplot with both
+#'   regression lines (default: \code{FALSE}).
+#' @param xlab Label for x-axis when \code{plotit=TRUE} (default: "X").
+#' @param ylab Label for y-axis when \code{plotit=TRUE} (default: "Y").
+#' @param pr Logical. If \code{TRUE}, prints warnings about duplicate Y values
+#'   when using \code{tsreg} (default: \code{TRUE}).
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{n}{Original sample size before any outlier removal}
+#'   \item{n.keep}{Sample size after outlier removal (if \code{xout=TRUE})}
+#'   \item{param}{Character vector labeling parameters (Intercept, slope1, ...)}
+#'   \item{p.values}{P-values for testing difference = 0 for each parameter}
+#'   \item{est.grp1}{Regression coefficient estimates for group 1}
+#'   \item{est.grp2}{Regression coefficient estimates for group 2}
+#'   \item{conf.intervals}{Matrix with columns: Param, ci.low, ci.hi}
+#' }
+#'
+#' @details
+#' This function analyzes regression data from dependent (paired) groups, such as
+#' measurements taken at two different time points on the same subjects. The
+#' function uses a percentile bootstrap to construct confidence intervals for
+#' the difference in regression parameters.
+#'
+#' The bootstrap procedure resamples entire rows (preserving the dependency
+#' between observations) and refits the regression models. P-values are computed
+#' using the proportion of bootstrap samples where the difference has the opposite
+#' sign from zero.
+#'
+#' When \code{xout=TRUE}, outliers detected by \code{outfun} in either group
+#' are removed from both groups (to preserve pairing).
+#'
+#' If duplicate Y values are detected and \code{regfun=tsreg}, a warning suggests
+#' using \code{tshdreg} which may have better power with tied values.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{DregG}} for an alternative approach,
+#'   \code{\link{difregMC}} for parallel processing version,
+#'   \code{\link{reg2ci}} for independent groups
+#'
+#' @examples
+#' # Simulated pre-post intervention data
+#' set.seed(123)
+#' n <- 50
+#' x1 <- rnorm(n)  # Pre-intervention predictor
+#' y1 <- 1 + 2*x1 + rnorm(n)  # Pre-intervention outcome
+#' x2 <- x1 + rnorm(n, sd=0.3)  # Post-intervention predictor
+#' y2 <- 1.5 + 2.5*x2 + rnorm(n)  # Post-intervention (changed slope/intercept)
+#'
+#' # Test for difference in regression parameters
+#' result <- difreg(x1, y1, x2, y2, nboot=500)
+#' print(result$conf.intervals)
+#'
+#' # With plot
+#' difreg(x1, y1, x2, y2, plotit=TRUE, nboot=500)
+#'
+#' @export
 difreg<-function(x1,y1,x2,y2,regfun=tsreg,xout=FALSE,outfun=outpro,nboot=599,
 alpha=.05,SEED=TRUE,plotit=FALSE,xlab='X',ylab='Y',pr=TRUE,...){
 #
@@ -4636,6 +7508,87 @@ list(coef=coef,residuals=res)
 # ============================================================================
 # DregG
 # ============================================================================
+
+#' Global Test for Comparing Two Dependent Regression Lines
+#'
+#' Tests the global null hypothesis that two dependent groups (e.g., repeated
+#' measures) have identical regression parameters using a robust analog of
+#' Hotelling's T-squared test with bootstrap covariance estimation.
+#'
+#' @param x1 Numeric vector or matrix of predictor variable(s) for the first group.
+#' @param y1 Numeric vector of the dependent variable for the first group.
+#' @param x2 Numeric vector or matrix of predictor variable(s) for the second group.
+#' @param y2 Numeric vector of the dependent variable for the second group.
+#' @param nullv Numeric vector specifying the null hypothesis value for the
+#'   difference in parameters (default: \code{NULL}, which tests all differences = 0).
+#' @param regfun Robust regression function to use (default: \code{tshdreg}).
+#'   Common alternatives: \code{tsreg}, \code{chreg}, \code{ltsreg}, \code{opreg}.
+#' @inheritParams common-params
+#' @param plotit Logical. Included for compatibility with outlier detection but
+#'   not used for plotting (default: \code{FALSE}).
+#' @param pr Logical. If \code{TRUE}, prints warnings about duplicate Y values
+#'   when using \code{tsreg} (default: \code{TRUE}).
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{p.value}{Bootstrap p-value for the global test}
+#'   \item{est.1}{Regression coefficient estimates for group 1}
+#'   \item{est.2}{Regression coefficient estimates for group 2}
+#'   \item{estimate.dif}{Difference in estimates (group 1 - group 2)}
+#' }
+#'
+#' @details
+#' This function implements a global test for comparing all regression parameters
+#' simultaneously between two dependent groups. The test statistic is based on
+#' a projection distance (similar to Mahalanobis distance) computed from the
+#' differences in parameter estimates.
+#'
+#' The procedure:
+#' 1. Estimates regression parameters for both groups
+#' 2. Computes the difference in parameter vectors
+#' 3. Uses bootstrap to estimate the covariance of the differences
+#' 4. Computes a projection distance from the differences to the null value
+#' 5. Compares observed distance to bootstrap distribution
+#'
+#' The bootstrap resamples rows (preserving pairing between measurements) and
+#' refits both regressions. This provides a robust estimate of the sampling
+#' distribution under dependence.
+#'
+#' When \code{xout=TRUE}, outliers detected in either group are removed from
+#' both groups to preserve pairing.
+#'
+#' For ordinary least squares regression, use \code{\link{DregGOLS}} instead,
+#' which provides a specialized implementation.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{difreg}} for parameter-by-parameter comparisons,
+#'   \code{\link{DregGMC}} for parallel processing version,
+#'   \code{\link{DregGOLS}} for OLS-specific version
+#'
+#' @examples
+#' # Simulated pre-post intervention data
+#' set.seed(123)
+#' n <- 50
+#' x1 <- rnorm(n)
+#' y1 <- 1 + 2*x1 + rnorm(n)
+#' x2 <- x1 + rnorm(n, sd=0.3)
+#' y2 <- 1.5 + 2.5*x2 + rnorm(n)  # Changed parameters
+#'
+#' # Global test
+#' result <- DregG(x1, y1, x2, y2, nboot=500)
+#' print(result$p.value)
+#'
+#' # Multiple predictors
+#' x1 <- matrix(rnorm(100), ncol=2)
+#' y1 <- 1 + 2*x1[,1] - x1[,2] + rnorm(50)
+#' x2 <- x1 + matrix(rnorm(100, sd=0.2), ncol=2)
+#' y2 <- 1.5 + 2.2*x2[,1] - 1.1*x2[,2] + rnorm(50)
+#' DregG(x1, y1, x2, y2, nboot=500)
+#'
+#' @export
 DregG<-function(x1,y1,x2,y2,nullv=NULL,regfun=tshdreg,nboot=500,xout=FALSE,outfun=outpro,
 SEED=TRUE,plotit=FALSE,pr=TRUE,...){
 #
@@ -4706,6 +7659,90 @@ list(p.value=sig.level,est.1=est1,est.2=est2,estimate.dif = est)
 # ============================================================================
 # DregGMC
 # ============================================================================
+
+#' Global Test for Dependent Regression Lines (Parallel Processing)
+#'
+#' Tests the hypothesis that two dependent groups have identical regression
+#' parameters using a variation of Hotelling's test with bootstrap covariance
+#' estimation and parallel processing.
+#'
+#' @param x1 Numeric vector or matrix of predictor variable(s) for the first group.
+#' @param y1 Numeric vector of the dependent variable for the first group.
+#' @param x2 Numeric vector or matrix of predictor variable(s) for the second group.
+#' @param y2 Numeric vector of the dependent variable for the second group.
+#' @param nullv Numeric vector specifying the null hypothesis values for the
+#'   difference in parameters (default: \code{NULL}, uses zeros for all parameters).
+#' @param regfun Robust regression function to use (default: \code{tsreg}).
+#'   Common alternatives: \code{tshdreg}, \code{chreg}, \code{ltsreg}, \code{opreg}.
+#' @inheritParams common-params
+#' @param plotit Logical; currently not used but included for compatibility (default: \code{FALSE}).
+#' @param pr Logical. If \code{TRUE}, prints warnings about duplicate Y values
+#'   when using \code{tsreg} (default: \code{TRUE}).
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{p.value}{P-value from the global test}
+#'   \item{est.1}{Regression coefficient estimates for group 1}
+#'   \item{est.2}{Regression coefficient estimates for group 2}
+#'   \item{estimate.dif}{Difference in estimates (group 1 - group 2)}
+#' }
+#'
+#' @details
+#' This function performs a global test that all regression parameters
+#' (intercept and slopes) are equal between two dependent (paired) groups.
+#' It is the multicore version of \code{\link{DregG}}.
+#'
+#' The method uses a multivariate extension of the percentile bootstrap approach
+#' with a variation of Hotelling's T-squared statistic. The test statistic is
+#' based on the Mahalanobis distance of the observed difference from the null
+#' hypothesis difference, using a bootstrap estimate of the covariance matrix.
+#'
+#' **Procedure**:
+#' 1. Bootstrap resampling preserves the pairing by resampling entire rows
+#' 2. Computes regression estimates for both groups in each bootstrap sample
+#' 3. Estimates the covariance matrix of the parameter differences
+#' 4. Computes a projection distance-based test statistic
+#' 5. P-value from comparing observed statistic to bootstrap distribution
+#'
+#' **When to use**: This is a global test that considers all parameters
+#' jointly. If the global test is significant, use \code{\link{difregMC}}
+#' to determine which specific parameters differ.
+#'
+#' The function uses \code{mclapply} for parallel processing, making it
+#' faster than \code{\link{DregG}} for large datasets or many bootstrap samples.
+#'
+#' **Note**: For OLS regression with dependent groups, use \code{\link{DregGOLS}}.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press. Chapter 10.
+#'
+#' @seealso \code{\link{DregG}} for non-parallel version,
+#'   \code{\link{difregMC}} for parameter-specific tests,
+#'   \code{\link{DregGOLS}} for OLS version
+#'
+#' @examples
+#' \dontrun{
+#' # Simulated pre-post intervention data
+#' set.seed(123)
+#' n <- 50
+#' x1 <- matrix(rnorm(100), ncol=2)
+#' y1 <- 1 + 2*x1[,1] - x1[,2] + rnorm(n)
+#' x2 <- x1 + matrix(rnorm(100, sd=0.3), ncol=2)
+#' y2 <- 1.2 + 2.3*x2[,1] - 0.9*x2[,2] + rnorm(n)
+#'
+#' # Global test
+#' result <- DregGMC(x1, y1, x2, y2, nboot=500)
+#' print(result$p.value)
+#' print(result$estimate.dif)
+#'
+#' # If significant, follow up with parameter-specific tests
+#' if(result$p.value < 0.05) {
+#'   difregMC(x1, y1, x2, y2, nboot=500)
+#' }
+#' }
+#'
+#' @export
 DregGMC<-function(x1,y1,x2,y2,nullv=NULL,regfun=tsreg,nboot=500,xout=FALSE,outfun=outpro,
 SEED=TRUE,plotit=FALSE,pr=TRUE,...){
 #
@@ -4781,6 +7818,87 @@ list(p.value=sig.level,est.1=est1,est.2=est2,estimate.dif = est)
 # ============================================================================
 # difregMC
 # ============================================================================
+
+#' Compare Two Dependent Regression Lines (Parallel Processing)
+#'
+#' Computes bootstrap confidence intervals for the difference in regression
+#' parameters between two dependent groups using parallel processing.
+#' This is the multicore version of \code{\link{difreg}}.
+#'
+#' @param x1 Numeric vector or matrix of predictor variable(s) for the first group.
+#' @param y1 Numeric vector of the dependent variable for the first group.
+#' @param x2 Numeric vector or matrix of predictor variable(s) for the second group.
+#' @param y2 Numeric vector of the dependent variable for the second group.
+#' @param regfun Robust regression function to use (default: \code{tsreg}).
+#'   Common alternatives: \code{tshdreg}, \code{chreg}, \code{ltsreg}, \code{opreg}.
+#' @inheritParams common-params
+#' @param plotit Logical. If \code{TRUE}, creates a scatterplot with both
+#'   regression lines (default: \code{FALSE}).
+#' @param xlab Label for x-axis when \code{plotit=TRUE} (default: "X").
+#' @param ylab Label for y-axis when \code{plotit=TRUE} (default: "Y").
+#' @param pr Logical. If \code{TRUE}, prints warnings about duplicate Y values
+#'   when using \code{tsreg} (default: \code{TRUE}).
+#'
+#' @return A list with components:
+#' \describe{
+#'   \item{n}{Original sample size before any outlier removal}
+#'   \item{n.keep}{Sample size after outlier removal (if \code{xout=TRUE})}
+#'   \item{param}{Character vector labeling parameters (Intercept, slope1, ...)}
+#'   \item{p.values}{P-values for testing difference = 0 for each parameter}
+#'   \item{est.grp1}{Regression coefficient estimates for group 1}
+#'   \item{est.grp2}{Regression coefficient estimates for group 2}
+#'   \item{conf.intervals}{Matrix with columns: Param, ci.low, ci.hi}
+#' }
+#'
+#' @details
+#' This function compares regression parameters between two dependent (paired) groups
+#' using a percentile bootstrap with parallel processing via \code{mclapply}.
+#'
+#' The bootstrap procedure resamples entire rows (preserving the dependency between
+#' observations) and refits both regression models. This provides valid inference
+#' for paired/repeated measures designs where the same subjects are measured at
+#' two time points or under two conditions.
+#'
+#' P-values are computed from the proportion of bootstrap samples where the
+#' difference has opposite sign from zero.
+#'
+#' When \code{xout=TRUE}, outliers detected by \code{outfun} in either group
+#' are removed from both groups to preserve pairing.
+#'
+#' The function uses \code{mclapply} for parallel processing, making it faster than
+#' \code{\link{difreg}} for large datasets or many bootstrap samples.
+#'
+#' @references
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
+#' (5th ed.). Academic Press.
+#'
+#' @seealso \code{\link{difreg}} for non-parallel version,
+#'   \code{\link{DregG}} for global test,
+#'   \code{\link{reg2ciMC}} for independent groups
+#'
+#' @examples
+#' \dontrun{
+#' # Simulated pre-post intervention data
+#' set.seed(123)
+#' n <- 50
+#' x1 <- rnorm(n)
+#' y1 <- 1 + 2*x1 + rnorm(n)
+#' x2 <- x1 + rnorm(n, sd=0.3)
+#' y2 <- 1.5 + 2.5*x2 + rnorm(n)
+#'
+#' # Compare with parallel processing
+#' result <- difregMC(x1, y1, x2, y2, nboot=500)
+#' print(result$conf.intervals)
+#'
+#' # Multiple predictors
+#' x1 <- matrix(rnorm(100), ncol=2)
+#' y1 <- 1 + 2*x1[,1] - x1[,2] + rnorm(50)
+#' x2 <- x1 + matrix(rnorm(100, sd=0.2), ncol=2)
+#' y2 <- 1.5 + 2.2*x2[,1] - 1.1*x2[,2] + rnorm(50)
+#' difregMC(x1, y1, x2, y2, nboot=500)
+#' }
+#'
+#' @export
 difregMC<-function(x1,y1,x2,y2,regfun=tsreg,xout=FALSE,outfun=outpro,nboot=599,
 alpha=.05,SEED=TRUE,plotit=FALSE,xlab='X',ylab='Y',pr=TRUE,...){
 #
@@ -4865,6 +7983,64 @@ list(n=n,n.keep=nk,param=lvec,p.values=pvec,est.grp1=est1,est.grp2=est2,conf.int
 # ============================================================================
 # Qreg
 # ============================================================================
+
+#' Quantile Regression
+#'
+#' Performs quantile regression using numerical optimization. Handles tied values
+#' in the dependent variable better than \code{qreg}. Estimates the qth conditional
+#' quantile of Y given X.
+#'
+#' @inheritParams common_params
+#' @param q Quantile to estimate (default: 0.5 for median regression).
+#'   Must be between 0 and 1.
+#' @param res.vals Logical; if TRUE, returns residuals (default: TRUE).
+#' @param plotit Logical; if TRUE and p=1, plots the data with the fitted
+#'   quantile regression line (default: FALSE).
+#' @param xlab X-axis label for plot (default: 'X').
+#' @param ylab Y-axis label for plot (default: 'Y').
+#' @param pch Plotting character (default: '*').
+#' @param ... Additional arguments passed to \code{outfun}.
+#'
+#' @return A list with components:
+#' \item{coef}{Vector of estimated coefficients (intercept, then slopes).}
+#' \item{residuals}{Vector of residuals (if \code{res.vals=TRUE}), otherwise NULL.}
+#'
+#' @details
+#' This function estimates the qth conditional quantile of the response variable
+#' given the predictors using numerical optimization (BFGS method). It is more
+#' robust to tied values in the dependent variable than \code{qreg}, which can
+#' encounter computational issues with ties.
+#'
+#' When \code{q=0.5}, performs median regression (least absolute deviations).
+#' Other quantiles allow estimation of the conditional distribution of Y|X.
+#'
+#' The function uses ordinary least squares estimates as starting values for the
+#' optimization routine.
+#'
+#' @references
+#' Koenker, R., & Bassett, G. (1978). Regression quantiles. \emph{Econometrica},
+#' 46, 33-50.
+#'
+#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}.
+#' Academic Press.
+#'
+#' @seealso \code{\link{qreg}}, \code{\link{Qreghat}}, \code{\link{tsreg}}
+#'
+#' @examples
+#' # Median regression (50th percentile)
+#' set.seed(123)
+#' x <- rnorm(100)
+#' y <- 2 + 3*x + rnorm(100)
+#' Qreg(x, y, q=0.5)
+#'
+#' # 90th percentile regression
+#' Qreg(x, y, q=0.9)
+#'
+#' # With outlier removal
+#' y[1:5] <- y[1:5] + 20
+#' Qreg(x, y, q=0.5, xout=TRUE)
+#'
+#' @export
 Qreg<-function(x,y,q=.5,xout=FALSE,outfun=outpro,res.vals=TRUE,plotit=FALSE,xlab='X',ylab='Y',pch='*',...){
 #
 # Quantile regression. Like the function qreg, but avoids computational
