@@ -594,6 +594,66 @@ list(estimate=est,ci=ci)
 }
 
 
+#' Quantile Shift Effect Size for Linear Contrasts
+#'
+#' Estimates a quantile shift measure of effect size for a linear contrast by estimating
+#' the distribution of the linear contrast and computing P(L <= location(L)), where L
+#' is the linear contrast.
+#'
+#' @param x Data in matrix or list mode containing groups.
+#' @param con Vector of contrast coefficients (must sum to zero).
+#' @param locfun Location estimator function to use (default: \code{\link{tmean}}).
+#' @inheritParams ES.summary
+#' @param nreps Number of replications for estimating the linear contrast distribution
+#'   (default: 200).
+#' @inheritParams qhat
+#' @param MAIN Logical. Reserved for future use (default: \code{FALSE}).
+#' @param INT Logical. Reserved for future use (default: \code{FALSE}).
+#' @param POOL Logical. If \code{FALSE}, estimates the distribution of the weighted sum
+#'   of observations. If \code{TRUE}, pools data with positive contrast coefficients,
+#'   pools data with negative coefficients, then estimates effect size from the difference
+#'   distribution (default: \code{FALSE}).
+#' @param nmax Maximum number of pairwise differences to compute. If exceeded, uses
+#'   resampling approach (default: 10^8).
+#' @param ... Additional arguments passed to \code{locfun}.
+#'
+#' @return A list with component:
+#'   \item{Effect.Size}{The quantile shift effect size estimate.}
+#'
+#' @details
+#' This function estimates the effect size as a quantile shift:
+#' \deqn{ES = P(L - \theta_L \le \theta_L)}
+#' where L is the linear contrast and \eqn{\theta_L} is the location of L.
+#'
+#' Two approaches are available:
+#' \itemize{
+#'   \item \strong{POOL = FALSE}: Estimates the distribution of \eqn{\sum c_i X_i} directly
+#'   \item \strong{POOL = TRUE}: Pools observations with c_i = 1, pools those with c_i = -1,
+#'     then uses the difference distribution
+#' }
+#'
+#' The quantile shift interpretation: values close to 0.5 indicate no effect, values
+#' near 0 or 1 indicate strong effects.
+#'
+#' Contrast coefficients must sum to zero. Missing values are removed.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{LCES}}, \code{\link{linES.sub}}, \code{\link{lin.akp}}
+#'
+#' @export
+#' @examples
+#' # Three-group comparison
+#' set.seed(123)
+#' g1 <- rnorm(20, mean = 0)
+#' g2 <- rnorm(20, mean = 0.5)
+#' g3 <- rnorm(20, mean = 1)
+#' x <- list(g1, g2, g3)
+#'
+#' # Linear trend contrast
+#' con <- c(-1, 0, 1)
+#' lin.ES(x, con)
 lin.ES<-function(x,con,locfun=tmean,tr=.2,nreps=200,SEED=TRUE,
 MAIN=FALSE,INT=FALSE,POOL=FALSE,nmax=10^8,...){
 #
@@ -662,6 +722,7 @@ list(Effect.Size=ef)
 }
 
 
+#' @keywords internal
 linES.sub<-function(L,locfun,...){
 est=locfun(L,...)
 ef.size=mean(L-est<=est)
@@ -669,6 +730,57 @@ ef.size
 }
 
 
+#' Dependent Groups Linear Contrast Effect Sizes
+#'
+#' For dependent (repeated measures) groups, computes the Algina et al. robust effect
+#' size for each linear contrast based on the linear sum of observations.
+#'
+#' @param x Data matrix where rows are subjects and columns are repeated measures,
+#'   or data in list mode.
+#' @param con Matrix of contrast coefficients. Each column defines one contrast (must sum to 0).
+#'   If \code{NULL}, generates all pairwise contrasts automatically (default: \code{NULL}).
+#'
+#' @return A list with components:
+#'   \item{con}{The contrast matrix used.}
+#'   \item{Effect.Size}{Vector of effect size estimates, one per contrast.}
+#'
+#' @details
+#' For repeated measures designs, this function:
+#' \enumerate{
+#'   \item For each subject i, computes the linear combination: \eqn{S_i = \sum_j c_j X_{ij}}
+#'   \item Computes the Algina et al. robust effect size using \code{\link{D.akp.effect}}
+#' }
+#'
+#' If \code{con = NULL}, automatically generates all J(J-1)/2 pairwise contrasts for
+#' J repeated measures.
+#'
+#' The Algina et al. effect size is a robust analog of Cohen's d for dependent groups.
+#'
+#' Missing values are removed before computation.
+#'
+#' @references
+#' Algina, J., Keselman, H. J., & Penfield, R. D. (2005). Effect sizes and their intervals:
+#' The two-level repeated measures case. Educational and Psychological Measurement, 65(2), 241-258.
+#'
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{D.akp.effect}}, \code{\link{lin.ES}}, \code{\link{dep.ES.summary}}
+#'
+#' @export
+#' @examples
+#' # Repeated measures: 3 time points
+#' set.seed(42)
+#' time1 <- rnorm(15, mean = 10)
+#' time2 <- time1 + rnorm(15, mean = 0.5, sd = 1)
+#' time3 <- time1 + rnorm(15, mean = 1, sd = 1)
+#' x <- cbind(time1, time2, time3)
+#'
+#' # All pairwise comparisons
+#' rmlinES(x)
+#'
+#' # Custom contrast: linear trend
+#' con <- matrix(c(-1, 0, 1), ncol = 1)
+#' rmlinES(x, con)
 rmlinES<-function(x, con = NULL){
 #
 #  Dependent groups:
@@ -700,6 +812,48 @@ list(con=con,Effect.Size=ES)
 }
 
 
+#' Determine Small/Medium/Large Effect Size Equivalents
+#'
+#' Calibrates what constitutes "small", "medium", and "large" effect sizes for various
+#' effect size measures by computing their values under specified population mean differences.
+#'
+#' @param REL.M Numeric vector of length 3 containing the mean differences (in standard
+#'   deviation units) to be considered small, medium, and large effects (e.g., c(0.2, 0.5, 0.8)
+#'   for Cohen's d conventions).
+#' @param n Sample size for simulation (default: 10000; capped at 10000 internally).
+#' @param reps Number of replications for averaging (default: 10).
+#'
+#' @return A 6×3 matrix where rows are effect size measures (AKP, EP, QS (median), QStr,
+#'   WMW, KMS) and columns are the three magnitude levels (S, M, L). Each cell contains
+#'   the calibrated effect size value.
+#'
+#' @details
+#' This function helps determine what values of various robust effect size measures
+#' correspond to "small", "medium", and "large" effects by:
+#' \enumerate{
+#'   \item Simulating from two standard normal distributions
+#'   \item Shifting one distribution by the amounts in \code{REL.M}
+#'   \item Computing all effect size measures (AKP, EP, QS, QStr, WMW, KMS)
+#'   \item Averaging over \code{reps} replications
+#' }
+#'
+#' Typical usage is with \code{REL.M = c(0.2, 0.5, 0.8)} corresponding to Cohen's d
+#' conventions for small, medium, and large effects.
+#'
+#' The resulting calibration can be used with \code{\link{ES.summary}} and related functions.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{ES.summary}}, \code{\link{ES.summary.CI}}
+#'
+#' @export
+#' @examples
+#' # Use Cohen's d conventions
+#' ES.sum.REL.MAG(REL.M = c(0.2, 0.5, 0.8), reps = 5)
+#'
+#' # Custom magnitude definitions
+#' ES.sum.REL.MAG(REL.M = c(0.3, 0.6, 1.0), reps = 5)
 ES.sum.REL.MAG<-function(REL.M,n = 10000,reps=10){
 #
 #  Determine small medium and large equivalent measures of effect size based on the values in
@@ -1321,6 +1475,7 @@ ef
 }
 
 
+#' @keywords internal
 inter.TDES.sub<-function(x,method='QS',iter=5,SEED=TRUE,tr=.2,pr=FALSE,switch=FALSE){
 #
 #
@@ -1379,6 +1534,68 @@ ef
 }
 
 
+#' Interaction Effect Sizes for 2×2 Designs
+#'
+#' Computes a collection of effect size measures for interactions in a 2×2 factorial
+#' design. Effect sizes are computed for each row separately, then differenced to
+#' assess the interaction.
+#'
+#' @param x Data in matrix, data frame, or list mode. For a 2×2 design, should contain
+#'   4 groups in row-major order: (1,1), (1,2), (2,1), (2,2).
+#' @inheritParams ES.summary
+#' @param SW Logical. If \code{TRUE}, transposes the design (reverses rows and columns)
+#'   (default: \code{FALSE}).
+#'
+#' @return A 6×4 matrix with rows corresponding to different effect size measures:
+#'   \itemize{
+#'     \item AKP: Homoscedastic robust analog of Cohen's d
+#'     \item EP: Explanatory power
+#'     \item QS (median): Quantile shift based on median of X-Y distribution
+#'     \item QStr: Quantile shift based on trimmed mean of X-Y distribution
+#'     \item KMS: Robust heteroscedastic analog of Cohen's d
+#'     \item PH (WMW): Patel-Hoel using Cliff's analog of Wilcoxon-Mann-Whitney
+#'   }
+#'   Columns are:
+#'   \itemize{
+#'     \item NULL: Null value for each measure
+#'     \item Est 1: Effect size for first row (compare columns within row 1)
+#'     \item Est 2: Effect size for second row (compare columns within row 2)
+#'     \item Diff: Interaction estimate (Est 1 - Est 2)
+#'   }
+#'
+#' @details
+#' For a 2×2 design, this function:
+#' \enumerate{
+#'   \item Computes the effect size comparing columns within the first row
+#'   \item Computes the effect size comparing columns within the second row
+#'   \item Takes the difference to estimate the interaction
+#' }
+#'
+#' The interaction is assessed as the difference between the effect of Factor B at
+#' level 1 of Factor A versus the effect of Factor B at level 2 of Factor A.
+#'
+#' Missing values are removed before computation.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{inter.ES}}, \code{\link{interJK.ESmul}}, \code{\link{ESfun}}
+#'
+#' @export
+#' @examples
+#' # 2x2 design: Factor A (treatment), Factor B (time)
+#' set.seed(42)
+#' # Group 1,1: Control at Time 1
+#' g11 <- rnorm(20, mean = 10, sd = 2)
+#' # Group 1,2: Control at Time 2
+#' g12 <- rnorm(20, mean = 11, sd = 2)
+#' # Group 2,1: Treatment at Time 1
+#' g21 <- rnorm(20, mean = 10, sd = 2)
+#' # Group 2,2: Treatment at Time 2 (larger increase)
+#' g22 <- rnorm(20, mean = 14, sd = 2)
+#'
+#' x <- list(g11, g12, g21, g22)
+#' interES.2by2(x)
 interES.2by2<-function(x,tr=.2,SW=FALSE){
 #
 # Estimate a collection of effect sizes
@@ -1413,6 +1630,61 @@ output
 }
 
 
+#' Interaction Effect Sizes for J×K Designs
+#'
+#' Computes effect size measures for all tetrad interactions in a J×K factorial design.
+#' For each 2×2 sub-design (tetrad), computes the interaction effect size using
+#' the specified method.
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param x Data in matrix or list mode. Expected to contain J*K groups in row-major order.
+#' @param method Effect size method to use. See \code{\link{ESfun}} for options. Common choices:
+#'   \code{'QS'} (quantile shift, median-based), \code{'AKP'}, \code{'EP'}, \code{'KMS'}, \code{'WMW'}
+#'   (default: \code{'QS'}).
+#' @inheritParams ES.summary
+#' @inheritParams qhat
+#'
+#' @return A list with component:
+#'   \item{EFFECT.est}{A matrix with one row per tetrad interaction. Columns are:
+#'     \itemize{
+#'       \item Factor A, Factor A: The two levels of Factor A being compared
+#'       \item Factor B, Factor B: The two levels of Factor B being compared
+#'       \item Effect Size 1: Effect size for first level of Factor A
+#'       \item Effect Size 2: Effect size for second level of Factor A
+#'       \item Diff: Interaction effect size (difference between the two)
+#'     }
+#'   }
+#'
+#' @details
+#' For a J×K design, this function examines all possible 2×2 sub-designs (tetrads).
+#' For each tetrad defined by rows j, j' and columns k, k':
+#' \enumerate{
+#'   \item Compute the effect of Factor B (columns k vs k') at Factor A level j
+#'   \item Compute the effect of Factor B (columns k vs k') at Factor A level j'
+#'   \item Take the difference to estimate the interaction
+#' }
+#'
+#' The number of tetrad interactions examined is C(J,2) × C(K,2) = [J(J-1)/2] × [K(K-1)/2].
+#'
+#' Missing values are automatically removed.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{interES.2by2}}, \code{\link{inter.ES}}, \code{\link{ESfun}}
+#'
+#' @export
+#' @examples
+#' # 3x2 design
+#' set.seed(42)
+#' x <- list(
+#'   rnorm(15, 10), rnorm(15, 11),  # Row 1
+#'   rnorm(15, 10), rnorm(15, 13),  # Row 2 (larger effect)
+#'   rnorm(15, 10), rnorm(15, 12)   # Row 3
+#' )
+#' result <- interJK.ESmul(J = 3, K = 2, x, method = 'QS')
+#' result$EFFECT.est
 interJK.ESmul<-function(J,K,x,method='QS',tr=.2,SEED=TRUE){
 #
 #  Compute measures of effect size for interactions associated with
@@ -1457,6 +1729,58 @@ list(EFFECT.est=test)
 }
 
 
+#' Linear Contrast Effect Sizes (Multiple Measures)
+#'
+#' For each linear contrast (column of \code{con}), computes four different measures
+#' of effect size: quantile shift (median-based), quantile shift (trimmed mean-based),
+#' AKP robust Cohen's d, and a sign-test analog.
+#'
+#' @param x Data in matrix, data frame, or list mode containing groups.
+#' @param con Matrix of contrast coefficients. Each column defines one contrast (must sum to 0).
+#' @param nreps Number of replications for estimating the distribution of linear contrasts
+#'   (default: 200).
+#' @inheritParams lin.ES
+#'
+#' @return A list with components:
+#'   \item{EST}{A 4×(ncol(con)+1) matrix. Rows are effect size measures (QS, Qstr, AKP, SIGN).
+#'     First column contains null values; remaining columns contain effect size estimates
+#'     for each contrast.}
+#'   \item{con}{The contrast matrix used.}
+#'
+#' @details
+#' This function computes four different effect size measures for each linear contrast:
+#' \enumerate{
+#'   \item \strong{QS}: Quantile shift based on the median of the linear contrast distribution
+#'   \item \strong{Qstr}: Quantile shift based on the trimmed mean of the linear contrast distribution
+#'   \item \strong{AKP}: Robust generalization of Cohen's d using \code{\link{lin.akp}}
+#'   \item \strong{SIGN}: Analog of the sign test via \code{\link{linsign}}
+#' }
+#'
+#' The quantile shift measures estimate P(L <= location(L)), where L is the linear contrast.
+#' Null values represent the expected value under no effect (typically 0.5 for quantile
+#' shifts, 0.0 for AKP).
+#'
+#' Contrasts must sum to zero. Missing values are removed before computation.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{lin.ES}}, \code{\link{lin.akp}}, \code{\link{linsign}}
+#'
+#' @export
+#' @examples
+#' # Three-group comparison
+#' set.seed(123)
+#' g1 <- rnorm(20, mean = 0)
+#' g2 <- rnorm(20, mean = 0.5)
+#' g3 <- rnorm(20, mean = 1)
+#' x <- list(g1, g2, g3)
+#'
+#' # Pairwise contrasts
+#' con <- matrix(c(1, -1, 0,
+#'                  1, 0, -1,
+#'                  0, 1, -1), ncol = 3)
+#' LCES(x, con)
 LCES<-function(x,con,nreps=200,tr=.2,SEED=TRUE){
 #
 # For each column of con,  compute four measures of effect size:
@@ -1486,6 +1810,42 @@ list(EST=mat,con=con)
 }
 
 
+#' Quantile Estimation (Alternative to Harrell-Davis)
+#'
+#' Estimates the qth quantile using an alternative method that can offer advantages
+#' over the Harrell-Davis estimator when comparing extreme quantiles with heavy-tailed
+#' distributions.
+#'
+#' @param x Numeric vector.
+#' @param q Quantile to estimate (default: 0.5 for median).
+#'
+#' @return The estimated quantile value (scalar).
+#'
+#' @details
+#' This estimator uses a binomial-weighted approach that can provide better performance
+#' than the Harrell-Davis estimator in certain situations, particularly when:
+#' \itemize{
+#'   \item Comparing extreme quantiles (e.g., q < 0.1 or q > 0.9)
+#'   \item Distributions have heavy tails
+#' }
+#'
+#' The method weights sorted observations using binomial probabilities, with special
+#' handling for small sample sizes (n <= 2).
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{hd}} for the Harrell-Davis quantile estimator
+#'
+#' @export
+#' @examples
+#' # Estimate median
+#' x <- c(1, 3, 5, 7, 9, 100)  # outlier present
+#' qno.est(x, q = 0.5)
+#'
+#' # Compare with Harrell-Davis for extreme quantile
+#' qno.est(x, q = 0.9)
+#' hd(x, q = 0.9)
 qno.est<-function(x,q=.5){
 #
 #  Estimate of the qth quantile
@@ -1509,6 +1869,61 @@ quan
 }
 
 
+#' Between-Within Design: Factor A Effect Sizes
+#'
+#' For a between-within (mixed) factorial design, computes effect sizes for all
+#' pairwise comparisons of Factor A (between-subjects) at each level of Factor B
+#' (within-subjects).
+#'
+#' @param J Number of levels for Factor A (between-subjects factor).
+#' @param K Number of levels for Factor B (within-subjects factor).
+#' @param x Data in matrix or list mode. Expected to contain J*K groups in row-major order.
+#'   \code{x[[1]]} is level (1,1), \code{x[[2]]} is level (1,2), ..., \code{x[[K]]} is level (1,K),
+#'   \code{x[[K+1]]} is level (2,1), etc.
+#' @inheritParams ES.summary
+#' @param pr Logical. If \code{TRUE}, prints informational messages (default: \code{TRUE}).
+#' @param fun Effect size summary function to use (default: \code{\link{ES.summary}}).
+#'   Use \code{\link{ES.summary.CI}} for confidence intervals.
+#' @param ... Additional arguments passed to \code{fun} (e.g., \code{REL.MAG} for custom
+#'   small/medium/large calibration).
+#'
+#' @return A list with K components (one per level of Factor B):
+#'   \item{B[[k]]}{Effect size results for all pairwise comparisons of Factor A at
+#'     level k of Factor B, as returned by \code{\link{IND.PAIR.ES}}.}
+#'
+#' @details
+#' For each level of the within-subjects Factor B, this function computes pairwise
+#' effect sizes comparing all levels of the between-subjects Factor A.
+#'
+#' The structure is:
+#' \itemize{
+#'   \item \code{B[[1]]}: Effect sizes for Factor A comparisons at Factor B level 1
+#'   \item \code{B[[2]]}: Effect sizes for Factor A comparisons at Factor B level 2
+#'   \item ...and so on for all K levels
+#' }
+#'
+#' Effect sizes can be customized via the \code{fun} argument and \code{REL.MAG} parameter
+#' (e.g., \code{REL.MAG = c(0.1, 0.3, 0.5)} for custom small/medium/large calibration).
+#'
+#' The function assumes \code{fun} has a \code{tr} argument for trimming.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{bw.es.B}}, \code{\link{bw.es.I}}, \code{\link{IND.PAIR.ES}}, \code{\link{ES.summary}}
+#'
+#' @export
+#' @examples
+#' # 2x3 mixed design: 2 between-subjects groups, 3 time points
+#' set.seed(42)
+#' x <- list(
+#'   rnorm(15, 10), rnorm(15, 11), rnorm(15, 12),  # Group 1, times 1-3
+#'   rnorm(15, 10), rnorm(15, 12), rnorm(15, 15)   # Group 2, times 1-3 (larger increase)
+#' )
+#' result <- bw.es.A(J = 2, K = 3, x)
+#' # B[[1]]: Between-group effect at time 1
+#' # B[[2]]: Between-group effect at time 2
+#' # B[[3]]: Between-group effect at time 3
 bw.es.A<-function(J,K,x,tr=.2,pr=TRUE,fun=ES.summary,...){
 #
 #  Between-by-within design.
@@ -1666,6 +2081,7 @@ output
 }
 
 
+#' @keywords internal
 dep.ES.summary.sub<-function(x,y=NULL,tr=.2){
 #
 #
@@ -1807,6 +2223,67 @@ output
 }
 
 
+#' Between-Within Design: Factor B Effect Sizes
+#'
+#' For a between-within (mixed) factorial design, computes effect sizes for Factor B
+#' (within-subjects) comparisons at each level of Factor A (between-subjects), with options
+#' to pool data or compute confidence intervals.
+#'
+#' @param J Number of levels for Factor A (between-subjects factor).
+#' @param K Number of levels for Factor B (within-subjects factor).
+#' @param x Data in matrix or list mode. Expected to contain J*K groups in row-major order.
+#'   \code{x[[1]]} is level (1,1), \code{x[[2]]} is level (1,2), ..., \code{x[[K]]} is level (1,K),
+#'   \code{x[[K+1]]} is level (2,1), etc.
+#' @inheritParams ES.summary
+#' @param POOL Logical. If \code{TRUE}, pools data over levels of Factor A before computing
+#'   effect sizes for Factor B (default: \code{FALSE}).
+#' @param OPT Logical. Reserved for future use (default: \code{FALSE}).
+#' @param CI Logical. If \code{TRUE}, computes confidence intervals for effect sizes
+#'   (default: \code{FALSE}).
+#' @inheritParams qhat
+#' @param REL.MAG Optional vector of length 3 for custom small/medium/large effect size
+#'   calibration (e.g., \code{c(0.1, 0.3, 0.5)}) (default: \code{NULL} uses standard values).
+#' @param pr Logical. If \code{TRUE}, prints informational messages (default: \code{TRUE}).
+#'
+#' @return A list with component:
+#'   \item{A}{If \code{POOL = FALSE}, a list of length J containing effect size results for
+#'     Factor B comparisons at each level of Factor A (via \code{\link{DEP.PAIR.ES}}).
+#'     If \code{POOL = TRUE}, a single set of results for pooled data.}
+#'
+#' @details
+#' This function examines the effect of the within-subjects Factor B:
+#' \itemize{
+#'   \item \strong{POOL = FALSE}: For each level j of Factor A, computes all pairwise
+#'     comparisons among the K levels of Factor B
+#'   \item \strong{POOL = TRUE}: Pools all subjects across Factor A levels, then computes
+#'     pairwise comparisons for Factor B
+#' }
+#'
+#' Use \code{CI = TRUE} to obtain bootstrap confidence intervals for effect sizes.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{bw.es.A}}, \code{\link{bw.es.I}}, \code{\link{DEP.PAIR.ES}}
+#'
+#' @export
+#' @examples
+#' # 2x3 mixed design: 2 between-subjects groups, 3 time points
+#' set.seed(42)
+#' n <- 15
+#' # Create correlated repeated measures
+#' baseline <- rnorm(n)
+#' x <- list(
+#'   baseline + rnorm(n, 0, 0.5),         # Group 1, time 1
+#'   baseline + rnorm(n, 0.5, 0.5),       # Group 1, time 2
+#'   baseline + rnorm(n, 1, 0.5),         # Group 1, time 3
+#'   baseline + rnorm(n, 0, 0.5),         # Group 2, time 1
+#'   baseline + rnorm(n, 1, 0.5),         # Group 2, time 2
+#'   baseline + rnorm(n, 2, 0.5)          # Group 2, time 3
+#' )
+#' result <- bw.es.B(J = 2, K = 3, x)
+#' # A[[1]]: Time effects for Group 1
+#' # A[[2]]: Time effects for Group 2
 bw.es.B<-function(J,K,x,tr=.2,POOL=FALSE,OPT=FALSE,CI=FALSE,SEED=TRUE,REL.MAG=NULL,pr=TRUE){
 #
 #  Between-by-within design.
@@ -1867,6 +2344,67 @@ list(A=A)
 }
 
 
+#' Between-Within Design: Interaction Effect Sizes
+#'
+#' For a between-within (mixed) factorial design, computes interaction effect sizes
+#' by comparing difference scores (within-subjects effects) between levels of the
+#' between-subjects factor.
+#'
+#' @param J Number of levels for Factor A (between-subjects factor).
+#' @param K Number of levels for Factor B (within-subjects factor).
+#' @param x Data in matrix or list mode. Expected to contain J*K groups in row-major order.
+#'   \code{x[[1]]} is level (1,1), \code{x[[2]]} is level (1,2), ..., \code{x[[K]]} is level (1,K),
+#'   \code{x[[K+1]]} is level (2,1), etc.
+#' @inheritParams ES.summary
+#' @param OPT Logical. Reserved for future use (default: \code{FALSE}).
+#' @inheritParams qhat
+#' @param CI Logical. If \code{TRUE}, computes confidence intervals for interaction effect sizes
+#'   (default: \code{FALSE}).
+#' @param alpha Significance level for confidence intervals when \code{CI = TRUE} (default: 0.05).
+#' @param REL.MAG Optional vector of length 3 for custom small/medium/large effect size
+#'   calibration (default: \code{NULL}).
+#' @param pr Logical. If \code{TRUE}, prints informational messages (default: \code{TRUE}).
+#'
+#' @return A list with components:
+#'   \item{Interaction.ES}{List of effect size results for each interaction contrast,
+#'     as returned by \code{\link{ES.summary}} or \code{\link{ES.summary.CI}}.}
+#'   \item{con}{The contrast matrix defining the interactions (from \code{\link{con2way}}).}
+#'
+#' @details
+#' This function assesses interactions by:
+#' \enumerate{
+#'   \item Using \code{\link{con2way}} to generate all interaction contrasts
+#'   \item For each interaction contrast, computing difference scores for Factor B within
+#'     different levels of Factor A
+#'   \item Comparing these difference scores between levels of Factor A using
+#'     \code{\link{ES.summary}} or \code{\link{ES.summary.CI}}
+#' }
+#'
+#' Each interaction compares whether the effect of Factor B differs across levels of
+#' Factor A.
+#'
+#' Use \code{CI = TRUE} to obtain bootstrap confidence intervals.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{bw.es.A}}, \code{\link{bw.es.B}}, \code{\link{con2way}}, \code{\link{ES.summary}}
+#'
+#' @export
+#' @examples
+#' # 2x2 mixed design with interaction
+#' set.seed(42)
+#' n <- 20
+#' # Group 1: small time effect
+#' g1_t1 <- rnorm(n, 10, 2)
+#' g1_t2 <- g1_t1 + rnorm(n, 0.5, 1)
+#' # Group 2: large time effect (interaction)
+#' g2_t1 <- rnorm(n, 10, 2)
+#' g2_t2 <- g2_t1 + rnorm(n, 2, 1)
+#'
+#' x <- list(g1_t1, g1_t2, g2_t1, g2_t2)
+#' result <- bw.es.I(J = 2, K = 2, x)
+#' result$Interaction.ES
 bw.es.I<-function(J,K,x,tr=.2,OPT=FALSE,SEED=TRUE,CI=FALSE, alpha=.05, REL.MAG=NULL,pr=TRUE){
 #
 #  Between-by-within design.
@@ -1911,6 +2449,64 @@ list(Interaction.ES=Int,con=mat)
 }
 
 
+#' Within-Within Design: Effect Sizes for Factor B
+#'
+#' For a within-within (fully repeated measures) factorial design, computes effect sizes
+#' for all pairwise comparisons of Factor B at each level of Factor A.
+#'
+#' @param J Number of levels for Factor A (first within-subjects factor).
+#' @param K Number of levels for Factor B (second within-subjects factor).
+#' @param x Data in matrix or list mode. Expected to contain J*K repeated measures in
+#'   row-major order. \code{x[[1]]} is level (1,1), \code{x[[2]]} is level (1,2), etc.
+#' @inheritParams ES.summary
+#' @param CI Logical. If \code{TRUE}, computes confidence intervals for effect sizes
+#'   (default: \code{FALSE}).
+#' @inheritParams qhat
+#' @param REL.MAG Optional vector of length 3 for custom small/medium/large effect size
+#'   calibration (default: \code{NULL}).
+#'
+#' @return A list of length J, where each element contains effect size results for all
+#'   pairwise comparisons of Factor B at that level of Factor A (via \code{\link{DEP.PAIR.ES}}).
+#'
+#' @details
+#' For a fully repeated measures J×K design, this function computes effect sizes for
+#' Factor B (within-subjects) at each level of Factor A (within-subjects).
+#'
+#' The structure is:
+#' \itemize{
+#'   \item Element 1: All pairwise comparisons among K levels of Factor B at Factor A level 1
+#'   \item Element 2: All pairwise comparisons among K levels of Factor B at Factor A level 2
+#'   \item ...and so on for all J levels
+#' }
+#'
+#' This is similar to \code{\link{bw.es.B}} but for a fully within-subjects design where
+#' all participants experience all J*K conditions.
+#'
+#' Use \code{CI = TRUE} to obtain bootstrap confidence intervals.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{bw.es.B}}, \code{\link{DEP.PAIR.ES}}, \code{\link{wwlin.es}}
+#'
+#' @export
+#' @examples
+#' # 2x3 within-within design: 2 tasks, 3 time points
+#' # All subjects complete all 6 conditions
+#' set.seed(42)
+#' n <- 15
+#' baseline <- rnorm(n)
+#' x <- list(
+#'   baseline + rnorm(n, 0, 0.5),    # Task 1, time 1
+#'   baseline + rnorm(n, 0.5, 0.5),  # Task 1, time 2
+#'   baseline + rnorm(n, 1, 0.5),    # Task 1, time 3
+#'   baseline + rnorm(n, 0, 0.5),    # Task 2, time 1
+#'   baseline + rnorm(n, 1, 0.5),    # Task 2, time 2
+#'   baseline + rnorm(n, 2, 0.5)     # Task 2, time 3
+#' )
+#' result <- ww.es(J = 2, K = 3, x)
+#' # [[1]]: Time comparisons for Task 1
+#' # [[2]]: Time comparisons for Task 2
 ww.es<-function(J,K,x,tr=.2,CI=FALSE,SEED=TRUE,REL.MAG=NULL){
 #
 #  within-by-within design.
@@ -1966,6 +2562,66 @@ list(Factor.A=A,Factor.B=B,INT=AB,conA=con.all.pairs(J),conB=con.all.pairs(K),AB
 }
 
 
+#' Dependent Groups Linear Contrast Effect Sizes with Confidence Intervals
+#'
+#' For dependent (repeated measures) groups, computes four measures of effect size with
+#' bootstrap confidence intervals for each linear contrast of the J variables.
+#'
+#' @param x Data matrix where rows are subjects and columns are repeated measures,
+#'   or data in list mode.
+#' @param con Matrix of contrast coefficients. Each column defines one contrast (must sum to 0).
+#'   If \code{NULL}, generates all pairwise contrasts automatically (default: \code{NULL}).
+#' @inheritParams ES.summary
+#' @param REL.MAG Optional vector of length 3 specifying AKP values considered small,
+#'   medium, and large (e.g., c(0.1, 0.3, 0.5)). Corresponding values for other effect
+#'   sizes are computed via simulation (default: \code{NULL}).
+#' @inheritParams qhat
+#' @inheritParams ES.summary.CI
+#'
+#' @return A list with components:
+#'   \item{con}{The contrast matrix used.}
+#'   \item{output}{List with one element per contrast column, each containing output from
+#'     \code{\link{dep.ES.summary.CI}} for that linear contrast.}
+#'
+#' @details
+#' This function generalizes \code{\link{dep.ES.summary.CI}} to handle linear contrasts
+#' of dependent variables. For each contrast in \code{con}:
+#' \enumerate{
+#'   \item Computes the linear combination for each subject: \eqn{L_i = \sum_j c_j X_{ij}}
+#'   \item Computes four effect size measures with bootstrap CIs using \code{\link{dep.ES.summary.CI}}:
+#'     \itemize{
+#'       \item \strong{AKP}: Robust standardized difference (analog of Cohen's d)
+#'       \item \strong{QS (median)}: Quantile shift based on median of L
+#'       \item \strong{QStr}: Quantile shift based on trimmed mean of L
+#'       \item \strong{SIGN}: P(L < 0), probability the linear contrast is negative
+#'     }
+#' }
+#'
+#' If \code{con = NULL}, automatically generates all J(J-1)/2 pairwise contrasts.
+#'
+#' Special case: If \code{x} has 2 columns and \code{con = c(1, -1)}, produces the same
+#' results as \code{dep.ES.summary.CI(x[,1], x[,2])}.
+#'
+#' Under no effect, the distribution of the linear contrast is symmetric about zero.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{dep.ES.summary.CI}}, \code{\link{rmlinES}}, \code{\link{DEP.PAIR.ES}}
+#'
+#' @export
+#' @examples
+#' # Three time points
+#' set.seed(42)
+#' time1 <- rnorm(20, 10)
+#' time2 <- time1 + rnorm(20, 0.5, 1)
+#' time3 <- time1 + rnorm(20, 1, 1)
+#' x <- cbind(time1, time2, time3)
+#'
+#' # Linear trend contrast
+#' con <- matrix(c(-1, 0, 1), ncol = 1)
+#' result <- deplin.ES.summary.CI(x, con, nboot = 500)
+#' result$output[[1]]
 deplin.ES.summary.CI<-function(x,con=NULL,tr=.2,REL.MAG=NULL,SEED=TRUE,nboot=1000){
 #
 #  For J dependent variables,
@@ -2099,6 +2755,50 @@ list(groups.compared=grp.com,Effect.size.estimates=ES)
 }
 
 
+#' Within-Within Design: Linear Contrast Effect Sizes
+#'
+#' For a within-within (fully repeated measures) factorial design, computes effect sizes
+#' for linear contrasts with bootstrap confidence intervals.
+#'
+#' @param J Number of levels for Factor A (first within-subjects factor).
+#' @param K Number of levels for Factor B (second within-subjects factor).
+#' @param x Data in matrix or list mode. Expected to contain J*K repeated measures in
+#'   row-major order.
+#' @inheritParams ES.summary
+#' @param REL.MAG Optional vector of length 3 for custom small/medium/large effect size
+#'   calibration (default: \code{NULL}).
+#' @inheritParams qhat
+#' @inheritParams ES.summary.CI
+#'
+#' @return Effect size results with bootstrap confidence intervals for linear contrasts
+#'   of the J*K repeated measures, as computed by \code{\link{deplin.ES.summary.CI}}.
+#'
+#' @details
+#' This function computes effect sizes based on linear sums of the random variables in
+#' a fully within-subjects J×K factorial design. It applies \code{\link{deplin.ES.summary.CI}}
+#' to compute robust effect sizes with bootstrap confidence intervals.
+#'
+#' The effect sizes are based on linear contrasts of the J*K conditions, accounting for
+#' the dependence structure in repeated measures data.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{wwwlin.es}}, \code{\link{deplin.ES.summary.CI}}, \code{\link{ww.es}}
+#'
+#' @export
+#' @examples
+#' # 2x2 within-within design
+#' set.seed(42)
+#' n <- 15
+#' baseline <- rnorm(n)
+#' x <- list(
+#'   baseline + rnorm(n, 0, 0.5),    # Condition (1,1)
+#'   baseline + rnorm(n, 0.5, 0.5),  # Condition (1,2)
+#'   baseline + rnorm(n, 0, 0.5),    # Condition (2,1)
+#'   baseline + rnorm(n, 1, 0.5)     # Condition (2,2)
+#' )
+#' result <- wwlin.es(J = 2, K = 2, x, nboot = 500)
 wwlin.es<-function(J,K,x,tr = 0.2, REL.MAG = NULL, SEED = TRUE, nboot = 1000){
 #
 #  # For within-by-within
@@ -2114,6 +2814,56 @@ list(Factor.A=A,Factor.B=B,Interactions=AB)
 }
 
 
+#' Within-Within-Within Design: Linear Contrast Effect Sizes
+#'
+#' For a within-within-within (fully repeated measures) three-way factorial design,
+#' computes effect sizes for linear contrasts with bootstrap confidence intervals for
+#' all main effects, two-way, and three-way interactions.
+#'
+#' @param J Number of levels for Factor A (first within-subjects factor).
+#' @param K Number of levels for Factor B (second within-subjects factor).
+#' @param L Number of levels for Factor C (third within-subjects factor).
+#' @param x Data in matrix or list mode. Expected to contain J*K*L repeated measures.
+#' @inheritParams ES.summary
+#' @param REL.MAG Optional vector of length 3 for custom small/medium/large effect size
+#'   calibration (default: \code{NULL}).
+#' @inheritParams qhat
+#' @inheritParams ES.summary.CI
+#'
+#' @return A list with components:
+#'   \item{Factor.A, Factor.B, Factor.C}{Main effect sizes for each factor}
+#'   \item{Inter.AB, Inte.AC, Inter.BC}{Two-way interaction effect sizes}
+#'   \item{Inter.ABC}{Three-way interaction effect sizes}
+#'
+#' @details
+#' This function handles three-way fully repeated measures designs by computing effect
+#' sizes for:
+#' \itemize{
+#'   \item Three main effects (A, B, C)
+#'   \item Three two-way interactions (A×B, A×C, B×C)
+#'   \item One three-way interaction (A×B×C)
+#' }
+#'
+#' Uses \code{\link{con3way}} to generate appropriate contrast matrices, then applies
+#' \code{\link{deplin.ES.summary.CI}} for each set of contrasts.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{wwlin.es}}, \code{\link{deplin.ES.summary.CI}}, \code{\link{con3way}}
+#'
+#' @export
+#' @examples
+#' # 2x2x2 within design
+#' set.seed(42)
+#' n <- 12
+#' baseline <- rnorm(n)
+#' x <- lapply(1:8, function(i) baseline + rnorm(n, mean = i/4, sd = 0.5))
+#' result <- wwwlin.es(J = 2, K = 2, L = 2, x, nboot = 500)
+#' # Access main effects
+#' result$Factor.A
+#' # Access interactions
+#' result$Inter.AB
 wwwlin.es<-function(J,K,L,x,tr = 0.2, REL.MAG = NULL, SEED = TRUE, nboot = 1000){
 #
 # For within-by-within-by-within
@@ -2133,10 +2883,60 @@ list(Factor.A=A,Factor.B=B,Factor.C=C,Inter.AB=AB,Inte.AC=AC,Inter.BC=BC,Inter.A
 }
 
 
+#' Between-Within-Within Design: Factor A Effect Sizes
+#'
+#' For a between-within-within (mixed) three-way factorial design, computes effect sizes
+#' for all pairwise comparisons of Factor A (between-subjects) at each combination of
+#' Factors B and C (within-subjects).
+#'
+#' @param J Number of levels for Factor A (between-subjects factor).
+#' @param K Number of levels for Factor B (first within-subjects factor).
+#' @param L Number of levels for Factor C (second within-subjects factor).
+#' @param x Data in matrix or list mode. Expected to contain J*K*L groups.
+#' @param fun Effect size function to use (default: \code{\link{KMS.ci}} for KMS effect size
+#'   with 20\% trimming).
+#' @param nboot Number of bootstrap samples (default: 1000).
+#' @param ... Additional arguments passed to \code{fun}.
+#'
+#' @return A matrix with one row per pairwise comparison of Factor A levels at each
+#'   B×C combination. Columns include Factor A levels being compared, Factor B level,
+#'   Factor C level, sample sizes, effect size estimate, and confidence interval limits.
+#'
+#' @details
+#' This function is designed for three-way mixed designs with:
+#' \itemize{
+#'   \item Factor A: Between-subjects (J independent groups)
+#'   \item Factor B: Within-subjects (K repeated measures)
+#'   \item Factor C: Within-subjects (L repeated measures)
+#' }
+#'
+#' For each of the K×L combinations of within-subjects factors, computes all pairwise
+#' effect sizes comparing the J levels of the between-subjects factor.
+#'
+#' The default uses KMS robust effect size (\code{\link{KMS.ci}}) which is a robust
+#' analog of Cohen's d.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{bwwA.es.sub}}, \code{\link{KMS.ci}}, \code{\link{bw.es.A}}
+#'
+#' @export
+#' @examples
+#' # 2x2x2 B-W-W design
+#' set.seed(42)
+#' n <- 15
+#' # 2 between groups, 2x2 within factors
+#' x <- list(
+#'   rnorm(n, 10), rnorm(n, 11), rnorm(n, 12), rnorm(n, 13),  # Group 1
+#'   rnorm(n, 10), rnorm(n, 12), rnorm(n, 14), rnorm(n, 16)   # Group 2
+#' )
+#' result <- bwwA.es(J = 2, K = 2, L = 2, x, nboot = 500)
+#' result
 bwwA.es<-function(J,K,L,x,fun=KMS.ci,nboot=1000,...){
 #
 #  For every two levels  of Factor A, compute  KMS shift effect size  assuming 20% trim
-#  and do this for each 
+#  and do this for each
 #  level of Factors B and C.
 #
 if(is.matrix(x) || is.data.frame(x))x=listm(x)
@@ -2155,6 +2955,7 @@ list(A=A,con=con)
 }
 
 
+#' @keywords internal
 bwwA.es.sub<-function(J,K,L,x,fun=QSci,nboot=1000,...){
 #
 #  Effect sizes for the between factor, computed
@@ -2183,6 +2984,72 @@ ES
 }
 
 
+#' Identify the Cell with Largest (or Smallest) Probability
+#'
+#' For a multinomial distribution based on observed cell frequencies, determines whether
+#' a decision can be made about which cell has the highest (or lowest) probability,
+#' controlling for familywise error rate.
+#'
+#' @param x Numeric vector containing the cell frequencies.
+#' @param alpha Nominal familywise error rate (default: 0.05).
+#' @param LARGEST Logical. If \code{TRUE}, identifies the cell with the largest probability.
+#'   If \code{FALSE}, identifies the cell with the smallest probability (default: \code{TRUE}).
+#' @param method Method for computing confidence intervals. Options: \code{'AC'} (Agresti-Coull),
+#'   or other methods supported by \code{\link{cell.com}} (default: \code{'AC'}).
+#' @param p.crit Optional vector of critical p-values for comparisons. If \code{NULL},
+#'   computed via \code{\link{best.cell.crit}} (default: \code{NULL}).
+#' @param AUTO Logical. Passed to \code{\link{cell.com}} for automatic method selection
+#'   (default: \code{FALSE}).
+#' @param iter Number of iterations for computing critical p-values via simulation if
+#'   \code{p.crit = NULL} (default: 2000).
+#' @inheritParams qhat
+#' @param pr Logical. If \code{TRUE}, prints informational message about critical p-values
+#'   (default: \code{TRUE}).
+#'
+#' @return An S4 object of class \code{'BIN'} with slots:
+#'   \item{Cell.with.largest.estimate (or smallest)}{The cell number with the largest (or smallest)
+#'     estimated probability.}
+#'   \item{Larger.than (or smaller.than)}{Vector of cell numbers for which the identified cell
+#'     has been determined to have significantly larger (or smaller) probability.}
+#'   \item{n}{Total sample size.}
+#'   \item{output}{A matrix with one row per comparison. Columns:
+#'     \itemize{
+#'       \item Largest.Est (or Smallest.Est): Estimated probability for the identified cell
+#'       \item CELL: Cell number being compared
+#'       \item Est: Estimated probability for comparison cell
+#'       \item Dif: Difference in probabilities
+#'       \item ci.low, ci.up: Confidence interval for the difference
+#'       \item p.value: Individual p-value
+#'       \item p.crit: Critical p-value (adjusted for multiple comparisons)
+#'     }
+#'   }
+#'
+#' @details
+#' This function addresses the question: "Can we determine which cell has the highest
+#' (or lowest) probability while controlling the familywise error rate?"
+#'
+#' The procedure:
+#' \enumerate{
+#'   \item Identifies the cell with the largest (or smallest) observed frequency
+#'   \item Compares this cell to all others using confidence intervals
+#'   \item Uses critical p-values (via \code{\link{best.cell.crit}}) to control FWER
+#'   \item Returns which cells are significantly different
+#' }
+#'
+#' Missing values in \code{x} are removed before computation.
+#'
+#' @references
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{best.cell.crit}}, \code{\link{cell.com}}
+#'
+#' @export
+#' @examples
+#' # Multinomial with 5 cells
+#' # Cell frequencies suggest cell 3 has highest probability
+#' x <- c(15, 18, 45, 20, 12)
+#' result <- BEST.cell(x)
+#' result
 BEST.cell<-function(x,alpha=.05,LARGEST=TRUE,method='AC',p.crit=NULL,AUTO=FALSE,iter=2000,SEED=TRUE,pr=TRUE){
 #
 #  For a multinomial distribution, can a decision be made about
@@ -2235,6 +3102,53 @@ put
 }
 
 
+#' KMS Robust Effect Size Using M-Estimator
+#'
+#' Computes a robust effect size using the KMS (Kulinskaya-Morgenthaler-Staudte) method
+#' based on an M-estimator of location and percentage bend variance.
+#'
+#' @param x Numeric vector for the first group.
+#' @param y Numeric vector for the second group.
+#'
+#' @return A list with components:
+#'   \item{effect.size}{The KMS effect size estimate}
+#'   \item{Cohen.d.equiv}{Equivalent Cohen's d value (= 2 * effect.size)}
+#'
+#' @details
+#' This function implements a robust generalization of Cohen's d using:
+#' \itemize{
+#'   \item One-step M-estimator (\code{\link{onestep}}) for location
+#'   \item Percentage bend variance (\code{\link{pbvar}}) for scale
+#' }
+#'
+#' The relationship to traditional Cohen's d values is approximately:
+#' \itemize{
+#'   \item Cohen d = 0.2 (small) corresponds to KMS \eqn{\approx} 0.1
+#'   \item Cohen d = 0.5 (medium) corresponds to KMS \eqn{\approx} 0.25
+#'   \item Cohen d = 0.8 (large) corresponds to KMS \eqn{\approx} 0.4
+#' }
+#'
+#' Missing values are removed before computation.
+#'
+#' @references
+#' Kulinskaya, E., Morgenthaler, S. & Staudte, R. (2008). Meta Analysis: A guide to
+#' calibrating and combining statistical evidence. John Wiley & Sons. p. 177.
+#'
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{onestep}}, \code{\link{pbvar}}, \code{\link{akp.effect}}
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- rnorm(30, mean = 0)
+#' y <- rnorm(30, mean = 0.5)
+#' KMS.ES.M(x, y)
+#'
+#' # With outliers - robust to contamination
+#' x2 <- c(x, 10, 15)
+#' y2 <- c(y, -10)
+#' KMS.ES.M(x2, y2)
 KMS.ES.M<-function(x,y){
 #
 # Computes the robust effect size using a simple generalization of the method in
@@ -2262,6 +3176,7 @@ list(effect.size=d1,Cohen.d.equiv=2*d1)
 }
 
 
+#' @keywords internal
 ES.summary.sub<-function(x,n1,n2){
 id1=c(1:n1)
 n1p=n1+1

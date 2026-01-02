@@ -19,10 +19,62 @@
 #
 
 
-# Function 1: wlogregv2
-# Bianco and Yohai (1996) logistic regression estimator
-# @keywords internal
-
+#' Bianco and Yohai Robust Logistic Regression Estimator
+#'
+#' @description
+#' Computes the robust logistic regression estimator proposed by Bianco and Yohai (1996).
+#' This is a modified version of code by Christophe Croux, Gentiane Haesbroeck, and
+#' Kristel Joossens. The estimator is resistant to outliers in the predictor space and
+#' provides robust alternatives to maximum likelihood estimation.
+#'
+#' @param x0 An \eqn{n \times (p-1)} matrix of explanatory variables (predictors).
+#' @param y An \eqn{n}-vector containing the binomial response (0 or 1).
+#' @param initwml Logical. If \code{TRUE}, uses weighted ML estimator for initial values
+#'   with weights derived from MCD estimator on predictors. If \code{FALSE} (default),
+#'   uses classical ML fit. Set to \code{FALSE} when predictors contain binary variables.
+#' @param const Tuning constant for the estimator. Default is 0.5.
+#' @param kmax Maximum number of iterations before convergence. Default is 1000.
+#' @param maxhalf Maximum number of step-halving iterations. Default is 10.
+#'
+#' @details
+#' This function implements the Bianco and Yohai (1996) estimator for logistic regression,
+#' which provides robustness against outliers in the predictor space. By default, an
+#' intercept term is included and \eqn{p} parameters are estimated.
+#'
+#' The algorithm uses an iterative optimization process with step-halving to ensure
+#' convergence. Initial values can be obtained either from weighted ML (using MCD-based
+#' weights) or classical ML estimation.
+#'
+#' **Note**: When explanatory variables contain binary observations, it is recommended
+#' to set \code{initwml = FALSE}.
+#'
+#' @return A list with components:
+#' \item{convergence}{Logical indicating whether convergence was achieved.}
+#' \item{coef}{Vector of parameter estimates (length \eqn{p}).}
+#' \item{sterror}{Standard errors of the parameters (only if convergence achieved).}
+#' \item{objective}{Value of the objective function at the minimum (if no convergence).}
+#'
+#' @references
+#' Bianco, A.M. and Yohai, V.J. (1996). Robust estimation in the logistic regression
+#' model. In Robust Statistics, Data Analysis, and Computer Intensive Methods
+#' (ed. H. Rieder), 17-34. Springer.
+#'
+#' Croux, C. and Haesbroeck, G. (2003). Implementing the Bianco and Yohai estimator
+#' for Logistic Regression. Computational Statistics and Data Analysis, 44, 273-295.
+#'
+#' @examples
+#' \dontrun{
+#' # Generate example data
+#' x0 <- matrix(rnorm(100), ncol=1)
+#' y <- as.numeric(runif(100) > 0.5)
+#'
+#' # Fit robust logistic regression
+#' result <- wlogregv2(x0, y)
+#' result$coef  # Parameter estimates
+#' }
+#'
+#' @keywords internal
+#' @export
 wlogregv2<-function(x0,y,initwml=FALSE,const=0.5,kmax=1e3,maxhalf=10)
 {
 #  Computation of the estimator of Bianco and Yohai (1996) in logistic regression
@@ -156,10 +208,39 @@ CONV=FALSE #    print("No convergence")
 }
 
 
-# Function 2: best.cell.crit
-# Compute critical p-values for multinomial cell comparisons
-# @keywords internal
-
+#' Critical P-Values for Multinomial Cell Comparisons
+#'
+#' @description
+#' Computes critical p-values for identifying the best (largest or smallest) cell
+#' in multinomial data. Uses simulation to determine appropriate critical values
+#' for controlling familywise error rate when identifying extreme cells.
+#'
+#' @param N Sample size (total number of observations).
+#' @param ncell Number of cells (categories) in the multinomial distribution.
+#' @param LARGEST Logical. If \code{TRUE} (default), identifies largest cell.
+#'   If \code{FALSE}, identifies smallest cell.
+#' @param iter Number of simulation iterations. Default is 1000.
+#' @param alpha Familywise error rate. Default is 0.05.
+#' @param SEED Logical. If \code{TRUE} (default), sets random seed to 2 for
+#'   reproducibility.
+#' @param AUTO Logical. Passed to internal helper function. Default is \code{FALSE}.
+#'
+#' @details
+#' This function simulates from a multinomial distribution with equal cell probabilities
+#' and determines critical p-values for testing whether the observed "best" cell
+#' (largest or smallest) is significantly different from what would be expected by chance.
+#'
+#' The function uses optimization to find critical values that control the familywise
+#' error rate at the specified alpha level when making comparisons involving the
+#' extreme cell.
+#'
+#' @return A numeric vector of critical p-values for each of the \eqn{ncell - 1}
+#'   comparisons involving the best cell.
+#'
+#' @seealso \code{\link{best.cell.sub}} (internal helper function)
+#'
+#' @keywords internal
+#' @export
 best.cell.crit<-function(N,ncell,LARGEST=TRUE,iter=1000,alpha=.05,SEED=TRUE,AUTO=FALSE){
 #
 #
@@ -180,10 +261,39 @@ p.crit
 }
 
 
-# Function 3: bestPB.DO
-# Determine which group has largest measure of location
-# @keywords internal
-
+#' Identify Group with Largest Location Measure
+#'
+#' @description
+#' Determines which group has the largest measure of location and tests whether
+#' this identification is statistically reasonable using bootstrap methods.
+#' Performs pairwise comparisons to validate the identified best group.
+#'
+#' @param x A matrix, data frame, or list of vectors, one for each group.
+#'   If matrix or data frame, groups are defined by columns.
+#' @param est The location estimator to use. Default is \code{tmean} (trimmed mean).
+#' @param nboot Number of bootstrap samples. If \code{NA}, uses default value.
+#' @param SEED Logical. If \code{TRUE} (default), sets random seed for reproducibility.
+#' @param pr Logical. If \code{TRUE} (default), prints progress/results.
+#' @param ... Additional arguments passed to the estimator function and comparison tests.
+#'
+#' @details
+#' This function identifies which group has the largest location measure and then
+#' performs statistical tests to determine if this identification is reasonable.
+#' It uses bootstrap methods via \code{\link{linconpb}} to test contrasts comparing
+#' the best group against all others.
+#'
+#' **Note**: This function appears to have dependencies on internal variables
+#' that may not be properly defined in all contexts. Use with caution.
+#'
+#' @return A list with components:
+#' \item{Best.Group}{Index of the group with the largest location estimate.}
+#' \item{Est.}{Vector of location estimates for each group.}
+#' \item{p.value}{Maximum p-value from the pairwise comparisons testing the best group.}
+#'
+#' @seealso \code{\link{linconpb}}, \code{\link{tmean}}, \code{\link{trimpb}}
+#'
+#' @keywords internal
+#' @export
 bestPB.DO<-function(x,est=tmean,nboot=NA,SEED=TRUE,pr=TRUE,...){
 #
 #  Determine whether it is reasonable to

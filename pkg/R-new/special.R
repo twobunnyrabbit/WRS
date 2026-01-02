@@ -32,12 +32,43 @@
 # ============================================================================
 
 
-# ----------------------------------------------------------------------------
-
-# Astig_Magnitude
-
-# ----------------------------------------------------------------------------
-
+#' Astigmatism Magnitude Analysis Workflow
+#'
+#' @description
+#' Interactive wrapper function for comprehensive astigmatism magnitude analysis.
+#' Prompts user to select data file, performs statistical comparisons (dependent or
+#' independent groups), and exports results to Excel files.
+#'
+#' @param dependent Logical. If \code{TRUE} (default), performs dependent group analysis.
+#'   If \code{FALSE}, performs independent group analysis.
+#'
+#' @details
+#' This function provides an interactive workflow for astigmatism magnitude data:
+#' \enumerate{
+#'   \item Prompts user to select tab-delimited data file with headers
+#'   \item Validates data (all values must be ≤ 6)
+#'   \item Performs appropriate statistical comparisons:
+#'     \itemize{
+#'       \item Independent: Calls \code{\link{oph.astig.indepcom}} and \code{\link{oph.astig.indepintervals}}
+#'       \item Dependent: Calls \code{\link{oph.astig.depcom}} and \code{\link{oph.astig.mcnemar}}
+#'     }
+#'   \item Exports results to Excel files in same directory as input file
+#' }
+#'
+#' Output files:
+#' \itemize{
+#'   \item Independent: "18.Mean.xls" (comparisons), "20.Intervals.xls" (confidence intervals)
+#'   \item Dependent: "17.Mean.xls" (comparisons), "19.Intervals.xls" (McNemar tests)
+#' }
+#'
+#' @return NULL (invisibly). Results are written to Excel files.
+#'
+#' @seealso \code{\link{oph.astig.depcom}}, \code{\link{oph.astig.indepcom}},
+#'   \code{\link{oph.astig.mcnemar}}, \code{\link{oph.astig.indepintervals}},
+#'   \code{\link{Astig_Vector}}
+#'
+#' @keywords ophthalmology
+#' @export
 Astig_Magnitude<-function(dependent=T){
 
 #library("readxl")
@@ -126,12 +157,43 @@ write.table(resL,file=paste0(dir,"/",name,".xls"),sep="\t", quote=F,row.names=T,
 
 
 
-# ----------------------------------------------------------------------------
-
-# Astig_Vector
-
-# ----------------------------------------------------------------------------
-
+#' Astigmatism Vector Analysis Workflow
+#'
+#' @description
+#' Interactive wrapper function for comprehensive astigmatism vector (bivariate) analysis.
+#' Prompts user to select data file, performs convex polygon comparisons, and exports
+#' results with visualization plots to Excel/TIFF files.
+#'
+#' @param dependent Logical. If \code{TRUE} (default), performs dependent group analysis.
+#'   If \code{FALSE}, performs independent group analysis.
+#'
+#' @details
+#' This function provides an interactive workflow for bivariate astigmatism vector data:
+#' \enumerate{
+#'   \item Prompts user to select tab-delimited data file with headers
+#'   \item Validates data (all values must be ≤ 6)
+#'   \item Computes convex polygon regions for mean and median
+#'   \item Generates double angle plots (DAP) for visualization
+#'   \item Exports statistical results and plots
+#' }
+#'
+#' Output files created:
+#' \itemize{
+#'   \item "21.MeanConvexpoly.xls" - Mean convex polygon p-values and centers
+#'   \item "22.MedianConvexpoly.xls" - Median convex polygon p-values and centers
+#'   \item "23.DatasetMeanConvexpoly.xls" - Dataset-level mean analysis
+#'   \item "24.DatasetMedianConvexpoly.xls" - Dataset-level median analysis
+#'   \item Multiple .tiff files with double angle plots
+#' }
+#'
+#' @return NULL (invisibly). Results are written to files.
+#'
+#' @seealso \code{\link{oph.astig.meanconvexpoly}}, \code{\link{oph.astig.medianconvexpoly}},
+#'   \code{\link{oph.astig.datasetconvexpoly.mean}}, \code{\link{oph.astig.datasetconvexpoly.median}},
+#'   \code{\link{plotDAP}}, \code{\link{Astig_Magnitude}}
+#'
+#' @keywords ophthalmology
+#' @export
 Astig_Vector<-function(dependent=T){
 
 #library("readxl")
@@ -316,6 +378,25 @@ write.table(D1,file=paste0(dir,"/",name,".xls"),sep="\t", quote=F,row.names=T,ap
 }
 
 
+#' Compare Bivariate Marginal Variances for Astigmatism Data
+#'
+#' @description
+#' Compares variances of dependent bivariate variables for astigmatism prediction errors.
+#' Performs pairwise comparisons between formulas using difference scores with outlier adjustment.
+#'
+#' @param m Matrix or data frame with J columns (J must be even). Columns represent pairs:
+#'   columns 1-2 are formula 1, 3-4 are formula 2, etc.
+#' @param alpha Significance level for confidence intervals. Default is 0.05.
+#'
+#' @details
+#' Compares each pair of formulas (e.g., columns 1-2 vs 3-4, 1-2 vs 5-6, etc.) using
+#' confidence intervals for pairwise difference scores. Estimates are adjusted if outliers
+#' are detected using a projection method.
+#'
+#' @return List with component \code{results} containing pairwise comparison results.
+#'
+#' @keywords ophthalmology internal
+#' @export
 oph.astig.bivmarg<-function(m,alpha=.05){
 #
 # This function is designed to compare two  variances  dependent  variables based
@@ -372,6 +453,41 @@ list(results=results)  #,results.total=MAT,Total.adj.p.values=pad)
 
 # ----------------------------------------------------------------------------
 
+#' Compare Total Variances for Bivariate Astigmatism Data
+#'
+#' @description
+#' Compares total variances of dependent bivariate variables for astigmatism prediction errors.
+#' Performs pairwise comparisons between formulas using both marginal and total variances
+#' with outlier adjustment and Holm's multiple testing correction.
+#'
+#' @param m Matrix or data frame with J columns (J must be even). Columns represent pairs:
+#'   columns 1-2 are formula 1, 3-4 are formula 2, etc.
+#' @param alpha Significance level for hypothesis tests. Default is 0.05.
+#'
+#' @details
+#' This function extends \code{\link{oph.astig.bivmarg}} by also comparing total variances.
+#' For each pair of formulas (e.g., columns 1-2 vs 3-4):
+#' \itemize{
+#'   \item Computes marginal variance comparisons using difference scores
+#'   \item Computes total variance for each formula: \code{var(X) + var(Y)}
+#'   \item Adjusts for covariance to get variance of sums
+#'   \item Uses \code{\link{comdvar.astig}} for marginal comparisons
+#'   \item Uses \code{\link{comdvar}} for total variance comparisons
+#'   \item Applies Holm's method to control familywise error rate
+#' }
+#'
+#' Estimates are adjusted if outliers are detected using a projection method.
+#'
+#' @return List with three components:
+#' \item{results}{List of marginal variance comparison results from \code{comdvar.astig}}
+#' \item{results.total}{Data frame with columns: Form (formula IDs), Est.1, Est.2 (total variances),
+#'   Ratio (variance ratio), p.value}
+#' \item{Total.adj.p.values}{Holm-adjusted p-values for total variance comparisons}
+#'
+#' @seealso \code{\link{oph.astig.bivmarg}}, \code{\link{comdvar.astig}}, \code{\link{comdvar}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.bivmarg.totvars<-function(m,alpha=.05){
 #
 # This function is designed to compare two  variances  dependent  variables based
@@ -437,6 +553,54 @@ list(results=results,results.total=MAT,Total.adj.p.values=pad)
 
 # ----------------------------------------------------------------------------
 
+#' Dataset Means and Confidence Ellipses for Astigmatism Data
+#'
+#' @description
+#' Computes bivariate means and Hotelling's T-squared confidence ellipses for astigmatism
+#' datasets. Handles multiple formulas (column pairs) and displays both dataset-level
+#' and centroid-level ellipses with rotation adjustment.
+#'
+#' @param m Matrix or data frame with J columns (J must be even). Columns represent pairs:
+#'   columns 1-2 are formula 1, 3-4 are formula 2, etc.
+#' @param plotit Logical. If \code{TRUE} (default), plots rotated data with confidence ellipses.
+#' @param alpha Significance level for confidence ellipses. Default is 0.05.
+#' @param reset Logical. If \code{TRUE}, resets graphics parameters. Default is \code{FALSE}.
+#' @param POLY Logical. If \code{TRUE}, uses \code{\link{oph.astig.datasetconvexpoly}} for plotting.
+#'   Default is \code{FALSE}.
+#' @param xlab,ylab Axis labels for plots.
+#' @param pch Plotting character for data points. Default is '.'.
+#'
+#' @details
+#' For each formula (column pair), the function:
+#' \enumerate{
+#'   \item Performs Shapiro-Wilk normality tests on both variables
+#'   \item Computes bivariate mean, standard deviations, and correlation
+#'   \item Calculates rotation angle based on covariance structure
+#'   \item Computes Hotelling's T-squared critical value: \code{T = sqrt(2(n-1)F/(n-2))}
+#'   \item Rotates data to principal axes using \code{\link{rotate.points}}
+#'   \item Draws two confidence ellipses:
+#'     \itemize{
+#'       \item Dataset ellipse (radius = T × SD)
+#'       \item Centroid ellipse (radius = T × SE, where SE = SD/sqrt(n))
+#'     }
+#' }
+#'
+#' Multiple formulas are displayed in a 2x2 grid layout.
+#'
+#' @return List with two components:
+#' \item{DataSet}{Matrix with columns: N, SW.px (Shapiro-Wilk p-value for X),
+#'   SW.py (for Y), Mean.x, Mean.y, sd`x, sd`y (rotated SDs), T (critical value),
+#'   Cor (correlation), Ro.Ang.Deg (rotation angle in degrees)}
+#' \item{Centroid}{Same as DataSet but with standard errors (se`x, se`y) instead of SDs}
+#'
+#' @references
+#' See Hotelling_Bivariate_Transformation_Rand_10Jul21.docx in rfun
+#'
+#' @seealso \code{\link{oph.astig.datasetconvexpoly}}, \code{\link{rotate.points}},
+#'   \code{\link{oph.astig.meanconvexpoly}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.Dataset.Means.ConfEllipses<-function(m,plotit=TRUE,alpha=.05,reset=FALSE,POLY=FALSE,
 xlab='X',ylab='Y',pch='.'){
 #
@@ -594,6 +758,45 @@ IQR
 
 # ----------------------------------------------------------------------------
 
+#' Dataset-Level Convex Polygons for Astigmatism Data
+#'
+#' @description
+#' Computes depth-based central regions and convex hull polygons for astigmatism datasets.
+#' For each formula (column pair), identifies the central region based on data depth and
+#' constructs the convex hull of points in that region.
+#'
+#' @param m Matrix or data frame with J columns (J must be even). Columns represent pairs:
+#'   columns 1-2 are formula 1, 3-4 are formula 2, etc.
+#' @param Region Numeric. Determines the central region as the (1-Region) quantile of depths.
+#'   Default is 0.05 (95\% central region).
+#' @param plotit Logical. If \code{TRUE}, plots data points with convex hull overlay.
+#'   Default is \code{FALSE}.
+#' @param xlab,ylab Axis labels for plots. Defaults are 'V1' and 'V2'.
+#' @param pch Plotting character for data points. Default is '.'.
+#' @param reset Logical. If \code{TRUE}, resets graphics parameters after plotting.
+#'   Default is \code{TRUE}.
+#'
+#' @details
+#' For each formula, the function:
+#' \enumerate{
+#'   \item Calls \code{\link{mulcen.region}} to compute multivariate central region
+#'   \item Uses \code{\link{fdepth}} to calculate data depths
+#'   \item Identifies points with depth >= quantile specified by \code{Region}
+#'   \item Computes convex hull using \code{\link[grDevices]{chull}}
+#'   \item Optionally plots data with convex hull boundary
+#' }
+#'
+#' Multiple formulas are displayed in a 2x2 grid layout when \code{plotit=TRUE}.
+#'
+#' @return List with two components:
+#' \item{centers}{List of centers for each formula, with elements: V1, V2 (coordinates), N (sample size)}
+#' \item{convex.hull.pts}{List of convex hull vertices for each formula}
+#'
+#' @seealso \code{\link{mulcen.region}}, \code{\link{fdepth}}, \code{\link{oph.astig.datasetconvexpoly.mean}},
+#'   \code{\link{oph.astig.meanconvexpoly}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.datasetconvexpoly<-function(m,Region=.05,plotit=FALSE,xlab='V1',ylab='V2',pch='.',reset=TRUE){
 #
 # region=.05 means that the function
@@ -653,6 +856,43 @@ list(centers=centers,convex.hull.pts=region)
 
 # ----------------------------------------------------------------------------
 
+#' Dataset-Level Convex Polygons Using Means for Astigmatism Data
+#'
+#' @description
+#' Computes depth-based central regions and convex hull polygons for astigmatism datasets
+#' using means as the measure of central tendency. Identical to \code{\link{oph.astig.datasetconvexpoly}}
+#' except uses means instead of medians for computing the center.
+#'
+#' @param m Matrix or data frame with J columns (J must be even). Columns represent pairs:
+#'   columns 1-2 are formula 1, 3-4 are formula 2, etc.
+#' @param Region Numeric. Determines the central region as the (1-Region) quantile of depths.
+#'   Default is 0.05 (95\% central region).
+#' @param plotit Logical. If \code{TRUE}, plots data points with convex hull overlay.
+#'   Default is \code{FALSE}.
+#' @param xlab,ylab Axis labels for plots. Defaults are 'V1' and 'V2'.
+#'
+#' @details
+#' For each formula (column pair), the function:
+#' \enumerate{
+#'   \item Removes missing values with \code{\link{elimna}}
+#'   \item Calls \code{\link{mulcen.region}} with \code{est=mean} to compute central region using means
+#'   \item Uses \code{\link{fdepth}} to calculate data depths
+#'   \item Identifies points with depth >= quantile specified by \code{Region}
+#'   \item Computes convex hull using \code{\link[grDevices]{chull}}
+#'   \item Optionally plots data with convex hull boundary
+#' }
+#'
+#' Multiple formulas are displayed in a 2x2 grid layout when \code{plotit=TRUE}.
+#'
+#' @return List with two components:
+#' \item{centers}{List of mean centers for each formula, with elements: V1, V2 (mean coordinates), N (sample size)}
+#' \item{convex.hull.pts}{List of convex hull vertices for each formula}
+#'
+#' @seealso \code{\link{oph.astig.datasetconvexpoly}}, \code{\link{mulcen.region}}, \code{\link{fdepth}},
+#'   \code{\link{oph.astig.meanconvexpoly}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.datasetconvexpoly.mean<-function(m,Region=.05,plotit=FALSE,xlab='V1',ylab='V2'){
 #
 # region=.05 means that the function
@@ -836,6 +1076,41 @@ psihat[d,6]=1-psmm(abs(test[d,2]),CC,df)
 list(n=sam,test=test,psihat=psihat)
 }
 
+#' Compare Total Variances for Dependent Bivariate Astigmatism Data
+#'
+#' @description
+#' Compares total variances of dependent bivariate variables for astigmatism prediction errors.
+#' Performs pairwise comparisons between formulas including both marginal and total variances
+#' with Holm's multiple testing correction.
+#'
+#' @param m Matrix or data frame with J columns (J must be even). Columns represent pairs:
+#'   columns 1-2 are formula 1, 3-4 are formula 2, etc.
+#' @param alpha Significance level for hypothesis tests. Default is 0.05.
+#'
+#' @details
+#' This function is the dependent-groups version of \code{\link{oph.astig.bivmarg.totvars}}.
+#' For each pair of formulas:
+#' \itemize{
+#'   \item Calls \code{\link{oph.astig.bivmarg}} for marginal variance comparisons
+#'   \item Computes total variance: \code{var(X) + var(Y)}
+#'   \item Adjusts for covariance: subtracts \code{2*cov(X,Y)} from sum
+#'   \item Uses \code{\link{comdvar}} to compare total variances
+#'   \item Applies Holm's method to control familywise error rate
+#' }
+#'
+#' Estimates are adjusted if outliers are detected using a projection method.
+#'
+#' @return List with three components:
+#' \item{n}{Sample sizes for each column}
+#' \item{results}{List of marginal variance comparison results from \code{oph.astig.bivmarg}}
+#' \item{results.total}{Data frame with columns: Form (formula IDs), Var.1, Var.2 (total variances),
+#'   SD 1, SD 2 (standard deviations), p.value, p.adjusted (Holm-adjusted p-values)}
+#'
+#' @seealso \code{\link{oph.astig.bivmarg.totvars}}, \code{\link{oph.astig.bivmarg}},
+#'   \code{\link{comdvar}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.depbivmarg.totvars<-function(m,alpha=.05){
 #
 # This function is designed to compare two  variances  dependent  variables based
@@ -902,6 +1177,38 @@ list(n=n,results=E1,results.total=MAT)  #results.total,Total.p.adjusted=pad)
 
 # ----------------------------------------------------------------------------
 
+#' Compare Bivariate Means for Dependent Astigmatism Data
+#'
+#' @description
+#' Compares bivariate means of dependent groups for astigmatism prediction errors.
+#' Uses bootstrap methods with trimmed means on difference scores and applies
+#' Holm's multiple testing correction.
+#'
+#' @param m Matrix or data frame with J columns (J must be even). Columns represent pairs:
+#'   columns 1-2 are formula 1, 3-4 are formula 2, etc.
+#' @param alpha Significance level for hypothesis tests. Default is 0.05.
+#' @param nboot Number of bootstrap samples. Default is 1999.
+#' @param SEED Logical. If \code{TRUE}, sets random seed for reproducibility. Default is \code{TRUE}.
+#' @param tr Trimming proportion (0 to 0.5). Default is 0 (no trimming, uses means).
+#'
+#' @details
+#' For each pair of formulas (e.g., columns 1-2 vs 3-4), the function:
+#' \enumerate{
+#'   \item Computes difference scores: column 1 minus column 3, column 2 minus column 4
+#'   \item Uses \code{\link{trimcibt}} to compute bootstrap confidence intervals for each difference
+#'   \item Computes trimmed means for each variable
+#'   \item Tests null hypothesis that both differences equal zero
+#'   \item Applies Holm's method to adjust p-values for multiple comparisons
+#' }
+#'
+#' @return List of matrices, one for each pairwise comparison. Each matrix has 2 rows
+#'   (one per variable) and columns: Mean 1, Mean 2, p.value, p.adjusted.
+#'
+#' @seealso \code{\link{oph.astig.indepbivmeans}}, \code{\link{trimcibt}},
+#'   \code{\link{oph.astig.depbivtotvars}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.depbivmeans<-function(m,alpha=.05,nboot=1999,SEED=TRUE,tr=0){
 #
 # This function is designed to compare two  bivariate distributions relevant to
@@ -955,6 +1262,40 @@ results[[ic]]=MAT  #Dmul.loc2g(m[,id1],m[,id2],alpha=alpha,locfun=locfun,nullv=n
 results
 }
 
+#' Compare Total Variances for Dependent Bivariate Astigmatism Data
+#'
+#' @description
+#' Compares total variances between pairs of dependent bivariate distributions for
+#' astigmatism prediction errors. Data should have an even number of columns (J),
+#' with each pair representing one formula.
+#'
+#' @param m Matrix or data frame with J columns (must be even). First two columns
+#'   represent formula 1, next two columns formula 2, etc.
+#' @param alpha Significance level (default: 0.05)
+#'
+#' @details
+#' For data with J columns forming J/2 bivariate pairs:
+#' \itemize{
+#'   \item Compares total variance of columns 1-2 vs 3-4, then 1-2 vs 5-6, etc.
+#'   \item Uses difference scores for comparisons (col 1 vs 3, col 2 vs 4, etc.)
+#'   \item Returns variance ratios and hypothesis tests
+#'   \item Adjusts p-values using Holm's method
+#'   \item Outliers are handled using projection-based methods
+#' }
+#'
+#' @return List with components:
+#' \describe{
+#'   \item{n}{Sample sizes for each column}
+#'   \item{results}{List of pairwise marginal variance comparisons}
+#'   \item{results.total}{Data frame with total variance comparisons, ratios, and p-values}
+#'   \item{Total.adj.p.values}{Holm-adjusted p-values for total variance tests}
+#' }
+#'
+#' @seealso \code{\link{oph.astig.depbivmarg.totvars}}, \code{\link{comdvar.astig}},
+#'   \code{\link{oph.astig.indepbivtotvars}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.depbivtotvars<-function(m,alpha=.05){
 #
 # This function is designed to compare two  variances  dependent  variables based
@@ -1022,6 +1363,44 @@ list(n=nv,results=results,results.total=MAT,Total.adj.p.values=pad)
 
 # ----------------------------------------------------------------------------
 
+#' Compare Dependent Groups for Astigmatism Prediction Errors
+#'
+#' @description
+#' Performs all pairwise comparisons of dependent measures for astigmatism prediction
+#' errors using trimmed means and bootstrap confidence intervals. Validates data by
+#' checking for invalid values (typically > 4 diopters).
+#'
+#' @param x Matrix with J columns or list of length J containing prediction error data
+#' @inheritParams common_params
+#' @param con Contrast matrix (default: 0, performs all pairwise comparisons)
+#' @param invalid Maximum valid value in diopters (default: 4). Values exceeding this
+#'   threshold are flagged as invalid
+#' @param SEED Logical. If \code{TRUE}, sets random seed for reproducibility
+#' @param STOP Logical. If \code{TRUE}, stops execution when invalid values detected
+#' @param method P-value adjustment method (default: 'holm')
+#'
+#' @details
+#' Compares all pairs of dependent formulas using difference scores. For each pair:
+#' \itemize{
+#'   \item Computes trimmed mean difference with bootstrap-t confidence interval
+#'   \item Validates that all values ≤ \code{invalid} diopters and ≥ 0
+#'   \item Reports positions of any invalid or negative values
+#'   \item Adjusts p-values for multiple comparisons using specified method
+#' }
+#'
+#' Missing values are automatically removed before analysis.
+#'
+#' @return List with component:
+#' \describe{
+#'   \item{output}{Matrix with columns: V1 (group 1), V2 (group 2), n (sample size),
+#'     Mean.1, Mean.2, p.value, adj.p.value (adjusted p-value)}
+#' }
+#'
+#' @seealso \code{\link{oph.astig.indepcom}}, \code{\link{oph.astig.depcom.unimean.var}},
+#'   \code{\link{trimcibt}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.depcom<-function(x,tr=0,con=0,alpha=.05,nboot=1999,invalid=4,
 SEED=TRUE,STOP=TRUE,method='holm'){
 #
@@ -1107,6 +1486,32 @@ list(output=output)
 
 # ----------------------------------------------------------------------------
 
+#' Compare Astigmatism Formulas - Dependent Case (Means and Variances)
+#'
+#' @description
+#' Wrapper function that compares both means and variances for dependent astigmatism
+#' prediction error data. Combines results from \code{\link{oph.astig.depcom}} for means
+#' and \code{\link{comdsd.mcp}} for variances.
+#'
+#' @param m Matrix or data frame with even number of columns. First two columns are
+#'   the first formula, next two are the second formula, etc.
+#' @param locfun Location function to use (default: \code{smean})
+#' @param method Multiple comparison method for p-value adjustment (default: 'holm')
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @inheritParams common_params
+#'
+#' @return
+#' List with two components:
+#' \itemize{
+#'   \item \code{mean.results} - Results from comparing means
+#'   \item \code{var.results} - Results from comparing variances
+#' }
+#'
+#' @seealso \code{\link{oph.astig.depcom}}, \code{\link{comdsd.mcp}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.depcom.unimean.var<-function(m,alpha=.05,nboot=1999,locfun=smean,tr=0,method='holm',SEED=TRUE,invalid=4,STOP=TRUE){
 #
 #
@@ -1124,6 +1529,39 @@ list(mean.results=r1,var.results=r2)
 
 # ----------------------------------------------------------------------------
 
+#' Compare Total Variances for Independent Astigmatism Formulas (Bivariate Marginal)
+#'
+#' @description
+#' Compares total variances of prediction errors for independent astigmatism formulas
+#' using bivariate marginal approach. For matrices with J columns (where J is even),
+#' compares columns 1-2 vs 3-4, 1-2 vs 5-6, etc. using pairwise difference scores.
+#' Estimates are adjusted if outliers are detected using a projection method.
+#'
+#' @param m Matrix or data frame with even number of columns (J). First two columns
+#'   represent first formula, next two the second formula, etc.
+#' @inheritParams common_params
+#'
+#' @details
+#' The function:
+#' \itemize{
+#'   \item Compares total variances between formula pairs
+#'   \item Uses difference scores from column pairs (e.g., cols 1 & 3, cols 2 & 4)
+#'   \item Applies Holm's method for p-value adjustment
+#'   \item Reports variances, standard deviations, and p-values
+#' }
+#'
+#' @return
+#' List with components:
+#' \itemize{
+#'   \item \code{n} - Sample sizes for each column
+#'   \item \code{results} - Detailed pairwise comparison results
+#'   \item \code{results.total} - Data frame with total variance comparisons and adjusted p-values
+#' }
+#'
+#' @seealso \code{\link{comvar2.astig}}, \code{\link{varcom.IND.MP}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.indepbivmarg.totvars<-function(m,alpha=.05){
 #
 # This function is designed to compare two  variances  independent  variables based
@@ -1180,7 +1618,32 @@ MAT[,8]=p.adjust(MAT[,7],method='holm')
 list(n=nv,results=results,results.total=MAT)  #results.total,Total.p.adjusted=pad)
 }
 
-
+#' Compare Bivariate Means for Independent Astigmatism Formulas
+#'
+#' @description
+#' Compares bivariate distributions of prediction errors for independent astigmatism
+#' formulas. For matrices with J columns (where J is even), compares columns 1-2 vs 3-4,
+#' 1-2 vs 5-6, etc. using difference scores. Estimates are adjusted if outliers are
+#' detected using a projection method.
+#'
+#' @param m Matrix or data frame with even number of columns (J). First two columns
+#'   represent first formula, next two the second formula, etc.
+#' @param SEED Logical; if TRUE, set random seed for reproducibility
+#' @inheritParams common_params
+#'
+#' @details
+#' Independent case bivariate distribution comparison. Uses difference scores (e.g.,
+#' columns 1 and 3, then columns 2 and 4) with bootstrap-t method based on trimmed means.
+#' Returns confidence intervals with Holm-adjusted p-values.
+#'
+#' @return
+#' List of matrices, one for each pairwise comparison. Each matrix contains means,
+#' p-values, and adjusted p-values for the two components being compared.
+#'
+#' @seealso \code{\link{yuenbt}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.indepbivmeans<-function(m,alpha=.05,nboot=1999,SEED=TRUE,tr=0){
 #
 # This function is designed to compare two  bivariate distributions relevant to
@@ -1245,6 +1708,35 @@ results
 
 # ----------------------------------------------------------------------------
 
+#' Compare Total Variances for Independent Astigmatism Formulas (Bivariate)
+#'
+#' @description
+#' Compares total variances of prediction errors for independent astigmatism formulas
+#' using bivariate approach. For matrices with J columns (where J is even), compares
+#' columns 1-2 vs 3-4, 1-2 vs 5-6, etc., comparing the variances when testing differences.
+#'
+#' @param m Matrix or data frame with even number of columns (J). First two columns
+#'   represent first formula, next two the second formula, etc.
+#' @inheritParams common_params
+#'
+#' @details
+#' Compares total variances using difference scores (columns i-1 minus columns i-2 for
+#' each formula pair). Uses Morgan-Pitman test for independent groups. P-values are
+#' adjusted using Holm's method.
+#'
+#' @return
+#' List with components:
+#' \itemize{
+#'   \item \code{n} - Sample sizes for each column
+#'   \item \code{results} - Detailed pairwise comparison results
+#'   \item \code{results.total} - Data frame with total variances, ratios, and p-values
+#'   \item \code{Total.adj.p.values} - Holm-adjusted p-values
+#' }
+#'
+#' @seealso \code{\link{comvar2.astig}}, \code{\link{comvar2}}, \code{\link{varcom.IND.MP}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.indepbivtotvars<-function(m,alpha=.05){
 #
 # This function is designed to compare two  variances  independent  variables based
@@ -1311,6 +1803,47 @@ list(n=nv,results=results,results.total=MAT,Total.adj.p.values=pad)
 
 # ----------------------------------------------------------------------------
 
+#' Compare Astigmatism Prediction Errors - Independent Groups
+#'
+#' @description
+#' Compares prediction errors for astigmatism formulas across independent groups.
+#' Uses bootstrap-t method with trimmed means (default is mean when tr=0). Validates
+#' that values do not exceed the invalid threshold (default 4 diopters) and checks
+#' for negative values.
+#'
+#' @param x Matrix or data frame with J columns, or list of length J
+#' @param con Contrast matrix (J by d) specifying contrasts of interest. If unspecified
+#'   (con=0), all pairwise comparisons are performed
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param SEED Logical; if TRUE, set random seed for reproducibility
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @param method Multiple comparison method for p-value adjustment (default: 'holm')
+#' @inheritParams common_params
+#'
+#' @details
+#' The function:
+#' \itemize{
+#'   \item Checks for invalid values (>invalid diopters or <0)
+#'   \item Performs pairwise comparisons or custom contrasts
+#'   \item Uses bootstrap-t with centering around trimmed mean
+#'   \item Removes missing values automatically
+#' }
+#'
+#' For contrasts: con[,1]=c(1,1,-1,-1,0,0) tests if sum of first two trimmed means
+#' equals sum of next two.
+#'
+#' @return
+#' List with:
+#' \itemize{
+#'   \item \code{output} - Matrix of results with estimates, confidence intervals, and p-values
+#'   \item \code{con} - Contrast matrix used
+#'   \item Additional bootstrap details
+#' }
+#'
+#' @seealso \code{\link{oph.astig.depcom}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.indepcom<-function(x,con=0,tr=0,alpha=.05,nboot=1999,invalid=4,SEED=TRUE,STOP=TRUE,method='holm'){
 #
 #  This function is designed specifically for comparing predictions errors
@@ -1463,6 +1996,30 @@ list(n=nsam,psihat=psihat,test=test,crit=testb[ic.crit],con=con)
 
 # ----------------------------------------------------------------------------
 
+#' Compare Frequency Distributions Across Diopter Intervals - Independent Groups
+#'
+#' @description
+#' For each column of the matrix, compares frequencies across predefined diopter intervals
+#' using the KMS (Kolm-Smirnov-type) method. Designed for comparing astigmatism prediction
+#' error distributions between independent formulas.
+#'
+#' @param m Matrix or data frame with J columns representing different formulas
+#' @param method Multiple comparison method for p-value adjustment (default: 'holm')
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#'
+#' @details
+#' Compares frequency distributions at 8 fixed intervals: 0.25, 0.50, 0.75, 1, 1.25,
+#' 1.5, 1.75, and 2 diopters. For each pairwise comparison, tests whether the cumulative
+#' frequencies differ significantly at each interval using the KMS method.
+#'
+#' @return
+#' List of matrices, one for each pairwise comparison. Each matrix contains interval
+#' identifiers, test statistics, p-values, and adjusted p-values.
+#'
+#' @seealso \code{\link{oph.astig.mcnemar}}, \code{\link{srg1.vs.2}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.indepintervals<-function(m,method='holm',invalid=4){
 #
 #    For column of x, compare frequencies using KMS method
@@ -1534,6 +2091,37 @@ E
 
 # ----------------------------------------------------------------------------
 
+#' Compare Astigmatism Prediction Formulas Using McNemar's Test
+#'
+#' @description
+#' Compares astigmatism prediction formulas using McNemar's test for paired data.
+#' Tests whether formulas differ in their frequencies at various diopter intervals
+#' (0.25 to 2 diopters in 0.25 increments).
+#'
+#' @param x Matrix or data frame with J columns representing different formulas
+#' @param method Multiple comparison method for p-value adjustment (default: 'holm')
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#'
+#' @details
+#' For each pair of formulas and each diopter threshold (D = 0.25, 0.50, ..., 2.00),
+#' creates a 2x2 contingency table and applies McNemar's test. Reports the number and
+#' percentage of cases below each threshold for each formula pair. P-values are adjusted
+#' for multiple comparisons.
+#'
+#' @return
+#' List with length equal to number of diopter intervals. Each element is a matrix
+#' containing:
+#' \itemize{
+#'   \item Diopter threshold (D)
+#'   \item Formula identifiers
+#'   \item Counts and percentages below threshold
+#'   \item p-values and adjusted p-values
+#' }
+#'
+#' @seealso \code{\link{oph.mcnemar}}, \code{\link{oph.astig.indepintervals}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.mcnemar<-function(x,method='holm',invalid=4){
 #
 # Astigmatism: compare prediction formulas
@@ -1609,6 +2197,38 @@ E
 
 # ----------------------------------------------------------------------------
 
+#' Compute Confidence Regions for Bivariate Means in Astigmatism Data
+#'
+#' @description
+#' Computes confidence regions for the mean of bivariate astigmatism prediction error
+#' data. Creates confidence polygons for each formula pair using bootstrap methods.
+#'
+#' @param m Matrix or data frame with even number of columns (J). First two columns
+#'   represent first formula, next two the second formula, etc.
+#' @param plotit Logical; if TRUE, plot the confidence regions
+#' @param xlab Label for x-axis (default: 'V1')
+#' @param ylab Label for y-axis (default: 'V2')
+#' @param MC Logical; if TRUE, use multicore processing
+#' @param SEED Logical; if TRUE, set random seed for reproducibility
+#' @inheritParams common_params
+#'
+#' @details
+#' For each formula (pair of columns), computes a 1-alpha confidence region for the
+#' bivariate mean using bootstrap. The confidence region is represented as a convex
+#' polygon. Optionally plots the regions.
+#'
+#' @return
+#' List with components:
+#' \itemize{
+#'   \item \code{centers} - List of center points (means) for each formula with sample sizes
+#'   \item \code{conf.region.points} - List of confidence region boundary points for each formula
+#'   \item \code{p.values} - List of p-values from hypothesis tests
+#' }
+#'
+#' @seealso \code{\link{meancr.cord.oph}}, \code{\link{oph.astig.datasetconvexpoly.mean}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.meanconvexpoly<-function(m,alpha=.05,plotit=TRUE,xlab='V1',ylab='V2',nboot=1999,MC=FALSE,
 SEED=TRUE){
 #
@@ -1687,7 +2307,32 @@ par(mfrow=c(1,1))
 list(centers=CENTERS,conf.region.points=region,p.values=pv)
 }
 
-
+#' Compare Mean Absolute Deviations - Dependent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares mean absolute deviations (MAD) of prediction errors for intraocular lens
+#' power calculation formulas using dependent (paired) samples. Values are centered
+#' before computing absolute deviations.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param method Multiple comparison method for p-value adjustment (default: 'hommel')
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @inheritParams common_params
+#'
+#' @details
+#' Computes root-mean-squared absolute errors for dependent measures. Each variable is
+#' centered (mean subtracted) before taking absolute values. Uses bootstrap-t method
+#' for pairwise comparisons with p-value adjustment for multiple testing.
+#'
+#' @return
+#' Matrix with columns: Var, Var, MAD 1, MAD 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.indep.comMAD}}, \code{\link{oph.dep.commean}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.dep.comMAD<-function(x, y=NULL, tr=0,invalid=4, method='hommel',STOP=TRUE,nboot=1999){
 #
 #  This function is designed specifically for dealing with
@@ -1770,6 +2415,31 @@ output
 
 # ----------------------------------------------------------------------------
 
+#' Compare Means - Dependent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares means of prediction errors for intraocular lens power calculation formulas
+#' using dependent (paired) samples. Designed for data in diopters with validity checks.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param method Multiple comparison method for p-value adjustment (default: 'hommel')
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @inheritParams common_params
+#'
+#' @details
+#' Performs all pairwise comparisons using bootstrap-t method based on trimmed means
+#' (default tr=0 uses means). Checks that all values are between -invalid and +invalid
+#' diopters. For more robust estimation, set tr=0.2 for 20% trimmed means.
+#'
+#' @return
+#' Matrix with columns: Var, Var, Mean 1, Mean 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.indep.commean}}, \code{\link{ydbt}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.dep.commean<-function(x, y=NULL, tr=0,invalid=4, method='hommel',STOP=TRUE){
 #
 #  This function is designed specifically for dealing with
@@ -1848,6 +2518,31 @@ output
 
 # ----------------------------------------------------------------------------
 
+#' Compare Mean Absolute Errors - Dependent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares mean absolute prediction errors for intraocular lens power calculation
+#' formulas using dependent (paired) samples. Reports root-mean-squared absolute errors.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param method Multiple comparison method for p-value adjustment (default: 'hommel')
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @inheritParams common_params
+#'
+#' @details
+#' Uses squared mean absolute error values internally. Estimates reported are
+#' root-mean-squared absolute errors. Uses bootstrap-t method for comparisons.
+#' For robust estimation, set tr=0.2 for 20% trimmed means.
+#'
+#' @return
+#' Matrix with columns: Var, Var, Mean.AE 1, Mean.AE 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.indep.comMeanAE}}, \code{\link{oph.dep.comRMSAE}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.dep.comMeanAE<-function(x, y=NULL, tr=0,invalid=4, method='hommel',STOP=TRUE,nboot=1999){
 #
 #  This function is designed specifically for dealing with
@@ -1925,6 +2620,31 @@ output
 
 # ----------------------------------------------------------------------------
 
+#' Compare Root-Mean-Square Absolute Errors - Dependent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares root-mean-square absolute prediction errors (RMSAE) for intraocular lens
+#' power calculation formulas using dependent (paired) samples.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param method Multiple comparison method for p-value adjustment (default: 'hommel')
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @inheritParams common_params
+#'
+#' @details
+#' Uses squared mean absolute error values internally for comparisons. Reports
+#' root-mean-squared absolute errors. Uses bootstrap-t method based on trimmed means
+#' (set tr=0.2 for 20% trimmed means).
+#'
+#' @return
+#' Matrix with columns: Var, Var, RMSAE 1, RMSAE 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.indep.comRMSAE}}, \code{\link{oph.dep.comMeanAE}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.dep.comRMSAE<-function(x, y=NULL, tr=0,invalid=4, method='hommel',STOP=TRUE,nboot=1999){
 #
 #  This function is designed specifically for dealing with
@@ -2002,6 +2722,32 @@ output
 
 # ----------------------------------------------------------------------------
 
+#' Compare Mean Absolute Deviations - Independent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares mean absolute deviations (MAD) of prediction errors for intraocular lens
+#' power calculation formulas using independent samples. Values are centered before
+#' computing absolute deviations.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param method Multiple comparison method for p-value adjustment (default: 'hoch')
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @inheritParams common_params
+#'
+#' @details
+#' Uses heteroscedastic Welch method for pairwise comparisons. Each variable is
+#' centered (mean subtracted) before computing absolute deviations. For robust
+#' estimation, set tr=0.2 for 20% trimmed means.
+#'
+#' @return
+#' Matrix with columns: Var, Var, MAD 1, MAD 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.dep.comMAD}}, \code{\link{yuenbt}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.indep.comMAD<-function(x,y=NULL,method='hoch',invalid=4,STOP=TRUE,tr=0,nboot=1999){
 #
 #  This function is designed specifically for dealing with
@@ -2056,6 +2802,31 @@ output[,7]=p.adjust(output[,6],method=method)
 output
 }
 
+#' Compare Median Absolute Errors - Independent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares median absolute errors of prediction errors for intraocular lens power
+#' calculation formulas using independent samples.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param est Estimator function to use (default: median)
+#' @param method Multiple comparison method for p-value adjustment (default: 'hommel')
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @inheritParams common_params
+#'
+#' @details
+#' Uses heteroscedastic method for pairwise comparisons of absolute errors.
+#' Default estimator is median, but can be changed via the \code{est} parameter.
+#'
+#' @return
+#' Matrix with columns: Var, Var, Med.AE 1, Med.AE 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.dep.comMedAE}}, \code{\link{pb2gen}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.indep.comMedAE<-function(x,y=NULL,est=median,method='hommel',invalid=4,STOP=TRUE,nboot=1999){
 #
 #  This function is designed specifically for dealing with
@@ -2107,7 +2878,31 @@ output[,7]=p.adjust(output[,6],method=method)
 output
 }
 
-
+#' Compare Means - Independent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares means of prediction errors for intraocular lens power calculation formulas
+#' using independent samples. Uses heteroscedastic Welch method.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param method Multiple comparison method for p-value adjustment (default: 'hommel')
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @inheritParams common_params
+#'
+#' @details
+#' Performs all pairwise comparisons using heteroscedastic Welch method based on
+#' trimmed means. Default tr=0 uses means; set tr=0.2 for 20% trimmed means for
+#' more robust estimation.
+#'
+#' @return
+#' Matrix with columns: Var, Var, Mean 1, Mean 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.dep.commean}}, \code{\link{yuenbt}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.indep.commean<-function(x,y=NULL,method='hommel',invalid=4,STOP=TRUE,tr=0){
 #
 #  This function is designed specifically for dealing with
@@ -2160,7 +2955,32 @@ output[,7]=p.adjust(output[,6],method=method)
 output
 }
 
-
+#' Compare Median Absolute Errors - Dependent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares median absolute prediction errors for intraocular lens power calculation
+#' formulas using dependent (paired) samples.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param est Estimator function to use (default: median)
+#' @param dif Logical; method for handling differences in \code{dmedpb} (default: FALSE)
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param method Multiple comparison method for p-value adjustment (default: 'hommel')
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @inheritParams common_params
+#'
+#' @details
+#' Uses bootstrap-t method for pairwise comparisons of median absolute errors.
+#' Operates on absolute values of the prediction errors.
+#'
+#' @return
+#' Matrix with columns: Var, Var, Med.AE 1, Med.AE 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.indep.comMedAE}}, \code{\link{dmedpb}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.dep.comMedAE<-function(x, y=NULL, est=median,dif=FALSE, invalid=4, method='hommel',STOP=TRUE,nboot=1999){
 #
 #  This function is designed specifically for dealing with
@@ -2227,6 +3047,30 @@ output[,7]=p.adjust(output[,6],method=method)
 output
 }
 
+#' Compare Medians - Independent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares medians of prediction errors for intraocular lens power calculation
+#' formulas using independent samples with percentile bootstrap method.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param method Multiple comparison method for p-value adjustment (default: 'hommel')
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @param SEED Logical; if TRUE, set random seed for reproducibility
+#'
+#' @details
+#' Uses heteroscedastic percentile bootstrap method for pairwise comparisons of medians.
+#' Assumes values are in diopters with validity checks.
+#'
+#' @return
+#' Matrix with columns: Var, Var, Median 1, Median 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.dep.commedian}}, \code{\link{medpb2}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.indep.commedian<-function(x,y=NULL,method='hommel',invalid=4,STOP=TRUE,SEED=TRUE){
 #
 #  This function is designed specifically for dealing with
@@ -2279,6 +3123,30 @@ output[,7]=p.adjust(output[,6],method=method)
 output
 }
 
+#' Compare Medians - Dependent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares medians of prediction errors for intraocular lens power calculation
+#' formulas using dependent (paired) samples with percentile bootstrap method.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param method Multiple comparison method for p-value adjustment (default: 'hommel')
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @param SEED Logical; if TRUE, set random seed for reproducibility
+#'
+#' @details
+#' Uses percentile bootstrap method for pairwise comparisons of medians in paired data.
+#' Checks that all values are between -invalid and +invalid diopters.
+#'
+#' @return
+#' Matrix with columns: Var, Var, Median 1, Median 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.indep.commedian}}, \code{\link{dmedpb}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.dep.commedian<-function(x, y=NULL,invalid=4, method='hommel',STOP=TRUE,SEED=TRUE){
 #
 #  This function is designed specifically for dealing with
@@ -2357,6 +3225,30 @@ output
 
 # ----------------------------------------------------------------------------
 
+#' Compare Mean Absolute Errors - Independent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares mean absolute errors (also called root-mean-square absolute errors, RMSAE)
+#' of prediction errors for intraocular lens power calculation formulas using independent samples.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param method Multiple comparison method for p-value adjustment (default: 'hoch')
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @inheritParams common_params
+#'
+#' @details
+#' Uses heteroscedastic Welch method for pairwise comparisons. Operates on absolute
+#' values of prediction errors. For robust estimation, set tr=0.2 for 20% trimmed means.
+#'
+#' @return
+#' Matrix with columns: Var, Var, Mean.AE 1, Mean.AE 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.dep.comMeanAE}}, \code{\link{oph.indep.comRMSAE}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.indep.comMeanAE<-function(x,y=NULL,method='hoch',invalid=4,STOP=TRUE,tr=0,nboot=1999){
 #
 #  This function is designed specifically for dealing with
@@ -2419,6 +3311,30 @@ output
 
 # ----------------------------------------------------------------------------
 
+#' Compare Root-Mean-Square Absolute Errors - Independent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares root-mean-square absolute errors (RMSAE) of prediction errors for
+#' intraocular lens power calculation formulas using independent samples.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param method Multiple comparison method for p-value adjustment (default: 'hoch')
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#' @inheritParams common_params
+#'
+#' @details
+#' Uses heteroscedastic Welch method for comparisons. Compares squared values internally
+#' but reports RMSAE. For robust estimation, set tr=0.2 for 20% trimmed means.
+#'
+#' @return
+#' Matrix with columns: Var, Var, RMSAE 1, RMSAE 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.dep.comRMSAE}}, \code{\link{oph.indep.comMeanAE}}, \code{\link{RMSAE}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.indep.comRMSAE<-function(x,y=NULL,method='hoch',invalid=4,STOP=TRUE,tr=0,nboot=1999){
 #
 #  This function is designed specifically for dealing with
@@ -2481,6 +3397,31 @@ output
 
 # ----------------------------------------------------------------------------
 
+#' Compare Frequency Distributions Across Diopter Intervals (Ophthalmology)
+#'
+#' @description
+#' Compares frequency distributions of prediction errors across predefined diopter
+#' intervals using the KMS method for independent samples. Non-astigmatism version
+#' that works with absolute values.
+#'
+#' @param m Matrix or data frame with J columns representing different formulas
+#' @param method Multiple comparison method for p-value adjustment (default: 'holm')
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#'
+#' @details
+#' Takes absolute values of data before comparison. Compares frequency distributions
+#' at 8 fixed intervals: 0.25, 0.50, 0.75, 1, 1.25, 1.5, 1.75, and 2 diopters.
+#' For each pairwise comparison, tests whether the cumulative frequencies differ
+#' significantly at each interval.
+#'
+#' @return
+#' List of matrices, one for each pairwise comparison. Each matrix contains interval
+#' identifiers, test statistics, p-values, and adjusted p-values.
+#'
+#' @seealso \code{\link{oph.astig.indepintervals}}, \code{\link{oph.mcnemar}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.indepintervals<-function(m,method='holm',invalid=4){
 #
 #    For column of x, compare frequencies using KMS method
@@ -2553,6 +3494,37 @@ E
 
 # ----------------------------------------------------------------------------
 
+#' Compare Prediction Formulas Using McNemar's Test (Ophthalmology)
+#'
+#' @description
+#' Compares prediction formulas using McNemar's test for paired data. Tests whether
+#' formulas differ in their frequencies at various diopter intervals. Non-astigmatism
+#' version that works with absolute values.
+#'
+#' @param x Matrix or data frame with J columns representing different formulas
+#' @param method Multiple comparison method for p-value adjustment (default: 'holm')
+#' @param invalid Maximum valid absolute value in diopters (default: 4)
+#'
+#' @details
+#' Takes absolute values of data before comparison. For each pair of formulas and
+#' each diopter threshold (D = 0.25, 0.50, ..., 2.00), creates a 2x2 contingency
+#' table and applies McNemar's test. Reports the number and percentage of cases
+#' below each threshold for each formula pair.
+#'
+#' @return
+#' List with length equal to number of diopter intervals. Each element is a matrix
+#' containing:
+#' \itemize{
+#'   \item Diopter threshold (D)
+#'   \item Formula identifiers
+#'   \item Counts and percentages below threshold
+#'   \item p-values and adjusted p-values
+#' }
+#'
+#' @seealso \code{\link{oph.astig.mcnemar}}, \code{\link{oph.indepintervals}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.mcnemar<-function(x,method='holm',invalid=4){
 #
 # Astigmatism: compare prediction formulas
@@ -2637,6 +3609,52 @@ E
 
 # ----------------------------------------------------------------------------
 
+#' Select Best Group Based on Binomial Probability of Success
+#'
+#' @description
+#' For J independent groups, identify the group with the highest probability of
+#' success. A decision is made if all p-values are less than or equal to their
+#' corresponding critical p-values. Uses family-wise error rate control.
+#'
+#' @param x Vector containing the number of successes for each group
+#' @param n Vector indicating the sample sizes for each group
+#' @param p.crit Critical p-values for each comparison. If NULL (default), critical
+#'   p-values are determined via simulation to control FWE at alpha level
+#' @param alpha Family-wise error rate (default 0.05)
+#' @param iter Number of simulation iterations for determining critical p-values
+#'   (default 5000)
+#' @param SEED Logical; if TRUE, set random seed for reproducibility (default TRUE)
+#'
+#' @details
+#' This function identifies which group has the largest probability of success
+#' using a multiple comparison procedure that controls the family-wise error rate.
+#' The group with the largest estimate is compared to all other groups. If all
+#' comparisons are significant (p-value <= p.crit), a decision is made.
+#'
+#' When p.crit is NULL, critical p-values are determined using simulation under
+#' the null hypothesis to achieve the desired FWE control at level alpha.
+#'
+#' @return
+#' An S4 object of class 'BIN' with slots:
+#' \itemize{
+#'   \item Group.with.largest.estimate: Index of group with highest success rate
+#'   \item Larger.than: Groups that the best group is significantly larger than.
+#'     Returns 'No Decisions' if not significant, group indices if significant,
+#'     or 'All' if best group is significantly larger than all others
+#'   \item n: Sample sizes
+#'   \item output: Matrix with columns Est.Best, Grp, Est, Dif, ci.low, ci.up,
+#'     p.value, p.crit for each comparison
+#' }
+#'
+#' @seealso \code{\link{bin.best.PV}}, \code{\link{bin.best.EQA}},
+#'   \code{\link{bi2KMSv2}}
+#'
+#' @references
+#' Wilcox, R.R. (2022) Introduction to Robust Estimation and Hypothesis Testing,
+#' 5th Ed. Academic Press.
+#'
+#' @keywords binomial htest
+#' @export
 bin.best<-function(x,n,p.crit=NULL,alpha=.05,iter=5000,SEED=TRUE){
 #
 # For J independent groups,
@@ -2692,6 +3710,25 @@ put=new('BIN',Group.with.largest.estimate=R[[1]],Larger.than=Best,n=n,output=out
 put
 }
 
+#' Generate Critical P-Values for bin.best via Simulation
+#'
+#' @description
+#' Internal function used by \code{\link{bin.best}} to determine critical p-values
+#' via simulation under the null hypothesis.
+#'
+#' @param p Probability of success under the null hypothesis (common across groups)
+#' @param n Vector of sample sizes for each group
+#' @param iter Number of simulation iterations (default 5000)
+#' @param SEED Logical; if TRUE, set random seed for reproducibility (default TRUE)
+#'
+#' @return
+#' Matrix with iter rows and J-1 columns, where J is the number of groups.
+#' Each row contains p-values from one simulated dataset under the null.
+#'
+#' @seealso \code{\link{bin.best}}
+#'
+#' @keywords internal
+#' @export
 bin.best.crit<-function(p,n,iter=5000,SEED=TRUE){
 #
 #
@@ -2707,6 +3744,26 @@ pv.mat[i,]=bin.best.sub(x,n)
 pv.mat
 }
 
+#' Compute P-Values for bin.best.crit Simulation
+#'
+#' @description
+#' Internal helper function used by \code{\link{bin.best.crit}} to compute
+#' p-values for each simulated dataset.
+#'
+#' @param x Vector containing the number of successes for each group
+#' @param n Vector indicating the sample sizes for each group
+#' @param p.crit Critical p-values (not used in this helper function)
+#' @param alpha Significance level (default 0.05)
+#' @param iter Number of iterations (default 5000)
+#' @param SEED Logical; if TRUE, set random seed (default TRUE)
+#'
+#' @return
+#' Vector of p-values from comparing the group with largest estimate to all others.
+#'
+#' @seealso \code{\link{bin.best.crit}}
+#'
+#' @keywords internal
+#' @export
 bin.best.sub<-function(x,n,p.crit=NULL,alpha=.05,iter=5000,SEED=TRUE){
 #
 #  Used by bin.best.crit
@@ -2731,6 +3788,45 @@ pvec
 }
 
 
+#' Select Best Group with Overall P-Value
+#'
+#' @description
+#' For J independent groups, identify the group with the highest probability of
+#' success. This version also computes an overall p-value for the decision.
+#' A decision is made if all pairwise p-values are less than or equal to their
+#' corresponding critical p-values.
+#'
+#' @param x Vector containing the number of successes for each group
+#' @param n Vector indicating the sample sizes for each group
+#' @param alpha Family-wise error rate (default 0.05). Must be one of the values
+#'   .001(.001).1 or .11(.01).99
+#' @param iter Number of simulation iterations for determining critical p-values
+#'   (default 5000)
+#' @param SEED Logical; if TRUE, set random seed for reproducibility (default TRUE)
+#'
+#' @details
+#' Similar to \code{\link{bin.best}}, but also computes an overall p-value for
+#' the selection decision. The critical p-values are pre-computed for a range of
+#' alpha levels using \code{\link{bin.best.crit.det}}.
+#'
+#' The overall p-value represents the smallest alpha level at which all comparisons
+#' would be significant.
+#'
+#' @return
+#' An S4 object of class 'BIN' with slots:
+#' \itemize{
+#'   \item Group.with.largest.estimate: Index of group with highest success rate
+#'   \item Select.Best.p.value: Overall p-value for the selection decision
+#'   \item Larger.than: Groups that the best group is significantly larger than
+#'   \item n: Sample sizes
+#'   \item output: Matrix with comparison results
+#' }
+#'
+#' @seealso \code{\link{bin.best}}, \code{\link{bin.best.EQA}},
+#'   \code{\link{bin.best.crit.det}}
+#'
+#' @keywords binomial htest
+#' @export
 bin.best.PV<-function(x,n,alpha=.05,iter=5000,SEED=TRUE){
 #
 # For J independent groups,
@@ -2799,6 +3895,25 @@ put
 }
 
 
+#' Determine Critical P-Values for Range of Alpha Levels
+#'
+#' @description
+#' Pre-compute critical p-values for a range of alpha levels (.001 to .99).
+#' Used by \code{\link{bin.best.PV}} to enable p-value computation.
+#'
+#' @param p Probability of success under the null hypothesis (common across groups)
+#' @param n Vector of sample sizes for each group
+#' @param iter Number of simulation iterations (default 5000)
+#' @param SEED Logical; if TRUE, set random seed for reproducibility (default TRUE)
+#'
+#' @return
+#' Matrix with rows corresponding to alpha levels (.001, .002, ..., .1, .11, ..., .99)
+#' and J-1 columns (where J is number of groups). Each entry is a critical p-value.
+#'
+#' @seealso \code{\link{bin.best.PV}}, \code{\link{bin.best.crit}}
+#'
+#' @keywords internal
+#' @export
 bin.best.crit.det<-function(p,n,iter=5000,SEED=TRUE){
 #
 #
@@ -2832,6 +3947,43 @@ fin.crit
 
 # ----------------------------------------------------------------------------
 
+#' Select Best Group Using Equal Alpha Method
+#'
+#' @description
+#' For J independent groups, identify the group with the highest probability of
+#' success using equal critical p-values (alpha) for all comparisons. This is
+#' an alternative to \code{\link{bin.best}} which uses unequal critical p-values.
+#'
+#' @param x Vector containing the number of successes for each group
+#' @param n Vector indicating the sample sizes for each group
+#' @param p.crit Critical p-value (same for all comparisons). If NULL (default),
+#'   determined via simulation to control FWE at alpha level
+#' @param alpha Family-wise error rate (default 0.05)
+#' @param iter Number of simulation iterations for determining critical p-value
+#'   (default 5000)
+#' @param SEED Logical; if TRUE, set random seed for reproducibility (default TRUE)
+#'
+#' @details
+#' Unlike \code{\link{bin.best}} which may use different critical p-values for
+#' different comparisons, this function uses a single critical p-value for all
+#' J-1 comparisons (equal quantile approach, EQA).
+#'
+#' The group with the largest estimate is compared to all other groups. A decision
+#' is made if all comparisons have p-value <= p.crit.
+#'
+#' @return
+#' An S4 object of class 'BIN' with slots:
+#' \itemize{
+#'   \item Group.with.largest.estimate: Index of group with highest success rate
+#'   \item Larger.than: Groups that the best group is significantly larger than
+#'   \item n: Sample sizes
+#'   \item output: Matrix with comparison results
+#' }
+#'
+#' @seealso \code{\link{bin.best}}, \code{\link{bin.best.PV}}
+#'
+#' @keywords binomial htest
+#' @export
 bin.best.EQA<-function(x,n,p.crit=NULL,alpha=.05,iter=5000,SEED=TRUE){
 #
 #
@@ -2886,6 +4038,30 @@ put
 
 
 
+#' Binomial Multiple Comparisons Helper Function
+#'
+#' @description
+#' Internal helper function for binomial multiple comparisons procedures.
+#' Performs all pairwise comparisons among J independent groups.
+#'
+#' @param x Vector containing the number of successes for each group
+#' @param n Vector indicating the sample sizes for each group
+#' @param p.crit Critical p-value for comparisons (default 0.05)
+#' @param alpha Significance level (default 0.05)
+#' @param iter Number of iterations (default 5000)
+#' @param SEED Logical; if TRUE, set random seed (default TRUE)
+#'
+#' @details
+#' Performs all J(J-1)/2 pairwise comparisons with confidence intervals having
+#' simultaneous probability coverage 1-alpha using the adjusted level p.crit.
+#'
+#' @return
+#' Vector of p-values from all pairwise comparisons.
+#'
+#' @seealso \code{\link{binpair}}
+#'
+#' @keywords internal
+#' @export
 binmcp.sub<-function(x,n,p.crit=.05,alpha=.05,iter=5000,SEED=TRUE){
 #
 #
@@ -2926,6 +4102,46 @@ output[,8]
 
 # ----------------------------------------------------------------------------
 
+#' Probability of Making Decision and Probability of Correct Decision
+#'
+#' @description
+#' For J independent binomial groups, determine the probability of making a
+#' decision (PMD) and the probability of correct decision given that a decision
+#' is made (PCD) when selecting which group has the largest probability of success.
+#'
+#' @param n Vector of sample sizes for each group
+#' @param p Vector of true probabilities of success for each group
+#' @param DO Logical; if TRUE (default), use decision-only method; if FALSE,
+#'   use bin.best method
+#' @param alpha Family-wise error rate (default 0.05)
+#' @param p.crit Critical p-values. If NULL (default), determined via simulation
+#' @param iter Number of simulation iterations (default 5000)
+#' @param SEED Logical; if TRUE, set random seed for reproducibility (default TRUE)
+#'
+#' @details
+#' This function assesses the operating characteristics of the best group selection
+#' procedure. It uses simulation to estimate:
+#' \itemize{
+#'   \item PMD: Probability of Making a Decision (not concluding "no decision")
+#'   \item PCD: Probability of Correct Decision (correctly identifying the best
+#'     group when a decision is made)
+#' }
+#'
+#' The function generates iter datasets from binomial distributions with the
+#' specified probabilities p and sample sizes n, then applies the selection
+#' procedure to each dataset.
+#'
+#' @return
+#' List with components:
+#' \itemize{
+#'   \item PMD: Estimated probability of making a decision
+#'   \item PCD: Estimated probability of correct decision given a decision is made
+#' }
+#'
+#' @seealso \code{\link{bin.best}}, \code{\link{bin.best.DO}}
+#'
+#' @keywords binomial htest
+#' @export
 bin.PMD.PCD<-function(n,p,DO=TRUE,alpha=.05,p.crit=NULL,iter=5000,SEED=TRUE){
 #
 #  Which group has the largest probability of success?
@@ -2976,6 +4192,38 @@ list(PMD=PMD,PCD=PCD)
 }
 
 
+#' Extract Matrix Rows Based on Binary Split Criteria
+#'
+#' @description
+#' Extract rows from a matrix based on binary split criteria applied to two
+#' variables. Useful for creating binary categorizations based on medians or
+#' other cutpoints.
+#'
+#' @param m Matrix or data frame to extract rows from
+#' @param col Vector of two column indices specifying which columns to use for
+#'   splitting criteria (default c(1,2))
+#' @param int1 Interval bounds for first variable as c(lower, upper) (default
+#'   c(.5, .5) for median split)
+#' @param int2 Interval bounds for second variable as c(lower, upper) (default
+#'   c(.5, .5) for median split)
+#' @param INC Logical; if TRUE (default), use <= and >= comparisons; if FALSE,
+#'   use < and > comparisons
+#'
+#' @details
+#' This function pulls out rows of matrix m where:
+#' \itemize{
+#'   \item Column col[1] satisfies: int1[1] <= value <= int1[2] (if INC=TRUE)
+#'   \item Column col[2] satisfies: int2[1] <= value <= int2[2] (if INC=TRUE)
+#' }
+#'
+#' By default, splits at the median for both variables (0.5, 0.5). Can be used
+#' to create 2x2 contingency tables from continuous data.
+#'
+#' @return
+#' Matrix or vector containing the rows of m that satisfy both criteria.
+#'
+#' @keywords binomial utilities
+#' @export
 binmat2v<-function(m,col=c(1,2),int1=c(.5,.5),int2=c(.5,.5),INC=TRUE){
 #
 # pull out the rows of the matrix m based on the values in the column
@@ -3007,12 +4255,65 @@ flag=as.logical(flag1*flag2*flag3*flag4)
 m[flag,]
 }
 
+#' Compare Two Independent Binomial Groups
+#'
+#' @description
+#' Compare proportions from two independent binomial groups using various methods.
+#' Provides confidence interval for difference in proportions and p-value.
+#'
+#' @param r1 Number of successes in group 1 (computed from x if x is provided)
+#' @param n1 Sample size for group 1 (computed from x if x is provided)
+#' @param r2 Number of successes in group 2 (computed from y if y is provided)
+#' @param n2 Sample size for group 2 (computed from y if y is provided)
+#' @param x Vector of 1s and 0s for group 1 (optional; if provided, r1 and n1
+#'   are computed from x)
+#' @param y Vector of 1s and 0s for group 2 (optional; if provided, r2 and n2
+#'   are computed from y)
+#' @param method Character string specifying method: 'KMS' (Kulinskaya et al.,
+#'   default), 'ECP' (empirical critical p-value), 'SK' (Storer-Kim), or
+#'   'ZHZ' (Zou et al.)
+#' @param binCI Function to compute binomial CI for ZHZ method (default acbinomci)
+#' @param alpha Significance level (default 0.05)
+#' @param null.value Null hypothesis value for difference (default 0)
+#' @param iter Number of iterations for ECP method (default 2000)
+#' @param SEED Logical; if TRUE, set random seed for ECP method (default TRUE)
+#'
+#' @details
+#' Four methods are available:
+#' \itemize{
+#'   \item KMS: Method from Kulinskaya et al. (2008)
+#'   \item ECP: Empirical Critical P-value method (often performs best)
+#'   \item SK: Storer-Kim method
+#'   \item ZHZ: Zou, Hao, and Zhang method
+#' }
+#'
+#' For ZHZ method, binCI can be set to: binomci (Pratt), binomCP (Clopper-Pearson),
+#' kmsbinomci (Kulinskaya et al.), wilbinomci (Wilson), binomLCO (Schilling-Doi).
+#'
+#' @return
+#' List with results depending on method. Typically includes:
+#' \itemize{
+#'   \item Estimates for each group
+#'   \item Confidence interval for difference
+#'   \item P-value
+#'   \item Sample sizes
+#' }
+#'
+#' @seealso \code{\link{binpair}}, \code{\link{binom2g.ZHZ}}, \code{\link{bi2KMSv2}}
+#'
+#' @references
+#' Kulinskaya, E., Morgenthaler, S., and Staudte, R. G. (2008).
+#' Meta Analysis: A Guide to Calibrating and Combining Statistical Evidence.
+#' Wiley.
+#'
+#' @keywords binomial htest
+#' @export
 binom2g<-function(r1 = sum(elimna(x)), n1 = length(elimna(x)), r2 = sum(elimna(y)),
  n2 = length(elimna(y)), x = NA, y = NA, method=c('KMS','ECP','SK','ZHZ'),binCI=acbinomci,alpha = 0.05, null.value = 0,iter=2000,SEED=TRUE){
 #
 #  r: vector contain number of successes
 #  n: corresponding sample size
-#   x: contains 1s and 0s for first group. 
+#   x: contains 1s and 0s for first group.
 #   y: contains 1s and 0s for second group.
 #   It is assumed that r and n are specified or x and y are specified.
 #   If x and y are  specified, r1, r2, n1 and n2 are computed based on the data in x and y
@@ -3048,6 +4349,51 @@ switch(type,
 
 # ----------------------------------------------------------------------------
 
+#' Compare Two Binomial Groups Using Zou et al. Method
+#'
+#' @description
+#' Compare two binomial proportions using the Zou, Hao, and Zhang (2009) method.
+#' Computes confidence interval and p-value for difference in proportions.
+#'
+#' @param r1 Number of successes in group 1 (computed from x if x provided)
+#' @param n1 Sample size for group 1 (computed from x if x provided)
+#' @param r2 Number of successes in group 2 (computed from y if y provided)
+#' @param n2 Sample size for group 2 (computed from y if y provided)
+#' @param x Vector of 1s and 0s for group 1 (optional)
+#' @param y Vector of 1s and 0s for group 2 (optional)
+#' @param nullval Hypothesized difference in proportions (default 0)
+#' @param alpha Significance level (default 0.05)
+#' @param WARN Logical; if TRUE (default), warn when min(n1,n2) < 40
+#' @param method Method for computing binomial CI: 'AC' (Agresti-Coull, default)
+#'   or other methods available in binom.conf
+#'
+#' @details
+#' Implements the method from Zou, Hao, and Zhang (2009) published in CSDA.
+#' The method combines confidence intervals for individual proportions to
+#' construct a CI for their difference.
+#'
+#' When minimum sample size is less than 40, methods 'SK' or 'KMS' may be
+#' more satisfactory.
+#'
+#' @return
+#' List with components:
+#' \itemize{
+#'   \item n1, n2: Sample sizes
+#'   \item p1.hat, p2.hat: Estimated proportions
+#'   \item dif: Difference in proportions (p1.hat - p2.hat)
+#'   \item ci: Confidence interval for difference
+#'   \item p.value: P-value for test of H0: difference = nullval
+#' }
+#'
+#' @seealso \code{\link{binom2g}}, \code{\link{binom2g.ZHZ.main}}
+#'
+#' @references
+#' Zou, G., Hao, J., and Zhang, J. (2009). Construction of confidence limits
+#' about effect measures: A general approach. Statistics in Medicine, 28,
+#' 1693-1702.
+#'
+#' @keywords binomial htest
+#' @export
 binom2g.ZHZ<-function(r1=sum(elimna(x)),n1=length(elimna(x)),
 r2=sum(elimna(y)),n2 = length(elimna(y)), x = NA, y = NA, nullval=0,alpha=.05,WARN=TRUE,
 method='AC'){
@@ -3104,6 +4450,40 @@ list(n1=n1,n2=n2,p1.hat=p1.hat,p2.hat=p2.hat,dif=p1.hat-p2.hat,ci=ci,p.value=p.v
 
 # ----------------------------------------------------------------------------
 
+#' Binomial Confidence Interval Using Pratt's Method
+#'
+#' @description
+#' Compute a confidence interval for the probability of success in a binomial
+#' distribution using Pratt's method.
+#'
+#' @param x Number of successes (computed from y if y is provided)
+#' @param nn Sample size (computed from y if y is provided)
+#' @param y Vector of 1s and 0s (optional)
+#' @param n Deprecated parameter (use nn instead)
+#' @param alpha Significance level (default 0.05)
+#'
+#' @details
+#' Implements Pratt's method for computing binomial confidence intervals.
+#' Pratt's method provides good coverage properties and handles boundary
+#' cases (x=0, x=1, x=n-1, x=n) with special formulas.
+#'
+#' @return
+#' List with components:
+#' \itemize{
+#'   \item phat: Estimated proportion (x/n)
+#'   \item ci: Confidence interval as c(lower, upper)
+#'   \item n: Sample size
+#' }
+#'
+#' @seealso \code{\link{binomcipv}}, \code{\link{binomCP}}, \code{\link{binomLCO}}
+#'
+#' @references
+#' Pratt, J. W. (1968). A normal approximation for binomial, F, beta, and other
+#' common related tail probabilities. Journal of the American Statistical
+#' Association, 63, 1457-1483.
+#'
+#' @keywords binomial htest
+#' @export
 binomci<-function(x=sum(y),nn=length(y),y=NULL,n=NA,alpha=.05){
 #  Compute a 1-alpha confidence interval for p, the probability of
 #  success for a binomial distribution, using Pratt's method
@@ -3161,6 +4541,37 @@ list(phat=phat,ci=c(lower,upper),n=n)
 
 # ----------------------------------------------------------------------------
 
+#' Binomial P-Value Using Pratt's Method
+#'
+#' @description
+#' Compute a p-value for testing whether the probability of success equals a
+#' specified null value, using Pratt's method for the confidence interval.
+#'
+#' @param x Number of successes (computed from y if y is provided)
+#' @param nn Sample size (computed from y if y is provided)
+#' @param y Vector of 1s and 0s (optional)
+#' @param n Deprecated parameter (use nn instead)
+#' @param alpha Significance level (default 0.05)
+#' @param nullval Null hypothesis value for probability of success (default 0.5)
+#'
+#' @details
+#' Computes a p-value by finding the smallest alpha level at which the
+#' confidence interval (using Pratt's method) excludes the null value.
+#' This provides an exact correspondence between the CI and the p-value.
+#'
+#' @return
+#' List with components:
+#' \itemize{
+#'   \item n: Sample size
+#'   \item phat: Estimated proportion (x/n)
+#'   \item ci: Confidence interval at specified alpha level
+#'   \item p.value: P-value for test of H0: p = nullval
+#' }
+#'
+#' @seealso \code{\link{binomci}}, \code{\link{binom.conf.pv}}
+#'
+#' @keywords binomial htest
+#' @export
 binomcipv<-function(x=sum(y),nn=length(y),y=NULL,n=NA,alpha=.05,nullval=.5){
 #  Compute a p-value when testing the hypothesis that the probability of
 #  success for a binomial distribution is equal to
@@ -3205,6 +4616,34 @@ if(chkit[1]>nullval || chkit[2]<nullval)break
 list(n=nn,phat=res$phat,ci=res$ci,p.value=p.value)
 }
 
+#' Binomial Confidence Interval Using Clopper-Pearson Method
+#'
+#' @description
+#' Compute a confidence interval for the probability of success using the
+#' exact Clopper-Pearson method (also called exact binomial).
+#'
+#' @param x Number of successes (computed from y if y is provided)
+#' @param nn Sample size (computed from y if y is provided)
+#' @param y Vector of 1s and 0s (optional)
+#' @param n Deprecated parameter (use nn instead)
+#' @param alpha Significance level (default 0.05)
+#'
+#' @details
+#' The Clopper-Pearson method provides exact coverage (conservative) by
+#' inverting binomial tests. It uses R's built-in binom.test function.
+#'
+#' @return
+#' List with components:
+#' \itemize{
+#'   \item phat: Estimated proportion (x/n)
+#'   \item ci: Confidence interval as c(lower, upper)
+#'   \item n: Sample size
+#' }
+#'
+#' @seealso \code{\link{binomci}}, \code{\link{binomLCO}}
+#'
+#' @keywords binomial htest
+#' @export
 binomCP<-function(x = sum(y), nn = length(y), y = NULL, n = NA, alpha = 0.05){
 #
 # Clopper-Pearson
@@ -3227,6 +4666,36 @@ list(phat=x/nn,ci=ci,n=nn)
 
 # ----------------------------------------------------------------------------
 
+#' Compare Two Binomials Using Empirical Critical P-Value
+#'
+#' @description
+#' Compare two independent binomial groups using the empirical critical p-value
+#' (ECP) method. This is a wrapper for binmcp with two groups.
+#'
+#' @param x1 Number of successes in group 1
+#' @param n1 Sample size for group 1
+#' @param x2 Number of successes in group 2
+#' @param n2 Sample size for group 2
+#' @param alpha Significance level (default 0.05)
+#' @param iter Number of simulation iterations (default 2000)
+#' @param SEED Logical; if TRUE, set random seed for reproducibility (default TRUE)
+#'
+#' @details
+#' The ECP (Empirical Critical P-value) method empirically estimates the
+#' critical p-value needed to control the Type I error rate at the specified
+#' alpha level. Generally performs well across different sample sizes.
+#'
+#' @return
+#' List with components:
+#' \itemize{
+#'   \item n: Vector of sample sizes
+#'   \item output: Matrix with comparison results
+#' }
+#'
+#' @seealso \code{\link{binom2g}}, \code{\link{binmcp}}
+#'
+#' @keywords binomial htest
+#' @export
 binomECP<-function(x1,n1,x2,n2,alpha=.05,iter=2000,SEED=TRUE){
 #
 # ECP= Estimate Critical P-value
@@ -3243,6 +4712,40 @@ list(n=a$n,output=a$output)
 
 # ----------------------------------------------------------------------------
 
+#' Binomial Confidence Interval Using Schilling-Doi Method
+#'
+#' @description
+#' Compute a confidence interval for the probability of success using the
+#' Schilling-Doi LCO (Likelihood-based Coverage Optimization) method.
+#'
+#' @param x Number of successes (computed from y if y is provided)
+#' @param nn Sample size (computed from y if y is provided)
+#' @param y Vector of 1s and 0s (optional)
+#' @param n Deprecated parameter (use nn instead)
+#' @param alpha Significance level (default 0.05)
+#'
+#' @details
+#' Implements the method from Schilling and Doi (2014) which optimizes
+#' coverage probability. This method provides excellent coverage properties
+#' while maintaining reasonable interval widths.
+#'
+#' @return
+#' List with components:
+#' \itemize{
+#'   \item phat: Estimated proportion (x/n)
+#'   \item ci: Confidence interval as c(lower, upper)
+#'   \item n: Sample size
+#' }
+#'
+#' @seealso \code{\link{binomci}}, \code{\link{binomCP}}
+#'
+#' @references
+#' Schilling, M., and Doi, J. (2014). A coverage probability approach to finding
+#' an optimal binomial confidence procedure. The American Statistician, 68,
+#' 133-145.
+#'
+#' @keywords binomial htest
+#' @export
 binomLCO<-function (x = sum(y), nn = length(y), y = NULL, n = NA, alpha = 0.05){
 #
 # Compute a confidence interval for the probability of success using the method in
@@ -3262,6 +4765,48 @@ ci=cis[x+1,2:3]
 list(phat=x/nn,ci=ci,n=nn)
 }
 
+#' Pairwise Comparisons for Multiple Binomial Groups
+#'
+#' @description
+#' Perform all pairwise comparisons among J independent binomial groups.
+#' Provides confidence intervals and p-values with multiplicity adjustment.
+#'
+#' @param r Vector containing number of successes for each group (if x not provided)
+#' @param n Vector of sample sizes for each group (if x not provided)
+#' @param x List, matrix, or data frame containing 1s and 0s for each of the J
+#'   groups. If matrix/data frame, columns correspond to groups. If specified,
+#'   r and n are computed from x
+#' @param method Character string specifying comparison method: 'KMS'
+#'   (Kulinskaya et al., default), 'SK' (Storer-Kim), or 'ZHZ' (Zou et al.)
+#' @param alpha Significance level (default 0.05)
+#'
+#' @details
+#' Performs all J(J-1)/2 pairwise comparisons using the specified method.
+#' P-values are adjusted for multiple comparisons using the Hochberg method.
+#'
+#' Three methods are available:
+#' \itemize{
+#'   \item KMS: Kulinskaya et al. method (generally recommended)
+#'   \item SK: Storer-Kim method
+#'   \item ZHZ: Zou, Hao, and Zhang method
+#' }
+#'
+#' @return
+#' Matrix with one row per comparison containing:
+#' \itemize{
+#'   \item Group indices
+#'   \item Sample sizes
+#'   \item Estimated proportions
+#'   \item Difference in proportions
+#'   \item Confidence interval
+#'   \item P-value
+#'   \item Hochberg-adjusted p-value
+#' }
+#'
+#' @seealso \code{\link{binom2g}}, \code{\link{bi2KMSv2}}
+#'
+#' @keywords binomial htest
+#' @export
 binpair<-function(r=NULL,n=NULL,x=NULL,method='KMS',alpha=.05){
 #
 #  Do all pairwise comparisons among J independent groups
@@ -3329,6 +4874,54 @@ output
 
 # ----------------------------------------------------------------------------
 
+#' 3D Running Interval Smoother with Bootstrap
+#'
+#' @description
+#' Compute a 3D running interval smoother with bootstrap aggregating (bagging).
+#' Uses bootstrap resampling to create a more stable smooth surface estimate
+#' for multivariate predictors.
+#'
+#' @param x An n by p matrix of predictors (p > 1 for 3D plotting)
+#' @param y Vector of response values
+#' @param fr Span parameter controlling amount of smoothing (default: 1)
+#' @param est Measure of location to use for smoothing (default: tmean)
+#' @param theta Azimuthal viewing angle for 3D plot (default: 50)
+#' @param phi Colatitude viewing angle for 3D plot (default: 25)
+#' @param nmin Minimum number of points needed to estimate y|x (default: 0)
+#' @param pyhat Logical: if TRUE, return predicted values; if FALSE, return "Done" (default: FALSE)
+#' @param eout Logical: remove outliers based on (x,y) jointly (default: FALSE)
+#' @param outfun Outlier detection function (default: out)
+#' @param plotit Logical: create 3D plot (default: TRUE)
+#' @param xout Logical: remove outliers based on x values (default: FALSE)
+#' @param nboot Number of bootstrap samples (default: 40)
+#' @param SEED Logical: set random seed for reproducibility (default: TRUE)
+#' @param STAND Logical: standardize data for outlier detection (default: TRUE)
+#' @param expand Relative length of z-axis in plot (default: 0.5)
+#' @param scale Logical: scale the plot (default: FALSE)
+#' @param xlab Label for x-axis (default: "X")
+#' @param ylab Label for y-axis (default: "Y")
+#' @param zlab Label for z-axis (default: "")
+#' @param ticktype Type of tick marks for 3D plot (default: "simple")
+#' @param ... Additional arguments passed to est function
+#'
+#' @details
+#' This function implements a 3D running interval smoother with bootstrap
+#' aggregating to reduce variance. For each point, the function:
+#' 1. Draws nboot bootstrap samples from the data
+#' 2. Computes a running interval smooth for each bootstrap sample
+#' 3. Averages the bootstrap smooths to get final estimates
+#'
+#' When plotting with p=2 predictors, creates a perspective plot of the
+#' smoothed surface. Missing values are automatically removed.
+#'
+#' @return
+#' A list with component:
+#' \item{output}{"Done" if pyhat=FALSE, or vector of predicted values if pyhat=TRUE}
+#'
+#' @seealso \code{\link{rung3hat}}, \code{\link{runmbo}}, \code{\link{runm3d}}
+#'
+#' @keywords nonparametric smooth bootstrap
+#' @export
 run3bo<-function(x,y,fr=1,est=tmean,theta = 50, phi = 25,nmin=0,
 pyhat=FALSE,eout=FALSE,outfun=out,plotit=TRUE,xout=FALSE,nboot=40,SEED=TRUE,STAND=TRUE,
 expand=.5,scale=FALSE,xlab="X",ylab="Y",zlab="",ticktype="simple",...){
@@ -3398,7 +4991,33 @@ if(pyhat)last<-rmd
 list(output=last)
 }
 
-
+#' 3D Running Interval Smoother Prediction
+#'
+#' @description
+#' Compute predicted y values for specified points using a 3D running
+#' interval method with trimmed means. Simpler version without plotting.
+#'
+#' @param x An n by p matrix of predictors
+#' @param y Vector of response values
+#' @param pts An m by p matrix of points at which to predict y
+#' @param fr Span parameter controlling amount of smoothing (default: 0.8)
+#' @param tr Trimming proportion (default: 0.2)
+#'
+#' @details
+#' For each row in pts, finds the nearest neighbors in x based on robust
+#' Mahalanobis distance (using MVE covariance), then computes the trimmed
+#' mean of corresponding y values. The random seed is set to 12 for
+#' reproducibility of the MVE calculation.
+#'
+#' @return
+#' A list with components:
+#' \item{rmd}{Vector of predicted values, one for each row of pts}
+#' \item{nval}{Vector of sample sizes used for each prediction}
+#'
+#' @seealso \code{\link{run3bo}}, \code{\link{rung3hat}}, \code{\link{runm3d}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 run3hat<-function(x,y,pts,fr=.8,tr=.2){
 #
 # Compute y hat for each row of data in the matrix pts
@@ -3431,6 +5050,38 @@ list(rmd=rmd,nval=nval)
 
 # ----------------------------------------------------------------------------
 
+#' Running Interval Confidence Intervals for Binomial Probability
+#'
+#' @description
+#' Compute confidence intervals for the probability of success at specified
+#' points using a running interval smoother approach for binary outcome data.
+#'
+#' @param x Matrix or vector of predictor values
+#' @param y Binary response variable (0/1)
+#' @param pts Matrix or vector of points at which to estimate probability (default: x)
+#' @param fr Span parameter controlling neighborhood size (default: 1.2)
+#' @param xout Logical: remove outliers in x before analysis (default: FALSE)
+#' @param outfun Outlier detection function (default: outpro)
+#'
+#' @details
+#' For each point in pts, finds the nearest neighbors in x (using robust
+#' Mahalanobis distance for multivariate x), then computes a confidence
+#' interval for the binomial probability based on the y values of those
+#' neighbors. Only points with at least 6 neighbors are included in output.
+#'
+#' Confidence intervals are computed using the Agresti-Coull method via
+#' binom.conf().
+#'
+#' @return
+#' A list with components:
+#' \item{points}{Matrix of unique points in pts where CIs were computed}
+#' \item{output}{Matrix with columns: n (sample size), pts.no (point number),
+#'   Est (estimated probability), ci.low (lower CI), ci.upper (upper CI)}
+#'
+#' @seealso \code{\link{binom.conf}}, \code{\link{runhat}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 runbin.CI<-function(x,y,pts=NULL,fr=1.2,xout=FALSE,outfun=outpro){
 #
 # Based on running interval smoother, for each point in pts, compute a confidence
@@ -3544,6 +5195,34 @@ list(A.explanatory.effect.size=aes,B.explanatory.effect.size=bes)
 
 
 
+#' Running Smoother for Discrete Predictors
+#'
+#' @description
+#' Compute a smooth where the predictor x is discrete with a relatively
+#' small number of unique values. Estimates location for each unique x value.
+#'
+#' @param x Discrete predictor variable
+#' @param y Response variable
+#' @param est Measure of location (default: onestep)
+#' @param plotit Logical: create plot (default: TRUE)
+#' @param pyhat Logical: if TRUE, return predicted values; if FALSE, return "Done" (default: FALSE)
+#' @param ... Additional arguments passed to est function
+#'
+#' @details
+#' For each unique value of x, computes the specified measure of location
+#' for the corresponding y values. Creates a plot with the original data
+#' points and a line connecting the smoothed estimates.
+#'
+#' This is appropriate when x has only a small number of distinct values
+#' (e.g., categorical or grouped data), as opposed to continuous predictors.
+#'
+#' @return
+#' "Done" if pyhat=FALSE, or vector of fitted values (one per unique x value) if pyhat=TRUE
+#'
+#' @seealso \code{\link{rungen}}, \code{\link{runmean}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 rundis<-function(x,y,est=onestep,plotit=TRUE,pyhat=FALSE,...){
 #
 # Do a smooth where x is discrete with a
@@ -3562,6 +5241,54 @@ if(pyhat)output<-yhat
 output
 }
 
+#' General 3D Running Interval Smoother
+#'
+#' @description
+#' Compute a 3D running interval smoother using any specified measure of
+#' location. Can optionally create a perspective plot of the smoothed surface.
+#'
+#' @param x An n by p matrix of predictors
+#' @param y Vector of response values
+#' @param est Measure of location (default: onestep)
+#' @param fr Span parameter controlling amount of smoothing (default: 1)
+#' @param plotit Logical: create 3D perspective plot (default: TRUE)
+#' @param theta Azimuthal viewing angle for plot (default: 50)
+#' @param phi Colatitude viewing angle for plot (default: 25)
+#' @param pyhat Logical: if TRUE, return predicted values (default: FALSE)
+#' @param LP Logical: apply lowess post-smoothing (default: FALSE)
+#' @param expand Relative length of z-axis in plot (default: 0.5)
+#' @param scale Logical: scale the plot (default: FALSE)
+#' @param zscale Logical: standardize all variables to median 0, MAD 1 (default: TRUE)
+#' @param nmin Minimum neighbors needed for estimation (default: 0)
+#' @param xout Logical: remove x outliers (default: FALSE)
+#' @param eout Logical: remove (x,y) outliers (default: FALSE)
+#' @param outfun Outlier detection function (default: out)
+#' @param SEED Logical: set random seed for MVE (default: TRUE)
+#' @param STAND Logical: standardize for outlier detection (default: TRUE)
+#' @param xlab Label for x-axis (default: "X")
+#' @param ylab Label for y-axis (default: "Y")
+#' @param zlab Label for z-axis (default: "")
+#' @param pr Logical: print advisory messages (default: TRUE)
+#' @param duplicate How to handle duplicate x values for interp() (default: "error")
+#' @param ticktype Type of tick marks for plot (default: "simple")
+#' @param ... Additional arguments passed to est function
+#'
+#' @details
+#' Computes a running interval smooth where for each point, the function
+#' finds nearest neighbors based on robust Mahalanobis distance (using MVE),
+#' then applies the specified measure of location to the corresponding y values.
+#'
+#' When plotit=TRUE and p=2, creates a perspective plot. If LP=TRUE, applies
+#' additional lowess smoothing to the fitted surface. Missing values are
+#' automatically removed.
+#'
+#' @return
+#' "Done" if pyhat=FALSE, or vector of predicted values if pyhat=TRUE
+#'
+#' @seealso \code{\link{runm3d}}, \code{\link{run3bo}}, \code{\link{rungen}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 rung3d<-function(x,y,est=onestep,fr=1,plotit=TRUE,theta=50,phi=25,pyhat=FALSE,LP=FALSE,
 expand=.5,scale=FALSE,zscale=TRUE,
 nmin=0,xout=FALSE,eout=FALSE,outfun=out,SEED=TRUE,STAND=TRUE,
@@ -3635,6 +5362,47 @@ if(!pyhat)last <- "Done"
         last
 }
 
+#' 3D Running Smoother with Automatic Span Selection
+#'
+#' @description
+#' Compute a 3D running interval smoother with automatic selection of the
+#' smoothing span via leave-three-out cross-validation, minimizing the
+#' percentage bend scale of residuals.
+#'
+#' @param x An n by p matrix of predictors
+#' @param y Vector of response values
+#' @param est Measure of location (default: onestep)
+#' @param regfun Regression function for comparison (default: tsreg)
+#' @param beta Bending constant for pbvar (default: 0.2)
+#' @param plotit Logical: create plot (default: FALSE)
+#' @param nmin Minimum neighbors for estimation (default: 0)
+#' @param fr Span values to try (default: NA, uses automatic grid search)
+#' @param ... Additional arguments passed to est function
+#'
+#' @details
+#' Similar to runm3d but automatically determines the optimal span (fr) by
+#' minimizing the percentage bend variance of residuals using leave-three-out
+#' cross-validation. If fr is not specified:
+#' - First tries fr = 0.7, 0.75, 0.8, ..., 1.2
+#' - If minimum occurs at 0.7, also tries fr = 0.2, 0.25, ..., 0.7
+#'
+#' The function also computes an explanatory measure gamma.L comparing
+#' the smoother to a simple regression fit via regfun.
+#'
+#' @return
+#' A list with components:
+#' \item{gamma.L}{Explanatory measure comparing smoother to regression}
+#' \item{pbcorsq}{Squared percentage bend correlation for regression}
+#' \item{etasq}{Squared percentage bend correlation for smoother}
+#' \item{fr}{Selected span value}
+#' \item{rmd}{Fitted values from smoother}
+#' \item{yused}{Y values used (after removing NAs)}
+#' \item{varval}{Percentage bend variances for all spans tried}
+#'
+#' @seealso \code{\link{runm3d}}, \code{\link{rung3d}}, \code{\link{pbcor}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 rung3dlchk<-function(x,y,est=onestep,regfun=tsreg,beta=.2,plotit=FALSE,nmin=0,
 fr=NA,...){
 #
@@ -3717,6 +5485,37 @@ list(gamma.L=temp,pbcorsq=pbc,etasq=etasq,fr=fr,rmd=rmd,yused=xm,varval=chkcor)
 
 # ----------------------------------------------------------------------------
 
+#' General 3D Running Interval Smoother Prediction
+#'
+#' @description
+#' Compute predicted y values for specified points using a 3D running
+#' interval method with any specified measure of location.
+#'
+#' @param x An n by p matrix of predictors
+#' @param y Vector of response values
+#' @param est Measure of location (default: tmean)
+#' @param pts An m by p matrix of points at which to predict y
+#' @param fr Span parameter controlling smoothing (default: 1)
+#' @param DET Logical: use DETMCD for robust covariance (default: TRUE); if FALSE, uses MVE
+#' @param ... Additional arguments passed to est function
+#'
+#' @details
+#' For each row in pts, finds nearest neighbors in x based on robust
+#' Mahalanobis distance (using DETMCD by default, or MVE if DET=FALSE),
+#' then applies the specified measure of location to corresponding y values.
+#'
+#' More flexible than run3hat as it allows any measure of location (not just
+#' trimmed mean) and choice of robust covariance estimator.
+#'
+#' @return
+#' A list with components:
+#' \item{rmd}{Vector of predicted values, one for each row of pts}
+#' \item{nval}{Vector of sample sizes used for each prediction}
+#'
+#' @seealso \code{\link{run3hat}}, \code{\link{rung3d}}, \code{\link{runYhat}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 rung3hat<-function(x,y,est=tmean,pts,fr=1,DET=TRUE,...){
 #
 # Compute y hat for each row of data in the matrix pts
@@ -3789,6 +5588,34 @@ coef<-nelderv2(X,np,FN=lta.sub,START=START,h=h)
 
 # ----------------------------------------------------------------------------
 
+#' Critical P-Value for 3D Running Interval CI
+#'
+#' @description
+#' Compute the critical p-value for multiple testing adjustment in
+#' rung3hatCI via simulation under the null hypothesis.
+#'
+#' @param x An n by p matrix of predictors
+#' @param pts Matrix of points at which CIs will be computed (default: x)
+#' @param alpha Nominal alpha level (default: 0.05)
+#' @param iter Number of simulation iterations (default: 1000)
+#' @param tr Trimming proportion (default: 0.2)
+#' @param fr Span parameter (default: 1)
+#' @param nmin Minimum sample size for CI computation (default: 12)
+#' @param ... Additional arguments
+#'
+#' @details
+#' Simulates data under the null hypothesis (Y ~ N(0,1) independent of X)
+#' and computes the distribution of minimum p-values across all points in pts.
+#' Returns the alpha quantile of this distribution, which can be used as
+#' an adjusted critical value for multiple comparisons.
+#'
+#' @return
+#' Critical p-value (alpha quantile of minimum p-value distribution)
+#'
+#' @seealso \code{\link{rung3hatCI}}
+#'
+#' @keywords nonparametric smooth htest
+#' @export
 rung3hat.pcrit<-function(x,pts=x,alpha=.05,iter=1000,tr=.2,fr=1,nmin=12,...){
 #
 #  Compute critical p-value for rung3hatCI.
@@ -3808,6 +5635,24 @@ pc
 }
 
 
+#' Helper Function for rung3hat.pcrit
+#'
+#' @description
+#' Internal helper function that computes p-values for trimmed mean tests
+#' at each point. Used by rung3hat.pcrit for simulation.
+#'
+#' @param x Matrix of predictors
+#' @param y Response variable
+#' @param pts Points at which to compute p-values
+#' @param m Robust covariance matrix for distance calculation
+#' @param tr Trimming proportion (default: 0.2)
+#' @param fr Span parameter
+#' @param nmin Minimum sample size
+#'
+#' @return Vector of p-values from trimmed mean tests
+#'
+#' @keywords internal
+#' @export
 rung3hat.sub<-function(x,y,pts,m,tr=.2,fr,nmin){
 pv=NA
 for(i in 1:nrow(pts)){
@@ -3826,6 +5671,46 @@ pv
 
 # ----------------------------------------------------------------------------
 
+#' 3D Running Interval Smoother with Confidence Intervals
+#'
+#' @description
+#' Compute confidence intervals for the trimmed mean of Y given X at specified
+#' points using a 3D running interval smoother. Optionally adjusts for multiple
+#' comparisons.
+#'
+#' @param x An n by p matrix of predictors
+#' @param y Vector of response values
+#' @param pts Matrix of points at which to compute CIs (default: x)
+#' @param tr Trimming proportion (default: 0.2)
+#' @param alpha Significance level (default: 0.05)
+#' @param fr Span parameter controlling smoothing (default: 1)
+#' @param nmin Minimum neighbors needed for CI (default: 12)
+#' @param ADJ Logical: adjust alpha for multiple comparisons (default: FALSE)
+#' @param iter Number of iterations for adjusted alpha (default: 1000)
+#' @param ... Additional arguments
+#'
+#' @details
+#' For each point in pts, finds nearest neighbors based on robust Mahalanobis
+#' distance (MVE), then computes a confidence interval for the trimmed mean
+#' of the corresponding y values.
+#'
+#' If ADJ=TRUE, computes an adjusted critical p-value via simulation to control
+#' the familywise error rate across all points. Random seed is set to 12 for
+#' reproducibility, then restored.
+#'
+#' Only points with at least nmin neighbors are included in the output.
+#'
+#' @return
+#' A list with components:
+#' \item{pts.used}{Matrix of points where CIs were computed}
+#' \item{output}{Matrix with columns: n (sample size), Est. (estimate),
+#'   ci.low (lower CI), ci.up (upper CI)}
+#' \item{alpha.used}{Actual alpha level used (adjusted if ADJ=TRUE)}
+#'
+#' @seealso \code{\link{rung3hat.pcrit}}, \code{\link{rung3hat}}, \code{\link{trimci}}
+#'
+#' @keywords nonparametric smooth htest
+#' @export
 rung3hatCI<-function(x,y,pts=x,tr=.2,alpha=.05,fr=1,nmin=12,ADJ=FALSE,iter=1000,...){
 #
 # Compute y hat for each row of data in the matrix pts
@@ -3876,6 +5761,45 @@ list(pts.used=x.used,output=output,alpha.used=alpha)
 
 # ----------------------------------------------------------------------------
 
+#' General Running Interval Smoother
+#'
+#' @description
+#' Compute a running interval smoother using any specified measure of location
+#' or scale. By default uses an M-estimator (onestep) with optional lowess
+#' post-smoothing.
+#'
+#' @param x Predictor variable
+#' @param y Response variable
+#' @param est Measure of location or scale (default: onestep)
+#' @param fr Span parameter controlling smoothing (default: 1)
+#' @param plotit Logical: create plot (default: TRUE)
+#' @param scat Logical: show scatter plot of data points (default: TRUE)
+#' @param pyhat Logical: if TRUE, return predicted values (default: FALSE)
+#' @param eout Logical: remove (x,y) outliers (default: FALSE)
+#' @param xout Logical: remove x outliers (default: FALSE)
+#' @param xlab Label for x-axis (default: "x")
+#' @param ylab Label for y-axis (default: "y")
+#' @param outfun Outlier detection function (default: out)
+#' @param LP Logical: apply lowess post-smoothing (default: TRUE)
+#' @param pch Plotting character for data points (default: '.')
+#' @param ... Additional arguments passed to est function
+#'
+#' @details
+#' For each x value, finds nearest neighbors and applies the specified measure
+#' of location/scale. If LP=TRUE, further smooths the result using lowess (lplot).
+#'
+#' The function sorts x values for plotting but can handle unsorted input.
+#' Missing values are automatically removed. Cannot have both eout=TRUE and
+#' xout=TRUE simultaneously.
+#'
+#' @return
+#' A list with component:
+#' \item{output}{"Done" if pyhat=FALSE, or vector of fitted values if pyhat=TRUE}
+#'
+#' @seealso \code{\link{runmean}}, \code{\link{runhat}}, \code{\link{lplot}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 rungen<-function(x,y,est=onestep,fr=1,plotit=TRUE,scat=TRUE,pyhat=FALSE,
 eout=FALSE,xout=FALSE,xlab="x",ylab="y",outfun=out,LP=TRUE,pch='.',...){
 #
@@ -3938,6 +5862,31 @@ list(output=output)
 
 # ----------------------------------------------------------------------------
 
+#' Running Interval Smoother Preserving Original Order
+#'
+#' @description
+#' Compute a running interval smoother but return predicted values in the
+#' original order of x (not sorted). Wrapper for rungen that preserves input order.
+#'
+#' @param x Predictor variable
+#' @param y Response variable
+#' @param est Measure of location (default: onestep)
+#' @param fr Span parameter controlling smoothing (default: 1)
+#' @param LP Logical: apply lowess post-smoothing (default: TRUE)
+#' @param ... Additional arguments passed to rungen
+#'
+#' @details
+#' Calls rungen to compute the smooth, then reorders the predicted values
+#' to match the original order of x. Useful when you need predictions aligned
+#' with the original data order rather than sorted by x values.
+#'
+#' @return
+#' Vector of fitted values in the original order of x
+#'
+#' @seealso \code{\link{rungen}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 rungenv2<-function(x, y, est = onestep, fr = 1, LP = TRUE, ...){
 #
 # Return x and predicted y values not sorted in ascending order,
@@ -3957,6 +5906,35 @@ res[order(xord)]
 
 # ----------------------------------------------------------------------------
 
+#' Running Interval Smoother Prediction
+#'
+#' @description
+#' Compute predicted values using a running interval smoother with any
+#' specified measure of location or scale. By default uses 20% trimmed mean.
+#'
+#' @param x Predictor variable
+#' @param y Response variable
+#' @param pts Points at which to estimate y (default: x)
+#' @param est Measure of location or scale (default: tmean)
+#' @param fr Span parameter controlling smoothing (default: 1)
+#' @param nmin Minimum neighbors needed for estimation (default: 1)
+#' @param ... Additional arguments passed to est function
+#'
+#' @details
+#' For each value in pts, finds the nearest neighbors in x (based on the
+#' span fr), then applies the specified measure of location/scale to the
+#' corresponding y values. Only computes an estimate if at least nmin
+#' neighbors are found; otherwise returns NA.
+#'
+#' This is the workhorse prediction function used by many other smoothers.
+#'
+#' @return
+#' Vector of predicted values, one for each value in pts
+#'
+#' @seealso \code{\link{rungen}}, \code{\link{runmean}}, \code{\link{runYhat}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 runhat<-function(x,y,pts=x,est=tmean,fr=1,nmin=1,...){
 #
 # running  interval smoother that can  be used  with any measure
@@ -3981,6 +5959,53 @@ rmd
 
 # ----------------------------------------------------------------------------
 
+#' 3D Running Interval Smoother with Trimmed Means
+#'
+#' @description
+#' Compute a 3D running interval smoother using trimmed means. Can create
+#' perspective plots of the smoothed surface.
+#'
+#' @param x An n by p matrix of predictors
+#' @param y Vector of response values
+#' @param theta Azimuthal viewing angle for plot (default: 50)
+#' @param phi Colatitude viewing angle for plot (default: 25)
+#' @param fr Span parameter controlling smoothing (default: 0.8)
+#' @param tr Trimming proportion (default: 0.2)
+#' @param plotit Logical: create 3D perspective plot (default: TRUE)
+#' @param pyhat Logical: if TRUE, return predicted values (default: FALSE)
+#' @param nmin Minimum neighbors for estimation (default: 0)
+#' @param expand Relative length of z-axis in plot (default: 0.5)
+#' @param scale Logical: scale the plot (default: FALSE)
+#' @param zscale Logical: standardize variables to median 0, MAD 1 (default: FALSE)
+#' @param xout Logical: remove x outliers (default: FALSE)
+#' @param outfun Outlier detection function (default: out)
+#' @param eout Logical: remove (x,y) outliers (default: FALSE)
+#' @param xlab Label for x-axis (default: "X")
+#' @param ylab Label for y-axis (default: "Y")
+#' @param zlab Label for z-axis (default: "")
+#' @param pr Logical: print advisory messages about scale parameter (default: TRUE)
+#' @param SEED Logical: set random seed for MVE (default: TRUE)
+#' @param ticktype Type of tick marks for plot (default: "simple")
+#'
+#' @details
+#' Computes a 3D running interval smooth using trimmed means. For each point,
+#' finds nearest neighbors based on robust Mahalanobis distance (MVE), then
+#' computes the trimmed mean of corresponding y values.
+#'
+#' When plotit=TRUE and p=2, creates a perspective plot. The function prints
+#' advisory messages about the scale parameter: scale=FALSE is typically best
+#' for independent predictors, scale=TRUE for dependent predictors.
+#'
+#' Missing values are automatically removed. Cannot have both eout=TRUE and
+#' xout=TRUE simultaneously.
+#'
+#' @return
+#' "Done" if pyhat=FALSE, or vector of predicted values if pyhat=TRUE
+#'
+#' @seealso \code{\link{rung3d}}, \code{\link{run3bo}}, \code{\link{run3hat}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 runm3d<-function(x,y,theta=50,phi=25,fr=.8,tr=.2,plotit=TRUE,pyhat=FALSE,nmin=0,
 expand=.5,scale=FALSE,zscale=FALSE,xout=FALSE,outfun=out,eout=FALSE,xlab="X",ylab="Y",zlab="",
 pr=TRUE,SEED=TRUE,ticktype="simple"){
@@ -4056,6 +6081,49 @@ if(pyhat)last<-rmd
 last
 }
 
+#' Running Interval Smoother with Bootstrap Aggregating (Bagging)
+#'
+#' @description
+#' Compute a running interval smoother with bootstrap aggregating (bagging)
+#' to reduce variance and create more stable estimates.
+#'
+#' @param x Predictor variable
+#' @param y Response variable
+#' @param fr Span parameter controlling smoothing (default: 1)
+#' @param est Measure of location (default: tmean)
+#' @param xlab Label for x-axis (default: "X")
+#' @param ylab Label for y-axis (default: "Y")
+#' @param pts Points at which to estimate y (default: x)
+#' @param RNA Logical: remove NAs when averaging bootstrap estimates (default: FALSE)
+#' @param atr Trimming proportion when averaging bootstrap values (default: 0)
+#' @param pch Plotting character for data points (default: '*')
+#' @param pyhat Logical: if TRUE, return predicted values (default: FALSE)
+#' @param eout Logical: remove (x,y) outliers (default: FALSE)
+#' @param outfun Outlier detection function (default: out)
+#' @param plotit Logical: create plot (default: TRUE)
+#' @param xout Logical: remove x outliers (default: FALSE)
+#' @param scat Logical: show scatter plot of data points (default: TRUE)
+#' @param nboot Number of bootstrap samples (default: 40)
+#' @param SEED Logical: set random seed (default: TRUE)
+#' @param ... Additional arguments passed to est function
+#'
+#' @details
+#' Implements bootstrap aggregating (bagging) for running interval smoothers:
+#' 1. Draws nboot bootstrap samples from the data
+#' 2. Computes a running interval smooth for each bootstrap sample
+#' 3. Averages the bootstrap smooths (with optional trimming via atr)
+#'
+#' This approach reduces variance compared to a single smooth. Only works
+#' with single predictor (not multivariate). Missing values are automatically
+#' removed. Cannot have both eout=TRUE and xout=TRUE simultaneously.
+#'
+#' @return
+#' "Done" if pyhat=FALSE, or vector of fitted values if pyhat=TRUE
+#'
+#' @seealso \code{\link{runhat}}, \code{\link{run3bo}}, \code{\link{rungen}}
+#'
+#' @keywords nonparametric smooth bootstrap
+#' @export
 runmbo<-function(x,y,fr=1,est=tmean,xlab="X",ylab="Y",pts=x,RNA=FALSE,atr=0,pch='*',
 pyhat=FALSE,eout=FALSE,outfun=out,plotit=TRUE,xout=FALSE,scat=TRUE,nboot=40,SEED=TRUE,...){
 #
@@ -4128,6 +6196,38 @@ output
 
 # ----------------------------------------------------------------------------
 
+#' Running Interval Smoother with Trimmed Means
+#'
+#' @description
+#' Compute a running interval smoother using trimmed means. Simple function
+#' for basic smoothing with optional plotting.
+#'
+#' @param x Predictor variable
+#' @param y Response variable
+#' @param fr Span parameter controlling smoothing (default: 1)
+#' @param tr Trimming proportion (default: 0.2)
+#' @param pyhat Logical: if TRUE, return predicted values (default: FALSE)
+#' @param eout Logical: remove (x,y) outliers (default: FALSE)
+#' @param outfun Outlier detection function (default: out)
+#' @param plotit Logical: create plot (default: TRUE)
+#' @param xout Logical: remove x outliers (default: FALSE)
+#' @param xlab Label for x-axis (default: "x")
+#' @param ylab Label for y-axis (default: "y")
+#'
+#' @details
+#' For each x value, finds nearest neighbors and computes the trimmed mean
+#' of corresponding y values. Creates a scatter plot with smoothed line overlay.
+#'
+#' Missing values are automatically removed. If both eout=TRUE and xout=TRUE
+#' are specified, xout is set to FALSE.
+#'
+#' @return
+#' NULL if pyhat=FALSE and plotit=TRUE, or vector of fitted values if pyhat=TRUE
+#'
+#' @seealso \code{\link{rungen}}, \code{\link{runhat}}, \code{\link{runm3d}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 runmean<-function(x,y,fr=1,tr=.2,pyhat=FALSE,eout=FALSE,outfun=out,plotit=TRUE,xout=FALSE,
 xlab="x",ylab="y"){
 #
@@ -4173,6 +6273,44 @@ lines(sx[tempx], sysm[tempx])
 
 # ----------------------------------------------------------------------------
 
+#' Running Interval Smoother for Multiple Quantiles
+#'
+#' @description
+#' Create a plot with running interval smoothers for multiple specified
+#' quantiles. Can use either Harrell-Davis or standard quantile estimator.
+#'
+#' @param x Predictor variable
+#' @param y Response variable
+#' @param HD Logical: use Harrell-Davis quantile estimator (default: FALSE)
+#' @param qval Vector of quantiles to estimate (default: c(0.2, 0.5, 0.8))
+#' @param xlab Label for x-axis (default: "X")
+#' @param ylab Label for y-axis (default: "Y")
+#' @param fr Span parameter controlling smoothing (default: 1)
+#' @param sm Logical: use bootstrap smoothing (bagging) (default: FALSE)
+#' @param nboot Number of bootstrap samples if sm=TRUE (default: 40)
+#' @param SEED Logical: set random seed (default: TRUE)
+#' @param eout Logical: remove (x,y) outliers (default: FALSE)
+#' @param xout Logical: remove x outliers (default: FALSE)
+#' @param ... Additional arguments passed to smoother
+#'
+#' @details
+#' Creates a single plot with multiple smoothed quantile curves. For each
+#' quantile in qval, computes a running interval smoother using either:
+#' - Standard quantile estimator (qest) if HD=FALSE
+#' - Harrell-Davis estimator (hd) if HD=TRUE
+#'
+#' If sm=TRUE, uses bootstrap bagging (runmbo) for more stable estimates.
+#' Otherwise uses basic running smoother (rungen).
+#'
+#' Missing values are automatically removed.
+#'
+#' @return
+#' NULL (function creates plot as side effect)
+#'
+#' @seealso \code{\link{rungen}}, \code{\link{runmbo}}, \code{\link{hd}}, \code{\link{qest}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 runmq<-function(x,y,HD=FALSE,qval=c(.2,.5,.8),xlab="X",ylab="Y",fr=1,
 sm=FALSE,nboot=40,SEED=TRUE,eout=FALSE,xout=FALSE,...){
 #
@@ -4221,6 +6359,55 @@ lines(sx1,sysm1)
 
 # ----------------------------------------------------------------------------
 
+#' 3D Running Smoother Using Projection Distances
+#'
+#' @description
+#' Compute a 3D running interval smoother where distances from a point are
+#' determined using a projection method rather than Mahalanobis distance.
+#'
+#' @param x An n by p matrix of predictors
+#' @param y Vector of response values
+#' @param pts Matrix of points at which to predict (default: x)
+#' @param est Measure of location (default: tmean)
+#' @param fr Span parameter controlling smoothing (default: 0.8)
+#' @param plotit Logical: create 3D perspective plot (default: TRUE)
+#' @param pyhat Logical: if TRUE, return predicted values (default: FALSE)
+#' @param nmin Minimum neighbors for estimation (default: 0)
+#' @param scale Logical: scale the plot (default: TRUE)
+#' @param expand Relative length of z-axis in plot (default: 0.5)
+#' @param xout Logical: remove x outliers (default: FALSE)
+#' @param outfun Outlier detection function (default: out)
+#' @param pr Logical: print advisory message about scale (default: TRUE)
+#' @param xlab Label for x-axis (default: "X1")
+#' @param ylab Label for y-axis (default: "X2")
+#' @param zlab Label for z-axis (default: "")
+#' @param LP Logical: apply lowess post-smoothing (default: TRUE)
+#' @param theta Azimuthal viewing angle (default: 50)
+#' @param phi Colatitude viewing angle (default: 25)
+#' @param duplicate How to handle duplicates for interp() (default: "error")
+#' @param MC Logical: use parallel computation in pdclose (default: FALSE)
+#' @param ticktype Type of tick marks (default: "simple")
+#' @param ... Additional arguments passed to est function
+#'
+#' @details
+#' Similar to runm3d but uses projection-based distances (via pdclose) instead
+#' of Mahalanobis distances to determine nearest neighbors. This can be more
+#' robust in some settings.
+#'
+#' For each point in pts, finds neighbors using projection distances, then
+#' applies the specified measure of location. If LP=TRUE, applies additional
+#' lowess smoothing to the surface.
+#'
+#' When plotit=TRUE and p=2, creates a perspective plot. Missing values are
+#' automatically removed.
+#'
+#' @return
+#' "Done" if pyhat=FALSE, or vector of predicted values if pyhat=TRUE
+#'
+#' @seealso \code{\link{pdclose}}, \code{\link{runm3d}}, \code{\link{rung3d}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 runpd<-function(x,y,pts=x,est=tmean,fr=.8,plotit=TRUE,pyhat=FALSE,nmin=0,scale=TRUE,
 expand=.5,xout=FALSE,outfun=out,pr=TRUE,xlab="X1",ylab="X2",zlab="",LP=TRUE,
 theta=50,phi=25,duplicate="error",MC=FALSE,ticktype="simple",...){
@@ -4289,6 +6476,39 @@ if(!pyhat)last <- "Done"
         last
 }
 
+#' Standard Errors for Running Interval Smoother
+#'
+#' @description
+#' Estimate standard errors for predicted values from a running interval
+#' smoother based on trimmed means.
+#'
+#' @param x Predictor variable
+#' @param y Response variable
+#' @param fr Span parameter controlling smoothing (default: 1)
+#' @param tr Trimming proportion (default: 0.2)
+#' @param pts Points at which to estimate SE (default: x)
+#' @param RNA Logical: remove NAs (default: FALSE, not used)
+#' @param outfun Outlier detection function (default: out)
+#' @param xout Logical: remove x outliers (default: FALSE)
+#' @param SEED Logical: set random seed (default: TRUE)
+#'
+#' @details
+#' For each point in pts, finds the nearest neighbors and computes the
+#' standard error of the trimmed mean using trimse(). Also returns the
+#' degrees of freedom for each estimate.
+#'
+#' Only works with single predictor (not multivariate). Missing values are
+#' automatically removed.
+#'
+#' @return
+#' A list with components:
+#' \item{se}{Vector of standard errors}
+#' \item{df}{Vector of degrees of freedom}
+#'
+#' @seealso \code{\link{trimse}}, \code{\link{runhat}}, \code{\link{runmean}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 runse<-function(x,y,fr=1,tr=.2,pts=x,RNA=FALSE,outfun=out,xout=FALSE,SEED=TRUE){
 #
 # Estimate SE of Yhat when using a running interval smooth
@@ -4331,6 +6551,38 @@ WSE[i]=0
 list(se=WSE,df=df)
 }
 
+#' Running Interval Smoother Comparing Two Groups
+#'
+#' @description
+#' Create running interval smoothers for two groups defined by a splitting
+#' variable. Plots both smooths on the same graph for comparison.
+#'
+#' @param x1 Predictor variable for both groups
+#' @param y1 Response variable for both groups
+#' @param x2 Grouping variable used to split data
+#' @param val Split point for x2 (default: median(x2))
+#' @param est Measure of location (default: tmean)
+#' @param sm Logical: use bootstrap smoothing (default: FALSE)
+#' @param fr Span parameter controlling smoothing (default: 0.8)
+#' @param xlab Label for x-axis (default: "X")
+#' @param ylab Label for y-axis (default: "Y")
+#' @param ... Additional arguments passed to plotting function
+#'
+#' @details
+#' Splits the data into two groups based on whether x2 < val, then creates
+#' a running interval smooth of x1 vs y1 for each group. Both smooths are
+#' plotted on the same graph for comparison.
+#'
+#' If sm=TRUE, uses runmean2g with smoothing. Otherwise uses basic comparison.
+#' Missing values are automatically removed.
+#'
+#' @return
+#' NULL (function creates plot as side effect)
+#'
+#' @seealso \code{\link{runmean2g}}, \code{\link{rungen}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 runsm2g<-function(x1,y1,x2,val=median(x2),est=tmean,sm=FALSE,fr=.8,xlab="X",
 ylab="Y",...){
 #
@@ -4365,6 +6617,43 @@ ylab=ylab,...)
 
 # ----------------------------------------------------------------------------
 
+#' General Running Interval Smoother Prediction
+#'
+#' @description
+#' Fit a running interval smoother and estimate the typical value of Y
+#' at specified covariate values. Handles both univariate and multivariate
+#' predictors automatically.
+#'
+#' @param x Vector or matrix of predictors
+#' @param y Vector of response values
+#' @param pts Points at which to predict y (default: NULL, uses all x values)
+#' @param est Measure of location (default: tmean)
+#' @param fr Span parameter controlling smoothing (default: 1)
+#' @param nmin Minimum neighbors for estimation (default: 1)
+#' @param xout Logical: remove x outliers (default: FALSE)
+#' @param outfun Outlier detection function (default: outpro)
+#' @param XY.used Logical: if TRUE, return data used (default: FALSE)
+#' @param ... Additional arguments passed to est function
+#'
+#' @details
+#' A general wrapper function that automatically chooses the appropriate
+#' smoother based on the dimensionality of x:
+#' - If x is univariate, uses runhat()
+#' - If x is multivariate, uses rung3hat()
+#'
+#' If pts=NULL, predictions are made at all x values (after removing missing
+#' values). Missing values are automatically removed from the data.
+#'
+#' @return
+#' A list with components:
+#' \item{vals}{Vector of predicted values}
+#' \item{nvals}{Vector of sample sizes used for each prediction}
+#' \item{XY}{Matrix of x and y values used (only if XY.used=TRUE)}
+#'
+#' @seealso \code{\link{runhat}}, \code{\link{rung3hat}}, \code{\link{rungen}}
+#'
+#' @keywords nonparametric smooth
+#' @export
 runYhat<-function(x,y,pts=NULL,est=tmean,fr=1,nmin=1,xout=FALSE,outfun=outpro,XY.used=FALSE,...){
 #
 # Fit a running interval smoother using the data in x and y
@@ -4407,29 +6696,63 @@ list(Y.hat=vals,nvals=nvals,xy.used=XY,pts.used=pts)
 
 rplot.pred=runYhat
 
+#' Sign Test for Paired Data
+#'
+#' Performs a sign test for two dependent groups with confidence interval for
+#' the probability that x < y.
+#'
+#' @param x Numeric vector of first group data, or a matrix/data frame with two columns,
+#'   or a list with two components when `y = NULL`.
+#' @param y Numeric vector of second group data. If `NULL`, `x` should be a matrix
+#'   or list with two columns/components (default: `NULL`).
+#' @param dif Numeric vector of pre-computed difference scores. If specified, tests
+#'   whether P(dif < 0) = 0.5 (default: `NULL`).
+#' @inheritParams common-params
+#' @param method Character string specifying the confidence interval method:
+#'   \itemize{
+#'     \item `"AC"`: Agresti-Coull method (default)
+#'     \item `"P"`: Pratt's method
+#'     \item `"CP"`: Clopper-Pearson method
+#'     \item `"KMS"`: Kulinskaya et al. (2008, p. 140)
+#'     \item `"WIL"`: Wilson's method
+#'     \item `"SD"`: Schilling-Doi method (returns CI but no p-value)
+#'   }
+#' @param AUTO Logical. If `TRUE` and n < 35, uses Schilling-Doi method
+#'   automatically (default: `TRUE`).
+#' @param PVSD Logical. If `TRUE`, uses Schilling-Doi method for p-value computation
+#'   (default: `FALSE`).
+#'
+#' @return A list with components:
+#'   \item{Prob_x_less_than_y}{Estimated probability that x < y}
+#'   \item{ci}{Confidence interval for the probability}
+#'   \item{n}{Original sample size}
+#'   \item{N}{Number of paired observations that are not equal to one another}
+#'   \item{p.value}{P-value for testing if probability equals 0.5}
+#'
+#' @details
+#' The sign test is a non-parametric test for paired data that only uses the
+#' direction (sign) of differences, ignoring their magnitude. Zero differences
+#' are excluded from the analysis.
+#'
+#' The function tests the null hypothesis that P(x < y) = 0.5 against a
+#' two-sided alternative. Multiple confidence interval methods are available,
+#' with automatic selection based on sample size when `AUTO = TRUE`.
+#'
+#' @export
+#' @examples
+#' # Paired data comparison
+#' x <- c(10, 12, 15, 18, 20, 22, 25, 28)
+#' y <- c(12, 14, 16, 20, 22, 24, 27, 30)
+#' signt(x, y)
+#'
+#' # Data in matrix format
+#' dat <- cbind(x, y)
+#' signt(dat)
+#'
+#' # Pre-computed differences
+#' diff <- x - y
+#' signt(dif = diff)
 signt<-function(x,y=NULL,dif=NULL,alpha=.05,method='AC',AUTO=TRUE,PVSD=FALSE){
-#
-#  Do a sign test on data in x and y
-#  If y=NA, assume x is a matrix with
-#  two columns or has list mode.
-#
-#  Returns n, the original sample size
-#  N, number of paired observations that are not equal to one another.
-#  phat, an estimate of p, the probability that x<y.
-#  ci, a confidence interval for p
-#
-# Methods:
-# AC: Agresti--Coull
-# P: Pratt's method
-# CP: Clopper--Pearson
-# KMS:  Kulinskaya et al. 2008, p. 140
-#  WIL: Wilson's method
-#  SD: Schilling-Doi method is used, which returns a confidence
-#           interval but no p-value.
-#
-#    AUTO=TRUE means that SD is used if n<35
-#
-#  dif: if data are stored in dif, the function tests P(dif<0)=.5
 #
 if(is.null(dif)){
 if(is.null(y[1])){
@@ -4458,10 +6781,42 @@ list(Prob_x_less_than_y=temp$p.hat,ci=temp$ci,n=n,N=length(flag),p.value=temp$p.
 
 # ----------------------------------------------------------------------------
 
+#' Sign Test with P-value (Deprecated)
+#'
+#' Performs a sign test for two dependent groups, returning primarily a p-value.
+#' This function is largely superseded by \code{\link{signt}}, which now returns
+#' p-values as well as confidence intervals.
+#'
+#' @param x Numeric vector of first group data.
+#' @param y Numeric vector of second group data.
+#' @param nullval Null hypothesis value for the probability that x < y
+#'   (default: 0.5).
+#' @inheritParams common-params
+#' @param AC Logical. If `TRUE`, uses Agresti-Coull method (default: `FALSE`).
+#'   This parameter is deprecated; use the `method` parameter in \code{\link{signt}}
+#'   instead.
+#'
+#' @return A list with components:
+#'   \item{output}{Full output from \code{\link{signt}}}
+#'   \item{p.value}{P-value for testing if probability equals `nullval`}
+#'
+#' @details
+#' This function computes a p-value for the sign test by inverting confidence
+#' intervals using a search algorithm. It repeatedly calls \code{\link{signt}}
+#' with different alpha levels to find the smallest alpha where the confidence
+#' interval excludes `nullval`.
+#'
+#' The function is deprecated because \code{\link{signt}} now returns p-values
+#' directly, making this wrapper function unnecessary.
+#'
+#' @seealso \code{\link{signt}} for the main sign test function
+#'
+#' @export
+#' @examples
+#' x <- c(10, 12, 15, 18, 20, 22, 25, 28)
+#' y <- c(12, 14, 16, 20, 22, 24, 27, 30)
+#' signtpv(x, y)
 signtpv<-function(x,y,nullval=.5,alpha=.05,AC=FALSE){
-#
-#  Sign test for two dependent groups.
-# Same as the R function signt, only a p-value is returned.
 #
 ci<-signt(x,y,alpha=alpha,method='AC')
 alph<-c(1:99)/100
@@ -4495,7 +6850,7 @@ list(output=ci,p.value=p.value)
 
 # ============================================================================
 
-# Selection (6 functions)
+# Selection (7 functions)
 
 # ============================================================================
 
@@ -4506,17 +6861,58 @@ list(output=ci,p.value=p.value)
 
 # ----------------------------------------------------------------------------
 
+#' Select Data by Group from Matrix
+#'
+#' Groups data stored in a matrix or data frame by one grouping variable and
+#' returns the selected columns in list format.
+#'
+#' @param m A matrix or data frame containing the data with group identifiers
+#'   and data columns.
+#' @param grpc Integer specifying the column index containing group identification
+#'   numbers. Must have length 1.
+#' @param coln Integer vector specifying which column(s) of data to extract.
+#'   Can specify multiple columns.
+#'
+#' @return A list with components:
+#'   \item{x}{List containing the grouped data. If `coln` has k columns and there
+#'     are J groups, the list has length J*k, organized with all columns for
+#'     group 1, then all columns for group 2, etc.}
+#'   \item{grpn}{Vector of unique group identifiers (sorted)}
+#'
+#' @details
+#' This is a utility function for reorganizing data from wide format (matrix/data
+#' frame) to list format required by many WRS analysis functions.
+#'
+#' The function extracts data from specified columns (`coln`) and groups them
+#' according to the group identifier in column `grpc`. The output list is
+#' organized so that all requested columns for each group are consecutive.
+#'
+#' For more complex grouping scenarios:
+#' \itemize{
+#'   \item Use \code{\link{selby2}} for 2-4 grouping factors
+#'   \item Use \code{\link{selbybw}} for between-within designs
+#'   \item Use \code{\link{selbybbw}} for between-between-within designs
+#' }
+#'
+#' @seealso \code{\link{selby2}}, \code{\link{selbybw}}, \code{\link{selbybbw}}
+#'
+#' @export
+#' @examples
+#' # Create sample data: 3 groups, 2 data columns
+#' dat <- data.frame(
+#'   group = rep(1:3, each = 5),
+#'   score1 = rnorm(15),
+#'   score2 = rnorm(15)
+#' )
+#'
+#' # Extract score1 grouped by group
+#' result1 <- selby(dat, grpc = 1, coln = 2)
+#' length(result1$x)  # 3 groups
+#'
+#' # Extract both scores grouped by group
+#' result2 <- selby(dat, grpc = 1, coln = c(2, 3))
+#' length(result2$x)  # 6 (3 groups × 2 columns)
 selby<-function(m,grpc,coln){
-#
-#
-#  A commmon situation is to have data stored in an n by p matrix where
-#  one or more of the columns are  group identification numbers.
-#  This function groups  all values in column coln according to the
-#  group numbers in column grpc and stores the  results in list mode.
-#
-#  More than one column of data can sorted
-#
-# grpc indicates the column of the matrix containing group id number
 #
 if(is.null(dim(m)))stop("Data must be stored in a matrix or data frame")
 if(is.na(grpc[1]))stop("The argument grpc is not specified")
@@ -4535,10 +6931,65 @@ list(x=x,grpn=grpn)
 }
 
 
+#' Select Data by Multiple Grouping Factors
+#'
+#' Groups data by 2-4 grouping factors and returns the selected column in
+#' list format, creating all combinations of the grouping factors.
+#'
+#' @param m A matrix or data frame containing the data with group identifiers
+#'   and data columns.
+#' @param grpc Integer vector of length 2-4 specifying the column indices
+#'   containing group identification numbers for each factor.
+#' @param coln Integer specifying which column of data to extract. Unlike
+#'   \code{\link{selby}}, this must be a single column (default: `NA`, must
+#'   be specified).
+#'
+#' @return A list with components:
+#'   \item{x}{List containing the grouped data. Length equals the product of
+#'     the number of levels in each grouping factor (J × K for 2 factors,
+#'     J × K × L for 3 factors, etc.)}
+#'   \item{grpn}{Matrix where each row contains the group identifiers for one
+#'     combination of factor levels. Number of columns equals `length(grpc)`.}
+#'
+#' @details
+#' This function extends \code{\link{selby}} to handle multiple grouping factors
+#' (2-4 factors). It creates all combinations of the grouping factors and extracts
+#' data for each combination.
+#'
+#' The function handles:
+#' \itemize{
+#'   \item 2 grouping factors: Creates J × K groups
+#'   \item 3 grouping factors: Creates J × K × L groups
+#'   \item 4 grouping factors: Creates J × K × L × M groups
+#' }
+#'
+#' Only combinations that exist in the data are included in the output. Empty
+#' combinations are skipped.
+#'
+#' For simpler designs, see:
+#' \itemize{
+#'   \item \code{\link{selby}}: Single grouping factor
+#'   \item \code{\link{selbybw}}: Between-within designs
+#'   \item \code{\link{selbybbw}}: Between-between-within designs
+#' }
+#'
+#' @seealso \code{\link{selby}}, \code{\link{selbybw}}, \code{\link{selbybbw}}
+#'
+#' @export
+#' @examples
+#' # Create sample data with 2 factors
+#' dat <- expand.grid(
+#'   factor1 = 1:2,
+#'   factor2 = 1:3,
+#'   rep = 1:5
+#' )
+#' dat$score <- rnorm(nrow(dat))
+#'
+#' # Group by both factors (assuming columns 1, 2 are factors, column 4 is data)
+#' result <- selby2(dat, grpc = c(1, 2), coln = 4)
+#' length(result$x)  # 6 (2 × 3 combinations)
+#' result$grpn  # Shows which factor levels each list element represents
 selby2<-function(m,grpc,coln=NA){
-# Create categories according to the grpc[1] and grpc[2] columns
-# of the matrix m. The function puts the values in column coln into
-# a vector having list mode.
 #
 if(is.na(coln))stop("The argument coln is not specified")
 if(length(grpc)>4)stop("The argument grpc must have length less than or equal to 4")
@@ -4625,36 +7076,64 @@ list(x=x,grpn=grpn)
 
 # ----------------------------------------------------------------------------
 
+#' Select Data for Between-Between-Within Design
+#'
+#' Organizes data from a between-between-within (mixed) design into list format
+#' suitable for analysis with functions like \code{bbwtrim}.
+#'
+#' @param m A matrix or data frame containing the data. Two columns contain
+#'   between-subjects group identifiers, and other columns contain repeated
+#'   measures (within-subjects data).
+#' @param grpc Integer vector of length 2 specifying the column indices for
+#'   the two between-subjects factors.
+#' @param coln Integer vector specifying which columns contain the repeated
+#'   measures (within-subjects data). Must specify at least 2 columns.
+#' @param pr Logical. If `TRUE`, prints the levels for each between-subjects
+#'   factor (default: `TRUE`).
+#'
+#' @return A list of length J × K × L, where:
+#'   \itemize{
+#'     \item J = number of levels in first between-subjects factor
+#'     \item K = number of levels in second between-subjects factor
+#'     \item L = number of repeated measures (length of `coln`)
+#'   }
+#'   Each element contains data for one combination of between-subjects groups
+#'   and one time point.
+#'
+#' @details
+#' This function reorganizes data from a between-between-within (BBW) design
+#' into the list format required by many WRS analysis functions. In a BBW design:
+#' \itemize{
+#'   \item Two factors vary between subjects (each subject is in one cell of
+#'     the J × K factorial design)
+#'   \item One factor varies within subjects (each subject measured L times)
+#' }
+#'
+#' The output list is organized with all L time points for the first combination
+#' of between-subjects groups, then all L time points for the second combination,
+#' etc.
+#'
+#' Missing values are removed row-wise before grouping.
+#'
+#' @seealso \code{\link{selbybw}} for between-within designs,
+#'   \code{\link{selby2}} for general multi-factor grouping
+#'
+#' @export
+#' @examples
+#' # Create sample BBW data: 2×2 between, 3 time points
+#' dat <- expand.grid(
+#'   id = 1:5,
+#'   factorA = 1:2,
+#'   factorB = 1:2
+#' )
+#' dat$time1 <- rnorm(nrow(dat))
+#' dat$time2 <- rnorm(nrow(dat))
+#' dat$time3 <- rnorm(nrow(dat))
+#'
+#' # Organize for analysis (factors in cols 2-3, times in cols 4-6)
+#' result <- selbybbw(dat, grpc = c(2, 3), coln = c(4, 5, 6))
+#' length(result)  # 12 (2 × 2 × 3)
 selbybbw<-function(m,grpc,coln,pr=TRUE){
-#
-#  For a between by-between-by-within design,
-#  a commmon situation is to have data stored in an n by p matrix where
-#  two  column indicate a  group identification numbers (levels)
-#  for the between factors,
-#  and two or more other columns contain  the within group results.
-#
-#  This function is used by bbw2list to store the data in list mode so
-#  that the R function bbwtrim can  be use.
-#
-#  m is a matrix containing the data. One column contains group
-#  identification values
-#  and two or more other columns contain repeated measures.
-#
-#  This function groups  all values in the columns
-#  indicated by  coln according to the
-#  group numbers in column grpc and stores the  results in list mode.
-#
-#  So if grpc[1] has J values, grpc[2] has K values,
-#  and coln indicates L columns,
-#  this function returns the data stored in list mode have length JKL
-#
-#  Example:
-#  y<-selbybbw(blob,c(2,3),c(7,9,11))$x
-#  will look for group numbers in col 2 and  3 of the matrix blob,
-#   which indicate levels for the between factors,
-#  and it assumes that times 1, 2 and 3 are stored in col 7, 9, and 11.
-#
-#  Result:  the data will now be stored in y having list mode.
 #
 #if(!is.matrix(m))stop("Data must be stored in a matrix")
 if(is.na(grpc[1]))stop("The argument grpc is not specified")
@@ -4701,29 +7180,58 @@ x
 
 # ----------------------------------------------------------------------------
 
+#' Select Data for Between-Within Design
+#'
+#' Organizes data from a between-within (mixed) design into list format
+#' suitable for analysis with robust mixed ANOVA functions.
+#'
+#' @param m A matrix or data frame containing the data. One column contains
+#'   between-subjects group identifiers, and other columns contain repeated
+#'   measures (within-subjects data).
+#' @param grpc Integer specifying the column index for the between-subjects
+#'   factor. Must have length 1.
+#' @param coln Integer vector specifying which columns contain the repeated
+#'   measures (within-subjects data). Must specify at least 2 columns.
+#'
+#' @return A list with components:
+#'   \item{x}{List of length J × K, where J = number of groups and K = number
+#'     of repeated measures. Each element contains data for one combination
+#'     of group and time point.}
+#'   \item{grpn}{Vector of unique group identifiers (sorted)}
+#'
+#' @details
+#' This function reorganizes data from a between-within (BW) design into the
+#' list format required by many WRS mixed ANOVA functions. In a BW design:
+#' \itemize{
+#'   \item One factor varies between subjects (each subject is in one group)
+#'   \item One factor varies within subjects (each subject measured K times)
+#' }
+#'
+#' The output list is organized with all K time points for group 1, then all
+#' K time points for group 2, etc.
+#'
+#' Missing values are removed row-wise before grouping.
+#'
+#' @seealso \code{\link{selbybbw}} for between-between-within designs,
+#'   \code{\link{selby}} for single-factor grouping
+#'
+#' @export
+#' @examples
+#' # Create sample BW data: 3 groups, 4 time points
+#' dat <- expand.grid(
+#'   id = 1:10,
+#'   group = 1:3
+#' )
+#' dat$time1 <- rnorm(nrow(dat))
+#' dat$time2 <- rnorm(nrow(dat))
+#' dat$time3 <- rnorm(nrow(dat))
+#' dat$time4 <- rnorm(nrow(dat))
+#'
+#' # Organize for analysis (group in col 2, times in cols 3-6)
+#' result <- selbybw(dat, grpc = 2, coln = c(3, 4, 5, 6))
+#' length(result$x)  # 12 (3 groups × 4 times)
+#' result$grpn  # Group identifiers
 selbybw<-function(m,grpc,coln){
-#
-#  For a between by within design,
-#  a commmon situation is to have data stored in an n by p matrix where
-#  a column is a  group identification number
-#  and the remaining columns are the within group results.
-#
-#  m is a matrix containing the data. One column contains group
-#  identification values
-#  and two or more other columns contain repeated measures.
-#
-#  This function groups  all values in the columns
-#  indicated by  coln according to the
-#  group numbers in column grpc and stores the  results in list mode.
-#
-#  So if grpc has J values, and coln indicates K columns,
-#  this function returns the data stored in list mode have length JK
-#
-#  Example: y<-selbybw(blob,3,c(4,6,7))$x
-#  will look for group numbers in col 3 of the matrix blob,
-#  and it assumes within
-#  group data are stored in col 4, 6 and 7.
-#  Result:  the data will now be stored in y having list mode
 #
 
 #if(!is.matrix(m))stop("Data must be stored in a matrix")
@@ -4757,6 +7265,35 @@ list(x=x,grpn=grpn)
 
 # ----------------------------------------------------------------------------
 
+#' Compare Group with Smallest Variance to All Others (Internal Helper)
+#'
+#' Helper function for \code{\link{selvar.ind.MP}}. Identifies the group with
+#' smallest variance and compares it to all other groups using the
+#' \code{\link{varcom.IND.MP}} test.
+#'
+#' @param x A matrix, data frame, or list of numeric vectors, one for each group.
+#'
+#' @return A numeric vector of p-values from comparing the group with smallest
+#'   variance to each of the other groups (length = J - 1, where J is the number
+#'   of groups).
+#'
+#' @details
+#' This is an internal helper function used by \code{\link{selvar.ind.MP}} to
+#' compute raw p-values. It:
+#' \enumerate{
+#'   \item Computes variance for each group
+#'   \item Identifies the group with smallest variance
+#'   \item Compares that group to each other group using \code{\link{varcom.IND.MP}}
+#' }
+#'
+#' Users should typically use \code{\link{selvar.ind.MP}} instead, which provides
+#' adjusted p-values and proper decision rules.
+#'
+#' @seealso \code{\link{selvar.ind.MP}}, \code{\link{selvar.ind.crit}},
+#'   \code{\link{varcom.IND.MP}}
+#'
+#' @keywords internal
+#' @export
 selvar.ind.ex<-function(x){
 #
 pvec=NA
@@ -4774,9 +7311,46 @@ pvec[ic]=varcom.IND.MP(x[[R[1]]],x[[R[[j]]]],SEED=FALSE)$p.value
 pvec
 }
 
+#' Determine Null Distribution for Smallest Variance Selection
+#'
+#' Simulates the null distribution of p-values used by \code{\link{selvar.ind.MP}}
+#' for selecting the group with smallest variance. Can be pre-computed and reused
+#' for multiple analyses with the same design.
+#'
+#' @param J Integer. Number of groups.
+#' @param n Integer vector of sample sizes for each group (length J).
+#' @inheritParams common-params
+#' @param iter Integer. Number of Monte Carlo iterations for simulation
+#'   (default: 1000).
+#' @param ... Additional arguments (currently unused).
+#'
+#' @return A matrix with `iter` rows and J-1 columns, where each row contains
+#'   the p-values from one simulation under the null hypothesis (equal variances).
+#'
+#' @details
+#' This function generates the null distribution of p-values by simulating data
+#' from normal distributions with equal variances. For each iteration:
+#' \enumerate{
+#'   \item Generates J samples from standard normal distributions
+#'   \item Identifies the group with smallest variance
+#'   \item Compares it to all other groups using \code{\link{varcom.IND.MP}}
+#'   \item Records the J-1 p-values
+#' }
+#'
+#' The resulting null distribution can be saved and reused in future calls to
+#' \code{\link{selvar.ind.MP}} with the same sample sizes, avoiding redundant
+#' computation.
+#'
+#' @seealso \code{\link{selvar.ind.MP}}, \code{\link{selvar.ind.ex}}
+#'
+#' @export
+#' @examples
+#' # Pre-compute null distribution for 4 groups with n=20 each
+#' null_dist <- selvar.ind.crit(J = 4, n = rep(20, 4), iter = 500)
+#'
+#' # Use in subsequent analyses
+#' # result <- selvar.ind.MP(mydata, rem = null_dist)
 selvar.ind.crit<-function(J,n,alpha=.05,iter=1000,...){
-#
-#  Determine null distribution of  p-values for selvar.ind.MP
 #
 Jm1=J-1
 rem=matrix(NA,iter,Jm1)
@@ -4797,26 +7371,71 @@ rem
 
 # ----------------------------------------------------------------------------
 
+#' Select Group with Smallest Variance (Independent Groups)
+#'
+#' Identifies which of J independent groups has the smallest variance and
+#' determines whether this group is significantly smaller than the others,
+#' controlling for multiple comparisons.
+#'
+#' @param x A matrix, data frame, or list of numeric vectors, one for each group.
+#' @inheritParams common-params
+#' @param rem Pre-computed null distribution from \code{\link{selvar.ind.crit}}.
+#'   If `NULL`, computes it via simulation (default: `NULL`).
+#' @param iter Integer. Number of Monte Carlo iterations for computing null
+#'   distribution if `rem = NULL` (default: 2000).
+#' @param p.crit Deprecated. Critical p-value threshold (not used in current
+#'   implementation).
+#' @inheritParams common-params
+#'
+#' @return An S4 object of class 'SSV' with slots:
+#'   \item{Group.with.smallest.estimate}{Index of the group with smallest variance}
+#'   \item{Less.than}{Character string indicating the decision:
+#'     \itemize{
+#'       \item `"No Decision"`: Cannot determine if smallest variance is significantly smaller
+#'       \item `"Smaller.than.all"`: Smallest variance is significantly smaller than all others
+#'       \item Group indices: Smallest variance is significantly smaller than these specific groups
+#'     }}
+#'   \item{n}{Vector of sample sizes for each group}
+#'   \item{output}{Matrix with columns: `Smallest.Est` (smallest variance),
+#'     `Grp` (comparison group index), `Est` (comparison group variance),
+#'     `p.value` (raw p-value), `p.adj` (Hochberg-adjusted p-value)}
+#'
+#' @details
+#' This function addresses the problem of identifying the group with smallest
+#' variance while controlling for multiple comparisons. The procedure:
+#' \enumerate{
+#'   \item Identifies the group with smallest variance
+#'   \item Compares it to each other group using \code{\link{varcom.IND.MP}}
+#'   \item Adjusts p-values using Hochberg's method
+#'   \item Makes a decision based on which adjusted p-values are significant
+#' }
+#'
+#' P-values are calibrated against a null distribution (computed via simulation
+#' or provided in `rem`) to account for the selection process.
+#'
+#' Requires at least 3 groups. For pairwise variance comparison, use
+#' \code{\link{varcom.IND.MP}} directly.
+#'
+#' @references
+#' Wilcox, R.R. (2017). Introduction to Robust Estimation and Hypothesis Testing
+#' (4th ed.). Academic Press.
+#'
+#' @seealso \code{\link{selvar.ind.crit}} for pre-computing null distribution,
+#'   \code{\link{selvar.ind.ex}} for internal helper,
+#'   \code{\link{varcom.IND.MP}} for pairwise variance comparison
+#'
+#' @export
+#' @examples
+#' # Compare variances across 4 groups
+#' set.seed(123)
+#' x1 <- rnorm(20, sd = 1)
+#' x2 <- rnorm(20, sd = 2)
+#' x3 <- rnorm(20, sd = 1.5)
+#' x4 <- rnorm(20, sd = 1.8)
+#' result <- selvar.ind.MP(list(x1, x2, x3, x4), iter = 500)
+#' result@Group.with.smallest.estimate
+#' result@Less.than
 selvar.ind.MP<-function(x,alpha=.05, rem=NULL,iter=2000,p.crit=NULL,SEED=TRUE){
-#
-# For J independent groups,
-#  identify the group with smallest variance
-#  Make a decision if every  p.value<=p.crit
-#
-#  x is a matrix or data frame  or can have list mode.
-#
-#  rem:  The distribution of the null p-value under normality.
-#  If not specified, the funcion computes it using a simulation with iter replications.
-#  Or, one could compute it  with the R function selva.ind.crit, store the
-#  results in some R variable, say Z, then use rem=Z in future applications
-#  that have the same sample sizes
-#
-#
-#
-#  Returns:
-#   Best='No Decision' if not significant
-#   Best= the group with largest measure if a decision can be made.
-#
 #
 if(is.matrix(x) || is.data.frame(x))x=listm(x)
 x=elimna(x)
@@ -4851,6 +7470,68 @@ put=new('SSV',Group.with.smallest.estimate=R[[1]],Less.than=Best,n=n,output=outp
 put
 }
 
+#' Two-Way ANOVA: Compare Global KMS Effect Sizes Between Levels
+#'
+#' @description
+#' Compares global Kolmogorov-Smirnov (KMS) effect size measures across pairs
+#' of levels in a two-way independent groups ANOVA design. Tests whether effect
+#' sizes differ significantly between factor levels.
+#'
+#' @param J Integer. Number of levels for Factor A.
+#' @param K Integer. Number of levels for Factor B.
+#' @param x Data in one of two formats:
+#'   \itemize{
+#'     \item Matrix/data frame: J×K design with each cell containing observations
+#'     \item List: Length J×K with each element containing a group's data
+#'   }
+#' @param tr Numeric. Trimming proportion for robust estimation (default: 0.2).
+#' @param alpha Numeric. Significance level for confidence intervals (default: 0.05).
+#' @param iter Integer. Number of iterations for null distribution (default: 5000).
+#' @param nulldist Optional pre-computed null distribution matrix. If NULL, will be computed.
+#' @param SEED Logical. If TRUE, sets random seed to 2 for reproducibility (default: TRUE).
+#' @param FAC.B Logical. If FALSE (default), compares Factor A levels; if TRUE, compares Factor B levels.
+#' @param ... Additional arguments passed to \code{\link{KS.ANOVA.ES}}.
+#'
+#' @details
+#' This function performs pairwise comparisons of global KMS effect sizes:
+#' \enumerate{
+#'   \item For each pair of Factor A levels (rows), computes global KMS effect size
+#'   \item Tests if effect sizes differ significantly using bootstrap-based null distribution
+#'   \item Returns differences, p-values, and confidence intervals for all pairs
+#' }
+#'
+#' The global KMS effect size is computed using \code{\link{KS.ANOVA.ES}}, which
+#' measures heterogeneity using the Kolmogorov-Smirnov statistic. Setting
+#' \code{FAC.B=TRUE} transposes the design to compare Factor B levels instead.
+#'
+#' Null distribution is generated from g-and-h distributions (g=0.75) to provide
+#' robust critical values under non-normality.
+#'
+#' @return
+#' Matrix with one row per pair comparison, containing:
+#' \describe{
+#'   \item{A.Level/B.Level}{First factor level in comparison}
+#'   \item{A.Level/B.Level}{Second factor level in comparison}
+#'   \item{B.Est.1/A.Est.1}{Global KMS effect size for first level}
+#'   \item{B.Est.2/A.Est.2}{Global KMS effect size for second level}
+#'   \item{Dif}{Difference in effect sizes (Est.1 - Est.2)}
+#'   \item{p-value}{Two-sided p-value for difference}
+#'   \item{ci.low}{Lower bound of (1-alpha) confidence interval}
+#'   \item{ci.up}{Upper bound of (1-alpha) confidence interval}
+#' }
+#'
+#' @seealso \code{\link{ANOG2KMS.ND}} for computing null distribution,
+#'   \code{\link{AN2GLOB.KMS}} for analyzing both factors,
+#'   \code{\link{KS.ANOVA.ES}} for KMS effect size computation
+#'
+#' @export
+#' @examples
+#' # 3x2 two-way design
+#' set.seed(123)
+#' x <- list()
+#' for(i in 1:6) x[[i]] <- rnorm(20)
+#' result <- ANOG2KMS(J = 3, K = 2, x = x, iter = 1000)
+#' result
 ANOG2KMS<-function(J,K,x,tr=.2,alpha=.05,iter=5000,nulldist=NULL,SEED=TRUE,FAC.B=FALSE,...){
 #
 #  Two-way ANOVA independent groups.
@@ -4937,6 +7618,47 @@ A
 
 # ----------------------------------------------------------------------------
 
+#' Compute Null Distribution for ANOG2KMS
+#'
+#' @description
+#' Generates the null distribution for two-way ANOVA comparisons of global KMS
+#' effect sizes. Used to calibrate p-values in \code{\link{ANOG2KMS}}.
+#'
+#' @param J Integer. Number of levels for Factor A.
+#' @param K Integer. Number of levels for Factor B.
+#' @param n Vector or matrix of sample sizes for each cell in the J×K design.
+#' @param tr Numeric. Trimming proportion for robust estimation (default: 0.2).
+#' @param iter Integer. Number of Monte Carlo iterations (default: 5000).
+#' @param SEED Logical. If TRUE, sets random seed to 2 for reproducibility (default: TRUE).
+#' @param FAC.B Logical. If FALSE (default), generates null for Factor A; if TRUE, for Factor B.
+#' @param ... Additional arguments passed to \code{\link{KS.ANOVA.ES}}.
+#'
+#' @details
+#' Generates null distribution under the assumption of no differences in KMS
+#' effect sizes across factor levels:
+#' \enumerate{
+#'   \item Simulates data from g-and-h distributions (g=0.75) with specified sample sizes
+#'   \item Computes pairwise differences in global KMS effect sizes
+#'   \item Repeats for \code{iter} iterations to build null distribution
+#' }
+#'
+#' This null distribution can be pre-computed and passed to \code{\link{ANOG2KMS}}
+#' via the \code{nulldist} parameter to avoid re-computing for multiple analyses
+#' with the same design.
+#'
+#' @return
+#' Matrix with \code{iter} rows and (J²-J)/2 or (K²-K)/2 columns, where each
+#' column contains the null distribution for one pairwise comparison.
+#'
+#' @seealso \code{\link{ANOG2KMS}} for using the null distribution,
+#'   \code{\link{KS.ANOVA.ES}} for KMS effect size computation
+#'
+#' @export
+#' @examples
+#' # Generate null distribution for 3x2 design with n=20 per cell
+#' n <- rep(20, 6)
+#' null_dist <- ANOG2KMS.ND(J = 3, K = 2, n = n, iter = 1000)
+#' dim(null_dist)  # 1000 rows, 3 columns (for 3 pairs)
 ANOG2KMS.ND<-function(J,K,n,tr=.2,iter=5000,SEED=TRUE,FAC.B=FALSE,...){
 #
 #  Two-way ANOVA independent groups.
@@ -4984,6 +7706,55 @@ V[,ic]=v
 V
 }
 
+#' Two-Way ANOVA: Compare Global KMS for Both Factors
+#'
+#' @description
+#' Wrapper function that compares global KMS effect sizes for both Factor A
+#' and Factor B in a two-way ANOVA design. Calls \code{\link{ANOG2KMS}} twice.
+#'
+#' @param J Integer. Number of levels for Factor A.
+#' @param K Integer. Number of levels for Factor B.
+#' @param x Data in one of two formats:
+#'   \itemize{
+#'     \item Matrix/data frame: J×K design with each cell containing observations
+#'     \item List: Length J×K with each element containing a group's data
+#'   }
+#' @param tr Numeric. Trimming proportion for robust estimation (default: 0.2).
+#' @param alpha Numeric. Significance level for confidence intervals (default: 0.05).
+#' @param iter Integer. Number of iterations for null distribution (default: 5000).
+#' @param SEED Logical. If TRUE, sets random seed to 2 for reproducibility (default: TRUE).
+#' @param ... Additional arguments passed to \code{\link{ANOG2KMS}}.
+#'
+#' @details
+#' Performs a complete two-way ANOVA analysis using global KMS effect sizes:
+#' \enumerate{
+#'   \item Calls \code{\link{ANOG2KMS}} with \code{FAC.B=FALSE} to compare Factor A levels
+#'   \item Calls \code{\link{ANOG2KMS}} with \code{FAC.B=TRUE} to compare Factor B levels
+#'   \item Returns both sets of comparisons in a list
+#' }
+#'
+#' This provides a comprehensive view of effect size differences across both
+#' factors in the design.
+#'
+#' @return
+#' List with two components:
+#' \describe{
+#'   \item{Factor.A}{Matrix of pairwise comparisons for Factor A (from \code{\link{ANOG2KMS}})}
+#'   \item{Factor.B}{Matrix of pairwise comparisons for Factor B (from \code{\link{ANOG2KMS}})}
+#' }
+#'
+#' @seealso \code{\link{ANOG2KMS}} for details on comparison output,
+#'   \code{\link{AOV2KMS}} for average KMS comparisons
+#'
+#' @export
+#' @examples
+#' # 3x2 two-way design
+#' set.seed(123)
+#' x <- list()
+#' for(i in 1:6) x[[i]] <- rnorm(20)
+#' result <- AN2GLOB.KMS(J = 3, K = 2, x = x, iter = 1000)
+#' result$Factor.A
+#' result$Factor.B
 AN2GLOB.KMS<-function(J,K,x,tr=.2,alpha=.05,iter=5000,SEED=TRUE,...){
 #
 #  Two-way ANOVA independent groups.
@@ -5005,6 +7776,55 @@ list(Factor.A=A,Factor.B=B)
 
 # ----------------------------------------------------------------------------
 
+#' Two-Way ANOVA: Compare Average KMS for Both Factors
+#'
+#' @description
+#' Wrapper function that compares average KMS effect sizes for both Factor A
+#' and Factor B in a two-way ANOVA design. Calls \code{\link{AOV2KMS.mcp}} twice.
+#'
+#' @param J Integer. Number of levels for Factor A.
+#' @param K Integer. Number of levels for Factor B.
+#' @param x Data in one of two formats:
+#'   \itemize{
+#'     \item Matrix/data frame: J×K design with each cell containing observations
+#'     \item List: Length J×K with each element containing a group's data
+#'   }
+#' @param tr Numeric. Trimming proportion for robust estimation (default: 0.2).
+#' @param alpha Numeric. Significance level for confidence intervals (default: 0.05).
+#' @param nboot Integer. Number of bootstrap samples (default: 500).
+#' @param SEED Logical. If TRUE, sets random seed to 2 for reproducibility (default: TRUE).
+#' @param ... Additional arguments passed to \code{\link{AOV2KMS.mcp}}.
+#'
+#' @details
+#' Performs a complete two-way ANOVA analysis using average KMS effect sizes:
+#' \enumerate{
+#'   \item Calls \code{\link{AOV2KMS.mcp}} with \code{FAC.B=FALSE} to compare Factor A levels
+#'   \item Calls \code{\link{AOV2KMS.mcp}} with \code{FAC.B=TRUE} to compare Factor B levels
+#'   \item Returns both sets of comparisons in a list
+#' }
+#'
+#' Unlike \code{\link{AN2GLOB.KMS}} which uses global KMS measures, this function
+#' uses average KMS measures across factor levels.
+#'
+#' @return
+#' List with two components:
+#' \describe{
+#'   \item{Factor.A}{Matrix of pairwise comparisons for Factor A (from \code{\link{AOV2KMS.mcp}})}
+#'   \item{Factor.B}{Matrix of pairwise comparisons for Factor B (from \code{\link{AOV2KMS.mcp}})}
+#' }
+#'
+#' @seealso \code{\link{AOV2KMS.mcp}} for details on comparison output,
+#'   \code{\link{AN2GLOB.KMS}} for global KMS comparisons
+#'
+#' @export
+#' @examples
+#' # 3x2 two-way design
+#' set.seed(123)
+#' x <- list()
+#' for(i in 1:6) x[[i]] <- rnorm(20)
+#' result <- AOV2KMS(J = 3, K = 2, x = x, nboot = 500)
+#' result$Factor.A
+#' result$Factor.B
 AOV2KMS<-function(J,K,x,tr=.2,alpha=.05,nboot=500,SEED=TRUE,...){
 #
 #  Two-way ANOVA independent groups.
@@ -5025,6 +7845,64 @@ list(Factor.A=A,Factor.B=B)
 
 # ----------------------------------------------------------------------------
 
+#' Two-Way ANOVA: Pairwise Comparisons of Average KMS Effect Sizes
+#'
+#' @description
+#' Compares average Kolmogorov-Smirnov (KMS) effect size measures across pairs
+#' of levels in a two-way independent groups ANOVA design using bootstrap methods.
+#'
+#' @param J Integer. Number of levels for Factor A.
+#' @param K Integer. Number of levels for Factor B.
+#' @param x Data in one of two formats:
+#'   \itemize{
+#'     \item Matrix/data frame: J×K design with each cell containing observations
+#'     \item List: Length J×K with each element containing a group's data
+#'   }
+#' @param tr Numeric. Trimming proportion for robust estimation (default: 0.2).
+#' @param alpha Numeric. Significance level for confidence intervals (default: 0.05).
+#' @param nboot Integer. Number of bootstrap samples (default: 500).
+#' @param SEED Logical. If TRUE, sets random seed to 2 for reproducibility (default: TRUE).
+#' @param FAC.B Logical. If FALSE (default), compares Factor A levels; if TRUE, compares Factor B levels.
+#' @param ... Additional arguments passed to \code{\link{KMSmcp.ci}}.
+#'
+#' @details
+#' This function performs pairwise comparisons of average KMS effect sizes:
+#' \enumerate{
+#'   \item For each level, computes KMS effect sizes using \code{\link{KMSmcp.ci}}
+#'   \item Averages these effect sizes across the other factor
+#'   \item Compares average effect sizes between pairs of levels via bootstrap
+#'   \item Returns differences, confidence intervals, and p-values
+#' }
+#'
+#' The bootstrap procedure resamples within each cell to assess variability of
+#' the average effect size differences. Unlike \code{\link{ANOG2KMS}} which uses
+#' global effect sizes, this uses averages of pairwise comparisons.
+#'
+#' @return
+#' Matrix with one row per pair comparison, containing:
+#' \describe{
+#'   \item{Level}{First factor level in comparison}
+#'   \item{Level}{Second factor level in comparison}
+#'   \item{Est. 1}{Average KMS effect size for first level}
+#'   \item{Est.2}{Average KMS effect size for second level}
+#'   \item{Dif}{Difference in averages (Est. 1 - Est.2)}
+#'   \item{ci.low}{Lower bound of bootstrap confidence interval}
+#'   \item{ci.up}{Upper bound of bootstrap confidence interval}
+#'   \item{p-value}{Two-sided bootstrap p-value}
+#' }
+#'
+#' @seealso \code{\link{AOV2KMS}} for wrapper analyzing both factors,
+#'   \code{\link{ANOG2KMS}} for global KMS comparisons,
+#'   \code{\link{KMSmcp.ci}} for KMS effect size computation
+#'
+#' @export
+#' @examples
+#' # 3x2 two-way design
+#' set.seed(123)
+#' x <- list()
+#' for(i in 1:6) x[[i]] <- rnorm(20)
+#' result <- AOV2KMS.mcp(J = 3, K = 2, x = x, nboot = 500)
+#' result
 AOV2KMS.mcp<-function(J,K,x,tr=.2,alpha=.05,nboot=500,SEED=TRUE,FAC.B=FALSE,...){
 #
 #  Two-way ANOVA independent groups.
@@ -5105,6 +7983,63 @@ A
 
 # ----------------------------------------------------------------------------
 
+#' One-Way Repeated Measures ANOVA: Global Location Test
+#'
+#' @description
+#' Tests the hypothesis of equal location measures for J dependent groups using
+#' a percentile bootstrap method with global estimators that account for the
+#' overall data structure when handling outliers.
+#'
+#' @param x Data in one of two formats:
+#'   \itemize{
+#'     \item List: Length J with each element containing observations from one condition
+#'     \item Matrix: n×J with rows representing subjects and columns representing conditions
+#'   }
+#' @param est Estimator function for location that returns a value in \code{$center}
+#'   (default: \code{spatcen} for spatial median). Use \code{dmean.cen} for
+#'   Donoho-Gasko trimmed mean.
+#' @param nboot Integer. Number of bootstrap samples (default: 599).
+#' @param alpha Numeric. Significance level (default: 0.05).
+#' @param SEED Logical. If TRUE, sets random seed to 2 for reproducibility (default: TRUE).
+#' @param MC Logical. If TRUE, uses parallel processing via \code{mclapply} (default: FALSE).
+#' @param ... Additional arguments passed to the estimator function.
+#'
+#' @details
+#' This function is similar to \code{\link{bd1way}} but designed for global estimators
+#' that consider the entire data structure when handling outliers:
+#' \enumerate{
+#'   \item Computes global location estimates for each group
+#'   \item Centers the data by subtracting group estimates
+#'   \item Bootstrap resamples subjects (rows) with replacement
+#'   \item Computes test statistic: (J-1) × variance of location estimates
+#'   \item Calibrates p-value against bootstrap distribution
+#' }
+#'
+#' The spatial median and Donoho-Gasko trimmed mean are multivariate estimators
+#' that account for the correlation structure across groups.
+#'
+#' **Note**: Case-wise deletion is used for missing values.
+#'
+#' @return
+#' List with components:
+#' \describe{
+#'   \item{test}{Test statistic value: (J-1) × variance of location estimates}
+#'   \item{estimates}{Vector of location estimates for each group}
+#'   \item{p.value}{Bootstrap p-value}
+#' }
+#'
+#' @seealso \code{\link{bd1way}} for standard dependent groups ANOVA,
+#'   \code{\link{bd1GLOB1}} for internal bootstrap helper,
+#'   \code{\link{spatcen}} for spatial median,
+#'   \code{\link{dmean.cen}} for Donoho-Gasko trimmed mean
+#'
+#' @export
+#' @examples
+#' # Create dependent groups data (4 conditions, 20 subjects)
+#' set.seed(123)
+#' x <- matrix(rnorm(80), ncol = 4)
+#' result <- bd1GLOB(x, nboot = 500)
+#' result$p.value
 bd1GLOB<-function(x,est=spatcen,nboot=599,alpha=.05,SEED=TRUE,MC=FALSE,...){
 #
 #   Test the hypothesis of equal measures of location for J
@@ -5161,6 +8096,34 @@ list(test=test,estimates=locval,p.value=pv)
 
 # ----------------------------------------------------------------------------
 
+#' Internal Helper for bd1GLOB Bootstrap
+#'
+#' @description
+#' Internal function that computes the test statistic for one bootstrap iteration
+#' in \code{\link{bd1GLOB}}. Not intended for direct user access.
+#'
+#' @param isub Integer vector of length n containing bootstrap sample indices
+#'   (sampled with replacement from 1:n).
+#' @param xcen Numeric matrix (n×J) containing centered data.
+#' @param est Estimator function for location that returns a value in \code{$center}.
+#' @param ... Additional arguments passed to the estimator function.
+#'
+#' @details
+#' This function:
+#' \enumerate{
+#'   \item Subsets centered data using bootstrap indices
+#'   \item Computes location estimates for each group
+#'   \item Returns test statistic: (J-1) × variance of estimates
+#' }
+#'
+#' Called internally by \code{\link{bd1GLOB}} for each bootstrap iteration.
+#'
+#' @return
+#' Numeric scalar: Bootstrap test statistic value.
+#'
+#' @seealso \code{\link{bd1GLOB}} for the main function
+#'
+#' @keywords internal
 bd1GLOB1<-function(isub,xcen,est,...){
 #
 #  Compute test statistic for bd1way
@@ -5187,6 +8150,60 @@ test.stat
 
 # ----------------------------------------------------------------------------
 
+#' Two Independent Binomials: KMS Confidence Interval
+#'
+#' @description
+#' Computes confidence interval for the difference in success probabilities
+#' between two independent binomial distributions using the Kulinskaya-Morgenthaler-Staudte
+#' (KMS) method.
+#'
+#' @param r1 Integer. Number of successes in group 1 (default: sum of non-NA values in \code{x}).
+#' @param n1 Integer. Sample size for group 1 (default: length of non-NA values in \code{x}).
+#' @param r2 Integer. Number of successes in group 2 (default: sum of non-NA values in \code{y}).
+#' @param n2 Integer. Sample size for group 2 (default: length of non-NA values in \code{y}).
+#' @param x Optional numeric vector for group 1 (binary: 0/1 values). If provided, \code{r1} and \code{n1} are computed from it.
+#' @param y Optional numeric vector for group 2 (binary: 0/1 values). If provided, \code{r2} and \code{n2} are computed from it.
+#' @param alpha Numeric. Significance level for confidence interval (default: 0.05).
+#'
+#' @details
+#' Implements the KMS method from Kulinskaya, Morgenthaler, and Staudte (2010)
+#' for constructing confidence intervals for the difference in binomial proportions
+#' (p1 - p2).
+#'
+#' The method uses a variance-stabilizing transformation based on the arcsine
+#' transformation and provides improved coverage properties compared to
+#' standard asymptotic methods, especially for small samples or extreme probabilities.
+#'
+#' **Note**: Function was updated 1/10/19; results may differ very slightly from
+#' the original version.
+#'
+#' @return
+#' List with components:
+#' \describe{
+#'   \item{ci}{Two-element vector: lower and upper bounds of (1-alpha) confidence interval for p1-p2}
+#'   \item{p1}{Observed proportion for group 1: r1/n1}
+#'   \item{p2}{Observed proportion for group 2: r2/n2}
+#' }
+#'
+#' @references
+#' Kulinskaya, E., Morgenthaler, S., & Staudte, R. G. (2010). Variance stabilizing
+#' the difference of two binomial proportions. The American Statistician, 64(4), 350-356.
+#'
+#' @seealso \code{\link{bi2KMSv2}} for version with p-value,
+#'   \code{\link{binom2g}} for alternative methods,
+#'   \code{\link{binpair}} for paired binomials
+#'
+#' @export
+#' @examples
+#' # Test difference in success rates
+#' result <- bi2KMS(r1 = 30, n1 = 100, r2 = 45, n2 = 100)
+#' result$ci
+#'
+#' # Using binary vectors
+#' x <- c(1, 1, 0, 1, 0, 1, 1, 0)
+#' y <- c(1, 0, 0, 1, 1, 1, 1, 1)
+#' result <- bi2KMS(x = x, y = y)
+#' result
 bi2KMS<-function(r1=sum(elimna(x)),n1=length(elimna(x)),r2=sum(elimna(y)),n2=length(elimna(y)),
 x=NULL,y=NULL,alpha=.05){
 #
@@ -5215,6 +8232,57 @@ ci[2]=what*sin(asin(val2)+se)/u-nuhat/u
 list(ci=ci,p1=r1/n1,p2=r2/n2)
 }
 
+#' Two Independent Binomials: KMS Test with P-Value
+#'
+#' @description
+#' Tests the hypothesis that two independent binomial distributions have equal
+#' success probabilities using the KMS method. Unlike \code{\link{bi2KMS}}, this
+#' version computes a p-value in addition to a confidence interval.
+#'
+#' @param r1 Integer. Number of successes in group 1 (default: sum of non-NA values in \code{x}).
+#' @param n1 Integer. Sample size for group 1 (default: length of non-NA values in \code{x}).
+#' @param r2 Integer. Number of successes in group 2 (default: sum of non-NA values in \code{y}).
+#' @param n2 Integer. Sample size for group 2 (default: length of non-NA values in \code{y}).
+#' @param x Optional numeric vector for group 1 (binary: 0/1 values). Defaults to NA.
+#' @param y Optional numeric vector for group 2 (binary: 0/1 values). Defaults to NA.
+#' @param nullval Numeric. Null hypothesis value for p1 - p2 (default: 0).
+#' @param alpha Numeric. Significance level for confidence interval (default: 0.05).
+#'
+#' @details
+#' Uses the Kulinskaya-Morgenthaler-Staudte (KMS) method to test H0: p1 - p2 = nullval.
+#'
+#' The p-value is computed by inverting the confidence interval procedure:
+#' \enumerate{
+#'   \item Searches for the smallest alpha level where the CI excludes the null value
+#'   \item First searches in 0.01 increments (0.01 to 0.99)
+#'   \item Refines to 0.001 increments if p-value ≤ 0.10
+#' }
+#'
+#' This provides an exact p-value based on the KMS confidence interval method.
+#'
+#' @return
+#' List with components:
+#' \describe{
+#'   \item{ci}{Two-element vector: lower and upper bounds of (1-alpha) confidence interval}
+#'   \item{p1}{Observed proportion for group 1: r1/n1}
+#'   \item{p2}{Observed proportion for group 2: r2/n2}
+#'   \item{est.dif}{Estimated difference: p1 - p2}
+#'   \item{p.value}{P-value for testing H0: p1 - p2 = nullval}
+#' }
+#'
+#' @references
+#' Kulinskaya, E., Morgenthaler, S., & Staudte, R. G. (2010). Variance stabilizing
+#' the difference of two binomial proportions. The American Statistician, 64(4), 350-356.
+#'
+#' @seealso \code{\link{bi2KMS}} for version without p-value,
+#'   \code{\link{binom2g}} for alternative methods
+#'
+#' @export
+#' @examples
+#' # Test H0: p1 = p2
+#' result <- bi2KMSv2(r1 = 30, n1 = 100, r2 = 45, n2 = 100)
+#' result$p.value
+#' result$ci
 bi2KMSv2<-function(r1=sum(elimna(x)),n1=length(elimna(x)),r2=sum(elimna(y)),n2=length(elimna(y)),
 x=NA,y=NA,nullval=0,alpha=.05){
 #
@@ -5249,6 +8317,56 @@ est=bi2KMS(r1=r1,n1=n1,r2=r2,n2=n2,x=x,y=y,alpha=alpha)
 list(ci=est$ci,p1=est$p1,p2=est$p2,est.dif=est$p1-est$p2,p.value=p.value)
 }
 
+#' Between-Within Design: Compare Global Projection Effect Sizes
+#'
+#' @description
+#' Compares global projection effect sizes between two independent groups in a
+#' 2×K between-within design. Tests whether projection-based effect sizes differ
+#' significantly between groups.
+#'
+#' @param M1 Numeric matrix for group 1 with K columns (repeated measures).
+#' @param M2 Numeric matrix for group 2 with K columns (repeated measures).
+#' @param tr Numeric. Trimming proportion for robust estimation (default: 0.2).
+#' @param alpha Numeric. Significance level (default: 0.05).
+#' @param nboot Integer. Number of bootstrap samples (default: 1000).
+#' @param MM Logical. If TRUE, uses marginal medians in projection; if FALSE, uses trimmed means (default: FALSE).
+#' @param SEED Logical. If TRUE, sets random seed to 2 for reproducibility (default: TRUE).
+#' @param ND Optional pre-computed null distribution. If NULL, will be computed via \code{\link{bwESP.GLOB.B.NULL}}.
+#'
+#' @details
+#' Compares projection-based effect sizes for dependent (repeated) measures across
+#' two independent groups:
+#' \enumerate{
+#'   \item For each group, computes projection effect size using \code{\link{rmESPRO.est}}
+#'   \item Effect size is based on standardized distance via projection onto the
+#'         line connecting the null vector to the vector of location estimates
+#'   \item Tests H0: Effect size for group 1 = Effect size for group 2
+#'   \item Calibrates p-value using null distribution (simulated or provided)
+#' }
+#'
+#' The projection method accounts for the correlation structure in repeated
+#' measures when computing effect sizes.
+#'
+#' @return
+#' List with components:
+#' \describe{
+#'   \item{pv}{P-value for test of equal projection effect sizes}
+#'   \item{E1}{Projection effect size for group 1}
+#'   \item{E2}{Projection effect size for group 2}
+#'   \item{DIF}{Difference in effect sizes: E1 - E2}
+#' }
+#'
+#' @seealso \code{\link{bwESP.GLOB.B.NULL}} for computing null distribution,
+#'   \code{\link{rmESPRO.est}} for projection effect size computation
+#'
+#' @export
+#' @examples
+#' # 2x3 between-within design
+#' set.seed(123)
+#' M1 <- matrix(rnorm(60), ncol = 3)
+#' M2 <- matrix(rnorm(60, mean = 0.5), ncol = 3)
+#' result <- bwESP.GLOB.B(M1, M2, nboot = 500)
+#' result$pv
 bwESP.GLOB.B<-function(M1,M2,tr=.2,alpha=.05,nboot=1000,MM=FALSE,SEED=TRUE,ND=NULL){
 #
 #  Between-by-within design.  A 2-by-K design here.
@@ -5303,6 +8421,46 @@ pv=2*min(pv,1-pv)
 list(n1=n1,n2=n2,Est1=E1,Est2=E2,p.value=pv)
 }
 
+#' Compute Null Distribution for bwESP.GLOB.B
+#'
+#' @description
+#' Generates null distribution for comparing global projection effect sizes in
+#' a 2×K between-within design. Used to calibrate p-values in \code{\link{bwESP.GLOB.B}}.
+#'
+#' @param n1 Integer. Sample size for group 1.
+#' @param n2 Integer. Sample size for group 2.
+#' @param K Integer. Number of repeated measures (columns).
+#' @param tr Numeric. Trimming proportion for robust estimation (default: 0.2).
+#' @param MM Logical. If TRUE, uses marginal medians; if FALSE, uses trimmed means (default: FALSE).
+#' @param SEED Logical. If TRUE, sets random seed to 2 for reproducibility (default: TRUE).
+#' @param iter Integer. Number of Monte Carlo iterations (default: 1000).
+#' @param g Numeric. g parameter for g-and-h distribution (default: 0 for normal).
+#' @param rho Numeric. Common correlation for simulated data (default: 0).
+#'
+#' @details
+#' Generates null distribution under H0: Equal projection effect sizes:
+#' \enumerate{
+#'   \item Simulates data from multivariate g-and-h distributions with specified correlation
+#'   \item Computes projection effect size for each group via \code{\link{rmESPRO.est}}
+#'   \item Computes difference in effect sizes
+#'   \item Repeats for \code{iter} iterations
+#' }
+#'
+#' The null distribution can be pre-computed and passed to \code{\link{bwESP.GLOB.B}}
+#' via the \code{ND} parameter to avoid re-computation.
+#'
+#' @return
+#' Numeric vector of length \code{iter} containing null distribution of
+#' effect size differences.
+#'
+#' @seealso \code{\link{bwESP.GLOB.B}} for using the null distribution,
+#'   \code{\link{rmESPRO.est}} for projection effect size computation
+#'
+#' @export
+#' @examples
+#' # Generate null distribution for 2x3 design
+#' ND <- bwESP.GLOB.B.NULL(n1 = 20, n2 = 20, K = 3, iter = 500)
+#' hist(ND)
 bwESP.GLOB.B.NULL<-function(n1,n2,K,tr=.2,MM=FALSE,SEED=TRUE,iter=1000,g=0.,rho=0){
 if(SEED)set.seed(2)
 ND=NA
@@ -5332,6 +8490,58 @@ ND
     DN
 }
 
+#' KMS Effect Size: Confidence Interval for Two Groups
+#'
+#' @description
+#' Computes bootstrap confidence interval for the difference between two
+#' Kolmogorov-Smirnov (KMS) effect size measures, with optional hypothesis test.
+#'
+#' @param x Numeric vector for group 1.
+#' @param y Numeric vector for group 2.
+#' @param tr Numeric. Trimming proportion (default: 0.2). Passed to \code{\link{kms.effect}}.
+#' @param alpha Numeric. Significance level for confidence interval (default: 0.05).
+#' @param null.val Numeric. Null hypothesis value for effect size difference (default: 0).
+#' @param nboot Integer. Number of bootstrap samples (default: 500).
+#' @param SEED Logical. If TRUE, sets random seed to 2 for reproducibility (default: TRUE).
+#' @param ... Additional arguments passed to \code{\link{kms.effect}}.
+#'
+#' @details
+#' Computes the KMS effect size for each group and their difference, with bootstrap
+#' confidence interval:
+#' \enumerate{
+#'   \item Computes KMS effect size using \code{\link{kms.effect}}
+#'   \item Bootstrap resamples within each group with replacement
+#'   \item Computes effect size for each bootstrap sample
+#'   \item Constructs percentile confidence interval
+#'   \item Computes two-sided p-value for H0: effect size = null.val
+#' }
+#'
+#' The KMS effect size measures group separation using the Kolmogorov-Smirnov
+#' statistic, providing a robust alternative to standardized mean differences.
+#'
+#' @return
+#' List with components:
+#' \describe{
+#'   \item{n1}{Sample size for group 1}
+#'   \item{n2}{Sample size for group 2}
+#'   \item{effect.size}{Observed KMS effect size}
+#'   \item{ci}{Bootstrap percentile confidence interval}
+#'   \item{p.value}{Two-sided p-value for testing H0: effect size = null.val}
+#' }
+#'
+#' @seealso \code{\link{kms.effect}} for KMS effect size computation,
+#'   \code{\link{KMSmcp.ci}} for multiple comparisons,
+#'   \code{\link{akp.effect}} for alternative effect size
+#'
+#' @export
+#' @examples
+#' # Compare two groups
+#' set.seed(123)
+#' x <- rnorm(30)
+#' y <- rnorm(30, mean = 0.5)
+#' result <- KMS.ci(x, y, nboot = 500)
+#' result$effect.size
+#' result$ci
 KMS.ci<-function(x,y,tr=.2,alpha=.05,null.val=0,nboot=500,SEED=TRUE,...){
 #
 # confidence interval for the difference between to KMS
@@ -5360,6 +8570,62 @@ pv=2*min(pv,1-pv)
 list(n1=n1,n2=n2,effect.size=ef,ci=ci,p.value=pv)
 }
 
+#' 2×2 Design: Test Interaction via KMS Effect Sizes
+#'
+#' @description
+#' For a 2×2 design, compares the explanatory power (KMS effect sizes) between
+#' the two levels of the first factor to test for interaction.
+#'
+#' @param x Data in one of two formats:
+#'   \itemize{
+#'     \item List: Length 4 with elements ordered as [level 1,1], [level 1,2],
+#'           [level 2,1], [level 2,2]
+#'     \item Matrix/data frame: Will be converted to list
+#'   }
+#' @param tr Numeric. Trimming proportion for robust estimation (default: 0.2).
+#' @param alpha Numeric. Significance level for confidence interval (default: 0.05).
+#' @param nboot Integer. Number of bootstrap samples (default: 1000).
+#' @param SEED Logical. If TRUE, sets random seed to 2 for reproducibility (default: TRUE).
+#' @param SW Logical. If TRUE, switches rows and columns (tests Factor B instead of Factor A; default: FALSE).
+#'
+#' @details
+#' Tests for interaction by comparing KMS effect sizes across factor levels:
+#' \enumerate{
+#'   \item Computes KMS effect size for Factor A at level 1 of Factor B
+#'   \item Computes KMS effect size for Factor A at level 2 of Factor B
+#'   \item Tests if difference in effect sizes equals zero
+#'   \item Uses percentile bootstrap for confidence interval and p-value
+#' }
+#'
+#' If \code{SW=TRUE}, transposes the design to test the other factor's effect sizes.
+#'
+#' A significant difference indicates an interaction: the effect of Factor A
+#' depends on the level of Factor B.
+#'
+#' @return
+#' List with components:
+#' \describe{
+#'   \item{Est.1}{KMS effect size at first level}
+#'   \item{Est.2}{KMS effect size at second level}
+#'   \item{Dif}{Difference in effect sizes: Est.1 - Est.2}
+#'   \item{ci}{Bootstrap percentile confidence interval for difference}
+#'   \item{p.value}{Two-sided p-value for H0: no interaction}
+#' }
+#'
+#' @seealso \code{\link{KMS2way}} for complete 2-way analysis,
+#'   \code{\link{kms.effect}} for KMS effect size computation,
+#'   \code{\link{KMSinter.mcp}} for multiple interaction tests
+#'
+#' @export
+#' @examples
+#' # 2x2 design
+#' set.seed(123)
+#' x <- list(
+#'   rnorm(20), rnorm(20, mean = 0.5),
+#'   rnorm(20, mean = 0.3), rnorm(20, mean = 1.2)
+#' )
+#' result <- KMS.inter.pbci(x, nboot = 500)
+#' result$p.value
 KMS.inter.pbci<-function(x,tr=.2,alpha=.05,nboot=1000,SEED=TRUE,SW=FALSE){
 #
 # For a 2-by-2 design, compare
@@ -5403,6 +8669,65 @@ list(Est.1=a1, Est.2=a2,Dif=Dif,ci=ci,p.value=pv)
 
 # ----------------------------------------------------------------------------
 
+#' Two-Way ANOVA: Complete KMS Effect Size Analysis
+#'
+#' @description
+#' Performs a complete two-way ANOVA analysis using KMS (Kolmogorov-Smirnov)
+#' effect sizes for main effects and interactions. Provides robust,
+#' heteroscedastic analysis of group differences.
+#'
+#' @param J Integer. Number of levels for Factor A.
+#' @param K Integer. Number of levels for Factor B.
+#' @param x Data in one of two formats:
+#'   \itemize{
+#'     \item Matrix/data frame: J×K design with observations
+#'     \item List: Length J×K with each element containing a group's data
+#'   }
+#' @param tr Numeric. Trimming proportion for robust estimation (default: 0.2).
+#' @param alpha Numeric. Significance level for confidence intervals (default: 0.05).
+#' @param nboot Integer. Number of bootstrap samples (default: 999).
+#' @param SEED Logical. If TRUE, sets random seed to 2 for reproducibility (default: TRUE).
+#' @param SW Logical. If TRUE, switches interpretation of factors (default: FALSE).
+#'
+#' @details
+#' Performs comprehensive two-way ANOVA using KMS effect sizes:
+#' \enumerate{
+#'   \item **Main Effect A**: Pools data across Factor B levels, computes all
+#'         pairwise KMS comparisons among Factor A levels
+#'   \item **Main Effect B**: Pools data across Factor A levels, computes all
+#'         pairwise KMS comparisons among Factor B levels
+#'   \item **Interactions**: Tests all pairwise interactions using
+#'         \code{\link{KMS.inter.pbci}}
+#' }
+#'
+#' The KMS effect size is a robust, distribution-free measure based on the
+#' Kolmogorov-Smirnov statistic, making it appropriate for non-normal data and
+#' heterogeneous variances.
+#'
+#' @return
+#' List with components:
+#' \describe{
+#'   \item{Factor.A}{Matrix of pairwise KMS comparisons for Factor A main effects}
+#'   \item{Factor.B}{Matrix of pairwise KMS comparisons for Factor B main effects}
+#'   \item{Interaction}{Matrix of all pairwise interaction tests}
+#' }
+#'
+#' Each matrix contains effect sizes, confidence intervals, and p-values.
+#'
+#' @seealso \code{\link{KMSmcp.ci}} for multiple comparisons,
+#'   \code{\link{KMS.inter.pbci}} for interaction tests,
+#'   \code{\link{kms.effect}} for KMS effect size computation,
+#'   \code{\link{AOV2KMS}} for alternative approach
+#'
+#' @export
+#' @examples
+#' # 3x2 two-way design
+#' set.seed(123)
+#' x <- list()
+#' for(i in 1:6) x[[i]] <- rnorm(20)
+#' result <- KMS2way(J = 3, K = 2, x = x, nboot = 500)
+#' result$Factor.A
+#' result$Interaction
 KMS2way<-function(J,K,x,tr=.2,alpha=.05,nboot=999,SEED=TRUE,SW=FALSE){
 #
 # Compare robust, heteroscedastic measures of effect size, the KMS measure effect size
@@ -5448,6 +8773,64 @@ list(Factor.A=A,Factor.B=B,Interactions=AB)
 
 # ----------------------------------------------------------------------------
 
+#' Grid-Based KMS Analysis: Multiple Comparisons Across Quantile Grids
+#'
+#' @description
+#' Performs KMS (Kolmogorov-Smirnov) effect size comparisons across groups defined
+#' by quantile splits of two independent variables, creating a grid-based two-way
+#' ANOVA design.
+#'
+#' @param x Matrix or data frame containing independent variables.
+#' @param y Numeric vector containing the dependent variable.
+#' @param IV Integer vector of length 2 specifying columns in \code{x} to use as IVs (default: c(1,2)).
+#' @param Qsplit1 Numeric vector of quantiles for splitting first IV (default: 0.5 for median split).
+#' @param Qsplit2 Numeric vector of quantiles for splitting second IV (default: 0.5 for median split).
+#' @param VAL1 Optional numeric vector of specific values for splitting first IV (overrides \code{Qsplit1}).
+#' @param VAL2 Optional numeric vector of specific values for splitting second IV (overrides \code{Qsplit2}).
+#' @param alpha Numeric. Significance level (default: 0.05).
+#' @param SW Logical. If TRUE, switches row/column interpretation in analysis (default: FALSE).
+#' @param nulldist Optional pre-computed null distribution.
+#' @param est Estimator function for location (default: \code{tmean}).
+#' @param iter Integer. Number of iterations for null distribution (default: 1000).
+#' @param pr Logical. If TRUE, prints messages about eliminated groups (default: TRUE).
+#' @param method Character. Multiple comparison adjustment method (default: 'hoch' for Hochberg).
+#' @param xout Logical. If TRUE, removes outliers from IVs before analysis (default: FALSE).
+#' @param outfun Function for outlier detection (default: \code{outpro}).
+#' @param SEED Logical. If TRUE, sets random seed for reproducibility (default: TRUE).
+#' @param ... Additional arguments passed to estimator and outlier functions.
+#'
+#' @details
+#' Creates a grid-based analysis by:
+#' \enumerate{
+#'   \item Splitting data into bins based on quantiles of two IVs (e.g., quartiles, median splits)
+#'   \item Creating a J×K design where J = length(Qsplit1)+1 and K = length(Qsplit2)+1
+#'   \item Computing KMS effect sizes using signed (not squared) version
+#'   \item Testing main effects via \code{\link{KMSinter.mcp}}
+#'   \item Eliminating groups with n ≤ 5
+#' }
+#'
+#' Example splits:
+#' \itemize{
+#'   \item \code{Qsplit1=c(.25,.5,.75), Qsplit2=.5}: Quartiles × median split
+#'   \item \code{Qsplit1=.5, Qsplit2=.5}: 2×2 median split design
+#' }
+#'
+#' @return
+#' Result from \code{\link{KMSinter.mcp}} containing main effects and interaction tests
+#' for the grid-based design.
+#'
+#' @seealso \code{\link{KMSinter.mcp}} for interaction analysis,
+#'   \code{\link{KMSgridAB}} for alternative grid approach,
+#'   \code{\link{KMSgridRC}} for variation-based version,
+#'   \code{\link{smgrid.GLOB}} for smoothing-based grid analysis
+#'
+#' @export
+#' @examples
+#' # Create 2x2 grid via median splits
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol = 2)
+#' y <- rnorm(100)
+#' result <- KMSgrid.mcp(x, y, Qsplit1 = .5, Qsplit2 = .5)
 KMSgrid.mcp<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,VAL1=NULL,VAL2=NULL,alpha=05,SW=FALSE,
 nulldist=NULL,est=tmean,iter=1000,pr=TRUE,method='hoch',
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
@@ -5541,6 +8924,58 @@ a
 
 # ----------------------------------------------------------------------------
 
+#' Grid-Based Analysis: Test Main Effects Across Quantile Grids
+#'
+#' @description
+#' Splits data based on quantiles of two independent variables and tests hypotheses
+#' of equal location measures across the resulting grid cells. Designed for exploring
+#' main effects in a flexible grid-based framework.
+#'
+#' @param x Matrix or data frame containing independent variables.
+#' @param y Numeric vector containing the dependent variable.
+#' @param IV Integer vector of length 2 specifying columns in \code{x} to use as IVs (default: c(1,2)).
+#' @param Qsplit1 Numeric vector of quantiles for splitting first IV (default: 0.5 for median split).
+#' @param Qsplit2 Numeric vector of quantiles for splitting second IV (default: 0.5 for median split).
+#' @param tr Numeric. Trimming proportion for robust estimation (default: 0.2).
+#' @param VAL1 Optional numeric vector of specific values for splitting first IV (overrides \code{Qsplit1}).
+#' @param VAL2 Optional numeric vector of specific values for splitting second IV (overrides \code{Qsplit2}).
+#' @param PB Logical. If TRUE, uses percentile bootstrap; if FALSE, uses parametric methods (default: FALSE).
+#' @param est Estimator function for location (default: \code{tmean}).
+#' @param nboot Integer. Number of bootstrap samples (default: 1000).
+#' @param pr Logical. If TRUE, prints detailed results (default: TRUE).
+#' @param fun Function for computing effect size summaries (default: \code{ES.summary}).
+#' @param xout Logical. If TRUE, removes outliers from IVs before analysis (default: FALSE).
+#' @param outfun Function for outlier detection (default: \code{outpro}).
+#' @param SEED Logical. If TRUE, sets random seed for reproducibility (default: TRUE).
+#' @param ... Additional arguments passed to estimator and outlier functions.
+#'
+#' @details
+#' Creates a quantile-based grid analysis:
+#' \enumerate{
+#'   \item Splits data into bins based on quantiles of both IVs
+#'   \item Tests hypothesis of equal location measures across grid cells
+#'   \item Can use either quantile splits (Qsplit1/2) or specific values (VAL1/2)
+#'   \item Supports both parametric and bootstrap inference
+#' }
+#'
+#' Unlike \code{\link{KMSgrid.mcp}} which focuses on KMS effect sizes, this function
+#' tests location differences directly.
+#'
+#' @return
+#' Object containing test results for main effects across the grid, with effect size
+#' summaries and p-values.
+#'
+#' @seealso \code{\link{KMSgrid.mcp}} for KMS-based grid analysis,
+#'   \code{\link{KMSgridAV}} for grid analysis with ANOVA,
+#'   \code{\link{smgrid.GLOB}} for smoothing-based approach
+#'
+#' @export
+#' @examples
+#' # 2x2 grid analysis
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol = 2)
+#' y <- rnorm(100)
+#' result <- KMSgridAB(x, y, Qsplit1 = .5, Qsplit2 = .5)
 KMSgridAB<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,tr=.2,VAL1=NULL,VAL2=NULL,PB=FALSE,est=tmean,nboot=1000,pr=TRUE,fun=ES.summary,
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
 #
@@ -5649,6 +9084,61 @@ list(est.loc.4.DV=est.mat,n=n.mat,A=A,B=B,A.effect.sizes=A,B.effect.sizes=B)
 
 # ----------------------------------------------------------------------------
 
+#' Grid-Based KMS ANOVA: Average Pairwise Effect Sizes
+#'
+#' @description
+#' Compares effect sizes among groups defined by quantile splits of two independent
+#' variables. Tests main effects based on average pairwise KMS effect sizes for each
+#' factor level in a grid-based two-way ANOVA framework.
+#'
+#' @param x Matrix or data frame containing independent variables.
+#' @param y Numeric vector containing the dependent variable.
+#' @param IV Integer vector of length 2 specifying columns in \code{x} to use as IVs (default: c(1,2)).
+#' @param Qsplit1 Numeric vector of quantiles for splitting first IV (default: 0.5 for median split).
+#' @param Qsplit2 Numeric vector of quantiles for splitting second IV (default: 0.5 for median split).
+#' @param alpha Numeric. Significance level (default: 0.05).
+#' @param est Estimator function for location (default: \code{tmean}).
+#' @param nboot Integer. Number of bootstrap samples (default: 1000).
+#' @param pr Logical. If TRUE, prints messages about eliminated groups (default: TRUE).
+#' @param method Character. Multiple comparison adjustment method (default: 'hoch' for Hochberg).
+#' @param xout Logical. If TRUE, removes outliers from IVs before analysis (default: FALSE).
+#' @param outfun Function for outlier detection (default: \code{outpro}).
+#' @param SEED Logical. If TRUE, sets random seed for reproducibility (default: TRUE).
+#' @param ... Additional arguments passed to estimator and outlier functions.
+#'
+#' @details
+#' Performs grid-based ANOVA using average KMS effect sizes:
+#' \enumerate{
+#'   \item Splits data into J×K grid based on quantiles of two IVs
+#'   \item For each factor level, computes pairwise KMS effect sizes
+#'   \item Averages KMS values within each factor level
+#'   \item Tests main effects using \code{\link{AOV2KMS.mcp}}
+#'   \item Eliminates groups with n ≤ 5
+#' }
+#'
+#' Unlike \code{\link{KMSgridRC}} which uses global KMS, this function uses
+#' average pairwise comparisons, which can be more sensitive to specific
+#' pairwise differences.
+#'
+#' @return
+#' List with components:
+#' \describe{
+#'   \item{Factor.A}{Results for Factor A main effects from \code{\link{AOV2KMS.mcp}}}
+#'   \item{Factor.B}{Results for Factor B main effects from \code{\link{AOV2KMS.mcp}}}
+#' }
+#'
+#' @seealso \code{\link{AOV2KMS.mcp}} for average KMS comparisons,
+#'   \code{\link{KMSgridRC}} for global KMS version,
+#'   \code{\link{KMSgrid.mcp}} for signed KMS version
+#'
+#' @export
+#' @examples
+#' # 2x2 grid with average KMS effect sizes
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol = 2)
+#' y <- rnorm(100)
+#' result <- KMSgridAV(x, y, Qsplit1 = .5, Qsplit2 = .5, nboot = 500)
+#' result$Factor.A
 KMSgridAV<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,alpha=.05,est=tmean,nboot=1000,pr=TRUE,method='hoch',
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
 #
@@ -5736,6 +9226,64 @@ list(Factor.A=a,Factor.B=b)
 
 # ----------------------------------------------------------------------------
 
+#' Grid-Based KMS ANOVA: Global Effect Sizes Across Rows and Columns
+#'
+#' @description
+#' Compares global KMS (Kolmogorov-Smirnov) effect sizes among groups defined
+#' by quantile splits of two independent variables. Tests main effects based on
+#' the global (variation-based) KMS measure rather than signed comparisons.
+#'
+#' @param x Matrix or data frame containing independent variables.
+#' @param y Numeric vector containing the dependent variable.
+#' @param IV Integer vector of length 2 specifying columns in \code{x} to use as IVs (default: c(1,2)).
+#' @param Qsplit1 Numeric vector of quantiles for splitting first IV (default: 0.5 for median split).
+#' @param Qsplit2 Numeric vector of quantiles for splitting second IV (default: 0.5 for median split).
+#' @param VAL1 Optional numeric vector of specific values for splitting first IV (overrides \code{Qsplit1}).
+#' @param VAL2 Optional numeric vector of specific values for splitting second IV (overrides \code{Qsplit2}).
+#' @param alpha Numeric. Significance level (default: 0.05).
+#' @param nulldist.a Optional pre-computed null distribution for Factor A.
+#' @param nulldist.b Optional pre-computed null distribution for Factor B.
+#' @param est Estimator function for location (default: \code{tmean}).
+#' @param iter Integer. Number of iterations for null distribution (default: 5000).
+#' @param pr Logical. If TRUE, prints messages about eliminated groups (default: TRUE).
+#' @param method Character. Multiple comparison adjustment method (default: 'hoch' for Hochberg).
+#' @param xout Logical. If TRUE, removes outliers from IVs before analysis (default: FALSE).
+#' @param outfun Function for outlier detection (default: \code{outpro}).
+#' @param SEED Logical. If TRUE, sets random seed for reproducibility (default: TRUE).
+#' @param ... Additional arguments passed to estimator and outlier functions.
+#'
+#' @details
+#' Performs grid-based ANOVA using global KMS effect sizes:
+#' \enumerate{
+#'   \item Splits data into J×K grid based on quantiles (or specified values) of two IVs
+#'   \item Computes global KMS effect sizes for each factor's levels
+#'   \item Tests main effects using \code{\link{ANOG2KMS}}
+#'   \item Uses variation-based (squared) KMS measure, not signed version
+#'   \item Can accept pre-computed null distributions for faster repeated analyses
+#' }
+#'
+#' The "RC" stands for "Rows and Columns", indicating analysis across both
+#' dimensions of the grid.
+#'
+#' @return
+#' List with components:
+#' \describe{
+#'   \item{Factor.A}{Results for Factor A (rows) from \code{\link{ANOG2KMS}}}
+#'   \item{Factor.B}{Results for Factor B (columns) from \code{\link{ANOG2KMS}}}
+#' }
+#'
+#' @seealso \code{\link{ANOG2KMS}} for global KMS comparisons,
+#'   \code{\link{KMSgridAV}} for average KMS version,
+#'   \code{\link{KMSgrid.mcp}} for signed KMS version
+#'
+#' @export
+#' @examples
+#' # 2x2 grid with global KMS effect sizes
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol = 2)
+#' y <- rnorm(100)
+#' result <- KMSgridRC(x, y, Qsplit1 = .5, Qsplit2 = .5, iter = 1000)
+#' result$Factor.A
 KMSgridRC<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,VAL1=NULL,VAL2=NULL,
 alpha=.05,nulldist.a=NULL,nulldist.b=NULL,est=tmean,iter=5000,pr=TRUE,method='hoch',
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
@@ -5821,6 +9369,65 @@ b=ANOG2KMS(J,K,z,tr=tr,iter=iter,FAC.B=TRUE,nulldist=nulldist.b)
 list(Factor.A=a,Factor.B=b)
 }
 
+#' Two-Way ANOVA: Interaction Tests Using KMS Effect Sizes
+#'
+#' @description
+#' Tests all pairwise interactions in a J×K two-way ANOVA design using KMS
+#' (Kolmogorov-Smirnov) effect sizes with Hochberg adjustment for multiple comparisons.
+#'
+#' @param J Integer. Number of levels for Factor A.
+#' @param K Integer. Number of levels for Factor B.
+#' @param x Data in one of two formats:
+#'   \itemize{
+#'     \item Matrix/data frame: Will be converted to list
+#'     \item List: Length J×K with each element containing a group's data
+#'   }
+#' @param tr Numeric. Trimming proportion for robust estimation (default: 0.2).
+#' @param alpha Numeric. Significance level for confidence intervals (default: 0.05).
+#' @param nboot Integer. Number of bootstrap samples (default: 999).
+#' @param SEED Logical. If TRUE, sets random seed for reproducibility (default: TRUE).
+#' @param SW Logical. If TRUE, switches factor interpretation (default: FALSE).
+#'
+#' @details
+#' Performs comprehensive interaction analysis:
+#' \enumerate{
+#'   \item Generates all pairwise interaction contrasts using \code{\link{con2way}}
+#'   \item For each contrast, computes KMS-based interaction test via \code{\link{KMS.inter.pbci}}
+#'   \item Adjusts p-values using Hochberg's method to control family-wise error rate
+#'   \item Returns effect sizes, confidence intervals, and adjusted p-values
+#' }
+#'
+#' An interaction is detected when the KMS effect size difference between factor
+#' levels varies significantly across the other factor's levels.
+#'
+#' @return
+#' List with components:
+#' \describe{
+#'   \item{CON}{Matrix with rows for each interaction contrast containing:
+#'     \itemize{
+#'       \item Con.num: Contrast number
+#'       \item Est.1: KMS effect size at first level
+#'       \item Est.2: KMS effect size at second level
+#'       \item Dif: Difference in effect sizes
+#'       \item ci.low, ci.up: Bootstrap confidence interval
+#'       \item p.value: Unadjusted p-value
+#'       \item p.adjusted: Hochberg-adjusted p-value
+#'     }}
+#'   \item{con}{Contrast matrix showing which groups are compared}
+#' }
+#'
+#' @seealso \code{\link{KMS.inter.pbci}} for single interaction test,
+#'   \code{\link{KMS2way}} for complete two-way analysis,
+#'   \code{\link{con2way}} for contrast generation
+#'
+#' @export
+#' @examples
+#' # 3x2 design interaction tests
+#' set.seed(123)
+#' x <- list()
+#' for(i in 1:6) x[[i]] <- rnorm(20)
+#' result <- KMSinter.mcp(J = 3, K = 2, x = x, nboot = 500)
+#' result$CON
 KMSinter.mcp<-function(J,K,x,tr=.2,alpha=.05,nboot=999,SEED=TRUE,SW=FALSE){
 #
 #  Interactions based on KMS measure of effect size
@@ -5858,6 +9465,65 @@ list(CON=CON,con=con)
 
 # ----------------------------------------------------------------------------
 
+#' One-Way ANOVA: KMS Effect Sizes for All Pairwise Comparisons
+#'
+#' @description
+#' Computes KMS (Kolmogorov-Smirnov) effect sizes for all pairwise group comparisons
+#' in a one-way independent groups design, with optional confidence intervals and
+#' adjusted p-values.
+#'
+#' @param x Data in one of two formats:
+#'   \itemize{
+#'     \item Matrix/data frame: Each column represents a group
+#'     \item List: Each element contains data for one group
+#'   }
+#' @param tr Numeric. Trimming proportion for robust estimation (default: 0.2).
+#' @param alpha Numeric. Significance level for confidence intervals (default: 0.05).
+#' @param SEED Logical. If TRUE, sets random seed for reproducibility (default: TRUE).
+#' @param nboot Integer. Number of bootstrap samples for CIs (default: 500).
+#' @param CI Logical. If TRUE, computes bootstrap confidence intervals (default: TRUE).
+#' @param method Character. P-value adjustment method (default: 'hoch' for Hochberg).
+#'
+#' @details
+#' Performs all pairwise KMS comparisons in a one-way design:
+#' \enumerate{
+#'   \item Computes KMS effect size for each pair using \code{\link{kms.effect}}
+#'   \item If \code{CI=TRUE}, computes bootstrap confidence intervals via \code{\link{KMS.ci}}
+#'   \item Adjusts p-values using specified method (default: Hochberg)
+#'   \item Returns comprehensive results matrix
+#' }
+#'
+#' The KMS effect size is a distribution-free measure based on the Kolmogorov-Smirnov
+#' statistic, providing robustness to outliers and non-normality.
+#'
+#' @return
+#' Matrix with one row per pairwise comparison, containing:
+#' \describe{
+#'   \item{Group}{First group number}
+#'   \item{Group}{Second group number}
+#'   \item{Effect.Size}{KMS effect size}
+#'   \item{low.ci}{Lower bound of confidence interval (if CI=TRUE)}
+#'   \item{up.ci}{Upper bound of confidence interval (if CI=TRUE)}
+#'   \item{p.value}{Unadjusted p-value (if CI=TRUE)}
+#'   \item{p.adjust}{Adjusted p-value using specified method}
+#' }
+#'
+#' @seealso \code{\link{kms.effect}} for KMS effect size computation,
+#'   \code{\link{KMS.ci}} for confidence interval calculation,
+#'   \code{\link{akp.effect}} for alternative effect size
+#'
+#' @export
+#' @examples
+#' # Compare 4 groups
+#' set.seed(123)
+#' x <- list(
+#'   rnorm(20),
+#'   rnorm(20, mean = 0.5),
+#'   rnorm(20, mean = 1),
+#'   rnorm(20, mean = 0.3)
+#' )
+#' result <- KMSmcp.ci(x, nboot = 500)
+#' result
 KMSmcp.ci<-function(x,tr=.2,alpha=0.05,SEED=TRUE,nboot=500,CI=TRUE,method='hoch'){
 #
 #  Estimate KMS effect size  when comparing all
@@ -5900,6 +9566,59 @@ output
 
 # ----------------------------------------------------------------------------
 
+#' Global Test for Location Differences with Two-Variable Splitting
+#'
+#' @description
+#' Splits data based on quantiles or specific values of two independent variables
+#' and performs a global test of equal location measures across all resulting groups.
+#' Uses GLOB (Global test) methodology.
+#'
+#' @param x Matrix or data frame of predictor variables
+#' @param y Response variable vector
+#' @param IV Vector of length 2 specifying which columns of x to use for splitting.
+#'   Default is \code{c(1,2)} (first two columns).
+#' @param Qsplit1 Quantile(s) for splitting first independent variable. Default is 0.5.
+#'   Ignored if \code{VAL1} is specified.
+#' @param Qsplit2 Quantile(s) for splitting second independent variable. Default is 0.5.
+#'   Ignored if \code{VAL2} is specified.
+#' @param tr Trimming proportion (0 to 0.5). Default is 0.2.
+#' @param VAL1 Optional vector of specific values for splitting first IV. If provided,
+#'   overrides \code{Qsplit1}. Default is \code{NULL}.
+#' @param VAL2 Optional vector of specific values for splitting second IV. If provided,
+#'   overrides \code{Qsplit2}. Default is \code{NULL}.
+#' @param PB Logical. If \code{TRUE}, use percentile bootstrap. Default is \code{FALSE}.
+#' @param est Location estimator function. Default is \code{\link{tmean}}.
+#' @param nboot Number of bootstrap samples (if \code{PB=TRUE}). Default is 1000.
+#' @param pr Logical. If \code{TRUE}, print warnings. Default is \code{TRUE}.
+#' @param fun Effect size summary function. Default is \code{\link{ES.summary}}.
+#' @param xout Logical. If \code{TRUE}, remove outliers from x. Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{outpro}}.
+#' @param SEED Logical or numeric. Controls random seed. Default is \code{TRUE}.
+#' @param ... Additional arguments passed to estimator or outlier function.
+#'
+#' @details
+#' This function:
+#' \enumerate{
+#'   \item Splits data into J × K groups based on two variables
+#'   \item Computes location estimates for each cell
+#'   \item Performs global test using \code{\link{t2way}} (ANOVA for trimmed means)
+#' }
+#'
+#' Groups with fewer than 6 observations generate warnings. Unlike \code{\link{smgrid}}
+#' which performs pairwise comparisons, this function performs a global omnibus test.
+#'
+#' @return Result from \code{\link{t2way}} containing global test statistics.
+#'
+#' @seealso \code{\link{smgrid}} for pairwise comparisons,
+#'   \code{\link{t2way}} for two-way ANOVA with trimmed means
+#'
+#' @export
+#' @examples
+#' # Global test with two-way split
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- x[,1] + x[,2] + rnorm(100)
+#' result <- smgrid.GLOB(x, y, Qsplit1=.5, Qsplit2=.5)
 smgrid.GLOB<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,tr=.2,VAL1=NULL,VAL2=NULL,PB=FALSE,est=tmean,nboot=1000,pr=TRUE,fun=ES.summary,
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
 #
@@ -6111,6 +9830,49 @@ list(Group.summary=group,loc.est=est.mat,test=test,psihat=psihat,con=con,Effect.
 
 smgridLC=sm.inter
 
+#' Compare Two Smoothing Methods Visually
+#'
+#' @description
+#' Plots predictions from two different smoothing methods against each other to
+#' assess agreement. If smoothers give similar results, points should cluster
+#' tightly around the line y=x (slope=1, intercept=0).
+#'
+#' @param x Predictor variable vector
+#' @param y Response variable vector
+#' @param method1 First smoothing method. Default is 'RUN' (running interval smoother)
+#' @param method2 Second smoothing method. Default is 'RF' (random forest smoother)
+#' @param xout Logical. If \code{TRUE}, remove outliers in x before smoothing.
+#'   Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{outpro}}.
+#' @param xlab Label for x-axis (predictions from method1). Default is 'Est1'.
+#' @param ylab Label for y-axis (predictions from method2). Default is 'Est2'.
+#' @param pch Plotting character for points. Default is '.'.
+#' @param pr Logical. If \code{TRUE}, print messages. Default is \code{TRUE}.
+#' @param xoutL Logical. If \code{TRUE}, check for outliers when creating the
+#'   plot. Default is \code{FALSE}.
+#' @param ... Additional arguments passed to \code{\link{smpred}}
+#'
+#' @details
+#' This function:
+#' \enumerate{
+#'   \item Computes predictions using both smoothing methods via \code{\link{smpred}}
+#'   \item Creates scatter plot of method1 vs method2 predictions
+#'   \item Adds reference line y=x (dashed) for perfect agreement
+#' }
+#'
+#' Agreement between smoothers suggests robust results. Systematic deviations
+#' indicate sensitivity to smoothing method choice.
+#'
+#' @return Creates a plot comparing the two smoothers (invisible NULL).
+#'
+#' @seealso \code{\link{smpred}} for computing smooth predictions
+#'
+#' @export
+#' @examples
+#' set.seed(123)
+#' x <- 1:100
+#' y <- 2*x + 10*rnorm(100)
+#' sm.vs.sm(x, y, method1='RUN', method2='RF')
 sm.vs.sm<-function(x,y,method1='RUN',method2='RF',xout=FALSE,outfun=outpro,xlab='Est1',
 ylab='Est2',pch='.',pr=TRUE,xoutL=FALSE,...){
 #
@@ -6125,6 +9887,47 @@ lplot(e1,e2,xlab=xlab,ylab=ylab,pc=pch,xout=xoutL,pr=FALSE)
 abline(0,1,lty=2)
 }
 
+#' Test if Identifying Group with Largest Location is Reasonable
+#'
+#' @description
+#' Determines whether it is statistically reasonable to identify which group
+#' has the largest measure of location (trimmed mean) by testing all contrasts
+#' that compare the maximum group to all others.
+#'
+#' @param x Data as matrix, data frame, or list. Each column/element represents
+#'   a group.
+#' @param tr Trimming proportion (0 to 0.5). Default is 0.2 (20% trimming).
+#' @param ... Additional arguments (currently unused).
+#'
+#' @details
+#' This function:
+#' \enumerate{
+#'   \item Computes trimmed means for all groups
+#'   \item Identifies the group with the largest trimmed mean
+#'   \item Creates contrasts comparing that group to all others
+#'   \item Tests all contrasts using \code{\link{lincon}}
+#'   \item Returns the maximum p-value across all tests
+#' }
+#'
+#' A small p-value (e.g., < 0.05) suggests it is reasonable to declare which
+#' group has the largest location measure. A large p-value indicates uncertainty.
+#'
+#' @return List with components:
+#' \describe{
+#'   \item{Est.}{Vector of trimmed means for each group}
+#'   \item{p.value}{Maximum p-value from testing all relevant contrasts}
+#' }
+#'
+#' @seealso \code{\link{rmbestPB.DO}} for percentile bootstrap version,
+#'   \code{\link{lincon}} for linear contrast testing
+#'
+#' @export
+#' @examples
+#' # Test which of 3 groups has largest mean
+#' set.seed(123)
+#' x <- list(rnorm(20), rnorm(20, mean=1), rnorm(20, mean=0.5))
+#' result <- best.DO(x)
+#' result
 best.DO<-function(x,tr=.2,...){
 #
 #  Determine whether it is reasonable to
@@ -6144,6 +9947,54 @@ pv=max(a$psihat[,5])
 list(Est.=e,p.value=pv)
 }
 
+#' Test if Identifying Group with Largest Location is Reasonable (Bootstrap)
+#'
+#' @description
+#' Bootstrap version of \code{\link{best.DO}} that determines whether it is
+#' statistically reasonable to identify which group has the largest measure of
+#' location using percentile bootstrap methods and a flexible estimator.
+#'
+#' @param x Data as matrix, data frame, or list. Each column/element represents
+#'   a group.
+#' @param est Location estimator function. Default is \code{\link{tmean}}.
+#'   Can be \code{median}, \code{mean}, etc.
+#' @param nboot Number of bootstrap samples. If \code{NA}, a default value is used.
+#'   Default is \code{NA}.
+#' @param SEED Logical or numeric. Controls random seed for reproducibility.
+#'   Default is \code{TRUE}.
+#' @param ... Additional arguments passed to the estimator function.
+#'
+#' @details
+#' This function:
+#' \enumerate{
+#'   \item Computes location estimates for all groups using specified estimator
+#'   \item Identifies the group with the largest estimate
+#'   \item Creates contrasts comparing that group to all others
+#'   \item Tests contrasts using percentile bootstrap (\code{\link{rmmcppb}})
+#'   \item Returns the maximum p-value across all tests
+#' }
+#'
+#' A small p-value suggests it is reasonable to declare which group has the
+#' largest location. Unlike \code{\link{best.DO}}, this version uses bootstrap
+#' methods and supports any location estimator.
+#'
+#' @return List with components:
+#' \describe{
+#'   \item{Est.}{Vector of location estimates for each group}
+#'   \item{p.value}{Maximum p-value from testing all relevant contrasts}
+#'   \item{con}{Contrast matrix used in testing}
+#' }
+#'
+#' @seealso \code{\link{best.DO}} for trimmed mean version without bootstrap,
+#'   \code{\link{rmmcppb}} for repeated measures bootstrap testing
+#'
+#' @export
+#' @examples
+#' # Test which of 3 groups has largest median (bootstrap)
+#' set.seed(123)
+#' x <- list(rnorm(20), rnorm(20, mean=1), rnorm(20, mean=0.5))
+#' result <- rmbestPB.DO(x, est=median, nboot=500)
+#' result
 rmbestPB.DO<-function(x,est=tmean,nboot=NA,SEED=TRUE,...){
 #
 #  Determine whether it is reasonable to
@@ -6165,6 +10016,59 @@ list(Est.=e,p.value=pv,con=CON)
 
 
 
+#' Test Interactions for Binary Outcome with Two-Variable Splitting
+#'
+#' @description
+#' Splits data based on quantiles of two independent variables and tests for
+#' interactions when the dependent variable is binary. Uses binomial methods
+#' to compare probabilities across groups.
+#'
+#' @param x Matrix or data frame of predictor variables
+#' @param y Binary dependent variable vector (0/1 or two unique values)
+#' @param IV Vector of length 2 specifying which columns of x to use for splitting.
+#'   Default is \code{c(1,2)} (first two columns).
+#' @param Qsplit1 Quantile(s) for splitting first independent variable. Default is 0.5
+#'   (median split). Can be vector for multiple splits (e.g., \code{c(.25,.5,.75)} for quartiles).
+#' @param Qsplit2 Quantile(s) for splitting second independent variable. Default is 0.5.
+#' @param alpha Significance level. Default is 0.05.
+#' @param con Optional contrast matrix for testing specific comparisons. If \code{NULL},
+#'   default interaction contrasts are used.
+#' @param xout Logical. If \code{TRUE}, remove outliers from x before analysis.
+#'   Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{outpro}}.
+#' @param SEED Logical or numeric. Controls random seed. Default is \code{TRUE}.
+#' @param ... Additional arguments passed to outlier function.
+#'
+#' @details
+#' This function:
+#' \enumerate{
+#'   \item Splits data into groups based on quantiles of two independent variables
+#'   \item Computes probability of success (proportion of 1s) in each group
+#'   \item Tests interaction contrasts using \code{\link{lincon.bin}}
+#' }
+#'
+#' The dependent variable y must be binary (contain exactly 2 unique values).
+#' Groups with fewer than 6 observations generate warnings.
+#'
+#' @return List with components:
+#' \describe{
+#'   \item{Group.summary}{Summaries for each group}
+#'   \item{Prob.est}{Matrix of probability estimates for each cell}
+#'   \item{output}{Confidence intervals and tests from \code{\link{lincon.bin}}}
+#'   \item{con}{Contrast matrix used}
+#' }
+#'
+#' @seealso \code{\link{lincon.bin}} for binomial linear contrasts,
+#'   \code{\link{smbin.test}} for one-variable splitting,
+#'   \code{\link{smbinAB}} for main effects testing
+#'
+#' @export
+#' @examples
+#' # Test interaction for binary outcome
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- rbinom(100, 1, plogis(x[,1] + x[,2] + x[,1]*x[,2]))
+#' result <- smbin.inter(x, y, Qsplit1=.5, Qsplit2=.5)
 smbin.inter<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,alpha=.05,con=NULL,xout=FALSE,outfun=outpro,SEED=TRUE,...){
 #
 # Split on two variables.
@@ -6237,6 +10141,54 @@ test=lincon.bin(r,n,con=con)
 list(Group.summary=group,Prob.est=est.mat,output=test$CI,con=con)
 }
 
+#' Test Binary Outcome Probabilities Across Quantile-Based Groups
+#'
+#' @description
+#' Splits data based on quantiles of one independent variable and compares
+#' probabilities of success (binary outcome) across resulting groups using
+#' pairwise binomial tests.
+#'
+#' @param x Matrix or data frame of predictor variables
+#' @param y Binary dependent variable vector (0/1 or two unique values)
+#' @param IV Column index in x for splitting. Default is 1 (first column).
+#' @param Qsplit Quantile(s) for splitting. Default is 0.5 (median split).
+#'   Can be vector (e.g., \code{c(.25,.5,.75)} for quartiles).
+#' @param method Method for pairwise comparisons passed to \code{\link{binpair}}.
+#'   Default is 'SK'. Options include 'SK', 'KMS', etc.
+#' @param nboot Number of bootstrap samples (if method requires). Default is 1000.
+#' @param xout Logical. If \code{TRUE}, remove outliers before analysis.
+#'   Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{outpro}}.
+#' @param SEED Logical or numeric. Controls random seed. Default is \code{TRUE}.
+#' @param ... Additional arguments passed to outlier function.
+#'
+#' @details
+#' This function:
+#' \enumerate{
+#'   \item Splits data into groups based on quantiles of one variable
+#'   \item Computes number of successes and total observations per group
+#'   \item Performs all pairwise comparisons using \code{\link{binpair}}
+#' }
+#'
+#' The dependent variable y must be binary. Unlike \code{\link{smbin.inter}},
+#' this function splits on only one variable.
+#'
+#' @return List with components:
+#' \describe{
+#'   \item{Group.summary}{Summary statistics for each group}
+#'   \item{output}{Pairwise comparison results from \code{\link{binpair}}}
+#' }
+#'
+#' @seealso \code{\link{binpair}} for pairwise binomial tests,
+#'   \code{\link{smbin.inter}} for two-variable splitting
+#'
+#' @export
+#' @examples
+#' # Compare binary outcome across median split
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- rbinom(100, 1, plogis(x[,1]))
+#' result <- smbin.test(x, y, IV=1, Qsplit=.5)
 smbin.test<-function(x,y,IV=1,Qsplit=.5,method='SK',nboot=1000,
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
 #
@@ -6297,6 +10249,59 @@ list(Group.summary=group,output=a)
 
 # ----------------------------------------------------------------------------
 
+#' Test Main Effects for Binary Outcome with Two-Variable Splitting
+#'
+#' @description
+#' Splits data based on quantiles of two independent variables and tests main
+#' effects (marginal comparisons) for each variable when the dependent variable
+#' is binary. Tests probabilities across levels of each factor separately.
+#'
+#' @param x Matrix or data frame of predictor variables
+#' @param y Binary dependent variable vector (0/1 or two unique values)
+#' @param IV Vector of length 2 specifying which columns of x to use for splitting.
+#'   Default is \code{c(1,2)} (first two columns).
+#' @param Qsplit1 Quantile(s) for splitting first independent variable. Default is 0.5
+#'   (median split). Can be vector (e.g., \code{c(.25,.5,.75)} for quartiles).
+#' @param Qsplit2 Quantile(s) for splitting second independent variable. Default is 0.5.
+#' @param tr Trimming proportion (for related continuous analyses). Default is 0.2.
+#' @param method Method for binomial comparisons passed to \code{\link{lincon.bin}}.
+#'   Default is 'KMS'. Other options include 'AC', 'SK', etc.
+#' @param xout Logical. If \code{TRUE}, remove outliers from x before analysis.
+#'   Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{outpro}}.
+#' @param ... Additional arguments passed to outlier function.
+#'
+#' @details
+#' This function:
+#' \enumerate{
+#'   \item Splits data into J × K groups based on quantiles of two variables
+#'   \item Computes probabilities (proportions) for each cell
+#'   \item Tests main effect A: compares probability across levels of IV1
+#'   \item Tests main effect B: compares probability across levels of IV2
+#' }
+#'
+#' Unlike \code{\link{smbin.inter}} which tests interactions, this function
+#' tests marginal effects. The dependent variable y must be binary.
+#'
+#' @return List with components:
+#' \describe{
+#'   \item{est.loc.4.DV}{Matrix of probability estimates for each cell}
+#'   \item{n}{Matrix of sample sizes for each cell}
+#'   \item{A}{List of main effect results for first IV (across rows)}
+#'   \item{B}{List of main effect results for second IV (across columns)}
+#' }
+#'
+#' @seealso \code{\link{lincon.bin}} for binomial linear contrasts,
+#'   \code{\link{smbin.inter}} for interaction tests,
+#'   \code{\link{smbinRC}} for row-column comparisons
+#'
+#' @export
+#' @examples
+#' # Test main effects for binary outcome
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- rbinom(100, 1, plogis(x[,1] + x[,2]))
+#' result <- smbinAB(x, y, Qsplit1=.5, Qsplit2=.5)
 smbinAB<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,tr=.2,method='KMS',
 xout=FALSE,outfun=outpro,...){
 #
@@ -6397,6 +10402,64 @@ list(est.loc.4.DV=est.mat,n=n.mat,A=A,B=B)
 
 # ----------------------------------------------------------------------------
 
+#' Row-Column Pairwise Comparisons for Binary Outcome with Two-Variable Splitting
+#'
+#' @description
+#' Splits data based on quantiles of two independent variables and performs all
+#' pairwise comparisons of probabilities within rows and within columns of the
+#' resulting J × K table. Uses binomial methods with FWE adjustment.
+#'
+#' @param x Matrix or data frame of predictor variables
+#' @param y Binary dependent variable vector (0/1 or two unique values)
+#' @param IV Vector of length 2 specifying which columns of x to use for splitting.
+#'   Default is \code{c(1,2)} (first two columns).
+#' @param Qsplit1 Quantile(s) for splitting first independent variable. Default is 0.5
+#'   (median split). Can be vector (e.g., \code{c(.25,.5,.75)} for quartiles).
+#' @param Qsplit2 Quantile(s) for splitting second independent variable. Default is 0.5.
+#' @param method Method for pairwise comparisons passed to \code{\link{binpair}}.
+#'   Default is 'ACSK'. Other options include 'SK', 'KMS', etc.
+#' @param nboot Number of bootstrap samples (if method requires). Default is 1000.
+#' @param est Location estimator for continuous variables (not used for binary).
+#'   Default is \code{\link{tmean}}.
+#' @param alpha Significance level. Default is 0.05.
+#' @param FWE.method Family-wise error rate adjustment method. Default is 'hoch'
+#'   (Hochberg). Other options: 'holm', 'bonferroni', etc.
+#' @param xout Logical. If \code{TRUE}, remove outliers from x before analysis.
+#'   Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{outpro}}.
+#' @param SEED Logical or numeric. Controls random seed. Default is \code{TRUE}.
+#' @param ... Additional arguments passed to outlier function.
+#'
+#' @details
+#' This function:
+#' \enumerate{
+#'   \item Splits data into J × K groups based on quantiles of two variables
+#'   \item For each row: performs all pairwise comparisons across columns
+#'   \item For each column: performs all pairwise comparisons across rows
+#'   \item Applies FWE adjustment to control family-wise error rate
+#' }
+#'
+#' Unlike \code{\link{smbinAB}} which tests marginal effects, this function
+#' performs all pairwise comparisons within each level of the factors.
+#'
+#' @return List with components:
+#' \describe{
+#'   \item{Independent.variables.summary}{Summary statistics for groups}
+#'   \item{Res.4.IV1}{Pairwise comparison results within rows (across IV1 levels)}
+#'   \item{Res.4.IV2}{Pairwise comparison results within columns (across IV2 levels)}
+#' }
+#'
+#' @seealso \code{\link{binpair}} for pairwise binomial tests,
+#'   \code{\link{smbinAB}} for main effects,
+#'   \code{\link{smbin.inter}} for interaction tests
+#'
+#' @export
+#' @examples
+#' # Pairwise comparisons for binary outcome
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- rbinom(100, 1, plogis(x[,1] + x[,2]))
+#' result <- smbinRC(x, y, Qsplit1=.5, Qsplit2=.5)
 smbinRC<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,method='ACSK',nboot=1000,est=tmean,alpha=.05,FWE.method='hoch',
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
 #
@@ -6519,6 +10582,64 @@ list(Independent.variables.summary=group,Res.4.IV1=IV1res,Res.4.IV2=IV2res)
 
 # ----------------------------------------------------------------------------
 
+#' Pairwise Comparisons with Two-Variable Splitting
+#'
+#' @description
+#' Splits data based on quantiles of two independent variables and performs all
+#' pairwise comparisons of location measures across the resulting J × K groups.
+#' Can use trimmed means or percentile bootstrap with flexible estimators.
+#'
+#' @param x Matrix or data frame of predictor variables
+#' @param y Response variable vector
+#' @param IV Vector of length 2 specifying which columns of x to use for splitting.
+#'   Default is \code{c(1,2)} (first two columns).
+#' @param Qsplit1 Quantile(s) for splitting first independent variable. Default is 0.5.
+#'   Can be vector (e.g., \code{c(.25,.5,.75)} for quartiles).
+#' @param Qsplit2 Quantile(s) for splitting second independent variable. Default is 0.5.
+#' @param tr Trimming proportion (0 to 0.5). Default is 0.2.
+#' @param PB Logical. If \code{FALSE}, use trimmed means. If \code{TRUE}, use
+#'   percentile bootstrap with estimator specified by \code{est}. Default is \code{FALSE}.
+#' @param est Location estimator function (used when \code{PB=TRUE}). Default is
+#'   \code{\link{tmean}}.
+#' @param nboot Number of bootstrap samples (if \code{PB=TRUE}). Default is 1000.
+#' @param pr Logical. If \code{TRUE}, print warnings. Default is \code{TRUE}.
+#' @param xout Logical. If \code{TRUE}, remove outliers from x. Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{outpro}}.
+#' @param SEED Logical or numeric. Controls random seed. Default is \code{TRUE}.
+#' @param ... Additional arguments passed to estimator or outlier function.
+#'
+#' @details
+#' This function:
+#' \enumerate{
+#'   \item Splits data into J × K groups based on quantiles of two variables
+#'   \item Computes location estimates for each cell
+#'   \item Performs all pairwise comparisons using \code{\link{lincon}} or \code{\link{linpairpb}}
+#'   \item Computes effect sizes for all pairs
+#' }
+#'
+#' Groups with fewer than 6 observations are excluded with warnings.
+#'
+#' @return List with components:
+#' \describe{
+#'   \item{Group.summary}{Summary statistics for each group}
+#'   \item{loc.est}{Matrix of location estimates for each cell}
+#'   \item{test}{Global test results (if \code{PB=FALSE})}
+#'   \item{output}{Matrix of pairwise comparison results}
+#'   \item{num.sig}{Number of significant pairwise differences}
+#'   \item{Effect.Sizes}{Effect sizes for all pairwise comparisons}
+#' }
+#'
+#' @seealso \code{\link{smgrid.GLOB}} for global test only,
+#'   \code{\link{lincon}} for linear contrasts,
+#'   \code{\link{linpairpb}} for bootstrap pairwise comparisons
+#'
+#' @export
+#' @examples
+#' # Pairwise comparisons with median split on two variables
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- x[,1] + x[,2] + rnorm(100)
+#' result <- smgrid(x, y, Qsplit1=.5, Qsplit2=.5)
 smgrid<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,tr=.2,PB=FALSE,est=tmean,nboot=1000,pr=TRUE,
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
 #
@@ -6606,6 +10727,44 @@ list(Group.summary=group,loc.est=est.mat,test=test,output=res,num.sig=num.sig,Ef
 }
 
 
+#' Estimate Location for Grid Cells Defined by Two-Variable Splitting
+#'
+#' @description
+#' Splits data based on quantiles of two independent variables and computes
+#' location estimates for each cell of the resulting J × K grid. Returns only
+#' the matrix of estimates without performing tests.
+#'
+#' @param x Matrix or data frame of predictor variables
+#' @param y Response variable vector
+#' @param est Location estimator function. Default is \code{\link{tmean}}.
+#' @param IV Vector of length 2 specifying which columns of x to use for splitting.
+#'   Default is \code{c(1,2)} (first two columns).
+#' @param Qsplit1 Quantile(s) for splitting first independent variable. Default is
+#'   \code{c(.3,.7)} (tertiles).
+#' @param Qsplit2 Quantile(s) for splitting second independent variable. Default is
+#'   \code{c(.3,.7)} (tertiles).
+#' @param tr Trimming proportion (0 to 0.5). Default is 0.2.
+#' @param xout Logical. If \code{TRUE}, remove outliers from x. Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{outpro}}.
+#' @param ... Additional arguments passed to estimator or outlier function.
+#'
+#' @details
+#' This is a simplified version of \code{\link{smgrid}} that only computes estimates
+#' without performing hypothesis tests. Useful for exploring location estimates
+#' across grid cells defined by two variables.
+#'
+#' @return Matrix of location estimates with rows corresponding to levels of IV1
+#'   and columns to levels of IV2.
+#'
+#' @seealso \code{\link{smgrid}} for version with hypothesis testing
+#'
+#' @export
+#' @examples
+#' # Compute trimmed means for grid cells
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- x[,1] + x[,2] + rnorm(100)
+#' estimates <- smgrid.est(x, y, Qsplit1=c(.3,.7), Qsplit2=c(.3,.7))
 smgrid.est<-function(x,y,est=tmean,IV=c(1,2),Qsplit1 = c(.3,.7),Qsplit2 = c(.3,.7),tr=.2,xout=FALSE,outfun=outpro,...){
 #
 #  Splits the data into groups
@@ -6646,6 +10805,54 @@ est.mat[j,k]=est(xsub2[,p1],...)
 est.mat
 }
 
+#' Two-Way ANOVA for Grid with Main Effects Test
+#'
+#' @description
+#' Splits data based on quantiles of two independent variables and performs
+#' a two-way ANOVA to test main effects using \code{\link{t2way}}. Designed for
+#' testing main effects in a J × K factorial design created by splitting.
+#'
+#' @param x Matrix or data frame of predictor variables
+#' @param y Response variable vector
+#' @param IV Vector of length 2 specifying which columns of x to use for splitting.
+#'   Default is \code{c(1,2)} (first two columns).
+#' @param Qsplit1 Quantile(s) for splitting first independent variable. Default is 0.5.
+#' @param Qsplit2 Quantile(s) for splitting second independent variable. Default is 0.5.
+#' @param tr Trimming proportion (0 to 0.5). Default is 0.2.
+#' @param PB Logical. If \code{TRUE}, use percentile bootstrap. Default is \code{FALSE}.
+#' @param est Location estimator function (used when \code{PB=TRUE}). Default is
+#'   \code{\link{tmean}}.
+#' @param nboot Number of bootstrap samples (if \code{PB=TRUE}). Default is 1000.
+#' @param pr Logical. If \code{TRUE}, print warnings. Default is \code{TRUE}.
+#' @param fun Effect size summary function. Default is \code{\link{ES.summary}}.
+#' @param xout Logical. If \code{TRUE}, remove outliers from x. Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{outpro}}.
+#' @param SEED Logical or numeric. Controls random seed. Default is \code{TRUE}.
+#' @param ... Additional arguments passed to estimator or outlier function.
+#'
+#' @details
+#' This function:
+#' \enumerate{
+#'   \item Splits data into J × K groups based on quantiles of two variables
+#'   \item Performs two-way ANOVA using \code{\link{t2way}}
+#'   \item Tests main effects and interactions for trimmed means
+#' }
+#'
+#' Groups with fewer than 6 observations are excluded with warnings.
+#'
+#' @return Result from \code{\link{t2way}} containing F-statistics and p-values
+#'   for main effects and interactions.
+#'
+#' @seealso \code{\link{t2way}} for two-way ANOVA,
+#'   \code{\link{smgridAB}} for pairwise comparisons of main effects
+#'
+#' @export
+#' @examples
+#' # Two-way ANOVA with median splits
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- x[,1] + 0.5*x[,2] + rnorm(100)
+#' result <- smgrid2M(x, y, Qsplit1=.5, Qsplit2=.5)
 smgrid2M<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,tr=.2,PB=FALSE,est=tmean,nboot=1000,pr=TRUE,fun=ES.summary,
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
 #
@@ -6733,6 +10940,67 @@ A
 
 # ----------------------------------------------------------------------------
 
+#' Pairwise Comparisons of Main Effects with Two-Variable Splitting
+#'
+#' @description
+#' Splits data based on quantiles or specific values of two independent variables
+#' and performs all pairwise comparisons for each main effect (Factor A and Factor B).
+#' Computes effect sizes for comparisons within each factor level.
+#'
+#' @param x Matrix or data frame of predictor variables
+#' @param y Response variable vector
+#' @param IV Vector of length 2 specifying which columns of x to use for splitting.
+#'   Default is \code{c(1,2)} (first two columns).
+#' @param Qsplit1 Quantile(s) for splitting first independent variable. Default is 0.5.
+#'   Ignored if \code{VAL1} is specified.
+#' @param Qsplit2 Quantile(s) for splitting second independent variable. Default is 0.5.
+#'   Ignored if \code{VAL2} is specified.
+#' @param tr Trimming proportion (0 to 0.5). Default is 0.2.
+#' @param VAL1 Optional vector of specific values for splitting first IV. Default is \code{NULL}.
+#' @param VAL2 Optional vector of specific values for splitting second IV. Default is \code{NULL}.
+#' @param PB Logical. If \code{TRUE}, use percentile bootstrap. Default is \code{FALSE}.
+#' @param est Location estimator function (used when \code{PB=TRUE}). Default is
+#'   \code{\link{tmean}}.
+#' @param nboot Number of bootstrap samples (if \code{PB=TRUE}). Default is 1000.
+#' @param pr Logical. If \code{TRUE}, print warnings. Default is \code{TRUE}.
+#' @param fun Effect size summary function. Default is \code{\link{ES.summary}}.
+#' @param xout Logical. If \code{TRUE}, remove outliers from x. Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{outpro}}.
+#' @param SEED Logical or numeric. Controls random seed. Default is \code{TRUE}.
+#' @param ... Additional arguments passed to estimator or outlier function.
+#'
+#' @details
+#' This function:
+#' \enumerate{
+#'   \item Splits data into J × K groups based on two variables
+#'   \item For Factor A: performs pairwise comparisons across rows (IV1 levels)
+#'   \item For Factor B: performs pairwise comparisons across columns (IV2 levels)
+#'   \item Computes effect sizes for all comparisons
+#' }
+#'
+#' Unlike \code{\link{smgrid2M}} which tests overall main effects, this function
+#' provides detailed pairwise comparisons within each main effect.
+#'
+#' @return List with components:
+#' \describe{
+#'   \item{est.loc.4.DV}{Matrix of location estimates for each cell}
+#'   \item{n}{Matrix of sample sizes for each cell}
+#'   \item{A}{List of pairwise comparison results for Factor A (IV1)}
+#'   \item{B}{List of pairwise comparison results for Factor B (IV2)}
+#'   \item{A.effect.sizes}{Effect sizes for Factor A comparisons}
+#'   \item{B.effect.sizes}{Effect sizes for Factor B comparisons}
+#' }
+#'
+#' @seealso \code{\link{smgrid2M}} for overall main effects test,
+#'   \code{\link{smgridRC}} for row-column pairwise comparisons
+#'
+#' @export
+#' @examples
+#' # Pairwise comparisons for main effects
+#' set.seed(123)
+#' x <- matrix(rnorm(200), ncol=2)
+#' y <- x[,1] + 0.5*x[,2] + rnorm(100)
+#' result <- smgridAB(x, y, Qsplit1=.5, Qsplit2=.5)
 smgridAB<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,tr=.2,VAL1=NULL,VAL2=NULL,
 PB=FALSE,est=tmean,nboot=1000,pr=TRUE,fun=ES.summary,
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
@@ -7168,6 +11436,36 @@ list(est.loc.4.DV=est.mat,n=n.mat,Independent.variables.summary=group,Res.4.IV1=
 
 # ----------------------------------------------------------------------------
 
+#' Studentized Maximum Modulus Distribution Quantile
+#'
+#' @description
+#' Determines the upper 1-alpha quantile of the maximum of K independent Student's
+#' t random variables. This distribution is similar to a Studentized maximum modulus
+#' distribution, but the t statistics are not based on an estimate of an assumed
+#' common variance.
+#'
+#' @param dfvec Vector of length K containing the degrees of freedom for each
+#'   independent t distribution.
+#' @param iter Number of Monte Carlo iterations. Default is 10000.
+#' @param alpha Significance level. Default is 0.05.
+#' @param SEED Logical. If \code{TRUE} (default), sets random seed to 1 for
+#'   reproducibility.
+#'
+#' @details
+#' The function generates \code{iter} samples of K independent Student's t random
+#' variables with degrees of freedom specified in \code{dfvec}, computes the maximum
+#' of their absolute values for each iteration, and returns the (1-alpha) quantile
+#' of these maxima.
+#'
+#' This is useful for multiple comparison procedures where different tests may have
+#' different degrees of freedom.
+#'
+#' @return Numeric value: the upper (1-alpha) quantile of the distribution.
+#'
+#' @seealso \code{\link{smmvalv2}}, \code{\link{smmvalv3}}
+#'
+#' @keywords multivariate
+#' @export
 smmval<-function(dfvec,iter=10000,alpha=.05,SEED=TRUE){
 #
 #  Determine the upper 1-alpha quantile of the maximum of
@@ -7193,7 +11491,31 @@ qval<-vals[ival]
 qval
 }
 
-
+#' Studentized Maximum Modulus Distribution Quantile (Vectorized Version)
+#'
+#' @description
+#' Vectorized version of \code{\link{smmval}} that more efficiently determines the
+#' upper 1-alpha quantile of the maximum of K independent Student's t random variables.
+#'
+#' @param dfvec Vector of length K containing the degrees of freedom for each
+#'   independent t distribution.
+#' @param iter Number of Monte Carlo iterations. Default is 20000.
+#' @param alpha Significance level. Default is 0.05.
+#' @param SEED Logical. If \code{TRUE} (default), sets random seed to 1 for
+#'   reproducibility.
+#'
+#' @details
+#' This function is a more efficient implementation of \code{\link{smmval}} using
+#' vectorized matrix operations. It generates all random values at once and uses
+#' \code{apply} to compute row-wise maxima, making it faster for large numbers of
+#' iterations.
+#'
+#' @return Numeric value: the upper (1-alpha) quantile of the distribution.
+#'
+#' @seealso \code{\link{smmval}}, \code{\link{smmvalv3}}
+#'
+#' @keywords multivariate
+#' @export
 smmvalv2<-function(dfvec,iter=20000,alpha=.05,SEED=TRUE){
 #
 if(SEED)set.seed(1)
@@ -7208,6 +11530,34 @@ ival<-round((1-alpha)*iter)
 qval<-vals[ival]
 qval
 }
+
+#' Studentized Maximum Modulus Distribution Quantile (Equal DF Version)
+#'
+#' @description
+#' Specialized version of \code{\link{smmval}} for the case where all t statistics
+#' have the same degrees of freedom. Computes the upper 1-alpha quantile of the
+#' maximum of ntests independent Student's t random variables.
+#'
+#' @param ntests Number of tests (t statistics) to be performed.
+#' @param df Degrees of freedom (same for all t statistics).
+#' @param iter Number of Monte Carlo iterations. Default is 20000.
+#' @param alpha Significance level. Default is 0.05.
+#' @param SEED Logical. If \code{TRUE} (default), sets random seed to 1 for
+#'   reproducibility.
+#'
+#' @details
+#' This function is optimized for the special case where all t statistics have equal
+#' degrees of freedom. It internally creates a vector with \code{rep(df, ntests)} and
+#' uses the vectorized approach from \code{\link{smmvalv2}}.
+#'
+#' Useful for multiple comparison procedures with equal sample sizes across groups.
+#'
+#' @return Numeric value: the upper (1-alpha) quantile of the distribution.
+#'
+#' @seealso \code{\link{smmval}}, \code{\link{smmvalv2}}
+#'
+#' @keywords multivariate
+#' @export
 smmvalv3<-function(ntests,df,iter=20000,alpha=.05,SEED=TRUE){
 #
 #  ntests=number of tests to be performed
@@ -7224,6 +11574,44 @@ ival<-round((1-alpha)*iter)
 qval<-vals[ival]
 qval
 }
+
+#' Smoother Predictions Wrapper
+#'
+#' @description
+#' Unified interface for generating predictions from various smoothing methods
+#' including running interval smoothers, LOESS, random forests, and binary smoothers.
+#'
+#' @param x Matrix or vector of predictor values.
+#' @param y Vector of response values.
+#' @param pts Points at which to generate predictions. Default is \code{x}.
+#' @param xout Logical. If \code{TRUE}, remove outliers from predictor space.
+#'   Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{outpro}}.
+#' @param method Character string specifying smoothing method. One of:
+#'   \itemize{
+#'     \item \code{"RUN"}: Running interval smoother (default)
+#'     \item \code{"LOESS"}: Cleveland's LOESS
+#'     \item \code{"RF"}: Random Forest regression
+#'     \item \code{"BIN"}: Binary dependent variable smoother (logSM)
+#'   }
+#' @param ... Additional arguments passed to the specific smoother function.
+#'
+#' @details
+#' This wrapper function provides a consistent interface to multiple smoothing methods:
+#' \itemize{
+#'   \item \code{RUN}: Calls \code{\link{rplot.pred}} for running interval smoothing
+#'   \item \code{LOESS}: Calls \code{\link{lplot.pred}} for LOESS smoothing
+#'   \item \code{RF}: Calls \code{\link{RFreg}} for random forest regression
+#'   \item \code{BIN}: Calls \code{\link{logSMpred}} for binary response smoothing
+#' }
+#'
+#' @return Vector of predicted values at the specified points.
+#'
+#' @seealso \code{\link{rplot.pred}}, \code{\link{lplot.pred}}, \code{\link{RFreg}},
+#'   \code{\link{logSMpred}}
+#'
+#' @keywords smooth regression
+#' @export
 smpred<-function(x,y,pts=x,xout=FALSE,outfun=outpro,
 method=c('RUN','LOESS','RF','BIN'),...){
 #
@@ -7250,6 +11638,45 @@ switch(type,
 
 # ----------------------------------------------------------------------------
 
+#' Estimate Explanatory Strength of Association Using Running Interval Smoother
+#'
+#' @description
+#' Estimates the explanatory strength of an association (a generalization of
+#' Pearson's correlation) based on a running interval smoother and leave-one-out
+#' cross-validation. Also estimates prediction error.
+#'
+#' @param x Matrix or vector of predictor values.
+#' @param y Vector of response values.
+#' @param fr Span (fraction of data) for the running interval smoother. Default is 1.
+#' @param est Measure of location to be used. Default is \code{\link{tmean}} (20% trimmed mean).
+#' @param nmin Minimum number of points required in running interval. Default is 1.
+#' @param varfun Measure of variation used when estimating prediction error.
+#'   Default is \code{\link{winvar}} (winsorized variance). Example: \code{varfun=pbvar}
+#'   would use the percentage bend measure of variation.
+#' @param xout Logical. If \code{TRUE}, remove outliers from predictor space.
+#'   Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{outpro}}.
+#' @param ... Additional arguments passed to \code{est} and other functions.
+#'
+#' @details
+#' The function uses leave-one-out cross-validation to estimate:
+#' \enumerate{
+#'   \item Prediction error based on the specified variance function
+#'   \item Explanatory strength as sqrt((variance without predictor - prediction error) /
+#'         variance without predictor)
+#' }
+#'
+#' The explanatory strength ranges from 0 (no association) to 1 (perfect prediction),
+#' providing a robust alternative to R-squared that generalizes to nonlinear relationships.
+#'
+#' @return List with components:
+#'   \item{str}{Explanatory strength of the association (0 to 1)}
+#'   \item{pred.error}{Prediction error based on cross-validation}
+#'
+#' @seealso \code{\link{runhat}}, \code{\link{rung3hat}}, \code{\link{smstrcom}}
+#'
+#' @keywords regression robust
+#' @export
 smRstr<-function(x,y,fr=1,est=tmean,nmin=1,varfun=winvar,xout=FALSE,outfun=outpro,...){
 #
 # Estimate explanatory strength of an association (a generlization of
@@ -7306,6 +11733,50 @@ list(str=str,pred.error=pe)
 
 # ----------------------------------------------------------------------------
 
+#' Compare Strength of Association Between Two Independent Bivariate Datasets
+#'
+#' @description
+#' Compares the strength of association between (x1, y1) and (x2, y2) for two
+#' independent groups using a robust measure based on Cleveland's LOESS smoother
+#' and bootstrap resampling.
+#'
+#' @param x1 Vector of predictor values for group 1.
+#' @param y1 Vector of response values for group 1.
+#' @param x2 Vector of predictor values for group 2.
+#' @param y2 Vector of response values for group 2.
+#' @param nboot Number of bootstrap samples. Default is 200.
+#' @param pts Points for plotting (deprecated parameter). Default is \code{NA}.
+#' @param plotit Logical. If \code{TRUE} (default), plot the smooths for both groups.
+#' @param SEED Logical. If \code{TRUE} (default), set random seed for reproducibility.
+#' @param varfun Measure of variation. Default is \code{\link{pbvar}} (percentage bend variance).
+#' @param fr Span for the running interval smoother plot. Default is 0.8.
+#' @param xout Logical. If \code{TRUE}, remove outliers from predictor space. Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{out}}.
+#' @param ... Additional arguments passed to outlier detection function.
+#'
+#' @details
+#' The function:
+#' \enumerate{
+#'   \item Computes strength of association for each group using \code{\link{lplotv2}}
+#'   \item Generates bootstrap samples to estimate the distribution of strength differences
+#'   \item Computes p-value based on bootstrap distribution
+#'   \item Determines critical p-value (\code{pcrit.05}) adjusted for sample sizes
+#'   \item Optionally plots the smooths using \code{\link{runmean2g}}
+#' }
+#'
+#' Reject the null hypothesis of equal association strength at the 0.05 level if
+#' \code{p.value <= pcrit.05}.
+#'
+#' @return List with components:
+#'   \item{p.value}{Bootstrap p-value for testing equal association strength}
+#'   \item{pcrit.05}{Critical p-value for 0.05 level test (adjusted for sample sizes)}
+#'   \item{cor1}{Estimated strength of association for group 1}
+#'   \item{cor2}{Estimated strength of association for group 2}
+#'
+#' @seealso \code{\link{smRstr}}, \code{\link{lplotv2}}, \code{\link{runmean2g}}
+#'
+#' @keywords robust regression htest
+#' @export
 smstrcom<-function(x1,y1,x2,y2,nboot=200,pts=NA,plotit=TRUE,
 SEED=TRUE,varfun=pbvar,fr=.8,xout=FALSE,outfun=out,...){
 #
@@ -7372,11 +11843,54 @@ if(plotit)runmean2g(x1,y1,x2,y2,fr=fr,est=tmean,sm=TRUE)
 list(p.value=p.value,pcrit.05=pcrit,cor1=est1,cor2=est2)
 }
 
-
-
-
-
-
+#' Test for Equal Location Measures Across Quantile-Defined Groups
+#'
+#' @description
+#' Tests the hypothesis of equal measures of location across groups defined by
+#' quantile splits of an independent variable in multivariate data.
+#'
+#' @param x Matrix of independent variables (predictors).
+#' @param y Vector of dependent variable (response).
+#' @param IV Integer specifying which independent variable to split on (column index).
+#'   Default is 1 (first column).
+#' @param Qsplit Vector of quantiles for splitting the independent variable.
+#'   Default is 0.5 (median split). Example: \code{c(.25, .5, .75)} splits at quartiles.
+#' @param nboot Number of bootstrap samples when using percentile bootstrap.
+#'   Default is 1000.
+#' @param est Measure of location. Default is \code{\link{tmean}} (20% trimmed mean).
+#' @param tr Amount of trimming when using non-bootstrap method. Default is 0.2.
+#' @param PB Logical. If \code{TRUE}, use percentile bootstrap method. Default is \code{FALSE}.
+#'   Automatically set to \code{TRUE} if \code{est} is \code{median} or \code{hd}.
+#' @param xout Logical. If \code{TRUE}, remove multivariate outliers from predictors.
+#'   Default is \code{FALSE}.
+#' @param outfun Outlier detection function. Default is \code{\link{outpro}}.
+#' @param SEED Logical. If \code{TRUE} (default), set random seed for reproducibility.
+#' @param ... Additional arguments passed to \code{est} or other functions.
+#'
+#' @details
+#' The function:
+#' \enumerate{
+#'   \item Splits data into groups based on quantiles of the specified independent variable
+#'   \item Extracts the dependent variable values for each group
+#'   \item Tests for equal location measures using either:
+#'     \itemize{
+#'       \item \code{\link{lincon}} for trimmed means (when \code{PB=FALSE})
+#'       \item \code{\link{linconpb}} for percentile bootstrap (when \code{PB=TRUE})
+#'     }
+#' }
+#'
+#' Example: \code{Qsplit=c(.25, .5, .75)} creates 4 groups (below Q1, Q1-Q2, Q2-Q3, above Q3).
+#'
+#' @return List with components:
+#'   \item{Indep.var.summary.for.each.group}{Summary statistics for the independent
+#'     variable within each group}
+#'   \item{output}{Results from \code{\link{lincon}} or \code{\link{linconpb}}}
+#'
+#' @seealso \code{\link{lincon}}, \code{\link{linconpb}}, \code{\link{binmat}},
+#'   \code{\link{smgrid}}
+#'
+#' @keywords htest robust
+#' @export
 smtest<-function(x,y,IV=1,Qsplit=.5,nboot=1000,est=tmean,tr=.2,PB=FALSE,
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
 #
@@ -7430,6 +11944,48 @@ list(Indep.var.summary.for.each.group=group,output=a)
 
 # ----------------------------------------------------------------------------
 
+#' Estimate Conditional Variance Using Bagged Running Interval Smoother
+#'
+#' @description
+#' Estimates VAR(Y|X), the conditional variance of Y given X, using a bagged
+#' (bootstrap aggregated) running interval smoother. Provides robust estimation
+#' of heteroscedasticity patterns.
+#'
+#' @param x Vector of predictor values.
+#' @param y Vector of response values.
+#' @param fr Span (fraction of data) for the running interval smoother. Default is 0.6.
+#' @param xout Logical. If \code{TRUE} (default), eliminate points where x is an outlier.
+#' @param eout Logical. If \code{TRUE}, eliminate points where (x,y) is a bivariate outlier.
+#'   Default is \code{FALSE}.
+#' @param xlab Label for x-axis. Default is "X".
+#' @param ylab Label for y-axis. Default is "VAR(Y|X)".
+#' @param pyhat Logical. If \code{TRUE}, return variance estimates for each x value.
+#'   If \code{FALSE} (default), return "Done" message.
+#' @param plotit Logical. If \code{TRUE} (default), create scatterplot of squared residuals
+#'   with smooth curve showing estimated conditional variance.
+#' @param nboot Number of bootstrap samples for bagging. Default is 40.
+#' @param RNA Logical. If \code{TRUE}, remove missing values when applying smooth.
+#'   If \code{FALSE} (default), may return NA for some predicted values.
+#' @param SEED Logical. If \code{TRUE} (default), set random seed for reproducibility.
+#'
+#' @details
+#' The function:
+#' \enumerate{
+#'   \item Fits LOESS smooth to estimate E(Y|X)
+#'   \item Computes squared residuals (Y - Yhat)^2
+#'   \item Uses bagged running interval smoother (\code{\link{runmbo}}) to estimate variance
+#'   \item Optionally plots squared residuals with smooth variance curve
+#' }
+#'
+#' This is useful for detecting and modeling heteroscedasticity in regression relationships.
+#'
+#' @return If \code{pyhat=TRUE}, returns vector of estimated conditional variance values
+#'   at each x point. If \code{pyhat=FALSE}, returns character string "Done".
+#'
+#' @seealso \code{\link{runmbo}}, \code{\link{lplot}}, \code{\link{runmean}}
+#'
+#' @keywords regression smooth
+#' @export
 smvar<-function(x,y,fr=.6,xout=TRUE,eout=FALSE,xlab="X",ylab="VAR(Y|X)",pyhat=FALSE,plotit=TRUE,nboot=40,
 RNA=FALSE,SEED=TRUE){
 #
@@ -7467,6 +12023,40 @@ output <- "Done"
 if(pyhat)output <- estvar
 output
 }
+
+#' Multivariate Two-Sample Trimmed Mean Comparison
+#'
+#' @description
+#' For two independent p-variate distributions, applies Yuen's test (\code{\link{yuen}})
+#' to each variable (column) separately. Controls familywise error rate (FWE) using
+#' Hochberg's method.
+#'
+#' @param x Matrix with p columns for group 1, or data in list mode.
+#' @param y Matrix with p columns for group 2, or data in list mode.
+#' @param tr Amount of trimming (proportion of observations to trim from each tail).
+#'   Default is 0.2 (20% trimming).
+#' @param alpha Familywise error rate. Default is 0.05.
+#'
+#' @details
+#' The function applies Yuen's trimmed mean test to each of p variables independently,
+#' then adjusts p-values using Hochberg's step-down method to control the familywise
+#' error rate. This provides strong control of Type I error when testing multiple
+#' hypotheses simultaneously.
+#'
+#' For each variable, the test compares trimmed means between the two independent groups.
+#'
+#' @return List with components:
+#'   \item{n}{Vector of sample sizes (n1, n2) for the two groups}
+#'   \item{test}{Matrix with columns: Variable index, test statistic, p-value,
+#'     critical p-value (Hochberg adjusted), and standard error}
+#'   \item{psihat}{Matrix with columns: Variable index, estimated difference,
+#'     lower CI, upper CI}
+#'   \item{num.sig}{Number of significant tests using adjusted critical values}
+#'
+#' @seealso \code{\link{yuen}}, \code{\link{trimcimul}}, \code{\link{lincon}}
+#'
+#' @keywords multivariate htest robust
+#' @export
 trim2gmul<-function(x,y, tr = 0.2, alpha = 0.05){
 #
 # For two independent  p-variate distributions,  apply yuen to each column of data
@@ -7512,6 +12102,28 @@ num.sig=sum(test[,3]<=test[,4])
 list(n=c(nrow(x),nrow(y)),test=test,psihat=psihat,num.sig=num.sig)
 }
 
+#' Trimmed Mean Confidence Interval for Paired Differences
+#'
+#' @description
+#' Convenience wrapper for computing confidence interval for trimmed mean of
+#' paired differences (x - y). Simply calls \code{\link{trimci}} on the differences.
+#'
+#' @param x Vector of observations for first condition.
+#' @param y Vector of observations for second condition (paired with x).
+#' @param alpha Significance level for confidence interval. Default is 0.05.
+#' @param tr Amount of trimming. Default is 0.2 (20% trimming).
+#'
+#' @details
+#' This is a convenience function equivalent to \code{trimci(x-y, alpha=alpha, tr=tr, pr=FALSE)}.
+#' It computes the trimmed mean of the differences and provides a confidence interval.
+#'
+#' @return Same output as \code{\link{trimci}}: list with estimate, confidence interval,
+#'   test statistic, p-value, and sample size.
+#'
+#' @seealso \code{\link{trimci}}, \code{\link{yuend}}
+#'
+#' @keywords htest robust
+#' @export
 trimci.dif<-function(x,y,alpha=.05,tr=.2){
 #
 # For convenince
@@ -7520,6 +12132,53 @@ a=trimci(x-y,alpha=alpha,tr=tr,pr=FALSE)
 a
 }
 
+#' Bootstrap-t Confidence Interval for Trimmed Mean
+#'
+#' @description
+#' Computes a confidence interval for the trimmed mean using a bootstrap percentile-t
+#' method (Tukey-McLaughlin method). Provides more accurate coverage than standard
+#' methods, especially with non-normal distributions.
+#'
+#' @param x Vector of observations.
+#' @param tr Amount of trimming. Default is 0.2 (20% trimming).
+#' @param alpha Significance level. Default is 0.05.
+#' @param nboot Number of bootstrap samples. Default is 1999.
+#' @param side Logical. If \code{TRUE} (default), uses symmetric two-sided method.
+#'   If \code{FALSE}, yields equal-tailed confidence interval.
+#' @param plotit Logical. If \code{TRUE}, plot the estimated null distribution of the
+#'   test statistic. Default is \code{FALSE}.
+#' @param op Integer (1 or 2). When \code{plotit=TRUE}, controls plot type:
+#'   \code{op=1} uses adaptive kernel density estimator, \code{op=2} uses expected
+#'   frequency curve (faster for large \code{nboot}).
+#' @param nullval Null hypothesis value to test against. Default is 0.
+#' @param SEED Logical. If \code{TRUE} (default), set random seed to 2 for reproducibility.
+#' @param prCRIT Logical. If \code{TRUE}, print critical values. Default is \code{FALSE}.
+#' @param pr Logical. If \code{TRUE} (default), print informational messages.
+#' @param xlab Label for x-axis when \code{plotit=TRUE}. Default is empty string.
+#'
+#' @details
+#' The bootstrap-t method:
+#' \enumerate{
+#'   \item Generates bootstrap samples and computes t-statistics
+#'   \item Uses the bootstrap distribution of t-statistics to determine critical values
+#'   \item Forms confidence interval using these critical values
+#' }
+#'
+#' The symmetric method (\code{side=TRUE}) uses absolute values of t-statistics and
+#' provides p-values. The equal-tailed method (\code{side=FALSE}) uses separate lower
+#' and upper critical values but does not compute p-values.
+#'
+#' @return List with components:
+#'   \item{estimate}{Trimmed mean estimate}
+#'   \item{ci}{Confidence interval (vector of length 2)}
+#'   \item{test.stat}{Test statistic for testing \code{nullval}}
+#'   \item{p.value}{P-value (only when \code{side=TRUE}, otherwise NA)}
+#'   \item{n}{Sample size}
+#'
+#' @seealso \code{\link{trimci}}, \code{\link{trimpb}}, \code{\link{trimse}}
+#'
+#' @keywords htest robust bootstrap
+#' @export
 trimcibt<-function(x,tr=.2,alpha=.05,nboot=1999,side=TRUE,plotit=FALSE,op=1,
 nullval=0,SEED=TRUE,prCRIT=FALSE,pr=TRUE,xlab=""){
 #
@@ -7577,6 +12236,41 @@ p.value<-(sum(abs(test)<=abs(tval)))/nboot
 list(estimate=mean(x,tr),ci=ci,test.stat=test,p.value=p.value,n=length(x))
 }
 
+#' Multivariate Trimmed Mean Tests with FWE Control
+#'
+#' @description
+#' For J dependent variables, applies \code{\link{trimci}} to each variable separately.
+#' Controls familywise error rate (FWE) using the Rom-Hochberg method and provides
+#' simultaneous confidence intervals.
+#'
+#' @param x Matrix with J columns (one per variable), or data in list mode.
+#' @param tr Amount of trimming. Default is 0.2 (20% trimming).
+#' @param alpha Familywise error rate. Default is 0.05.
+#' @param null.value Null hypothesis value for each trimmed mean. Default is 0.
+#'
+#' @details
+#' The function:
+#' \enumerate{
+#'   \item Applies one-sample trimmed mean test to each variable
+#'   \item Adjusts p-values using the Rom-Hochberg method for strong FWE control
+#'   \item Computes adjusted confidence intervals with simultaneous coverage 1-alpha
+#' }
+#'
+#' The Rom-Hochberg method uses special critical values (stored for alpha=0.05 and 0.01)
+#' that provide better power than Bonferroni while maintaining FWE control.
+#'
+#' @return List with components:
+#'   \item{n}{Vector of sample sizes for each variable (after removing NAs)}
+#'   \item{test}{Matrix with columns: Variable index, test statistic, p-value,
+#'     adjusted critical p-value, and standard error}
+#'   \item{psihat}{Matrix with columns: Variable index, estimate, unadjusted CI lower/upper,
+#'     adjusted CI lower/upper}
+#'   \item{num.sig}{Number of significant tests using adjusted critical values}
+#'
+#' @seealso \code{\link{trimci}}, \code{\link{trim2gmul}}, \code{\link{trimmulCI}}
+#'
+#' @keywords multivariate htest robust
+#' @export
 trimcimul<-function(x, tr = 0.2, alpha = 0.05,null.value=0){
 #
 # For J dependent random variables, apply trimci to each
@@ -7633,6 +12327,31 @@ psihat[d,5:6]=trimci(dval,tr=tr,alpha=test[d,4],pr=FALSE,null.value=null.value)$
 list(n=nval,test=test,psihat=psihat,num.sig=num.sig)
 }
 
+#' Trimmed Mean CI with Quantile Shift Effect Size
+#'
+#' @description
+#' Computes confidence interval for the trimmed mean (same as \code{\link{trimci}})
+#' plus a quantile shift measure of effect size.
+#'
+#' @param x Vector of observations.
+#' @param tr Amount of trimming. Default is 0.2 (20% trimming).
+#' @param alpha Significance level. Default is 0.05.
+#' @param null.value Null hypothesis value. Default is 0.
+#' @param pr Logical. If \code{TRUE} (default), print informational messages.
+#' @param nullval Deprecated. Use \code{null.value} instead.
+#'
+#' @details
+#' This function extends \code{\link{trimci}} by also computing a quantile shift
+#' effect size using \code{\link{depQS}}. The quantile shift measures the shift
+#' between distributions in terms of quantiles, providing a robust effect size measure.
+#'
+#' @return List with components from \code{\link{trimci}} plus:
+#'   \item{Q.effect}{Quantile shift effect size}
+#'
+#' @seealso \code{\link{trimci}}, \code{\link{trimciv2}}, \code{\link{depQS}}
+#'
+#' @keywords htest robust
+#' @export
 trimciQS<-function(x,tr=.2,alpha=.05,null.value=0,pr=TRUE,nullval=NULL){
 #
 #  Compute a 1-alpha confidence interval for the trimmed mean
@@ -7658,7 +12377,34 @@ QS=depQS(x,locfun=tmean,tr=tr)$Q.effect
 list(ci=trimci,estimate=mean(x,tr),test.stat=test,se=se,p.value=sig,n=length(x),Q.effect=QS)
 }
 
-
+#' Trimmed Mean CI with Standardized Effect Size
+#'
+#' @description
+#' Computes confidence interval for the trimmed mean (same as \code{\link{trimci}})
+#' plus a standardized effect size based on Winsorized standard deviation.
+#'
+#' @param x Vector of observations.
+#' @param tr Amount of trimming. Default is 0.2 (20% trimming).
+#' @param alpha Significance level. Default is 0.05.
+#' @param null.value Null hypothesis value. Default is 0.
+#' @param pr Logical. If \code{TRUE} (default), print informational messages.
+#'
+#' @details
+#' This function extends \code{\link{trimci}} by computing a standardized effect size:
+#' the difference between the trimmed mean and null value divided by the Winsorized
+#' standard deviation, rescaled to estimate the standard deviation when sampling from
+#' a normal distribution.
+#'
+#' The rescaling factor adjusts for the trimming to provide an effect size comparable
+#' to Cohen's d when data are normally distributed.
+#'
+#' @return List with components from \code{\link{trimci}} plus:
+#'   \item{Effect.Size}{Standardized effect size based on Winsorized standard deviation}
+#'
+#' @seealso \code{\link{trimci}}, \code{\link{trimciQS}}, \code{\link{winvar}}
+#'
+#' @keywords htest robust
+#' @export
 trimciv2<-function(x,tr=.2,alpha=.05,null.value=0,pr=TRUE){
 #
 #  Compute a 1-alpha confidence interval for the trimmed mean
@@ -7692,6 +12438,40 @@ list(ci=trimci,estimate=mean(x,tr),test.stat=test,se=se,p.value=sig,n=length(x),
 
 # ----------------------------------------------------------------------------
 
+#' Multivariate Trimmed Mean Tests with Simultaneous CIs
+#'
+#' @description
+#' For J dependent variables, applies trimmed mean test to each with simultaneous
+#' confidence intervals having probability coverage 1-alpha. Particularly useful
+#' when J is large (>20) and sample size is small (<=20).
+#'
+#' @param x Matrix with J columns (one per variable), or data in list mode.
+#' @param tr Amount of trimming. Default is 0.2 (20% trimming).
+#' @param alpha Familywise error rate. Default is 0.05.
+#' @param null.value Null hypothesis value for each trimmed mean. Default is 0.
+#' @param nboot Number of bootstrap samples for determining critical p-value.
+#'   Default is 2000.
+#' @param SEED Logical. If \code{TRUE} (default), set random seed to 2 for reproducibility.
+#' @param MC Logical. If \code{TRUE} (default), use parallel processing via \code{mclapply}.
+#'
+#' @details
+#' This function uses bootstrap methods to determine a critical p-value that controls
+#' the familywise error rate. Unlike \code{\link{trimcimul}} which uses Rom-Hochberg
+#' critical values, this function estimates the critical value via simulation, making
+#' it more appropriate when the number of tests is large or sample size is small.
+#'
+#' The simultaneous confidence intervals are constructed to have joint coverage 1-alpha.
+#'
+#' @return List with components:
+#'   \item{test}{Matrix with columns: Variable index, test statistic, p-value, standard error}
+#'   \item{psihat}{Matrix with columns: Variable index, estimate, CI lower, CI upper}
+#'   \item{p.crit}{Critical p-value for controlling FWE at level alpha}
+#'   \item{num.sig}{Number of significant tests}
+#'
+#' @seealso \code{\link{trimcimul}}, \code{\link{trimci}}, \code{\link{trimmul.crit}}
+#'
+#' @keywords multivariate htest robust bootstrap
+#' @export
 trimmulCI<-function(x, tr = 0.2, alpha = 0.05,null.value=0,nboot=2000,SEED=TRUE,MC=TRUE){
 #
 # For J dependent random variables, apply trimci to each.
@@ -7734,8 +12514,32 @@ CI.sig=sum(psihat[,3]>null.value)+sum(psihat[,4]<null.value)
 list(n=nval,test=test,psihat=psihat,crit.p.value=p.crit,num.sig=CI.sig)
 }
 
-
-
+#' Compute Trimmed Mean Components
+#'
+#' @description
+#' Internal utility function that computes the trimmed mean and squared standard error.
+#' Used by other trimmed mean functions.
+#'
+#' @param x Vector of observations.
+#' @param tr Amount of trimming. Default is 0.2 (20% trimming).
+#'
+#' @details
+#' This function computes two components:
+#' \enumerate{
+#'   \item Trimmed mean
+#'   \item Squared standard error based on Winsorized variance
+#' }
+#'
+#' The squared standard error is computed as:
+#' (n-1) * winvar(x,tr) / (h * (h-1))
+#' where h is the effective sample size after trimming.
+#'
+#' @return Numeric vector of length 2: (trimmed mean, squared standard error).
+#'
+#' @seealso \code{\link{trimse}}, \code{\link{winvar}}
+#'
+#' @keywords internal
+#' @export
 trimparts<-function(x,tr=.2){
 #
 #  Compute the trimmed mean, effective sample size, and squared standard error.
@@ -7759,6 +12563,25 @@ trimparts
 
 # ----------------------------------------------------------------------------
 
+#' Compute Linear Contrast of Trimmed Means
+#'
+#' @description
+#' Internal utility function that computes a linear combination (contrast) of values.
+#' Used by trimmed mean ANOVA functions.
+#'
+#' @param x Vector of values (typically trimmed means).
+#' @param con Vector of contrast coefficients.
+#'
+#' @details
+#' Simply computes the sum of element-wise products: sum(con * x).
+#' This is used in ANOVA procedures to compute contrasts among trimmed means.
+#'
+#' @return Numeric value: the linear combination sum(con * x).
+#'
+#' @seealso \code{\link{trimparts}}, \code{\link{lincon}}
+#'
+#' @keywords internal
+#' @export
 trimpartt<-function(x,con){
 #
 #  This function is used by other functions described in chapter 6.
@@ -7767,6 +12590,41 @@ trimpartt<-sum(con*x)
 trimpartt
 }
 
+#' Two-Way Repeated Measures ANOVA with Trimmed Means
+#'
+#' @description
+#' Performs a J by K ANOVA using trimmed means with repeated measures on both factors.
+#' Uses a within-subjects design where all subjects are measured under all J*K conditions.
+#'
+#' @param J Number of levels for Factor A.
+#' @param K Number of levels for Factor B.
+#' @param x Data in list mode or matrix form. If list, \code{x[[1]]} contains data for
+#'   condition (1,1), \code{x[[2]]} for condition (1,2), ..., \code{x[[K]]} for (1,K),
+#'   \code{x[[K+1]]} for (2,1), etc.
+#' @param grp Vector indicating which groups to analyze. Default is \code{1:p} (all groups).
+#' @param p Total number of groups. Default is J*K.
+#' @param tr Amount of trimming. Default is 0.2 (20% trimming).
+#'
+#' @details
+#' This function performs a two-way repeated measures ANOVA using trimmed means.
+#' The data should be structured so that each element of the list (or column of the matrix)
+#' contains observations for one combination of Factor A and Factor B levels, with all
+#' observations from the same subjects measured repeatedly.
+#'
+#' The function:
+#' \enumerate{
+#'   \item Computes trimmed means for each cell
+#'   \item Estimates the covariance matrix among cells using \code{\link{covmtrim}}
+#'   \item Tests main effects for Factor A and Factor B
+#'   \item Tests the A × B interaction
+#' }
+#'
+#' @return List with test results for main effects and interaction.
+#'
+#' @seealso \code{\link{bwtrim}}, \code{\link{rmanova}}, \code{\link{covmtrim}}
+#'
+#' @keywords htest robust
+#' @export
 trimww<-function(J,K,x,grp=c(1:p),p=J*K,tr=.2){
 #
 #  Perform a J by K anova using trimmed means with
@@ -10251,6 +15109,33 @@ list(p.hat=est[,1],CI=CI,con=con)
 }
 
 
+#' Compute Confidence Interval for Zou et al. Method (Internal)
+#'
+#' @description
+#' Internal function that computes the confidence interval for the difference
+#' in two binomial proportions using the Zou, Hao, and Zhang method.
+#'
+#' @param r1 Number of successes in group 1
+#' @param n1 Sample size for group 1
+#' @param r2 Number of successes in group 2
+#' @param n2 Sample size for group 2
+#' @param x Vector of 1s and 0s for group 1 (not used)
+#' @param y Vector of 1s and 0s for group 2 (not used)
+#' @param alpha Significance level (default 0.05)
+#' @param method Method for computing individual binomial CIs (default 'AC')
+#'
+#' @details
+#' This is the computational workhorse for \code{\link{binom2g.ZHZ}}.
+#' It computes CIs for each proportion separately, then combines them
+#' using the method from Zou et al. (2009).
+#'
+#' @return
+#' Confidence interval as a vector c(lower, upper).
+#'
+#' @seealso \code{\link{binom2g.ZHZ}}
+#'
+#' @keywords internal
+#' @export
 binom2g.ZHZ.main<-function(r1=sum(elimna(x)),n1=length(elimna(x)),
 r2=sum(elimna(y)),n2 = length(elimna(y)), x = NA, y = NA, alpha=.05,
 method='AC'){
@@ -16554,6 +21439,31 @@ pv=2*min(pv,1-pv)
 list(n=n,Est=e,p.value=pv)
 }
 
+#' Decision-Only Method for Selecting Best Binomial Group
+#'
+#' @description
+#' Internal function to determine whether it is reasonable to decide which
+#' group has the largest probability of success using a decision-only approach.
+#'
+#' @param x Vector of number of successes for each group
+#' @param n Vector of sample sizes for each group
+#'
+#' @details
+#' This function is used by \code{\link{bin.PMD.PCD}} as an alternative
+#' to \code{\link{bin.best}}. It uses linear constraints to test whether
+#' the group with the largest estimate is significantly larger than all others.
+#'
+#' @return
+#' List with components:
+#' \itemize{
+#'   \item Est.: Vector of estimated proportions
+#'   \item p.value: Maximum p-value from the constraint tests
+#' }
+#'
+#' @seealso \code{\link{bin.PMD.PCD}}, \code{\link{lincon.bin}}
+#'
+#' @keywords internal
+#' @export
 bin.best.DO<-function(x,n){
 #
 #  Determine whether it is reasonable to
@@ -17630,6 +22540,55 @@ list(phat=phat,se=sqrt(ptil*(1-ptil)/ntil),ci=c(lower,upper),n=n)
 
 
 
+#' P-Value for Binomial Confidence Interval Methods
+#'
+#' @description
+#' Compute p-value for testing whether the probability of success equals a
+#' specified null value, using various binomial CI methods available in
+#' \code{\link{binom.conf}}.
+#'
+#' @param x Number of successes (computed from y if y is provided)
+#' @param nn Sample size (computed from y if y is provided)
+#' @param y Vector of 1s and 0s (optional)
+#' @param method Character string specifying CI method: 'AC' (Agresti-Coull,
+#'   default), 'P' (Pratt), 'CP' (Clopper-Pearson), 'KMS' (Kulinskaya et al.),
+#'   'WIL' (Wilson), or 'SD' (Schilling-Doi)
+#' @param AUTO Logical; if TRUE (default), automatically use 'SD' method when n < 35
+#' @param pr Logical; if TRUE, print note about sign test (default FALSE)
+#' @param PVSD Logical; if TRUE, compute p-value when using SD method; if FALSE,
+#'   skip p-value computation to avoid high execution time (default TRUE)
+#' @param alpha Significance level for CI (default 0.05)
+#' @param nullval Null hypothesis value for probability of success (default 0.5)
+#' @param NOTE Logical; if TRUE (default), print note when PVSD=FALSE with SD method
+#'
+#' @details
+#' Computes a p-value by finding the smallest alpha level at which the
+#' confidence interval excludes the null value. Multiple methods are available:
+#' \itemize{
+#'   \item AC: Agresti-Coull (default, good general performance)
+#'   \item P: Pratt's method
+#'   \item CP: Clopper-Pearson (exact, conservative)
+#'   \item KMS: Kulinskaya et al.
+#'   \item WIL: Wilson
+#'   \item SD: Schilling-Doi (recommended for n < 35)
+#' }
+#'
+#' When AUTO=TRUE, the SD method is automatically used for small samples (n < 35).
+#' Computing p-values with SD method can be slow; set PVSD=FALSE to skip.
+#'
+#' @return
+#' List with components:
+#' \itemize{
+#'   \item n: Sample size
+#'   \item p.hat: Estimated proportion
+#'   \item ci: Confidence interval
+#'   \item p.value: P-value (NULL if PVSD=FALSE with SD method)
+#' }
+#'
+#' @seealso \code{\link{binom.conf}}, \code{\link{binomcipv}}
+#'
+#' @keywords binomial htest
+#' @export
 binom.conf.pv<-function(x = sum(y), nn = length(y),y=NULL,method='AC',AUTO=TRUE, pr=FALSE, PVSD=TRUE,alpha=.05,nullval=.5,NOTE=TRUE){
 #
 #   p-value for the methods available in binom.conf
@@ -23943,7 +28902,36 @@ names(centers[[j]])=c('V1','V2','N')
 list(centers=centers,convex.hull.pts=region)
 }
 
-
+#' Compute Confidence Regions for Bivariate Medians in Astigmatism Data
+#'
+#' @description
+#' Computes confidence regions for the median of bivariate astigmatism prediction
+#' error data. Creates convex hull confidence regions for each formula pair based
+#' on depth-based methods.
+#'
+#' @param m Matrix or data frame with even number of columns (J). First two columns
+#'   represent first formula, next two the second formula, etc.
+#' @param Region Confidence level (default: 0.05 for 95% confidence region)
+#' @param plotit Logical; if TRUE, plot the confidence regions
+#' @param xlab Label for x-axis (default: 'V1')
+#' @param ylab Label for y-axis (default: 'V2')
+#'
+#' @details
+#' For each formula (pair of columns), computes a 1-Region confidence region for the
+#' bivariate median using depth-based methods. The confidence region is represented
+#' as a convex hull. Uses marginal medians as the center.
+#'
+#' @return
+#' List with components:
+#' \itemize{
+#'   \item \code{centers} - List of center points (medians) for each formula with sample sizes
+#'   \item \code{convex.hull.pts} - List of convex hull boundary points for each formula
+#' }
+#'
+#' @seealso \code{\link{oph.astig.meanconvexpoly}}, \code{\link{mulcen.region}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.astig.datasetconvexpoly.median<-function(m,Region=.05,plotit=FALSE,xlab='V1',ylab='V2'){
 #
 # region=.05 means that the function
@@ -36646,6 +41634,31 @@ output[,9]=p.adjust(output[,8],method=method)
 output
 }
 
+#' Compare Variances - Independent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares variances of prediction errors for intraocular lens power calculation
+#' formulas using independent samples. Uses HC4 version of the Morgan-Pitman test.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param method Multiple comparison method for p-value adjustment (default: 'hommel')
+#' @param invalid Maximum valid absolute value in diopters (default: 4, note: different from default 3)
+#' @param SEED Logical; if TRUE, set random seed for reproducibility
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#'
+#' @details
+#' Performs all pairwise comparisons using a slight extension of the HC4 version
+#' of the Morgan-Pitman test for comparing variances. Reports standard deviations
+#' but tests are based on variances.
+#'
+#' @return
+#' Matrix with columns: Var, Var, SD 1, SD 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.dep.comvar}}, \code{\link{varcom.IND.MP}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.ind.comvar<-function(x,y=NULL,method='hommel',invalid=4,SEED=TRUE,STOP=TRUE){
 #
 #  This function is designed specifically for dealing with
@@ -36700,7 +41713,30 @@ output[,7]=p.adjust(output[,6],method=method)
 output
 }
 
-
+#' Compare Variances - Dependent Groups (Ophthalmology)
+#'
+#' @description
+#' Compares variances of prediction errors for intraocular lens power calculation
+#' formulas using dependent (paired) samples. Uses HC4 version of the Morgan-Pitman test.
+#'
+#' @param x Matrix, data frame, or list with J columns/elements representing different formulas
+#' @param y Optional second variable; if provided, x is treated as a vector and compared to y
+#' @param invalid Maximum valid absolute value in diopters (default: 4, note: different from default 3)
+#' @param method Multiple comparison method for p-value adjustment (default: 'hommel')
+#' @param STOP Logical; if TRUE, stop on detection of invalid values
+#'
+#' @details
+#' Performs all pairwise comparisons of variances for dependent variables using
+#' the HC4 extension of the Morgan-Pitman test. Reports standard deviations but
+#' tests are based on variances.
+#'
+#' @return
+#' Matrix with columns: Var, Var, SD 1, SD 2, Dif, p.value, Adj.p.value
+#'
+#' @seealso \code{\link{oph.ind.comvar}}, \code{\link{comdvar}}
+#'
+#' @keywords ophthalmology
+#' @export
 oph.dep.comvar<-function(x, y=NULL, invalid=4, method='hommel',STOP=TRUE){
 #
 #  This function is designed specifically for dealing with
