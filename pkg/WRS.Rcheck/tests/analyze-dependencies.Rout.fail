@@ -1,0 +1,33 @@
+
+R version 4.5.2 (2025-10-31) -- "[Not] Part in a Rumble"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # WRS Function Dependency Analysis
+> # Analyzes function calls to guide modularization
+> 
+> cat("Analyzing function dependencies in WRS package...\n\n")
+Analyzing function dependencies in WRS package...
+
+> 
+> # Read the source file
+> source_file <- "pkg/R/Rallfun-v45.R"
+> code <- readLines(source_file)
+Error in file(con, "r") : cannot open the connection
+Calls: readLines -> file
+In addition: Warning message:
+In file(con, "r") :
+  cannot open file 'pkg/R/Rallfun-v45.R': No such file or directory
+Execution halted
