@@ -8683,57 +8683,6 @@ rm
 #' x2 <- rnorm(50); y2 <- x2 + rnorm(50, mean=1)
 #' result <- ancpar(x1, y1, x2, y2, regfun=tsreg)
 #' }
-#' Parametric ANCOVA Wrapper (Single or Multiple Covariates)
-#'
-#' Wrapper function that automatically calls the appropriate robust ANCOVA function
-#' based on the number of covariates. Calls \code{\link{ancts}} for one covariate
-#' or \code{\link{anctsmp}} for multiple covariates.
-#'
-#' @param x1 A numeric vector or matrix of covariate values for group 1.
-#' @param y1 A numeric vector of outcome values for group 1.
-#' @param x2 A numeric vector or matrix of covariate values for group 2.
-#' @param y2 A numeric vector of outcome values for group 2.
-#' @param pts Design points for comparisons. For single covariate: a vector.
-#'   For multiple covariates: a matrix with one column per covariate.
-#'   If `NULL`, points are chosen automatically.
-#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
-#' @param fr1 Span for group 1 running interval (default: 1).
-#' @param fr2 Span for group 2 running interval (default: 1).
-#' @inheritParams common-params
-#' @param xlab,ylab Axis labels for plots.
-#' @param ... Additional arguments passed to \code{\link{ancts}} or \code{\link{anctsmp}}.
-#'
-#' @return The output from either \code{\link{ancts}} (for 1 covariate) or
-#'   \code{\link{anctsmp}} (for >1 covariates). See those functions for details.
-#'
-#' @details
-#' This is a convenience wrapper that automatically selects the appropriate
-#' robust ANCOVA function:
-#' \itemize{
-#'   \item If x1 and x2 are vectors (ncol = 1): calls \code{\link{ancts}}
-#'   \item If x1 and x2 are matrices (ncol > 1): calls \code{\link{anctsmp}}
-#' }
-#'
-#' Both functions use robust regression (default: Theil-Sen estimator) to
-#' compare regression lines/surfaces at specified design points.
-#'
-#' @seealso \code{\link{ancts}}, \code{\link{anctsmp}}
-#'
-#' @export
-#' @examples
-#' \dontrun{
-#' # One covariate
-#' x1 <- rnorm(30); y1 <- 2 + 3*x1 + rnorm(30)
-#' x2 <- rnorm(30); y2 <- 1 + 3*x2 + rnorm(30)
-#' result1 <- ancpar(x1, y1, x2, y2)
-#'
-#' # Two covariates
-#' x1_mat <- matrix(rnorm(60), ncol = 2)
-#' y1 <- 2 + 3*x1_mat[,1] + x1_mat[,2] + rnorm(30)
-#' x2_mat <- matrix(rnorm(60), ncol = 2)
-#' y2 <- 1 + 3*x2_mat[,1] + x2_mat[,2] + rnorm(30)
-#' result2 <- ancpar(x1_mat, y1, x2_mat, y2)
-#' }
 ancpar<-function(x1,y1,x2,y2,pts=NULL,regfun=tsreg,fr1=1,fr2=1,alpha=.05,plotit=TRUE,xout=FALSE,outfun=out,nboot=100,SEED=TRUE,xlab="X",ylab="Y",...){
 #
 # Compare the regression lines of two independent groups at specified design points.

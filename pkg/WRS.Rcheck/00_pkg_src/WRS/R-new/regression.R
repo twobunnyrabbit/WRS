@@ -3285,6 +3285,8 @@ val
 
 #' Quantile Regression using Koenker-Bassett Method
 #'
+#' @rdname qreg_functions
+#'
 #' Computes quantile regression using the Koenker-Bassett approach. This function
 #' estimates the \code{qval}-th conditional quantile of Y given X. Default uses
 #' the \code{rq} function from the \code{quantreg} package.
@@ -7985,6 +7987,8 @@ list(n=n,n.keep=nk,param=lvec,p.values=pvec,est.grp1=est1,est.grp2=est2,conf.int
 # ============================================================================
 
 #' Quantile Regression
+#'
+#' @rdname qreg_functions
 #'
 #' Performs quantile regression using numerical optimization. Handles tied values
 #' in the dependent variable better than \code{qreg}. Estimates the qth conditional

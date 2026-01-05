@@ -527,6 +527,8 @@ mat
 
 #' Compute Biweight Midcovariance and Correlation Matrices
 #'
+#' @rdname bicovm_functions
+#'
 #' Calculates robust biweight midcovariance and midcorrelation matrices for
 #' multivariate data, providing resistance to outliers.
 #'
@@ -602,6 +604,8 @@ list(mcov=mcov,mcor=mcor)
 }
 
 #' Extract Biweight Midcovariance Matrix Only
+#'
+#' @rdname bicovm_functions
 #'
 #' Wrapper function that returns only the biweight midcovariance matrix from
 #' \code{\link{bicovm}}, discarding the correlation matrix.

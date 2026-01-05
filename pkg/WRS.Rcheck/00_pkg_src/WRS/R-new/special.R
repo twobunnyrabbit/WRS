@@ -9071,7 +9071,7 @@ list(Factor.A=A,Factor.B=B,Interactions=AB)
 #' y <- rnorm(100)
 #' result <- KMSgrid.mcp(x, y, Qsplit1 = .5, Qsplit2 = .5)
 KMSgrid.mcp<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,VAL1=NULL,VAL2=NULL,alpha=05,SW=FALSE,
-nulldist=NULL,est=tmean,iter=1000,pr=TRUE,method='hoch',
+nulldist=NULL,est=tmean,tr=.2,iter=1000,pr=TRUE,method='hoch',
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
 #
 # Compare robust, heteroscedastic measures of effect size, the KMS measure for two or more groups
@@ -40396,6 +40396,8 @@ x
 
 #' Convert Matrix to Grouped List (Exclude Grouping Column)
 #'
+#' @rdname mat2list_functions
+#'
 #' @description
 #' Split matrix data into groups based on a grouping variable, excluding the
 #' grouping column from the output. Similar to \code{\link{fac2list}} but for matrices.
@@ -40455,6 +40457,8 @@ x
 }
 
 #' Convert Wide-Format Matrix to List of Group Matrices
+#'
+#' @rdname mat2list_functions
 #'
 #' @description
 #' Convert a matrix or data frame in wide format (where columns represent multiple
@@ -41029,6 +41033,8 @@ list(p.value=sig.level,center=tvec)
 }
 
 #' Quantile Regression Bootstrap Subroutine (Internal)
+#'
+#' @rdname qindbt_sub_functions
 #'
 #' @description
 #' Internal function for computing bootstrap quantile regression slope estimates.
@@ -44898,6 +44904,8 @@ list(odds.ratio=exp(temp[2,1]),ci=ci)
 
 #' OGK Robust Covariance Estimator (Orthogonalized Gnanadesikan-Kettenring)
 #'
+#' @rdname ogk_functions
+#'
 #' @description
 #' Computes robust weighted covariance matrix using the OGK (Orthogonalized
 #' Gnanadesikan-Kettenring) method of Maronna and Zamar (2002).
@@ -44972,6 +44980,8 @@ list(center=temp$wcenter,cov=temp$wcovmat)
 # ----------------------------------------------------------------------------
 
 #' OGK Estimator via rrcov Package
+#'
+#' @rdname ogk_functions
 #'
 #' @description
 #' Wrapper for the OGK (Orthogonalized Gnanadesikan-Kettenring) robust covariance
@@ -53871,6 +53881,8 @@ list(n=length(y),test=test,se.val=se.val,crit.val=crit,crit.fwe=crit.fwe,est.val
 
 
 #' @title Bootstrap Helper for Quantile Regression Slopes
+#'
+#' @rdname qindbt_sub_functions
 #'
 #' @description
 #' Internal bootstrap helper function that performs quantile regression on a
@@ -66244,6 +66256,8 @@ list(center=val)
 
 #' Spherical Principal Component Analysis
 #'
+#' @rdname spca_functions
+#'
 #' @description
 #' Performs robust principal component analysis using the spherical PCA method,
 #' which projects data onto the unit sphere before computing principal components.
@@ -66330,6 +66344,8 @@ list(eigen.val=lam,B=b,spat.mu=mvec,scores=scores)
 # ----------------------------------------------------------------------------
 
 #' Spherical PCA via rrcov Package
+#'
+#' @rdname spca_functions
 #'
 #' @description
 #' Wrapper function for robust spherical PCA using the rrcov package implementation.

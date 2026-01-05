@@ -6,6 +6,7 @@
 **Last Updated**: 2026-01-05
 **Detailed History**: See [REFACTORING-COMPLETED.md](./REFACTORING-COMPLETED.md)
 **Phase 4 Summary**: See [PHASE-4-SUMMARY.md](./PHASE-4-SUMMARY.md)
+**Phase 5 Progress**: See [PHASE-5-PROGRESS.md](./PHASE-5-PROGRESS.md)
 
 ---
 
@@ -16,25 +17,76 @@
 | **Phase 1**: Module Extraction | ✅ COMPLETE | 20/20 modules (100%) |
 | **Phase 2**: Optimization | ✅ COMPLETE | Library calls & duplicates removed |
 | **Phase 3**: Documentation | ✅ COMPLETE | 1,885/1,885 functions (100%) |
-| **Phase 4**: Roxygen2 Generation | ✅ **COMPLETE** | 1,883 .Rd files generated |
+| **Phase 4**: Roxygen2 Generation | ✅ COMPLETE | 1,883 .Rd files generated |
+| **Phase 5**: Quality Improvements | 🔄 **IN PROGRESS** | R CMD check: 1 ERROR (was 4) |
 
-**Current Status**: ✅ **PHASE 4 COMPLETE** - Package documented and validated!
+**Current Status**: 🔄 **PHASE 5 IN PROGRESS** - Quality improvements and R CMD check fixes
 
 ---
 
-## Current Status (2026-01-05)
+## Current Status (2026-01-05 - Session 2)
 
 ### What's Happening Now
 
-**Phase 4 COMPLETE - Roxygen2 Documentation Generated 2026-01-05** ✅
+**Phase 5 IN PROGRESS - Quality Improvements and R CMD Check Fixes** 🔄
 
-Final status (verified via comprehensive testing):
-- **1,883 .Rd documentation files generated** from roxygen2 comments
-- **ALL 23 backward compatibility tests PASSED** (100%)
-- Package builds successfully: WRS_0.46.tar.gz
-- Package installs and loads without errors
-- 100% functional compatibility with v0.45 maintained
-- Ready for Phase 5 (quality improvements and polish)
+Status (as of 2026-01-05 Session 2):
+- **R CMD check errors reduced from 4 to 1** (75% improvement!) ✅
+- **ALL 23 backward compatibility tests PASSED** (100%) ✅
+- Package builds successfully: WRS_0.46.tar.gz ✅
+- Fixed non-portable filename (con.all.pairs.Rd) ✅
+- Fixed 7 duplicate case-insensitive filenames ✅
+- Removed obsolete test files ✅
+- **INVESTIGATION**: Previously reported "ancpar.Rd parse error" does NOT exist
+- **ACTUAL ERROR**: KMSgrid.mcp example fails with "object 'tr' not found"
+- **CRITICAL FINDING**: pkg/R/ and pkg/R-new/ directories are NOT in sync
+- **Remaining**: 1 ERROR (under investigation), 5 WARNINGS, 3 NOTES
+
+### Phase 5 Completed Tasks (2026-01-05)
+
+1. **Fixed Non-Portable Filename** ✅
+   - Renamed `con.all.pairs.Rd` → `con_all_pairs.Rd` using @rdname directive
+   - Windows-compatible naming now ensured
+
+2. **Fixed All 7 Duplicate Case-Insensitive Filenames** ✅
+   - Merged duplicate functions into single .Rd files using @rdname:
+     - bicovm/bicovM → bicovm_functions.Rd
+     - mat2list/MAT2list → mat2list_functions.Rd
+     - ogk/OGK → ogk_functions.Rd
+     - qindbt.sub/Qindbt.sub → qindbt_sub_functions.Rd
+     - qreg/Qreg → qreg_functions.Rd
+     - spca/SPCA → spca_functions.Rd
+     - wincor/WINCOR → wincor_functions.Rd
+
+3. **Removed Obsolete Test Files** ✅
+   - Deleted analyze-dependencies.R
+   - Deleted create-*.R helper scripts
+   - Deleted extract-functions.R
+   - Kept only test-backward-compat.R (which passes!)
+
+### Phase 5 Remaining Tasks (Updated Session 2)
+
+1. **Synchronize pkg/R/ and pkg/R-new/ directories** (CRITICAL)
+   - Issue: Package build uses pkg/R/ but recent work may be in pkg/R-new/
+   - Action: Verify which directory is source of truth and ensure sync
+   - This may resolve current errors
+
+2. **Fix KMSgrid.mcp Example Error** (HIGH PRIORITY - 1 ERROR)
+   - Issue: Example code fails with "object 'tr' not found"
+   - Call stack: KMSgrid.mcp ... pool.a.list -> KMS.inter.pbci -> kms.effect -> winvar
+   - Investigation: All functions correctly pass 'tr' in pkg/R-new/ files
+   - Action: Wait for fresh R CMD check output, verify pkg/R/ versions
+   - Note: Previously reported "ancpar.Rd parse error" does NOT exist
+
+3. **Address 5 WARNINGS**
+   - Installation warnings (unusual function calls)
+   - Documentation warnings (unexpected section headers in ~20 .Rd files)
+   - Missing \description sections in 20 files
+
+4. **Address 3 NOTES**
+   - Undocumented arguments in various functions
+   - Large package size (11.0Mb)
+   - Other minor documentation issues
 
 **Completed in special.R** (834/834, 100%):
 - ✅ Regression/depth utilities (2 functions): `apgdis`, `attract` (deprecated S-PLUS function)
@@ -507,12 +559,20 @@ Transforming the WRS (Wilcox Robust Statistics) package from a single 97K-line f
 - **R CMD check results**: 4 errors, 5 warnings, 3 notes (mostly documentation formatting)
 - **Status**: Functionally complete, ready for quality improvements
 
-### 📋 Phase 5: Quality Improvements (NEXT)
-- Fix R CMD check errors (file names, tests, examples)
-- Clean up documentation (descriptions, cross-refs, arguments)
-- Code quality improvements (library calls, global variables)
-- Polish and enhance documentation
-- Add vignettes for common use cases
+### 🔄 Phase 5: Quality Improvements (IN PROGRESS, started 2026-01-05)
+- **Goal**: Fix R CMD check errors and improve package quality
+- **Progress**: 75% of errors fixed (4 → 1)
+- **Accomplishments**:
+  - ✅ Fixed non-portable filename (con.all.pairs.Rd)
+  - ✅ Fixed 7 duplicate case-insensitive filenames using @rdname directives
+  - ✅ Removed obsolete test files
+  - ✅ All 23 backward compatibility tests pass
+  - ✅ Package builds successfully
+- **Remaining**:
+  - Fix 1 parse error in ancpar.Rd (duplicate roxygen documentation)
+  - Address 5 warnings (documentation formatting)
+  - Address 3 notes (undocumented arguments, package size)
+- **Status**: R CMD check shows 1 ERROR, 5 WARNINGS, 3 NOTES (down from 4 ERRORS)
 
 ### 📋 Phase 6: Final Release (FUTURE)
 - Comprehensive package testing

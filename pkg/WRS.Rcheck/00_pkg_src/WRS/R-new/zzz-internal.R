@@ -208,6 +208,43 @@ CONV=FALSE #    print("No convergence")
 }
 
 
+#' Internal Helper Function for Optimization in ANCOVA and Cell Comparison Methods
+#'
+#' @description
+#' Objective function used by \code{\link{best.cell.crit}} and related ANCOVA functions
+#' to optimize critical p-values via numerical search.
+#'
+#' @param a Scaling parameter (optimization variable).
+#' @param init Initial vector of p-values.
+#' @param iter Number of iterations (simulation replicates).
+#' @param rem Matrix of simulated p-values (iter x Jm1).
+#' @param Jm1 Number of comparisons minus 1.
+#' @param alpha Target familywise error rate.
+#'
+#' @return Absolute difference between empirical error rate and target alpha.
+#'
+#' @details
+#' This function computes the objective function for optimization: it scales the
+#' initial p-value vector by parameter \code{a}, counts how many simulation
+#' replicates have at least one p-value falling below the scaled threshold, and
+#' returns the absolute difference from the target alpha level.
+#'
+#' @keywords internal
+anc.best.fun<-function(a,init,iter,rem,Jm1,alpha){
+#
+chk=0
+init=a*init
+for(i in 1:iter){
+flag=0
+for(j in 1:Jm1)if(rem[i,j]<=init[j])flag=flag+1
+if(flag>0)chk=chk+1
+}
+chk=chk/iter
+dif=abs(chk-alpha)
+dif
+}
+
+
 #' Critical P-Values for Multinomial Cell Comparisons
 #'
 #' @description
@@ -321,4 +358,43 @@ a=linconpb(x,con=CON,est=est,nboot=nboot,SEED=SEED,pr=FALSE,...)
 pv=max(a$output[,3])
 }
 list(Best.Group=id,Est.=e,p.value=pv)
+}
+
+
+# S4 Class Definitions
+# These must be defined at package level, not in .onLoad, to avoid
+# "cannot add bindings to a locked environment" errors during R CMD check
+
+# BIN class with flexible slots - used by various functions for multinomial
+# cell comparisons and group selection procedures
+methods::setClass("BIN",
+                  representation = methods::representation(
+                    Cell.with.largest.estimate = "ANY",
+                    Cell.with.smallest.estimate = "ANY",
+                    Group.with.largest.estimate = "ANY",
+                    Group.with.smallest.estimate = "ANY",
+                    Larger.than = "ANY",
+                    smaller.than = "ANY",
+                    Less.than = "ANY",
+                    Select.Best.p.value = "ANY",
+                    Make.a.Decison = "ANY",
+                    Decision.p.value = "ANY",
+                    Estimates = "ANY",
+                    n = "ANY",
+                    output = "ANY"
+                  ))
+
+# SSV class used by some group comparison functions
+methods::setClass("SSV",
+                  representation = methods::representation(
+                    Group.with.smallest.estimate = "ANY",
+                    Less.than = "ANY",
+                    n = "ANY",
+                    output = "ANY"
+                  ))
+
+#' @keywords internal
+.onLoad <- function(libname, pkgname) {
+  # Package initialization code
+  # S4 classes are now defined at package level (see above)
 }

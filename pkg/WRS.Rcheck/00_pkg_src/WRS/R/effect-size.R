@@ -3090,12 +3090,12 @@ output[,8]=p.crit
 dimnames(output)=list(NULL,c('Largest.Est','CELL','Est','Dif','ci.low','ci.up','p.value','p.crit'))
 flag=IND.pv<=p.crit
 id=output[flag,2]
-setClass('BIN',slots=c('Cell.with.largest.estimate','Larger.than','n','output'))
+# setClass('BIN',slots=c('Cell.with.largest.estimate','Larger.than','n','output'))  # Defined in .onLoad
 put=new('BIN',Cell.with.largest.estimate=xor[1],Larger.than=id,n=n,output=output)
 
 if(!LARGEST){
 dimnames(output)=list(NULL,c('Smallest.Est','CELL','Est','Dif','ci.low','ci.up','p.value','p.crit'))
-setClass('BIN',slots=c('Cell.with.smallest.estimate','smaller.than','n','output'))
+# setClass('BIN',slots=c('Cell.with.smallest.estimate','smaller.than','n','output'))  # Defined in .onLoad
 put=new('BIN',Cell.with.smallest.estimate=xor[1],smaller.than=id,n=n,output=output)
 }
 put

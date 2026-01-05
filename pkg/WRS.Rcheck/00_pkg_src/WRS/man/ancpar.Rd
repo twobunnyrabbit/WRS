@@ -25,23 +25,22 @@ ancpar(
 )
 }
 \arguments{
-\item{x1}{A numeric vector or matrix of covariate values for group 1.}
+\item{x1}{Covariate value(s) for group 1 (vector or matrix).}
 
-\item{y1}{A numeric vector of outcome values for group 1.}
+\item{y1}{Response values for group 1.}
 
-\item{x2}{A numeric vector or matrix of covariate values for group 2.}
+\item{x2}{Covariate value(s) for group 2 (vector or matrix).}
 
-\item{y2}{A numeric vector of outcome values for group 2.}
+\item{y2}{Response values for group 2.}
 
-\item{pts}{Design points for comparisons. For single covariate: a vector.
-For multiple covariates: a matrix with one column per covariate.
-If \code{NULL}, points are chosen automatically.}
+\item{pts}{Design points where regression lines are compared. For p>1 predictors,
+should be a matrix with p columns. If NULL, determined automatically.}
 
-\item{regfun}{Regression function to use (default: \code{tsreg} for Theil-Sen).}
+\item{regfun}{Regression function to use (default: tsreg for Theil-Sen).}
 
-\item{fr1}{Span for group 1 running interval (default: 1).}
+\item{fr1}{Span for group 1 running interval smoother (default: 1).}
 
-\item{fr2}{Span for group 2 running interval (default: 1).}
+\item{fr2}{Span for group 2 running interval smoother (default: 1).}
 
 \item{alpha}{Significance level for confidence intervals (default: 0.05).}
 
@@ -58,29 +57,15 @@ If \code{NULL}, points are chosen automatically.}
 
 \item{xlab, ylab}{Axis labels for plots.}
 
-\item{...}{Additional arguments passed to \code{\link{ancts}} or \code{\link{anctsmp}}.}
+\item{...}{Additional arguments passed to ancts (single covariate) or anctsmp (multiple covariates).}
 }
 \value{
 Results from ancts (single covariate) or anctsmp (multiple covariates).
-
-The output from either \code{\link{ancts}} (for 1 covariate) or
-\code{\link{anctsmp}} (for >1 covariates). See those functions for details.
 }
 \description{
 Compares regression lines of two independent groups at specified design points
 using robust regression. Handles both single and multiple covariates. Default
 uses Theil-Sen estimator.
-}
-\details{
-This is a convenience wrapper that automatically selects the appropriate
-robust ANCOVA function:
-\itemize{
-\item If x1 and x2 are vectors (ncol = 1): calls \code{\link{ancts}}
-\item If x1 and x2 are matrices (ncol > 1): calls \code{\link{anctsmp}}
-}
-
-Both functions use robust regression (default: Theil-Sen estimator) to
-compare regression lines/surfaces at specified design points.
 }
 \examples{
 \dontrun{
@@ -88,26 +73,4 @@ x1 <- rnorm(50); y1 <- 2*x1 + rnorm(50)
 x2 <- rnorm(50); y2 <- x2 + rnorm(50, mean=1)
 result <- ancpar(x1, y1, x2, y2, regfun=tsreg)
 }
-Parametric ANCOVA Wrapper (Single or Multiple Covariates)
-
-Wrapper function that automatically calls the appropriate robust ANCOVA function
-based on the number of covariates. Calls \code{\link{ancts}} for one covariate
-or \code{\link{anctsmp}} for multiple covariates.
-
-\dontrun{
-# One covariate
-x1 <- rnorm(30); y1 <- 2 + 3*x1 + rnorm(30)
-x2 <- rnorm(30); y2 <- 1 + 3*x2 + rnorm(30)
-result1 <- ancpar(x1, y1, x2, y2)
-
-# Two covariates
-x1_mat <- matrix(rnorm(60), ncol = 2)
-y1 <- 2 + 3*x1_mat[,1] + x1_mat[,2] + rnorm(30)
-x2_mat <- matrix(rnorm(60), ncol = 2)
-y2 <- 1 + 3*x2_mat[,1] + x2_mat[,2] + rnorm(30)
-result2 <- ancpar(x1_mat, y1, x2_mat, y2)
-}
-}
-\seealso{
-\code{\link{ancts}}, \code{\link{anctsmp}}
 }

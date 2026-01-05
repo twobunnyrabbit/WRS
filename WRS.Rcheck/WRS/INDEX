@@ -1,0 +1,2490 @@
+ABES.KS                 Effect Sizes for Two-Way ANOVA Main Effects
+AKPmcp.ci               AKP Effect Size for All Pairwise Comparisons
+AN2GLOB.KMS             Two-Way ANOVA: Compare Global KMS for Both
+                        Factors
+ANOG2KMS                Two-Way ANOVA: Compare Global KMS Effect Sizes
+                        Between Levels
+ANOG2KMS.ND             Compute Null Distribution for ANOG2KMS
+AOV2KMS                 Two-Way ANOVA: Compare Average KMS for Both
+                        Factors
+AOV2KMS.mcp             Two-Way ANOVA: Pairwise Comparisons of Average
+                        KMS Effect Sizes
+Aband                   Shift Function for Factor A Main Effect in 2×2
+                        Design
+Astig_Magnitude         Astigmatism Magnitude Analysis Workflow
+Astig_Vector            Astigmatism Vector Analysis Workflow
+B.outbox                Improved Boxplot Outlier Detection
+BEST.cell               Identify the Cell with Largest (or Smallest)
+                        Probability
+BFANOVA                 Brown-Forsythe ANOVA
+BFBANOVA                Bootstrap Brown-Forsythe ANOVA
+BWPHmcp                 Patel-Hoel Interaction Tests for Between-Within
+                        Design
+Bagdist                 Compute Bag Distance
+Bagplot                 Create a Bagplot for Bivariate Data
+Bband                   Shift Function for 2×2 Design Main Effects
+                        (Factor B)
+CLASS.BAG               Bagged Classification Methods
+CLASS.fun               General Classification Method Dispatcher
+COR.PAIR                Compute Robust Correlation for Bivariate Data
+COR.ROB                 Compute Robust Correlation Matrix
+COVreg                  Regression Estimation via Robust Covariance
+                        Matrix
+Ckappa                  Cohen's Kappa and Weighted Kappa
+D.akp.effect            Robust Effect Size (AKP Modification)
+D.akp.effect.ci         Bootstrap Confidence Interval for Robust Effect
+                        Size (AKP)
+DEP.PAIR.ES             Pairwise Effect Sizes for Dependent Groups
+DETMCD                  Compute Deterministic MCD Covariance Estimator
+DETS                    Robust Multivariate Location and Scatter via
+                        SDET
+Danc.grid               Grid-Based ANCOVA for Dependent Groups with Two
+                        Covariates
+DancGLOBv2              Global Test for Dependent Groups ANCOVA Version
+                        2
+Dancdet                 Detailed Dependent Groups ANCOVA with
+                        Simultaneous Inference
+Dancols                 Dependent Groups ANCOVA Using OLS Regression
+Dancova                 ANCOVA for Dependent (Paired/Repeated Measures)
+                        Groups
+Dancova.ES.sum          Effect Size Summary for Dependent Groups ANCOVA
+DancovaV2               Dependent Groups ANCOVA Version 2 with Improved
+                        Bootstrap
+Dancovamp               Dependent Groups ANCOVA with Multiple
+                        Covariates and Design Points
+Dancovapb               Dependent Groups ANCOVA with Percentile
+                        Bootstrap
+Dancovapts              Dependent Groups ANCOVA at User-Specified
+                        Design Points
+Dancts                  Dependent Groups ANCOVA Using Theil-Sen
+                        Regression
+Danctspb                Dependent Groups ANCOVA Using Theil-Sen with
+                        Percentile Bootstrap
+DanctspbMC              Dependent Groups ANCOVA Using Theil-Sen with
+                        Bootstrap (Multicore)
+Dcbmhd                  CI for Sum of Symmetric Quantiles of Difference
+                        (Dependent Groups)
+Depth.class             Depth-Based Classification
+Depth.class.bag         Bagged Depth-Based Classification
+Dmul.loc2g              Compare Multivariate Location for Two Dependent
+                        Groups
+Dqcihd                  Confidence Intervals for Quantiles of
+                        Difference Scores (Independent Groups)
+Dqcomhd                 Compare Quantiles of Two Dependent Groups Using
+                        Harrell-Davis Estimator
+Dqdif                   Compare Dependent Groups via Quantile
+                        Differences (Single Quantile Pair)
+DqdifMC                 Compare Dependent Groups Using Quantiles
+                        (Parallel Processing)
+DregG                   Global Test for Comparing Two Dependent
+                        Regression Lines
+DregGMC                 Global Test for Dependent Regression Lines
+                        (Parallel Processing)
+EPci                    Explanatory Power Confidence Interval
+                        (Two-Sample)
+ES.sum.REL.MAG          Determine Small/Medium/Large Effect Size
+                        Equivalents
+ES.summary              Comprehensive Effect Size Summary (Independent
+                        Groups)
+ES.summary.CI           Comprehensive Effect Size Summary with
+                        Confidence Intervals
+ESfun.CI                Effect Size Confidence Interval Using Multiple
+                        Methods
+ESmainMCP               Main Effect Sizes for All Pairwise Comparisons
+                        in Two-Way Design
+ESmcp.CI                Effect Size Multiple Comparisons with
+                        Confidence Intervals
+ESprodis                Effect Size Based on Projection Distances
+ESprodis.EQ             Effect Size Based on Projection Distances
+                        (Equal Sample Sizes)
+FQplot                  Plot Median and Quartiles of Multiple Curves
+FactorAnalysis          Principal Axis Factor Analysis
+FisherLSD               Fisher's Least Significant Difference (LSD)
+                        Method
+Flplot                  Plot Average of Multiple Curves
+Flplot2g                Plot Average Curves for Two Groups
+H.lasso                 Huberized Lasso Regression
+HQreg                   Robust Elastic Net Regression (Huber/Quantile
+                        Loss)
+ID.sm.varPB             Identify Group with Smallest Variance Using
+                        Bootstrap
+IND.INT.DIF.ES          Interaction Effect Sizes as Differences Between
+                        Pairwise Comparisons
+IND.PAIR.ES             Pairwise Effect Sizes for Independent Groups
+IQR2g.W                 Wald-Type Test for Comparing Interquartile
+                        Ranges
+IQRhd                   Interquartile Range Using Harrell-Davis
+                        Estimator
+IQRstand                IQR Standardization
+JK.AB.KS.ES             Main Effect Sizes for J×K Design (KS Method)
+KMS.ES.M                KMS Robust Effect Size Using M-Estimator
+KMS.ci                  KMS Effect Size: Confidence Interval for Two
+                        Groups
+KMS.inter.pbci          2×2 Design: Test Interaction via KMS Effect
+                        Sizes
+KMS2way                 Two-Way ANOVA: Complete KMS Effect Size
+                        Analysis
+KMSgrid.mcp             Grid-Based KMS Analysis: Multiple Comparisons
+                        Across Quantile Grids
+KMSgridAB               Grid-Based Analysis: Test Main Effects Across
+                        Quantile Grids
+KMSgridAV               Grid-Based KMS ANOVA: Average Pairwise Effect
+                        Sizes
+KMSgridRC               Grid-Based KMS ANOVA: Global Effect Sizes
+                        Across Rows and Columns
+KMSinter.mcp            Two-Way ANOVA: Interaction Tests Using KMS
+                        Effect Sizes
+KMSmcp.ci               One-Way ANOVA: KMS Effect Sizes for All
+                        Pairwise Comparisons
+KNN                     K-Nearest Neighbors Classification
+KNNbag                  Bagged K-Nearest Neighbor Classification Using
+                        Depth
+KNNdist                 K-Nearest Neighbors Classification Using Data
+                        Depths
+KNNreg                  K-Nearest Neighbors Regression with Robust
+                        Estimation
+KNNv2                   K-Nearest Neighbors Classification (Version 2)
+KS.ANOVA.ES             Kulinskaya-Staudte Effect Size for One-Way
+                        ANOVA
+Kmeans                  K-Means Clustering with Optional Outlier
+                        Removal
+Kmeans.grp              K-Means Clustering with Group Sorting
+L.ties                  Check for Tied Values in List or Matrix
+L1medcen                Multivariate L1 Median (Spatial Median)
+L1median                L1 Median (Spatial Median, Geometric Median)
+LAD.lasso               Least Absolute Deviation (LAD) Lasso Regression
+LADlasso.Z              Robust Adaptive Lasso for Variable Selection
+                        (Zheng Method)
+LCES                    Linear Contrast Effect Sizes (Multiple
+                        Measures)
+LCO.CI                  LCO Confidence Intervals for Binomial
+                        Proportion
+LG.samp                 Sample Size Estimation for Yuen's Test (Luh-Guo
+                        Method)
+LMSreg                  Least Median of Squares Regression
+LSMbag                  Bagged Logistic Regression Classification
+LTS.EN                  Robust Elastic Net Regression with LTS
+M1M2                    Multiple Comparisons Between Two Matrices with
+                        Hochberg FWE Control
+MADstand                Standardize Data Using MAD
+MARest                  Maronna Robust Multivariate Location and
+                        Scatter Estimate
+MCDCOR                  MCD-Based Robust Correlation Matrix
+MCWB                    Multiple Comparisons with the Best (Trimmed
+                        Means)
+MCWB.crit               Critical Value for Multiple Comparisons with
+                        the Best
+MED.ES                  One-Sample Effect Size Based on Median
+MEDanova                One-Way ANOVA for Medians Using
+                        Projection-Based Depth
+MLRplot                 Forward Response and Residual Plots for
+                        Multiple Linear Regression
+MMreg                   MM-Regression Estimator
+MUL.ES.sum              Multivariate Effect Size Summary
+MULAOVp                 Multivariate ANOVA with Trimmed Means (P-Value
+                        Version)
+MULMreg                 Multivariate Multiple Regression
+MULNC                   Bivariate Analog of Cliff's Method (Dominance
+                        Test)
+MULNC.Ppb               Percentile Bootstrap for Bivariate Partial
+                        Dominance
+MULNC.int               Rank-Based Interaction Tests for Bivariate Data
+                        (J × K Design)
+MULNCpb                 Percentile Bootstrap for Bivariate Cliff's
+                        Method
+MULNCpb.int             Bootstrap Interaction Tests for Bivariate Data
+                        (J × K Design)
+MULR.yhat               Compute Predicted Values for Multivariate
+                        Regression
+MULtr.anova             Multivariate ANOVA for Trimmed Means Using
+                        Johansen's Method
+MULtsreg                Multivariate Least Trimmed Squares Regression
+Mpca                    Robust Principal Component Analysis Using
+                        Maronna's Method
+Mreglde                 Multivariate Regression via Least Distance
+                        Estimator
+NN.class                Neural Network Classification
+NNbag                   Bagged Nearest Neighbor Classification
+ODDSR.CI                Confidence Interval for Odds Ratio
+OS.lasso                Outlier Shifting LASSO Regression
+PHinter.mcp             Multiple Comparisons for Two-Way Interactions
+                        Using Patel-Hoel Effect Size
+PMD.PB.PCD              Probability of Making a Decision and Correct
+                        Decision (Bootstrap Version)
+PMD.PCD                 Probability of Making a Decision and Correct
+                        Decision
+PVALS                   Compute Empirical CDF at Specified Values
+PcorREG.best.DO         Pearson Correlation Best Predictor Decision
+                        (Decision-Oriented)
+Ppca                    Projection-Based Robust Principal Component
+                        Analysis
+Ppca.summary            Summary of Robust PCA Across Multiple
+                        Dimensions
+Q2anova                 Two-Way ANOVA for Medians with Tied Values
+Q3anova                 Three-Way ANOVA for Medians with Tied Values
+QS.inter.pbci           Bootstrap CI for Quantile Shift Interaction in
+                        2x2 Design
+QS1way                  Quantile Shift Pairwise Comparisons for One-Way
+                        Design
+QS2by2                  Quantile Shift Effect Size for Main Effect in
+                        2x2 Design
+QS2ci                   Confidence Interval for Quantile Shift Effect
+                        Size
+QSinter.mcp             Two-Way Interaction Analysis Using Quantile
+                        Shift Effect Size
+QSmcp.ci                Quantile Shift Pairwise Comparisons with
+                        Confidence Intervals
+Qanova                  One-Way ANOVA for Quantiles Using
+                        Projection-Based Depth
+Qinterplot              Quantile-Based Interaction Plot for 2x2 Design
+Qmcp                    Multiple Comparisons for Quantiles Among
+                        Independent Groups
+Qregci                  Test Quantile Regression Slopes Equal to Zero
+Quart                   Compute Sample Quartiles
+RANGE                   Compute Range of Data
+RCES                    Row-Column Effect Sizes for Factorial Design
+RCmcp                   Row and Column Pairwise Comparisons in Two-Way
+                        Design
+RFbag                   Bagged Random Forest Classification
+RM.PMD.PCD              Probability of Making and Correct Decision for
+                        Repeated Measures
+RMPB.PMD.PCD            Probability of Correct Decision for Repeated
+                        Measures Using Indifference Zone
+RMcomvar.locdis         Compare Variation in Tails for Dependent Groups
+                        After Centering
+ROCmul.curve            Multiple ROC Curves for Classification Methods
+RS.LOC.IZ               Probability of Correct Decision with
+                        Indifference Zone
+Rcoefalpha              Coefficient Alpha and Robust Analog
+Rfit                    Rank-Based Regression Using Jaeckel's
+                        Dispersion Function
+RobRsq                  Robust R-Squared
+Rpca                    Robust Principal Component Analysis
+Rsq.ols                 R-Squared for Ordinary Least Squares Regression
+SEQ_PE                  Sequential Prediction Error Analysis Workflow
+                        (Ophthalmology)
+SMpre                   Model Selection via Prediction Error with
+                        Smoothing
+STRIPchart              Strip Chart for Matrix Data
+SVM                     Support Vector Machine Classification
+SVMbag                  Bagged Support Vector Machine Classification
+Scheffe                 Scheffe's Multiple Comparison Procedure
+Scov                    Compute Davies' S-Estimator for Covariance
+Stein.LC                Stein's Two-Stage Method for Linear Contrasts
+Stein.LC1               Stein's Method for Single Linear Contrast
+Stein.pairs             Stein's Method for All Pairwise Comparisons
+Stein2g                 Stein's Two-Stage Method for Two Independent
+                        Groups
+T.HSD                   Tukey-Kramer Honest Significant Difference
+                        Multiple Comparisons
+TKmeans                 Trimmed K-Means Clustering
+TKmeans.grp             Group Data Using Trimmed K-Means Cluster
+                        Assignments
+TM                      TM Test for Comparing One-Step M-Estimators
+TWOpNOV                 Compare Two Dependent Pearson Correlations
+                        (Non-Overlapping)
+TWOpNOVPV               Compare Two Dependent Correlations with P-Value
+                        (Non-Overlapping Case)
+TWOpov                  Compare Two Dependent Pearson Correlations
+                        (Overlapping)
+TWOpovPV                Compare Two Dependent Correlations with P-Value
+                        (Overlapping Case)
+UB.class                Unbiased Classification Methods
+UB.class.error          Cross-Validation Error Rates for Classification
+                        Methods
+UBROC                   ROC Curve for Unbiased Classification Methods
+WMWinter.est            WMW Interaction Effect Size for 2-by-2 Design
+WMWinterci              WMW Interaction Test for 2-by-2 Design with
+                        Confidence Interval
+WRS-package             Wilcox' Robust Statistics
+YYmanova                Multivariate ANOVA for Trimmed Means (Two
+                        Groups)
+YYmcp                   Pairwise Comparisons for Multivariate Data
+                        (Yanagihara-Yuan Method)
+ZL.break                Robust Bent Line (Breakpoint) Regression
+                        (Zhang-Li Method)
+ZYmediate               Robust Mediation Analysis (Zu-Yuan Method)
+absfun                  Sum of Absolute Values
+acbinomci               Agresti-Coull Confidence Interval for Binomial
+                        Probability
+acbinomciv2             Agresti-Coull Binomial Test with P-Value
+adcom                   Test Components in Generalized Additive Model
+adjboxout               Outlier Detection Using Adjusted Boxplot Rule
+adpchk                  Compare Additive and General Model Fits
+adrun                   Additive Model via Running Interval Smoother
+adrunl                  Additive Model Using Loess Smoother and
+                        Backfitting
+adtest                  Test for Additive Model Using Running Interval
+                        Smoother
+adtestl                 Test for Additive Model Using Loess Smoother
+adtestv2                Test for Interaction in Two-Predictor Additive
+                        Model
+akerd                   Adaptive Kernel Density Estimate
+akerdcdf                Adaptive Kernel Density CDF Estimate
+akerdmul                Multivariate Adaptive Kernel Density Estimate
+akp.effect              AKP Robust Effect Size (Homoscedastic Cohen's d
+                        Analog)
+akp.effect.ci           Bootstrap Confidence Interval for AKP Effect
+                        Size
+anc.2gbin               ANCOVA for Binary Outcomes - Two Groups
+anc.ES.sum              ANCOVA Effect Size Summary
+anc.best                Select Best Group - Multiple Group Comparisons
+anc.best.crit           Determine Critical P-Values for anc.best
+anc.bestH               Select Best Group with Adjusted P-Values
+anc.bestpb              Select Best Group - Bootstrap Percentile Method
+anc.bestpb.PV           Select Best Group with Overall P-Value -
+                        Bootstrap Version
+anc.grid                Grid-Based ANCOVA for Two Independent Groups
+anc.grid.bin            Grid-Based ANCOVA for Binary Outcomes
+anc.plot.es             Plot Effect Size as Function of Covariate
+anc2COV.CV              Critical Values for ANCOVA with Two Covariates
+ancDEP.MULC.ES          ANCOVA Effect Sizes for Dependent Groups with
+                        Multiple Covariates
+ancES                   Compute Effect Sizes for ANCOVA
+ancESband               ANCOVA Effect Size with Confidence Band
+ancGLOB                 Global Test for ANCOVA - Equal Location Across
+                        Covariate Values
+ancGpar                 Global Test of Regression Parameter Equality
+                        (Parametric Bootstrap)
+ancGparMC               Global Test of Regression Parameter Equality
+                        (Parallel Processing)
+ancJN                   Johnson-Neyman ANCOVA Method
+ancJN.LC                Johnson-Neyman ANCOVA for Linear Contrasts
+ancJNPVAL               Johnson-Neyman ANCOVA with Multiple Covariates
+                        (Improved Version)
+ancJNmp                 Johnson-Neyman ANCOVA for Multiple Covariates
+                        (Deprecated)
+ancM.COV.ES             ANCOVA Effect Sizes for Multiple Covariates
+ancNCE.QS.plot          Plot Quantile Shift Effect Size (No Control
+                        Group)
+ancbbmed                ANCOVA Bootstrap Bagging with Median
+ancbbpb                 ANCOVA Bootstrap Bagging with Percentile
+                        Bootstrap
+ancboot                 Bootstrap ANCOVA for Two Independent Groups
+ancbootg                Bootstrap ANCOVA at Specified Design Points
+ancdes                  Choose Design Points for ANCOVA Analysis
+ancdet                  Detailed ANCOVA Analysis with Multiple Design
+                        Points
+ancdet2C                ANCOVA Detection Method for Two Covariates
+ancdetM4                ANCOVA Detection Method for Multiple Covariates
+ancdetwmw               ANCOVA Using Wilcoxon-Mann-Whitney Method with
+                        Design Points
+ancdetwmwQ              ANCOVA Using WMW at Design Points with
+                        Simultaneous Confidence Band
+ancdifplot              Plot Difference Between Two Groups with
+                        Confidence Band - ANCOVA
+anclin                  ANCOVA with Adjusted Confidence Intervals for
+                        Single Covariate
+anclin.QS               ANCOVA Quantile Shift Effect Size
+anclin.QS.CIpb          Bootstrap Confidence Interval for Quantile
+                        Shift Effect Size
+anclinQS.plot           Plot Quantile Shift Effect Sizes
+anclog                  ANCOVA for Logistic Regression (Binary
+                        Outcomes)
+ancmg                   ANCOVA for Multiple Groups with Multiple
+                        Covariates
+ancmg1                  ANCOVA for Multiple Groups with Single
+                        Covariate
+ancmg1.power            Power Estimation for ancmg1
+ancmpbpb                ANCOVA Multiple Comparisons (Deprecated)
+ancmppb                 ANCOVA Multiple Comparisons with Percentile
+                        Bootstrap
+ancom                   Omnibus ANCOVA Test
+ancov2COV               ANCOVA with Two Covariates and Depth-Based
+                        Design Points
+ancova                  ANCOVA with Running Interval Smoother
+ancova.ES               ANCOVA Effect Size (KMS Analog) with Automatic
+                        Design Points
+ancova.KMS              ANCOVA Effect Size Using KMS Analog
+ancova.KMS.plot         Plot ANCOVA KMS Effect Size as Function of
+                        Covariate
+ancova.KMSci            ANCOVA KMS Effect Size with Bootstrap
+                        Confidence Intervals
+ancovaG                 Generalized ANCOVA with Running Interval
+                        Smoother
+ancovaV2                Bootstrap ANCOVA with Unconditional Resampling
+                        (Version 2)
+ancovaWMW               ANCOVA Using WMW Method for Two Independent
+                        Groups
+ancovad.ES              Dependent Samples ANCOVA Effect Size
+ancovad.ESci            Dependent Samples ANCOVA Effect Size with
+                        Confidence Intervals
+ancovam                 Median-Based ANCOVA for Two Independent Groups
+ancovamp                ANCOVA for Multiple Covariates with Trimmed
+                        Means
+ancovampG               Generalized ANCOVA for Multiple Covariates with
+                        Custom Tests
+ancovampG.KMS           ANCOVA Using KMS Effect Size Measure
+ancovampG.QS            ANCOVA Using Quantile Shift Effect Size (No
+                        Control Group)
+ancovampG.QSCE          ANCOVA Using Quantile Shift Effect Size with
+                        Control Group Estimation
+ancovap2.KMS            ANCOVA Effect Size (KMS Analog) for Two
+                        Covariates
+ancovap2.KMS.plot       Plot ANCOVA KMS Effect Size as Function of Two
+                        Covariates
+ancovap2.KMSci          ANCOVA KMS Effect Size with Bootstrap
+                        Confidence Intervals (Two Covariates)
+ancovap2.wmw.plot       3D Surface Plot of WMW ANCOVA Effect Sizes
+ancpar                  Compare Regression Lines at Design Points -
+                        Parametric ANCOVA
+ancpb                   ANCOVA with Percentile Bootstrap and Running
+                        Interval Smooth
+ancsm                   ANCOVA Using Depths of Smooths
+anctgen                 General ANCOVA with Running Interval Smoother
+ancts                   Theil-Sen ANCOVA for Two Independent Groups
+anctsmcp                Theil-Sen ANCOVA Multiple Comparisons for J
+                        Groups
+anctsmp                 Theil-Sen ANCOVA for Multiple Covariates
+anctspb                 Theil-Sen ANCOVA with Percentile Bootstrap
+anova.KMS.ND            Generate Null Distribution for KMS ANOVA
+anova.nestA             Nested ANOVA for Trimmed Means (Design A)
+anova.nestAP            Nested ANOVA for Trimmed Means with Pooled Data
+                        (Design AP)
+anova1                  Conventional One-Way ANOVA
+anova_power             Power Analysis for ANOVA F Test
+aov2depth               Two-by-K ANOVA Using Depth-Based Methods
+apanova                 Agresti-Pendergast Rank Test for Dependent
+                        Groups
+apdis                   Approximate Depth Based on Bivariate Distance
+apgdis                  Approximate Depth Based on Multivariate
+                        Distance
+b1way                   One-Way Bootstrap Test for Location Measures
+b2ci                    Bootstrap Confidence Interval for Difference
+                        Between Two Parameters
+bagdepth                Compute Bagplot-Based Depth
+bb.es.main              Main Effect Sizes for Between-by-Between ANOVA
+bbQS                    All Pairwise Quantile Shift Comparisons in
+                        Two-Way Design
+bbblinQS                Three-Way Quantile Shift Effect Sizes
+bbbmcppb                Between-Between-Between Design Percentile
+                        Bootstrap MCP
+bbbtrim                 Three-Way ANOVA for Trimmed Means (Independent
+                        Groups)
+bbdetmcp                Between-by-Between Factorial MCP for Two-Way
+                        Designs
+bbdetmcpQS              Between-by-Between Factorial MCP Using Quantile
+                        Shift
+bbiQS                   Quantile Shift Effect Sizes for Two-Way
+                        Interactions
+bblinQS                 Two-Way Quantile Shift Effect Sizes (Main
+                        Effects and Interactions)
+bbmcpEP                 Two-Way Between-Subjects MCP with Explanatory
+                        Power Effect Sizes
+bbmcpQS                 Two-Way Between-Subjects MCP with Quantile
+                        Shift Effect Sizes
+bbmcppb                 Between-By-Between Design Percentile Bootstrap
+                        MCP
+bbtrim                  Bootstrap-t Two-Way ANOVA with Trimmed Means
+bbtrimQS                Quantile Shift Function for Two-Way Design
+bbw2list                Convert Data to List Format for
+                        Between-by-Between-by-Within Design
+bbwcovm                 Compute Covariance Matrix for
+                        Between-Between-Within Design
+bbwmatna                Convert Matrix to List for
+                        Between-by-Within-by-Within Design (Handle
+                        Missing)
+bbwmcp                  Multiple Comparisons for Between-Between-Within
+                        Three-Way Design (Bootstrap-t)
+bbwna                   Convert List to List for
+                        Between-by-Within-by-Within Design (Handle
+                        Missing)
+bbwtrim                 Bootstrap Three-Way ANOVA (One Between, Two
+                        Within)
+bbwtrimbt               Bootstrap Three-Way Within-Subjects ANOVA with
+                        Contrasts
+bca.mean                BCA Confidence Interval for the Mean
+bd1GLOB                 One-Way Repeated Measures ANOVA: Global
+                        Location Test
+bd1way                  One-Way Bootstrap Test for Dependent Groups
+bdanova1                Bishop-Dudewicz ANOVA - Stage 1 Sample Size
+                        Determination
+bdanova2                Bishop-Dudewicz ANOVA - Stage 2 Test
+bdiag                   Create Block Diagonal Correlation Matrix
+bdm                     Brunner-Dette-Munk Rank-Based One-Way ANOVA
+bdm2way                 Brunner-Dette-Munk Rank-Based Two-Way ANOVA
+bdmP                    Brunner-Dette-Munk Test for One-Way Design
+best.DO                 Test if Identifying Group with Largest Location
+                        is Reasonable
+best.PB                 Determine Group with Largest Location Estimate
+                        via Bootstrap
+best.cell.DO            Best Cell Decision for Multinomial Distribution
+bg2ci                   Brown-Guo Confidence Interval for Median
+bi2CR                   Two-Dimensional Confidence Region for Two
+                        Independent Binomial Proportions
+bi2KMS                  Two Independent Binomials: KMS Confidence
+                        Interval
+bi2KMSv2                Two Independent Binomials: KMS Test with
+                        P-Value
+bi2ac                   Compare Two Independent Binomial Proportions
+                        Using Agresti-Coull Method
+bicov                   Compute Biweight Midcovariance Between Two
+                        Variables
+biloc                   Biweight Measure of Location
+bin.PMD.PCD             Probability of Making Decision and Probability
+                        of Correct Decision
+bin.best                Select Best Group Based on Binomial Probability
+                        of Success
+bin.best.EQA            Select Best Group Using Equal Alpha Method
+bin.best.PV             Select Best Group with Overall P-Value
+bin2binary.IV           Sort Data by Two Binary Independent Variables
+binband                 Compare Two Independent Discrete Distributions
+binmat                  Extract Matrix Rows Based on Column Value Range
+binmat2v                Extract Matrix Rows Based on Binary Split
+                        Criteria
+binmcp                  Multiple Comparisons for Binomial Proportions
+binom.conf              Confidence Interval for Binomial Probability
+binom.conf.pv           P-Value for Binomial Confidence Interval
+                        Methods
+binom2g                 Compare Two Independent Binomial Groups
+binom2g.ZHZ             Compare Two Binomial Groups Using Zou et al.
+                        Method
+binomCP                 Binomial Confidence Interval Using
+                        Clopper-Pearson Method
+binomECP                Compare Two Binomials Using Empirical Critical
+                        P-Value
+binomLCO                Binomial Confidence Interval Using
+                        Schilling-Doi Method
+binomci                 Binomial Confidence Interval Using Pratt's
+                        Method
+binomcipv               Binomial P-Value Using Pratt's Method
+binpair                 Pairwise Comparisons for Multiple Binomial
+                        Groups
+bireg                   Biweight Midregression
+bivar                   Biweight Midvariance
+bkreg                   Binary Kernel Regression
+block.diag              Create Block Diagonal Matrix
+bmcpAKP                 Effect Sizes for All Pairwise Comparisons
+                        (Independent Groups, AKP Method)
+bmcpQS                  Effect Sizes for All Pairwise Comparisons
+                        (Independent Groups, Quantile Shift)
+bmcppb                  Multiple Comparisons with Percentile Bootstrap
+                        (Alternative Name)
+bmean                   Boxplot-Based Skipped Mean
+bmp                     Brunner-Munzel Test
+bmpmul                  Brunner-Munzel Method for All Pairwise
+                        Comparisons
+bmreg                   Bounded M-Regression with Schweppe Weights
+boot.TM                 Bootstrap Test for Equal M-Measures of Location
+bootcov                 Bootstrap Covariance Matrix for Multivariate
+                        Estimator
+bootdep                 Bootstrap Samples for Multivariate Dependent
+                        Data
+bootdpci                Percentile Bootstrap CI for Dependent Groups
+bootdse                 Bootstrap Standard Error for Dependent Group
+                        Differences
+bootse                  Bootstrap Standard Error Estimate
+box1way                 Heteroscedastic One-Way ANOVA for Trimmed Means
+boxdif                  Boxplots of All Pairwise Differences
+bplot                   Split Data by Quantiles and Compare Groups
+bpmed                   Bootstrap Percentile Method for Median
+                        Contrasts (Bonett-Price SE)
+bpmedse                 Bonett-Price Standard Error for the Median
+bprm                    Brunner-Puri Within-Groups Rank-Based ANOVA
+bptd                    Bootstrap Percentile-t for Dependent Group
+                        Contrasts
+bsqrm                   Bsqrm Test Statistic for Comparing M-Estimators
+bsqrmbt                 Bootstrap-t Test for Comparing M-Estimators
+btrim                   Bootstrap-t Test for Equal Trimmed Means
+                        (Independent Groups)
+btsqrk                  Improved Bootstrap-t Method for Multiple
+                        Comparisons
+bw.2by2.int.es          Effect Sizes for 2x2 Within-Subjects
+                        Interaction
+bw.es.A                 Between-Within Design: Factor A Effect Sizes
+bw.es.B                 Between-Within Design: Factor B Effect Sizes
+bw.es.I                 Between-Within Design: Interaction Effect Sizes
+bw.es.main              Main Effect Sizes for Between-by-Within ANOVA
+bw.int.es               Effect Sizes for All Interactions in
+                        Between-Within Design
+bw2list                 Convert Between-Within Design Data to List
+                        Format
+bwESP.GLOB.B            Between-Within Design: Compare Global
+                        Projection Effect Sizes
+bwESP.GLOB.B.NULL       Compute Null Distribution for bwESP.GLOB.B
+bwQS                    Quantile Shift Effect Sizes for Between-Within
+                        Design
+bwamcp                  Multiple Comparisons for Split-Plot Designs -
+                        Factor A Main Effects
+bwbmcp                  Multiple Comparisons for Factor B in
+                        Between-Within Design (Rom's Method)
+bwdepth                 Estimate Distribution Overlap Using Depth
+bwdepth.perm            Permutation Test for Two Distributions Using
+                        Depth
+bwdepthMC.ci            Bootstrap Confidence Interval for bwdepth
+                        Effect Size
+bwiDIF                  Multiple Comparisons for Interactions in
+                        Split-Plot Design (Patel Approach)
+bwiJ2plot               Plot Difference Score Distributions for J-by-2
+                        Between-Within Design
+bwiQS                   Quantile Shift Effect Sizes for Interactions in
+                        Between-Within Design
+bwimcp                  Multiple Comparisons for Interactions in
+                        Between-Within Design
+bwimcpAKP               Between-Within Interaction Contrasts with AKP
+                        Effect Sizes
+bwimcpES                Between-Within Interaction Contrasts with
+                        Effect Sizes
+bwmarpb                 Bootstrap Multiple Comparisons for Marginal
+                        Means in Split-Plot Design
+bwmcp                   Multiple Comparisons for Between-Within Two-Way
+                        Design (Bootstrap-t)
+bwmcpAKP                Between-Within MCP with AKP Effect Sizes
+bwmcpORD                Ordinal Between-Within MCP
+bwmcpQS                 Between-Within MCP with Quantile Shift Effect
+                        Sizes
+bwmcppb                 Multiple Comparisons for Between-Within Design
+                        (Percentile Bootstrap)
+bwmedbmcp               Median-Based Between-Within Factor B
+                        Comparisons
+bwmedimcp               Median-Based Between-Within Interaction
+                        Comparisons
+bwquantile              Test Interaction Between Independent and
+                        Dependent Factors Using Quantiles
+bwrank                  Rank-Based ANOVA for Between-Within Design
+bwrmcp                  Multiple Comparisons for Between-Within Design
+                        Using Rank-Based Method
+bwtrim                  Bootstrap Two-Way Repeated Measures ANOVA with
+                        Trimmed Means
+bwtrimbt                Bootstrap Two-Way Within-Subjects ANOVA with
+                        Contrasts
+bwwA.es                 Between-Within-Within Design: Factor A Effect
+                        Sizes
+bwwcovm                 Compute Covariance Matrix for
+                        Between-Within-Within Design
+bwwmatna                Convert 3-Way Matrix Data to List with Missing
+                        Value Removal
+bwwmcp                  Multiple Comparisons for Between-Within-Within
+                        Three-Way Design (Bootstrap-t)
+bwwmcppb                Multiple Comparisons for Between-Within-Within
+                        Design (Percentile Bootstrap)
+bwwna                   Convert 3-Way List Data with Missing Value
+                        Removal
+bwwtrim                 Bootstrap Three-Way Within-Subjects ANOVA
+bwwtrimbt               Bootstrap Three-Way Within ANOVA with Post-hoc
+cat.dat.ci              Confidence Intervals for Categorical Data
+                        Proportions
+cav                     Asymptotic Variance for Trimmed Mean Under
+                        Cauchy Distribution
+cbmhd                   CI for Sum of Symmetric Quantiles of Difference
+                        (Independent Groups)
+cbmhdMC                 CI for Sum of Symmetric Quantiles (Independent
+                        Groups, Parallel)
+cci                     Classical Confidence Interval for the Mean
+cell.com                Confidence Interval for Difference Between
+                        Multinomial Cell Probabilities
+cell.com.pv             P-Value for Difference Between Multinomial Cell
+                        Probabilities
+center.m                Center a Matrix by Subtracting Location
+                        Estimates
+cgci                    Coarse Grid Confidence Interval for Trimmed
+                        Mean
+cgen.bt                 Find Constants for Breakdown and Rejection in
+                        Robust Estimation
+chbin2num               Convert Binary Data to Numeric 0/1 Format
+chi.test.ind            Chi-Squared Test of Independence
+chk4binary              Identify Binary Columns in Matrix or Data Frame
+chreg                   Coakley-Hettmansperger Robust Regression
+chregF                  Fast Coakley-Hettmansperger Robust Regression
+ci2bin                  Confidence Interval for Difference Between Two
+                        Binomial Probabilities
+cid                     Cliff's Analog of the Wilcoxon-Mann-Whitney
+                        Test
+cidM                    Multiple Group Comparisons Using Cliff's Method
+cidMULT                 Multiple Cliff's Analog Tests for Multivariate
+                        Data
+cidmul                  Multiple Comparisons Using Cliff's Method
+cidv2                   Cliff's Analog of WMW Test with P-Value
+cjMAT                   Generate Contrast Matrix for Pairwise
+                        Comparisons
+class.ada               AdaBoost Classification
+class.error.CM          Classification Error Estimation with
+                        Unconditional Confusion Matrix
+class.error.CP          Classification Error with Confusion Matrix
+                        (Leave-One-Out)
+class.error.com         Compare Classification Methods Using
+                        Cross-Validation
+class.error.loo         Classification Error Using Leave-One-Out
+                        Cross-Validation
+class.forest            Random Forest Classification
+class.gbm               Gradient Boosted Classification
+class.logR              Logistic Regression or Smoother Classification
+class.uni.error         Univariate Classification Error Using Kernel
+                        Density Estimation
+clnorm                  Contaminated Lognormal Distribution Generator
+cltv                    Asymptotic Variance for LTS and LTA at Cauchy
+                        Distribution
+cmanova                 Choi-Marden Multivariate One-Way Rank-Based
+                        ANOVA
+cmba2                   COVMBA Estimator with Multiple Trimming Levels
+cnorm                   Contaminated Normal Distribution Generator
+cobs2g                  Plot Two Quantile Regression Lines Using COBS
+coefalpha               Cronbach's Alpha Reliability Coefficient
+cohen2xi                Convert Cohen's d to Xi Effect Size
+com2gfun                Compare Two Groups Using Multiple Methods
+comdepthsvm             Compare Two Distributions Using SVM and Depth
+comdsd.mcp              Multiple Comparisons of Dependent Variable
+                        Variances
+comdvar                 Test Equality of Variances for Two Dependent
+                        Variables
+comdvar.astig           Compare Variances for Astigmatism Data
+comdvar.mcp             Multiple Pairwise Comparisons of Dependent
+                        Variable Variances
+comsvm.best             Compare Groups Using SVM with Best Kernel
+                        Selection
+comsvm.bestv2           Compare Groups Using SVM with Best Kernel and
+                        Cost Selection
+comvar.mcp              Multiple Comparisons of Variances for
+                        Independent Groups
+comvar2                 Compare Variances of Two Independent Groups via
+                        Bootstrap
+comvar2.astig           Compare Variances for Astigmatism Data
+comvar2d                Compare Variances of Two Dependent Groups
+con.all.pairs           Generate Contrast Coefficients for All Pairwise
+                        Comparisons
+con1way                 Generate Contrast Matrix for All Pairwise
+                        Comparisons (One-Way Design)
+con2by2A                Contrast Coefficients for Factor A Main Effect
+                        in Two-Way Design
+con2by2B                Contrast Coefficients for Factor B Main Effect
+                        in Two-Way Design
+con2way                 Create Contrast Coefficients for Two-Way ANOVA
+con3way                 Create Contrast Coefficients for Three-Way
+                        ANOVA
+conCON                  Contrast Coefficients for Comparisons to
+                        Control Group
+conc2                   Find LTA Attractor Using Concentration
+                        Algorithm
+concmv                  Demonstrate Concentration Algorithm in 2D
+                        (Interactive)
+concsim                 Simulation Study: Outlier Separation
+                        Performance
+contab                  Test for Marginal Homogeneity in 2x2
+                        Contingency Table
+cor.skip.com            Compare Overlapping Skipped Correlations
+cor2xy                  Correlate Two Predictors with a Response
+                        Variable
+corCOM.DVvsIV           Compare DV-IV Correlations: Largest vs Others
+corCOM.PMDPCD           Probability of Making and Correctly Deciding on
+                        Largest Correlation
+corCOMmcp               Multiple Comparison Procedure for Dependent
+                        Correlations
+corREG.DO               Decision-Oriented Predictor Selection by
+                        Correlation
+corREG.best             Identify Best Predictor by Correlation
+corREGorder             Order Predictors by Correlation with Response
+corb                    Bootstrap Confidence Interval for Correlation
+corbMC                  Bootstrap Correlation CI with Parallel
+                        Processing
+corblp.EP               Correlation Based on Robust Regression with Bad
+                        Leverage Point Removal
+corblp.bca.C            BCA Confidence Interval for Correlation with
+                        Bad Leverage Point Removal
+corblp.ci               Bootstrap CI for Correlation Based on Robust
+                        Regression (BLP Removed)
+corblppb                Percentile Bootstrap CI for Correlation Based
+                        on Robust Regression
+cori                    Correlation at Specified Value of Third
+                        Variable
+correg                  Correlation-Based Regression
+corregci                Bootstrap Confidence Intervals for Correlation
+                        Regression
+corrsim                 Simulation: Correlation Between Classical and
+                        Robust Distances
+corskip.comPV           Compare Overlapping Skipped Correlations with
+                        P-Value
+cov.mba                 Extract MBA Covariance or Correlation Matrix
+cov.ogk                 Compute OGK Covariance Matrix (Alternative
+                        Interface)
+cov.roc                 Compute Rocke's ROC Covariance with Center and
+                        Scatter
+cov2cor                 Convert Covariance Matrix to Correlation Matrix
+cov2med                 Estimate Covariance Between Dependent Order
+                        Statistics
+covdgk                  Scaled DGK Multivariate Location and Covariance
+                        Estimator
+covl                    Wrap Classical Covariance in List Format
+covloc                  Classical Mean and Covariance Matrix
+covmba                  Compute MBA (Median Ball Algorithm) Robust
+                        Covariance Estimator
+covmba2                 Compute MBA Covariance Matrix (Alternative
+                        Implementation)
+covmcd                  Compute MCD (Minimum Covariance Determinant)
+                        Robust Covariance Matrix
+covmmed                 Estimate Covariance Matrix for Sample Medians
+                        in Dependent Groups
+covmtrim                Covariance Matrix for Trimmed Means
+covmve                  Compute MVE (Minimum Volume Ellipsoid) Robust
+                        Covariance Matrix
+covogk                  Compute OGK (Orthogonalized
+                        Gnanadesikan-Kettenring) Robust Covariance
+                        Matrix
+covout                  Compute Covariance After Removing Outliers
+covroc                  Compute Rocke's TBS (Translated Biweight
+                        S-estimator) Covariance Matrix
+cumrelf                 Plot Cumulative Relative Frequencies for
+                        Multiple Groups
+cumrelfT                Compare Cumulative Relative Frequencies for Two
+                        Groups with Testing
+dat2dif                 Compute All Pairwise Differences for Dependent
+                        Groups
+dat2form                Convert Data to Format for ANOVA or Fisher's
+                        LSD
+dbetabin                Beta-Binomial Probability Mass Function
+dcov                    Compute Donoho-Gasko Depth-Based Scatter Matrix
+ddep                    ANOVA for Dependent Groups Using Depth-Based
+                        Bootstrap Method
+ddeptr                  ANOVA for Dependent Groups Using Trimmed Means
+                        and Depth-Based Bootstrap
+dec2by2.A               Decile Comparisons for 2×2 Interactions (Factor
+                        A)
+dec2by2.B               Decile Comparisons for 2×2 Interactions (Factor
+                        B)
+dec2way.mcp             Multiple Comparison Procedures for Two-Way
+                        Designs Using Deciles
+decJKinter              Decile-Based Interaction Analysis for J×K
+                        Design
+deciles                 Estimate Deciles
+decinter                Decile-Based Interaction Analysis for 2×2
+                        Design
+degrees.2.radians       Convert Degrees to Radians
+dep.ES.summary          Effect Size Summary for Dependent Groups
+dep.ES.summary.CI       Effect Size Summary with Confidence Intervals
+                        (Dependent Groups)
+dep.dif.fun             Confidence Intervals for Two Dependent Groups
+                        Using Multiple Methods
+dep.loc.summary         Summary of Location Estimates for Dependent
+                        Groups
+dep2.sign               Estimate Probability P(X<Y) for Dependent Pairs
+                        Using Logistic Regression
+depQS                   Quantile Shift Effect Size for Dependent Groups
+depQSci                 Confidence Interval for Quantile Shift Effect
+                        Size (Dependent Groups)
+deplin.ES.summary.CI    Dependent Groups Linear Contrast Effect Sizes
+                        with Confidence Intervals
+depreg                  Depth-Based Regression (Univariate)
+depth                   Halfspace Depth for Bivariate Data
+depth2                  Compute Exact Halfspace Depth for Bivariate
+                        Data
+depthg2                 Compare Two Independent Groups Using Depth
+dfried                  Compare Dependent Groups Using Halfspace Depth
+                        (Friedman-Type Test)
+difQpci                 Test Quantile Symmetry with FWE Control
+                        (Difference Quantile Plot with CI)
+difQpciMC               Quantile Difference Plot with Bootstrap CI and
+                        P-Values
+difQplot                Plot Quantile Sums to Assess Symmetry About
+                        Zero
+difqci.mul              Difference Quantile Confidence Intervals for
+                        Multiple Reference Points
+difreg                  Compare Two Dependent Regression Lines
+difregMC                Compare Two Dependent Regression Lines
+                        (Parallel Processing)
+difregOLS               Compare OLS Regression Parameters for Dependent
+                        Groups
+dis.depth.bag           Bagged Discriminant Depth Classification
+disband                 Shift Function Band Plot for Disordinal
+                        Interactions (2×2 Design)
+disc2.chi.sq            Chi-Squared Test for Comparing Two Discrete
+                        Distributions
+disc2comSK              Compare Two Discrete Distributions
+                        (Stouffer-Kolmogorov Approach)
+discANOVA               ANOVA for Discrete/Categorical Data
+                        (Multinomial Distributions)
+discANOVA.sub           Helper Function for discANOVA
+discdepth               Depth-Based Classification (Discriminant
+                        Analysis)
+discmcp                 Multiple Comparisons for Independent Groups
+                        with Discrete Distributions
+discstep                Step-Down Multiple Comparisons for Discrete
+                        Distributions
+disker                  Effect Size via Kernel Density Classification
+disord.inter            Test for Disordinal Interaction in J×K
+                        Factorial Design
+dlinmed                 Distribution and Test for Linear Combination of
+                        Dependent Medians
+dlinplot                Plot Distribution of Linear Contrast for
+                        Dependent Groups
+dlintrim                Linear Contrasts for Trimmed Means with
+                        Symmetry Test
+dmean                   Donoho-Gasko Multivariate Depth-Based Location
+                        Estimator
+dmedian                 Depth-Based Multivariate Median (Deepest Point)
+dmedpb                  Bootstrap Comparisons for Medians of Dependent
+                        Groups
+dtrimQS                 Quantile Shift Function for Trimmed Mean
+                        Differences
+dtrimpb                 Percentile Bootstrap Multiple Comparisons with
+                        Trimmed Means
+ebarplot                Error Bar Plot for Group Comparisons
+ebarplot.med            Error Bar Plot for Medians with
+                        Distribution-Free Confidence Intervals
+ecdf                    Empirical Cumulative Distribution Function
+ecor                    Explanatory Correlation with Outlier Detection
+ees.ci                  Confidence Interval for Robust Heteroscedastic
+                        Effect Size
+effectg                 Robust Heteroscedastic Effect Size (General
+                        Estimators)
+elimna                  Remove Missing Values from Data
+elimna2g                Remove Missing Values Pairwise from Two
+                        Groups/Matrices
+ellipse                 Plot Confidence Ellipse for Bivariate Data
+elo                     Identify and Remove Leverage Points and
+                        Regression Outliers
+epmod                   Estimate Explanatory Power for All Predictor
+                        Subsets
+epow                    Estimate Explanatory Power
+epowv2                  Explanatory Power and Strength of Association
+esI                     Explanatory Effect Size for 2×2 Interaction
+esImcp                  Interaction Effect Sizes for J×K Design
+esmcp                   Effect Size Multiple Comparisons for One-Way
+                        Designs
+essp                    Effective Sample Size Plot (ESSP) / Trimmed
+                        View for Regression
+estBetaParams           Estimate Beta Distribution Parameters
+exmed                   Exact Median Contrasts with Simulation-Based
+                        Critical Values
+fac2BBMlist             Convert Two-Way Data to List Format for MANOVA
+fac2Mlist               Convert Between-Within Data to List Format
+fac2list                Convert Factor Design Data to List Format
+fbplot                  Functional Boxplot for Functional Data
+fdepth                  Projection-Based Depth
+fdepthv2                Compute Halfspace Depth (Version 2)
+ffL                     FF Lambda Plot for Power Transformation
+                        Selection
+fflynx                  Functional Form Analysis of Canadian Lynx Time
+                        Series
+ffplot                  FF Plot with Multiple Robust Regression
+                        Estimators
+ffplot2                 FF Plot with Robust Regression Estimators
+                        (Version 2)
+freq5                   Compute Relative Frequencies for Up to Five
+                        Variables
+func.out                Spaghetti Plot for Functional Data with Outlier
+                        Detection
+func.plot               Functional Boxplot (Matrix Input)
+funloc                  Functional Data Location Estimates with
+                        Confidence Intervals
+funlocpb                Functional Data Location with Percentile
+                        Bootstrap
+funyuenpb               Functional Data Analysis: Compare Two Groups at
+                        Multiple Time Points
+fysim                   FY Plots for Simulated AR(2) Time Series
+g2plot                  Plot Density Functions for Two Groups
+g2plotdifxy             Plot Distribution of Pairwise Differences
+                        Between Two Groups
+g5.cen.plot             Plot Centered Density Functions for Up to Five
+                        Groups
+g5plot                  Plot Density Functions for Up to Five Groups
+gamindt                 Test for Association Using Generalized Additive
+                        Model
+gamper                  Compute Breakdown Point for MCD Estimator
+gamper2                 Compute Breakdown Point for MCD Estimator
+                        (Version 2)
+gamplot                 Plot Regression Surface Using Generalized
+                        Additive Model
+gamplotINT              Plot GAM Regression Surface with Interaction
+                        Term
+gamplotv2               Plot GAM Regression Surface with Strength of
+                        Association
+gengh                   Generate Multivariate g-and-h Distributed Data
+getBetaHdi              Compute Highest Density Interval for Beta
+                        Distribution
+ghdist                  Generate Random Samples from g-and-h
+                        Distribution
+ghmean                  Mean and Variance of g-and-h Distribution
+ghmul                   Generate Multivariate g-and-h Distribution Data
+ghtransform             Transform Normal Data to g-and-h Distribution
+gk                      Gnanadesikan-Kettenring Covariance Estimator
+gkcor                   Gnanadesikan-Kettenring Correlation or
+                        Covariance
+gkcov                   Compute Gnanadesikan-Kettenring Robust
+                        Covariance
+gplot                   Group Scatterplot with Jittered Points
+grit                    Test Variable Contribution Using Running
+                        Interval Smoother
+gskew                   Skewness and Kurtosis of g-and-h Distribution
+                        (h=0 Case)
+gvar                    Generalized Variance
+gvar2g                  Test Equality of Generalized Variances (Two
+                        Independent Groups)
+gvarg                   Generalized Variance with Robust Covariance
+                        Estimators
+gyreg                   Robust Regression with Outlier Detection Based
+                        on Residual Scale
+hard.rejection          Hard Rejection Weighting Function
+harmonic.mean           Harmonic Mean
+hc4qtest                Test OLS Slope Using HC4 Wild Bootstrap
+                        (Quasi-t Test)
+hc4test                 Omnibus Test for OLS Slopes Using HC4 Estimator
+hc4wmc                  Compare Slopes Across J Independent Groups
+                        Using HC4 Wild Bootstrap
+hc4wtest                Test All OLS Slopes Using HC4 Wild Bootstrap
+                        (Wald Test)
+hd                      Harrell-Davis Quantile Estimator
+hdci                    Confidence Interval for Harrell-Davis Quantile
+                        Estimator
+hdep                    Halfspace Depth of a Point
+hdmq                    Multiple Quantile Estimation Using
+                        Harrell-Davis Estimator
+hdno                    Hybrid Harrell-Davis and Navruz-Ozdemir
+                        Quantile Estimator
+hdpb                    Percentile Bootstrap Confidence Interval for
+                        Location Estimator
+hdseb                   Bootstrap Standard Error for Harrell-Davis
+                        Estimator
+hoch2.simp              Hochberg Two-Stage Sample Size Determination
+                        (Simplified)
+hotel1                  Trimmed Analog of Hotelling's One-Sample
+                        T-Squared Test
+hotel1.tr               Trimmed Hotelling's T-Squared Test (Default 20%
+                        Trimming)
+hpsi                    Huber's Psi Function
+hratio                  Compute Half-Slope Ratios
+iband                   Compare Quantiles of Difference Scores in 2×2
+                        Design
+idealf                  Ideal Fourths (Quartiles)
+idealfIQR               Interquartile Range Using Ideal Fourths
+idmatch                 Match Cases by ID Across Two Datasets
+idmatchv2               Match Cases by ID with Unmatched Case Reporting
+idrange                 Interquartile Range Based on Ideal Fourths
+ifmest                  Influence Function for M-Estimator
+in.interval             Flag Values Within an Interval
+indepth                 Compute Inward Depth Based on Generalized
+                        Variance
+indt                    Test Independence Between X and Y via
+                        Regression Surface
+indt0                   Test Independence with Zero Intercept
+                        Constraint
+indtall                 Test Independence for All Variable Pairs
+inter.ES                Interaction Effect Size for 2×2 Design
+interES.2by2            Interaction Effect Sizes for 2×2 Designs
+interJK.ESmul           Interaction Effect Sizes for J×K Designs
+interQS                 Quantile Shift Interaction Effect Size (2×2)
+interWMW                Interaction Test Using WMW Approach for 2x2
+                        Designs
+interWMWAP              WMW Interaction Test for 2-by-2 Design
+                        (Adaptive Percentile Bootstrap)
+interWMWpb              Bootstrap Confidence Interval for Interaction
+                        Test Using WMW
+interplot               Interaction Plot for Two-Way Design
+johan                   Johansen's Test for Independent Groups
+johansp                 Johansen's Test for Split-Plot Designs
+kbcon                   Kaiser-Bowden Heteroscedastic Contrast Test
+kdplot                  Plot Kernel Density Estimate
+kerSORT                 Kernel Density Plot (Silverman's Rule)
+kercon                  Conditional Local Weighted Regression with
+                        Epanechnikov Kernel
+kerden                  Kernel Density Estimate at Quantile
+kerreg                  Kernel Regression with Epanechnikov Kernel
+khomreg                 Test for Homoscedasticity in Linear Regression
+kms.effect              KMS Robust Effect Size
+kmsbinomci              KMS Binomial Confidence Interval
+kron                    Kronecker Product of Two Matrices
+ks                      Kolmogorov-Smirnov Two-Sample Test
+kslope                  Kernel-Based Slope Estimation
+ksnorm.test             Kolmogorov-Smirnov Normality Test
+ksties.crit             Compute Critical Value for Kolmogorov-Smirnov
+                        Test with Ties
+ksw.crit                Critical Value for Weighted Kolmogorov-Smirnov
+                        Test
+l2dci                   Bootstrap CI for Difference in Location
+                        (Dependent Groups)
+l2drmci                 Bootstrap CI for Difference in Location with
+                        Missing Data Handling
+l2plot                  Plot LOESS Smoothers for Two Groups
+l2v                     Convert List to Vector
+larsR                   Least Angle Regression (LARS) with Outlier
+                        Removal
+lasso.est               LASSO Regression with Outlier Detection
+lasso.rep               Repeated LASSO Regression for Stable
+                        Coefficient Identification
+lband                   Confidence Band for Shift Function (Lombard
+                        Method)
+lin.ES                  Quantile Shift Effect Size for Linear Contrasts
+lin2plot                Plot Two Distributions Based on Positive and
+                        Negative Contrast Coefficients
+linEP                   Explanatory Power for Linear Contrast
+linQS                   Quantile Shift Effect Size for Linear Contrast
+                        (Resampling Version)
+linWMW                  Linear Contrast with Wilcoxon-Mann-Whitney
+                        Method
+linWMWpb                Bootstrap Confidence Interval for Linear
+                        Contrast with WMW Method
+lincdm                  Linear Contrasts for Dependent Groups Using
+                        Medians
+lincdtr                 Linear Contrasts for Dependent Groups Using
+                        Trimmed Means
+linchk                  Test Linearity by Splitting Data on Predictor
+                        Value
+lincon.bin              Linear Contrasts for Independent Binomial
+                        Proportions
+linconEP                Linear Contrasts with Explanatory Power Effect
+                        Sizes
+linconES                Linear Contrasts with Quantile Shift Effect
+                        Sizes
+linconMpb               Multiple Comparisons for Independent Groups
+                        with Multivariate Data
+linconQS                Linear Contrasts with Quantile Shift Effect
+                        Sizes (Alternative Implementation)
+linconSpb               Multivariate Linear Contrasts with Skipped
+                        Estimator
+linconb                 Linear Contrasts for Trimmed Means with
+                        Bootstrap-t
+linconbt                Linear Contrasts for Trimmed Means with
+                        Bootstrap-t (Alternative Implementation)
+linconm                 Linear Contrasts for M-estimators with
+                        Bootstrap
+linconpb                Linear Contrasts with Percentile Bootstrap and
+                        Rom's Method
+lindQS                  Quantile Shift Effect Size for Linear Contrast
+                        (Dependent Groups)
+lindep                  Linear Contrasts for Dependent Groups
+lindepbt                Linear Contrasts for Dependent Groups with
+                        Bootstrap-t
+lindm                   Bootstrap Confidence Intervals for Linear
+                        Contrasts with M-Estimators (Dependent Groups)
+linhat                  Estimate Linear Contrasts
+linpairpb               All Pairwise Comparisons with Percentile
+                        Bootstrap
+linpbg                  Percentile Bootstrap Linear Contrasts for
+                        Independent Groups (General Estimator)
+linplot                 Plot Distribution of Linear Contrast
+linsign                 Estimate Probability that Linear Contrast is
+                        Negative
+lintest                 Test Linearity of Regression Surface
+lintestMC               Test Linearity of Regression Surface (Parallel
+                        Processing)
+lintpb                  Percentile Bootstrap Linear Contrasts for
+                        Independent Groups (Trimmed Means)
+list.dif                Form Pairwise Differences Between Two Lists
+list2matrix             Convert List to Matrix
+list2vec                Convert List to Vector
+listm                   Convert Matrix to List
+listv2mat               Convert List of Equal-Length Vectors to Matrix
+llocv2                  Location Estimates for Multiple Groups
+llrdata                 Generate Data for Loglinear Regression
+llressp                 Loglinear Regression Expected Squared Sum Plot
+llrwtfrp                Weighted Forward Response and Residual Plots
+                        for Loglinear Regression
+loc.dif.summary         Summary of Location Estimates for Difference
+                        Scores
+loc2dif                 Plot Location Estimates of X-Y versus X
+loc2dif.ci              Confidence Interval for Location Measure of
+                        Difference Between Independent Groups
+loc2difpb               Bootstrap Confidence Intervals for Location
+                        Difference Function
+loc2gmulpb              Bootstrap Test for Multiplicative Location
+                        Effect
+loc2plot                Plot Two Location Estimates
+locCV                   Cross-Validated Variance of Location Estimator
+locpre                  Prediction Error for Location Estimator (.632
+                        Method)
+locreg                  Local Weighted Regression with Epanechnikov
+                        Kernel
+locvar                  Estimate Conditional Variance VAR(Y|X)
+locvarsm                Estimate Conditional Variance with Bootstrap
+                        Bagging
+logIVcom                Compare Strength of Association for Independent
+                        Variable Subsets in Logistic Regression
+logSM                   Kernel Smoother for Logistic Regression
+                        (Multiple Predictors)
+logSM.pts.CI            Compare Success Probabilities at Multiple
+                        Covariate Values (Two Groups)
+logSM2g                 Plot Logistic Smoother for Two Groups with
+                        Binary Outcomes
+logSMpred               Predict Probabilities Using Logistic Smoother
+                        for Binary Outcomes
+logadr                  Additive Model for Binary Response Using Robust
+                        Smoothing
+logistic.LR             Likelihood Ratio Test for Logistic Regression
+logistic.lasso          Logistic Regression with Lasso Regularization
+lognormal.kurt          Lognormal Distribution Kurtosis
+lognormal.mean          Mean of Lognormal Distribution
+lognormal.mom           Moments of Lognormal Distribution
+lognormal.skew          Lognormal Distribution Skewness
+lognormal.var           Lognormal Distribution Variance
+logrchk                 Check Logistic Regression Fit Against Smooth
+logreg                  Logistic Regression with Outlier Detection
+logreg.P.ci             Confidence Intervals for Logistic Regression
+                        Probabilities
+logreg.plot             Plot Logistic Regression with MLE and/or Robust
+                        Estimates
+logreg.pred             Predict Probabilities from Logistic Regression
+logrsm                  Running-Kernel Smoother for Logistic Regression
+                        (Single Predictor)
+long2g                  Compare Two Groups in Longitudinal Data via
+                        Robust Regression
+long2mat                Convert Long Format Data to Matrix with Subject
+                        Rows
+longcov2mat             Convert Long Format Data to Covariance Matrix
+                        Format
+longreg                 Regression Analysis for Longitudinal Data
+longreg.plot            Plot Individual Regression Lines for
+                        Longitudinal Data
+lpindt                  Test for Association Using LOESS (Cleveland's
+                        Method)
+lplot                   Plot Regression Surface Using LOESS
+lplot.pred              Predict Values Using LOESS
+lplot2g                 Plot Running Interval Smoother for Two Groups
+lplotCI                 LOESS Confidence Band with Simultaneous
+                        Coverage
+lplotN                  LOESS Smoother Plot for Large Datasets
+lplotPV                 P-Value for LOESS Strength of Association
+lplotcom2               Compare Predictor Importance with LOESS (Method
+                        1)
+lplotcom2v2             Compare Predictor Importance with LOESS (Method
+                        2)
+lplotcomBCI             Bootstrap Confidence Interval for Comparing
+                        Predictor Importance
+lplotcomBCI9            Compare Predictor Importance Using LOESS at
+                        Quartile Points (Bootstrap CI)
+lplotv2                 Plot Regression Surface Using LOESS (Version 2)
+lrdata                  Generate Simulated Data for Logistic Regression
+lressp                  Plot ESSP (Estimated Sufficient Summary Plot)
+                        for Logistic Regression
+lsa.linear              Least Squares Approximation (LSA) Variable
+                        Selection
+lscale                  Compute L-Scale Estimator (Maronna's Method)
+lsfitNci                Heteroscedasticity-Consistent Confidence
+                        Intervals for OLS Regression
+lsfitNci4               Heteroscedasticity-Robust Confidence Intervals
+                        for Least Squares Regression
+lsfitci                 Bootstrap Confidence Intervals for Least
+                        Squares Regression
+lsqs2                   Liu-Singh Quality Index for Comparing Two
+                        Distributions
+lsqs3                   Liu-Singh Quality Index with Copula-Based Depth
+ltareg                  Least Trimmed Absolute Value Regression
+ltsR                    Least Trimmed Squares Regression with
+                        Explanatory Power
+ltsgreg                 Least Trimmed Absolute Value Regression
+ltsreg                  Least Trimmed Squares Regression
+m1way                   One-Way Test for Equality of Location Measures
+                        via Percentile Bootstrap
+m2ci                    Bootstrap Confidence Interval for Difference in
+                        M-Estimators
+m2way                   Two-Way ANOVA for Location Measures via
+                        Percentile Bootstrap
+madsq                   Squared Median Absolute Deviation
+man2pb                  Multivariate Two-Sample Comparison with
+                        Percentile Bootstrap
+manES                   Multivariate Effect Size via Classification
+                        Methods
+marpca                  Maronna Robust Principal Component Analysis
+mat2grp                 Convert Matrix to Grouped List by Column Values
+mat2list                Convert Matrix to Grouped List (Exclude
+                        Grouping Column)
+mat2table               Convert Bivariate Data to 2x2 Contingency Table
+matbin2v                Extract Matrix Rows Based on Two-Variable
+                        Intervals
+matl                    Convert List to Matrix
+matsplit                Split Matrix into Two Groups Based on Binary
+                        Variable
+mbmreg                  Modified Bounded M-Regression
+mcd.cor                 MCD Robust Correlation
+mcdcen                  Minimum Covariance Determinant Center Estimate
+mcdcov                  Extract MCD Covariance Matrix Only
+mch2num                 Convert Character Matrix to Numeric Matrix
+mcnemar.AC              McNemar Test with Agresti-Caffo Method
+mcp.nestAP              Multiple Comparisons for Nested Designs with
+                        Trimmed Means
+mcp2a                   Multiple Comparisons for Two-Way Factorial
+                        Design (General Estimators)
+mcp2atm                 Multiple Comparisons for Two-Way Factorial
+                        Design (Trimmed Means)
+mcp3atm                 Multiple Comparisons for Three-Way Factorial
+                        Design (Trimmed Means)
+mcp3med                 Three-Way Median-Based Multiple Comparisons
+mcpOV                   Multiple Comparisons with O-Type Multivariate
+                        Location Estimator
+mcpPV                   Multiple Comparison Procedure Using Combined
+                        P-values
+mcppb                   Multiple Comparisons with Percentile Bootstrap
+                        (General MCP)
+mcppb20                 Multiple Comparisons via Percentile Bootstrap
+                        (Rom's Method)
+mcskew                  Medcouple Skewness Measure
+mdepreg                 Multivariate Depth-Based Regression
+mdiflcr                 Multivariate Difference Location Comparison
+                        (Two Independent Groups)
+mdifloc                 Multivariate Location Difference
+mean.pred.ci            Prediction Confidence Interval for Mean in New
+                        Sample
+meancr.cord.oph         Multivariate Test for Mean with Outlier
+                        Projection Method
+med.effect              Robust Effect Size Based on Median and Robust
+                        Variance
+med1way                 Heteroscedastic One-Way ANOVA for Medians
+med2g                   Compare Medians of Two Independent Groups Using
+                        Bootstrap
+med2mcp                 Multiple Comparisons for Two-Way ANOVA Using
+                        Medians
+med2way                 Two-Way ANOVA for Medians with Independent
+                        Groups
+medcipb                 Bootstrap Confidence Interval for the Median
+medcurve                Median Curve for Functional Data
+medhd2g                 Compare Medians of Two Independent Groups Using
+                        Harrell-Davis Estimator
+medind                  Independence Test Based on Quantile Regression
+                        for Median
+medpb                   Multiple Comparisons for Independent Groups
+                        Using Bootstrap Medians
+medpb.es                Multiple Comparisons for Medians with Effect
+                        Sizes
+medpb2                  Compare Two Independent Groups Using Medians
+medr                    Robust Median Comparisons Using Depth-Based
+                        Methods
+mee                     Mee's Confidence Interval for P(X < Y)
+meemul                  Mee's Method for Multiple Pairwise Comparisons
+mest                    M-Estimator of Location Using Huber's Psi
+mestci                  Bootstrap Confidence Interval for M-Estimator
+mestse                  Standard Error of M-Estimator
+mestseb                 Bootstrap Standard Error of M-Estimator
+mgvar                   Multivariate Generalized Variance for Data
+                        Depth
+mgvcov                  Compute Skipped Covariance Using MGV Outlier
+                        Detection
+mgvdep                  Multivariate Generalized Variance Depth
+mgvfreg                 Regression with MGV Outlier Detection
+mgvmean                 Multivariate Skipped Mean Using MGV Method
+mgvreg                  Regression with MGV Outlier Detection
+miss2na                 Convert Missing Value Codes to NA
+mjse                    Maritz-Jarrett Standard Error Estimate
+mlrGtest                Global Test for Multivariate Regression Slopes
+mlrplot2                Diagnostic Plots for Multivariate Regression
+                        Estimators
+mlrreg                  Robust Multivariate Linear Regression
+mlrreg.Stest            Test All Slopes Equal Zero in Multivariate
+                        Regression
+mlrregCI                Bootstrap Confidence Intervals for Multivariate
+                        Regression Coefficients
+mlrregWtest             Test All Slopes Equal Zero in Multivariate
+                        Regression
+mlts                    Multivariate Least Trimmed Squares Regression
+mmean                   Marginal Location Estimates
+modgen                  Generate All Possible Regression Models
+mom                     Modified One-Step M-Estimator (MOM)
+momci                   Bootstrap Confidence Interval for MOM Estimator
+mopreg                  Multiple Outcome Outlier-Pruned Regression
+mplot                   Mahalanobis Distance Diagnostic Plot
+mregdepth               Compute Multiple Regression Depth
+mrm1way                 Within-Groups One-Way ANOVA Using Medians or
+                        Quantiles
+mscor                   Multiple Skipped Correlation
+mscorci                 Multiple Skipped Correlation Confidence
+                        Intervals
+mscorciH                Multiple Skipped Correlation CI with Hochberg
+                        Adjustment
+mscorpb                 Multiple Skipped Correlation with Bootstrap
+mscorpbMC               Multiple Skipped Correlation Bootstrap
+                        (Parallel)
+mscov                   Compute Skipped Covariance Matrix Using
+                        Projection Method
+msmed                   Test Linear Contrasts Using Medians
+msmedci                 Confidence Interval for the Median Using
+                        McKean-Schrader Method
+msplit                  Split-Plot J×K ANOVA Using Medians
+mul.loc2g               Compare Multivariate Location for Two
+                        Independent Groups
+mulcen.region           Compute and Plot Central Region Based on Data
+                        Depth
+mulcen.region.MF        Compute Central Regions for Multiple Bivariate
+                        Formula Pairs
+mulgreg                 Multivariate Regression via Robust Covariance
+mulquant                Estimate Multiple Quantiles
+mulrank                 Munzel-Brunner Multivariate Rank-Based ANOVA
+multireg.prob           Multinomial Logistic Regression Probabilities
+multsm                  Smoother for Multinomial Regression
+mulwmw                  Multivariate WMW Test Using Projection onto
+                        Line Connecting Centers
+mulwmwv2                Explanatory Effect Size for Two Groups Using
+                        Projections
+mve.cor                 MVE-Based Robust Correlation
+mvecen                  MVE Center (Location Estimate)
+mvecov                  Extract MVE Covariance Matrix Only
+mwmw                    Multivariate Analog of Wilcoxon-Mann-Whitney
+                        Test
+mwwmcp                  Multiple Comparisons for Within-Within Designs
+                        Using Quantiles
+nav                     Asymptotic Variance for Trimmed Mean Under
+                        Normality
+near                    Identify Values Near a Point
+near3d                  Identify Points Near a Point in
+                        Multidimensional Space
+nltv                    Asymptotic Variance for LTS and LTA Estimators
+normTmm                 Test for Excess Outliers Compared to Normal
+                        Distribution
+ocor                    Correlation with Multivariate Outlier Detection
+oddata                  Generate Overdispersed Count Data for Loglinear
+                        Regression
+ogk                     OGK Robust Covariance Estimator (Orthogonalized
+                        Gnanadesikan-Kettenring)
+ogk.center              OGK Multivariate Location Estimator
+ogkcor                  OGK Correlation
+ols                     Ordinary Least Squares Regression
+ols.plot.inter          Plot OLS Regression Surface with Interaction
+                        Term
+ols.pred.ci             OLS Regression Line with Prediction Confidence
+                        Interval
+ols.ridge               Ridge Regression with OLS
+ols1way                 Heteroscedastic Test for Equality of Regression
+                        Lines (Multiple Groups)
+ols1way2g               Heteroscedastic Test for Equality of Slopes
+                        (Multiple Groups)
+ols1wayISO              Test Equality of OLS Regression Slopes Across
+                        Independent Groups
+ols2ci                  Compare OLS Regression Parameters for Two
+                        Independent Groups
+olsJ2                   Test Equality of OLS Regression Parameters for
+                        Two Groups
+olsLmcp                 All Pairwise Comparisons of OLS Regression
+                        Models
+olsMUL                  OLS Regression for Multiple Response Variables
+olsW2g                  Test Equality of Specific OLS Parameters for
+                        Two Groups Using Welch Approach
+olsWmcp                 All Pairwise Comparisons of OLS Parameters
+                        Using Welch Approach
+olshc4                  OLS Regression with HC4 or HC3 Confidence
+                        Intervals
+olshc4.band             Heteroscedastic OLS Confidence Band with HC4
+                        Estimator
+olshc4.bandCV           Determine Critical Value for HC4 Confidence
+                        Band
+olshomci                OLS Confidence Interval Assuming
+                        Homoscedasticity
+olstest                 Test That All OLS Slopes Are Zero Using Wild
+                        Bootstrap
+olswbtest               Wild Bootstrap Wald Test for OLS Regression
+                        Slopes
+omega                   Compute Omega for Percentage Bend Estimator
+onesampb                Bootstrap Confidence Interval and Test for
+                        One-Sample Location
+onestep                 One-Step M-Estimator of Location
+oph.astig.Dataset.Means.ConfEllipses
+                        Dataset Means and Confidence Ellipses for
+                        Astigmatism Data
+oph.astig.bivmarg.totvars
+                        Compare Total Variances for Bivariate
+                        Astigmatism Data
+oph.astig.datasetconvexpoly
+                        Dataset-Level Convex Polygons for Astigmatism
+                        Data
+oph.astig.datasetconvexpoly.mean
+                        Dataset-Level Convex Polygons Using Means for
+                        Astigmatism Data
+oph.astig.datasetconvexpoly.median
+                        Compute Confidence Regions for Bivariate
+                        Medians in Astigmatism Data
+oph.astig.depbivmarg.totvars
+                        Compare Total Variances for Dependent Bivariate
+                        Astigmatism Data
+oph.astig.depbivmeans   Compare Bivariate Means for Dependent
+                        Astigmatism Data
+oph.astig.depbivtotvars
+                        Compare Total Variances for Dependent Bivariate
+                        Astigmatism Data
+oph.astig.depcom        Compare Dependent Groups for Astigmatism
+                        Prediction Errors
+oph.astig.depcom.unimean.var
+                        Compare Astigmatism Formulas - Dependent Case
+                        (Means and Variances)
+oph.astig.indepbivmarg.totvars
+                        Compare Total Variances for Independent
+                        Astigmatism Formulas (Bivariate Marginal)
+oph.astig.indepbivmeans
+                        Compare Bivariate Means for Independent
+                        Astigmatism Formulas
+oph.astig.indepbivtotvars
+                        Compare Total Variances for Independent
+                        Astigmatism Formulas (Bivariate)
+oph.astig.indepcom      Compare Astigmatism Prediction Errors -
+                        Independent Groups
+oph.astig.indepintervals
+                        Compare Frequency Distributions Across Diopter
+                        Intervals - Independent Groups
+oph.astig.mcnemar       Compare Astigmatism Prediction Formulas Using
+                        McNemar's Test
+oph.astig.meanconvexpoly
+                        Compute Confidence Regions for Bivariate Means
+                        in Astigmatism Data
+oph.astig.medianconvexpoly
+                        Bivariate Median Confidence Regions for
+                        Ophthalmology Astigmatism Data
+oph.dep.comMAD          Compare Mean Absolute Deviations - Dependent
+                        Groups (Ophthalmology)
+oph.dep.comMeanAE       Compare Mean Absolute Errors - Dependent Groups
+                        (Ophthalmology)
+oph.dep.comMedAE        Compare Median Absolute Errors - Dependent
+                        Groups (Ophthalmology)
+oph.dep.comRMSAE        Compare Root-Mean-Square Absolute Errors -
+                        Dependent Groups (Ophthalmology)
+oph.dep.commean         Compare Means - Dependent Groups
+                        (Ophthalmology)
+oph.dep.commedian       Compare Medians - Dependent Groups
+                        (Ophthalmology)
+oph.dep.comvar          Compare Variances - Dependent Groups
+                        (Ophthalmology)
+oph.ind.comvar          Compare Variances - Independent Groups
+                        (Ophthalmology)
+oph.indep.comMAD        Compare Mean Absolute Deviations - Independent
+                        Groups (Ophthalmology)
+oph.indep.comMeanAE     Compare Mean Absolute Errors - Independent
+                        Groups (Ophthalmology)
+oph.indep.comMedAE      Compare Median Absolute Errors - Independent
+                        Groups (Ophthalmology)
+oph.indep.comRMSAE      Compare Root-Mean-Square Absolute Errors -
+                        Independent Groups (Ophthalmology)
+oph.indep.commean       Compare Means - Independent Groups
+                        (Ophthalmology)
+oph.indep.commedian     Compare Medians - Independent Groups
+                        (Ophthalmology)
+oph.indepintervals      Compare Frequency Distributions Across Diopter
+                        Intervals (Ophthalmology)
+oph.mcnemar             Compare Prediction Formulas Using McNemar's
+                        Test (Ophthalmology)
+opreg                   Outlier-Pruned Regression
+opregMC                 Outlier-Pruned Regression (Parallel Processing)
+opregpb                 Bootstrap Inference for Outlier-Pruned
+                        Regression
+ord.loc.PV              Test and Determine Ordering of Trimmed Means
+                        with FWE Control
+ord.loc.crit            Determine Critical P-values for Ordering Test
+ord.loc.ex              Determine Order of Trimmed Means and Extract
+                        P-values
+ortho                   Orthonormalize a Matrix
+out                     Outlier Detection Using Robust Mahalanobis
+                        Distance
+out.by.groups           Group-wise Outlier Detection
+out.dummy               Outlier Detection with Dummy Variable Column
+                        Removal
+out.methods             Wrapper for Multiple Outlier Detection Methods
+out3d                   3D Scatterplot with Outlier Highlighting
+outDETMCD               Robust Covariance-Based Outlier Detection
+outICS                  ICS-Based Outlier Detection
+outbag                  Bagplot-Based Outlier Detection
+outblp.HH               Bad Leverage Point Detection (Hybrid Method)
+outbox                  Boxplot-Based Outlier Detection
+outcov                  Compute Covariance After Removing Outliers
+outmah                  Mahalanobis Distance Outlier Detection
+outmc                   Modified Carling Outlier Detection
+                        (Skewness-Adjusted)
+outmgv                  MGV-Based Outlier Detection
+outmgvad                MGV Outlier Detection with Adjusted Critical
+                        Value
+outmgvf                 Fast MGV Outlier Detection (Inward Method)
+outms                   Mean/SD-Based Outlier Detection
+outmve                  MVE/MCD-Based Outlier Detection
+outogk                  OGK-Based Outlier Detection
+outpro                  Outlier Detection Using Projection Method
+outpro.depth            Projection-Based Outlier Detection Using Depth
+outproMC                Projection-Based Outlier Detection (Multicore
+                        Version)
+outproad                Projection Outlier Detection with Adjusted
+                        Critical Value
+outproadMC              Projection Outlier Detection with Adjusted
+                        Critical Value (Multicore)
+outtbs                  TBS-Based Outlier Detection
+pairdepb                Pairwise Comparisons for Dependent Groups with
+                        Bootstrap-t
+part.cor                Robust Partial Correlation
+pb2gen                  Percentile Bootstrap for Two-Group Comparisons
+                        (General Purpose)
+pb2genMC                Percentile Bootstrap for Two-Group Comparisons
+                        (Multicore Version)
+pb2trmcp                Two-Way ANOVA Multiple Comparisons with Trimmed
+                        Means (Bootstrap)
+pb3trmcp                Three-Way ANOVA Multiple Comparisons for
+                        Trimmed Means
+pbad2way                Two-Way ANOVA Using Projection-Based Depth with
+                        Bootstrap
+pbad3way                Three-Way ANOVA Using Projection-Based Depth
+                        with Bootstrap
+pbadepth                Bootstrap Test for Linear Contrasts Using Depth
+pball                   Percentage Bend Correlation Matrix with Omnibus
+                        Test
+pbanova                 Percentile Bootstrap One-Way ANOVA for Trimmed
+                        Means
+pbanovag                Generalized Percentile Bootstrap ANOVA for Any
+                        Estimator
+pbcan                   Percentile Bootstrap Test with Partial
+                        Centering
+pbcor                   Percentage Bend Correlation
+pbmcp                   Multiple Comparisons with Percentile Bootstrap
+                        (M-Estimators)
+pbos                    One-Step Percentage Bend Measure of Location
+pbprotm                 Percentile Bootstrap Test for Linear Contrasts
+                        Using Projection-Based Depth
+pbtest                  Test if Percentage Bend Correlation Matrix
+                        Equals Identity
+pbvar                   Percentage Bend Midvariance
+pcor                    Pearson Correlation
+pcorb                   Bootstrap Confidence Interval for Pearson
+                        Correlation
+pcorbv4                 Pearson Correlation Bootstrap Variant 4
+pcorhc4                 Pearson Correlation with HC4 Standard Errors
+pdclose                 Identify Close Points Based on Projection
+                        Distance
+pdep                    Estimate P(X < Y) for Dependent Variables
+pdepth                  Compute Projection Depth
+pdis                    Projection Distance
+pdisMC                  Projection Distance with Parallel Processing
+perm.rho                Permutation Test for Pearson Correlation
+permg                   Two-Sample Permutation Test
+permg.t                 Permutation Test for Trimmed Means
+pghdist                 Cumulative Distribution Function for g-and-h
+                        Distribution
+pifclean                Compute Number of Passes for Data Cleaning
+piplot                  FY Plot with Prediction Intervals
+pisim                   Simulation Study Comparing Prediction Intervals
+                        for Multiple Regression
+plot.ghdist             Plot Density Function of g-and-h Distribution
+plot.inter              Plot Distribution of Interaction Contrasts for
+                        2x2 Design
+plot3D                  Create a 3D Scatter or Surface Plot
+plotCI                  Plot with Confidence Intervals
+plotDAP                 Double Angle Plot (DAP) for Ophthalmology Data
+plot_robpca             Diagnostic Plot for Robust PCA
+pool.a.list             Pool Data from List into Single Vector
+pool.fun                Pool Data Over Factor A in Between-by-Within
+                        Design
+pow1                    Power for One-Sample Student's T-Test
+                        (One-Sided)
+pow2an                  Power Analysis for Two-Sample Trimmed Means
+power.chisq.test        Power Analysis for Chi-Square Test
+powt1an                 Power Analysis for One-Sample Trimmed Mean
+powt1est                Estimate Power for One-Sample Trimmed Mean at
+                        Specific Delta
+predict.robust.Forest   Predict Using Robust Measures of Location from
+                        Random Forest Regions
+pro.class               Projection-Based Classification
+pro.class.bag           Bagged Projection-Based Classification
+pro.class.probs         Projection-Based Classification with
+                        Probabilities
+pro.classPD             Projection-Based Classification Using
+                        Probability Density Functions
+pro.classPD.bag         Bagged Projection Depth Classification
+prodepth                Compute Projection Depth (Fast Approximation)
+prplot                  Partial Residual Plot for Checking Curvature
+psihat                  Estimate Linear Contrasts
+ptests                  Combine P-values from Independent Tests
+pts.to.equivalence      Test Equivalence Across Range of MESOI Values
+push                    Shift Matrix Rows Down by One Position
+pxly                    Estimate Probability P(X < Y) for Independent
+                        Groups
+q2by2                   Quantile-Based Tests for 2×2 Independent Groups
+                        ANOVA
+q2gci                   Compare Multiple Quantiles Between Two
+                        Independent Groups
+qci                     Confidence Interval for Quantile Using Kernel
+                        Density Estimator
+qcipb                   Bootstrap Confidence Interval for Quantile via
+                        Harrell-Davis Estimator
+qcmul                   Bootstrap Confidence Intervals for Multiple
+                        Quantile Regression Correlations
+qcomhd                  Compare Quantiles Between Two Independent
+                        Groups
+qcomhdMC                Compare Multiple Quantiles Between Two Groups
+                        (Multicore Version)
+qcomthd                 Compare Multiple Quantiles Using Trimmed
+                        Harrell-Davis Estimator
+qcor                    Quantile Correlation
+qcor.EP                 Quantile Regression Correlation for Multiple
+                        Quantiles (Explanatory Power)
+qcor.R                  Quantile Regression Correlation for Multiple
+                        Quantiles (Ratio Method)
+qcor.ci                 Quantile Regression Correlation CI (Li et al.
+                        Method)
+qcor.ep.ci              Quantile Regression Correlation CI (Explanatory
+                        Power Method)
+qcorp1                  Quantile Correlation (Projection Method 1)
+qcorp1.ci               Quantile Regression Correlation CI (Ratio
+                        Method)
+qdec                    Compute Deciles Using Single Order Statistics
+qdec2ci                 Compare Deciles Between Two Dependent Groups
+qdmcp                   Multiple Comparisons Using Quantiles -
+                        Dependent Groups
+qdmcpdif                Multiple Comparisons Using Medians on
+                        Difference Scores
+qdtest                  Test Equality of Quantiles for Two Dependent
+                        Groups
+qest                    Quantile Estimate Using Single Order Statistic
+qest.meth               Estimate Quantile Using Specified Method
+qghdist                 Quantile of a g-and-h Distribution
+qhat                    Q-Statistic Effect Size (Independent Groups)
+qhatDEP                 Q-Statistic Effect Size Using Data Depth
+qhatd                   Q-Statistic Effect Size (Dependent Groups)
+qhatdepPB               Bootstrap Confidence Interval for Depth-Based
+                        Q-Statistic
+qhdplotsm               Plot Smoothed Quantile Regression Lines
+qhdsm                   Quantile Regression Smoother Using
+                        Harrell-Davis Estimator
+qhdsm.pred              Predictions from Quantile Regression Smoother
+qhdsm2g                 Two-Group Quantile Regression Smoother
+qhomt                   Test Homoscedasticity Using Quantile Regression
+                        Slopes
+qhomtv2                 Test for Homoscedasticity Using Quantile
+                        Regression
+qint                    Confidence Interval for Quantile with Exact
+                        Coverage
+qinvreg                 Inverse Quantile Regression
+qloc.dif                Quantile-Based Effect Size for Group
+                        Differences
+qmjci                   Confidence Interval for Quantile Using
+                        Maritz-Jarrett Standard Error
+qno.est                 Quantile Estimation (Alternative to
+                        Harrell-Davis)
+qplotreg                Plot Multiple Quantile Regression Lines
+qrchk                   Test of Linear Fit Based on Quantile Regression
+qregplots               Plot Quantile Regression Lines Using quantreg
+                        Package
+qregsm                  Quantile Regression Smoother
+qse                     Standard Error of Sample Quantile Estimator
+qshift                  Quantile Shift Effect Size
+qshiftpb                Quantile Shift with Percentile Bootstrap CI
+qsm                     Running Interval Smoother for Multiple
+                        Quantiles
+qsmcobs                 Quantile Regression Smoothing Using COBS
+qsmm                    Quantiles of Studentized Maximum Modulus
+                        Distribution
+qsplit                  Split Data into Three Groups Based on Quantiles
+quant                   Compute Sample Quantiles (Wrapper for quantile)
+quantregForest          Quantile Regression Forests
+qwmwhd                  Test Symmetry of Distribution Using Multiple
+                        Quantiles
+r.gauss.pro             Generate Data from a Gaussian Process
+r1mcp                   All Pairwise Comparisons Using Rank-Based
+                        Method
+r2mcp                   Two-Way ANOVA Rank-Based Pairwise Comparisons
+radians.2.degrees       Convert Radians to Degrees
+rananova                Heteroscedastic One-Way Random Effects ANOVA
+                        for Trimmed Means
+ranki                   Rank-Based Confidence Intervals for Two-Way
+                        Interaction Terms
+ratmn                   Robust Two-Stage Asymmetrically Trimmed Mean
+rbbinom                 Generate Beta-Binomial Random Variables
+rbin.mul                Generate Correlated Multivariate Binomial Data
+rd2plot                 Plot Expected Frequency Curves for Two Groups
+rdepth.orig             Compute Regression Depth of a Line
+rdplot                  Running Interval (Expected Frequency) Density
+                        Plot
+reg.break               Estimate Regression Breakpoint (Piecewise
+                        Linear Regression)
+reg.con.dist            Estimate Conditional Distribution via Quantile
+                        Regression
+reg.hyp.split           Regression-Based Hypothesis Testing via
+                        Hyperplane Split
+reg.plot.inter          Plot Robust Regression Surface with Interaction
+                        Term
+reg.resid               Compute Regression Residuals
+reg.vs.lplot            Compare Regression Estimates vs Lowess
+                        Estimates
+reg.vs.rplot            Compare Regression Estimates vs Running
+                        Smoother Estimates
+reg1way                 One-Way ANOVA for Independent Regression Lines
+reg1wayISOMC            One-Way Regression ANOVA with Isotonic
+                        Bootstrap (Parallel Processing)
+reg1wayMC               Compare Regression Lines Across Multiple
+                        Independent Groups (Parallel Processing)
+reg2ci                  Compare Two Independent Regression Lines
+reg2ciMC                Compare Two Independent Regression Lines
+                        (Parallel Processing)
+reg2difplot             3D Plot of Regression Surface Differences
+                        Between Two Groups
+reg2g.p2plot            3D Plot of Two Regression Surfaces for Group
+                        Comparison
+reg2plot                Plot Two Regression Lines for Group Comparison
+regGmcp                 Global Multiple Comparisons for Regression
+                        Parameters
+regHH                   Regression After Removing Bad Leverage Points
+                        (HH Method)
+regIQR                  Interquartile Range for Regression
+regIVcom                Compare Strength of Association for Two
+                        Predictor Subsets
+regIVcommcp             Multiple Comparisons of Predictor Strength for
+                        All Pairs
+regIVstr                Estimate Strength of Association for Each
+                        Predictor
+regR.Forest             Random Forest Regression with Robust Location
+                        Estimation
+regYband                Plot Confidence Band for Regression Predictions
+regYci                  Confidence Intervals for Predicted Y Values in
+                        Regression
+regYci.sum              Summarize Confidence Intervals for Regression
+                        Predictions
+regYci2Gv2              Two-Group Comparison of Regression Predictions
+                        (ANCOVA-Style)
+regYciCV                Determine Critical Value for regYci via
+                        Simulation
+regYciCV2G              Simulation-Based Critical Value for Two-Group
+                        Regression Comparison
+regYhat                 Predict Y Values Using Robust Regression
+regYvar                 Bootstrap Standard Errors for Regression
+                        Predictions
+regbin.hyp.split        Binary Response Hypothesis Testing via
+                        Hyperplane Split
+regbtci                 Bootstrap-t Confidence Intervals for Regression
+                        Parameters
+regci                   Bootstrap Confidence Intervals for Regression
+                        Parameters
+regci.het.blp           Bootstrap Regression CIs with Heteroscedastic
+                        Bad Leverage Point Detection
+regci.inter             Robust Regression with Interaction Term and
+                        Confidence Intervals
+regciHH                 Bootstrap Regression CIs with HH Bad Leverage
+                        Point Detection
+regcon.out              Detect Outliers in Regression Allowing
+                        Heteroscedasticity
+regcor                  Regression-Based Correlation
+reghet.blp              Regression Removing Bad Leverage Points with
+                        Heteroscedastic Method
+reghet.blp.ci           Confidence Intervals After Removing Bad
+                        Leverage Points (Heteroscedastic)
+regi                    Conditional Regression Comparison Based on
+                        Third Variable
+reglev                  Detect Regression Leverage Points
+reglev.est              Regression Estimation with Bad Leverage Point
+                        Removal
+reglev.gen              General Leverage Point Detection for Regression
+regmed2                 Test Mediation Pathways in Regression
+regmediate              Test for Mediation Effect in Regression
+regout                  Detect Regression Outliers Using Boxplot Rule
+                        on Residuals
+regp2plot               3D Plot of Regression Surface
+regpca                  Principal Component Analysis for Regression
+regplot                 General Regression Plot (1D or 2D)
+regpord                 Compare Strength of Association for
+                        Standardized Predictors
+regse                   Bootstrap Standard Errors for Regression
+                        Parameters
+regstr                  Compute Explanatory Strength of Association
+regtest                 Test Hypotheses About Regression Parameters
+regtest.blp             Test Regression Coefficients with Bad Leverage
+                        Point Removal
+regtestMC               Regression Coefficient Test with Multicore
+                        Bootstrap
+regvarp                 Measure Importance of Predictors in Regression
+relfun                  Bivariate Boxplot Estimators
+                        (Goldberg-Iglewicz)
+resdepth                Compute Regression Depth from Residuals
+rexgauss                Generate Random Ex-Gaussian Variables
+rfanova                 Rust-Fligner Rank-Based ANOVA
+rfit.est                Rank-Based Regression Estimation (Coefficients
+                        Only)
+rgvar                   Robust Generalized Variance
+rgvar2g                 Test Equality of Robust Generalized Variances
+                        for Two Groups
+rgvarseb                Bootstrap Standard Error for Robust Generalized
+                        Variance
+rhom                    Test for Homoscedasticity in Regression
+ribmp                   Rank-Based Multiple Comparisons for
+                        Interactions in J-by-K Design
+ridge.Gtest             Global Test for Ridge Regression
+ridge.Liu               Liu Ridge Estimator
+ridge.test              Ridge Regression Hypothesis Tests with
+                        Heteroscedastic Standard Errors
+riplot                  Regression Interaction Plot
+risk.ratio              Risk Ratio Confidence Interval
+ritest                  Test for Regression Interaction Using Robust
+                        Smooths
+rm.marg.OMCI            Marginal Effect Size CI for Dependent Groups
+rm.marg.es              Robust Marginal Effect Size for Repeated
+                        Measures
+rm.marg.esCI            Bootstrap Confidence Interval for Robust
+                        Marginal Effect Size
+rm.margOM.es            Robust Marginal Effect Size Using One-Step
+                        M-Estimator
+rm2g.tests              Multiple Effect Size Measures for Two Dependent
+                        Groups
+rm2mcp                  Two-Way Within-Subjects Multiple Comparisons
+rm2miss                 Compare Two Dependent Groups with Missing
+                        Values Allowed
+rm3mcp                  Three-Way Repeated Measures Multiple
+                        Comparisons
+rmES.dif.pro            Global Effect Size for Repeated Measures Using
+                        Projection Distance
+rmES.pro                Effect Size for Repeated Measures Using
+                        Projection Distance to Grand Mean
+rmVARcom                Compare Variances for Two Dependent Groups
+                        Using Bootstrap
+rmVARcom.mcp            Multiple Pairwise Variance Comparisons for
+                        Dependent Groups
+rmaha                   Robust Mahalanobis Distances
+rmanog                  Test that All Pairwise Differences Equal Zero
+                        (Repeated Measures)
+rmanova                 Heteroscedastic One-Way Repeated Measures ANOVA
+                        for Trimmed Means
+rmanovab                Bootstrap-t for Repeated Measures ANOVA with
+                        Trimmed Means
+rmaseq                  Sequential Tests of Marginal Locations
+                        (Repeated Measures)
+rmba                    Compute Reweighted MBA (Median Ball Algorithm)
+                        Robust Covariance
+rmbestPB.DO             Test if Identifying Group with Largest Location
+                        is Reasonable (Bootstrap)
+rmbestVAR.DO            Determine Group with Smallest Robust Measure of
+                        Variation
+rmblo                   Remove Bad Leverage Points from Regression Data
+rmc2list                Convert Between-Within Design Data to List
+                        Format
+rmdat2mat               Convert Long-Format Repeated Measures Data to
+                        Wide Matrix
+rmdif.scores            Compute All Pairwise Difference Scores
+rmdzD                   Repeated Measures ANOVA Using Depth-of-Zero on
+                        Difference Scores
+rmdzero                 Repeated Measures ANOVA Using Depth of Zero
+rmdzeroG                Repeated Measures ANOVA Using Depth of Zero for
+                        Multivariate Estimators
+rmdzeroGMC              Repeated Measures ANOVA Using Depth of Zero
+                        (Multicore Version)
+rmdzeroOP               Repeated Measures ANOVA Using OP Measure of
+                        Location
+rmlinES                 Dependent Groups Linear Contrast Effect Sizes
+rmlinQS                 Quantile Shift Effect Size for Linear Contrasts
+                        in Dependent Groups
+rmm.dif                 Pairwise Comparisons for Dependent Groups Using
+                        Difference Scores
+rmm.difpb               Pairwise Comparisons for Dependent Groups
+                        (Bootstrap on Difference Scores)
+rmm.mar                 Pairwise Comparisons for Dependent Groups Using
+                        Marginal Distributions
+rmm.marpb               Pairwise Comparisons for Dependent Groups
+                        (Bootstrap on Marginals)
+rmmcp                   Multiple Comparisons for Repeated Measures
+                        (Trimmed Means)
+rmmcpES                 Repeated Measures MCP with Effect Sizes
+rmmcpQS                 Repeated Measures MCP with Quantile Shift
+                        Effect Sizes
+rmmcppb                 Repeated Measures Comparisons via Percentile
+                        Bootstrap
+rmmcppbd                Repeated Measures MCP with Percentile Bootstrap
+                        (Difference Scores)
+rmmcppbtm               Repeated Measures MCP with Percentile Bootstrap
+                        for Trimmed Means
+rmmcppbv2               Repeated Measures MCP with Bootstrap (Version
+                        2, Improved Missing Value Handling)
+rmmcpv2                 Repeated Measures MCP (Version 2, Improved
+                        Missing Value Handling)
+rmmest                  Bootstrap Comparison of Dependent Groups Using
+                        M-Estimators
+rmmismcp                Repeated Measures MCP with Improved Missing
+                        Value Support
+rmrvar                  Compare Robust Measures of Variation for
+                        Dependent Groups
+rmul                    Generate Multivariate Data with Specified
+                        Correlation
+rmul.MAR                Generate Multivariate Data with g-and-h
+                        Marginal Distributions
+rmulnorm                Generate Multivariate Normal Data
+rngh                    Generate Multivariate g-and-h Data with Common
+                        Correlation
+rob.ridge               Robust Ridge Regression
+rob.ridge.Liu           Robust Liu-Type Ridge Regression
+rob.ridge.test          Test Global Hypothesis in Robust Ridge
+                        Regression
+robVARcom.mcp           Multiple Pairwise Variance Comparisons for
+                        Independent Groups
+robci                   Robust Confidence Intervals for Location
+robpca                  Robust Principal Component Analysis
+robpcaS                 Robust PCA with Specified Estimators
+rotate.points           Rotate 2D Points Around Origin
+rplot                   Running Interval Smoother Plot
+rplot.bin               Running Interval Smoother for Binary Outcomes
+rplot.binCI             Confidence Intervals for Binary Outcome
+                        Probabilities
+rplot.res               Regression Residual Plot with Running Interval
+                        Smoother
+rplotCI                 Running Interval Smoother with Confidence Band
+                        (Trimmed Mean)
+rplotCIM                Running Interval Smoother with Confidence Band
+                        (Median-Based)
+rplotCIS                Simple Running Interval Smoother with
+                        Confidence Band
+rplotCIsmm              Running Interval Smoother with Flexible
+                        Confidence Band
+rplotCV                 Cross-Validation Prediction Error for Running
+                        Interval Smoother
+rplotN                  Running Interval Smoother for Large Datasets
+rplotpbCI               Bootstrap Running Interval Smoother with
+                        Confidence Band
+rplotsm                 Running Interval Smoother with Strength of
+                        Association
+rqfit                   Fit Quantile Regression Model
+rqtest                  Omnibus Test for Quantile Regression
+rregci                  Bootstrap Confidence Intervals for Robust
+                        Regression
+rslope                  Estimate Running Slope at Specified Points
+rslopesm                Smoothed Running Slope with Bagging
+rtdep                   Regression-Based Tukey Depth for Multivariate
+                        Data
+run3bo                  3D Running Interval Smoother with Bootstrap
+run3hat                 3D Running Interval Smoother Prediction
+runYhat                 General Running Interval Smoother Prediction
+runbin.CI               Running Interval Confidence Intervals for
+                        Binomial Probability
+runcor                  Running Correlation
+rundis                  Running Smoother for Discrete Predictors
+rung3d                  General 3D Running Interval Smoother
+rung3dlchk              3D Running Smoother with Automatic Span
+                        Selection
+rung3hat                General 3D Running Interval Smoother Prediction
+rung3hat.pcrit          Critical P-Value for 3D Running Interval CI
+rung3hatCI              3D Running Interval Smoother with Confidence
+                        Intervals
+rungen                  General Running Interval Smoother
+rungenv2                Running Interval Smoother Preserving Original
+                        Order
+runhat                  Running Interval Smoother Prediction
+runm3d                  3D Running Interval Smoother with Trimmed Means
+runmbo                  Running Interval Smoother with Bootstrap
+                        Aggregating (Bagging)
+runmean                 Running Interval Smoother with Trimmed Means
+runmean2g               Running Interval Smoother Plot for Two Groups
+runmq                   Running Interval Smoother for Multiple
+                        Quantiles
+runpd                   3D Running Smoother Using Projection Distances
+runse                   Standard Errors for Running Interval Smoother
+runsm2g                 Running Interval Smoother Comparing Two Groups
+runstest.med            Runs Test Based on Median
+sband                   Confidence Band for Shift Function (Two
+                        Independent Groups)
+scat2d2g                Two-Group 2D Scatterplot
+scat3d2g                Two-Group 3D Scatterplot
+scor                    Skipped Correlation
+scorci                  Skipped Correlation with Bootstrap Confidence
+                        Interval
+scorciMC                Skipped Correlation CI with Parallel Processing
+scorreg                 Skipped Correlation Regression
+scorregci               Skipped Correlation Regression with Confidence
+                        Intervals
+scorregciH              Skipped Correlation Regression CI with Hochberg
+                        Adjustment
+scorv2                  Skipped Correlation Version 2
+sdwe                    Stahel-Donoho W-Estimator
+sedm                    Standard Error of Difference Between Quantiles
+                        (Dependent Groups)
+selby                   Select Data by Group from Matrix
+selby2                  Select Data by Multiple Grouping Factors
+selbybbw                Select Data for Between-Between-Within Design
+selbybw                 Select Data for Between-Within Design
+selvar.ind.MP           Select Group with Smallest Variance
+                        (Independent Groups)
+selvar.ind.crit         Determine Null Distribution for Smallest
+                        Variance Selection
+shiftPBci               Percentile Bootstrap CI for Shift Effect Size
+                        with P-value
+shiftci                 Confidence Interval for Shift Effect Size (Old
+                        Version)
+shiftdhd                Confidence Intervals for Decile Differences
+                        (Dependent Groups)
+shiftes                 Probabilistic Shift Effect Size
+shiftesci               Bootstrap Confidence Interval for Shift Effect
+                        Size
+shifthd                 Shift Function Based on Harrell-Davis Quantile
+                        Estimator
+signmcp                 Sign Test Multiple Comparisons for Dependent
+                        Groups
+signt                   Sign Test for Paired Data
+signtpv                 Sign Test with P-value (Deprecated)
+simp.break              Simple Breakpoint Estimation for Segmented
+                        Regression
+sint                    Confidence Interval for Median
+                        (Hettmansperger-Sheather Method)
+sintmcp                 Inferences on Medians for Dependent Groups
+                        Using Multiple Comparisons
+sintv2                  CI and Hypothesis Test for Median
+                        (Hettmansperger-Sheather)
+sintv2mcp               Multiple Comparisons for Medians (Dependent
+                        Groups)
+sisplit                 Split-Plot Interaction Test Using Binomials
+skerd                   Kernel Density Estimation Plot
+skew                    Compute Skewness and Kurtosis
+skip                    Skipped Location and Covariance Matrix
+skip.cov                Wrapper for Skipped Covariance Returning List
+                        Format
+skip.gen.cor            Generalized Skipped Correlation
+skip.o.lap              Skipped Overlapping Correlation Difference
+skipSPR                 Skipped Location and Covariance with
+                        Standardization
+skipcov                 Compute Skipped Covariance Matrix with Flexible
+                        Outlier Detection
+skipogk                 Compute Skipped Correlation Using OGK Outlier
+                        Detection
+skipreg                 Skipped Regression
+skiptbs                 Skipped Correlation Using TBS Outlier Detection
+skmcp                   Multiple Comparisons for Independent Binomial
+                        Proportions (Storer-Kim Method)
+sm.inter                Interaction Tests with Two-Variable Splitting
+sm.vs.sm                Compare Two Smoothing Methods Visually
+sm2str                  Compare Explanatory Power of Two Predictors
+                        Using Smoothers
+sm2strv7                Compare Explanatory Power of Two Predictors
+                        (Version 7)
+smRstr                  Estimate Explanatory Strength of Association
+                        Using Running Interval Smoother
+smbin.inter             Test Interactions for Binary Outcome with
+                        Two-Variable Splitting
+smbin.test              Test Binary Outcome Probabilities Across
+                        Quantile-Based Groups
+smbinAB                 Test Main Effects for Binary Outcome with
+                        Two-Variable Splitting
+smbinRC                 Row-Column Pairwise Comparisons for Binary
+                        Outcome with Two-Variable Splitting
+smcorcom                Smooth Correlation Comparison Between Two
+                        Groups
+smean                   Multivariate Skipped Measure of Location
+smean.depth             Skipped Mean Based on Projection Depth
+smean2v2                Two-Group Comparison of Multivariate Skipped
+                        Means
+smeanMC                 Multivariate Skipped Mean Using Parallel
+                        Processing
+smeancr                 Test Hypothesis About Multivariate Skipped Mean
+smeancr.cord            Multivariate Skipped Mean Test
+smeancr.cord.oph        Multivariate Skipped Mean Test (One-Phase
+                        Version)
+smeancrv2               Test Hypothesis About Multivariate Skipped Mean
+                        (Version 2)
+smgrid                  Pairwise Comparisons with Two-Variable
+                        Splitting
+smgrid.GLOB             Global Test for Location Differences with
+                        Two-Variable Splitting
+smgrid.est              Estimate Location for Grid Cells Defined by
+                        Two-Variable Splitting
+smgrid2M                Two-Way ANOVA for Grid with Main Effects Test
+smgridAB                Pairwise Comparisons of Main Effects with
+                        Two-Variable Splitting
+smgridRC                Compare Location Measures on Grid Defined by
+                        Two IVs with Row/Column Comparisons
+smgridVRC               Compare Location Measures on Grid with
+                        Value-Based or Quantile-Based Splits
+smgvcr                  Test MGV Location Estimator Against Null Value
+smmval                  Studentized Maximum Modulus Distribution
+                        Quantile
+smmvalv2                Studentized Maximum Modulus Distribution
+                        Quantile (Vectorized Version)
+smmvalv3                Studentized Maximum Modulus Distribution
+                        Quantile (Equal DF Version)
+smpred                  Smoother Predictions Wrapper
+smstrcom                Compare Strength of Association Between Two
+                        Independent Bivariate Datasets
+smtest                  Test for Equal Location Measures Across
+                        Quantile-Defined Groups
+smvar                   Estimate Conditional Variance Using Bagged
+                        Running Interval Smoother
+smvar.DO                Identify Group with Smallest Variation Using
+                        Decision-Theoretic Method
+snmreg                  Skipped Nelder-Mead Regression S-Estimator
+snmregv2                Two-Stage S-Regression with Outlier Removal
+spag.plot               Spaghetti Plot for Longitudinal Data
+spat                    Compute Spatial Median
+spatcen                 Compute Spatial Median (List Format)
+spca                    Spherical Principal Component Analysis
+spear                   Spearman's Rank Correlation
+spearci                 Bootstrap Confidence Interval for Spearman's
+                        Correlation
+split.mat               Split Data into Groups Based on Quantiles
+splot                   Plot Relative Frequency Distribution for
+                        Discrete or Continuous Data
+splotg5                 Plot Relative Frequency Distributions for Up to
+                        Five Groups
+spmcpa                  Multiple Comparisons for Split-Plot Designs -
+                        Main Effects (Factor A)
+spmcpb                  Multiple Comparisons for Split-Plot Designs -
+                        Within-Subjects Pairwise
+spmcpbA                 Multiple Comparisons for Split-Plot Designs -
+                        Within Each Level of Factor A
+spmcpi                  Multiple Comparisons for Split-Plot Designs -
+                        Interactions
+sppba                   Percentile Bootstrap for Main Effects in
+                        Split-Plot Design
+sppbb                   Split-Plot Bootstrap Test for Main Effects in
+                        Dependent Groups
+sppbi                   Percentile Bootstrap for Interactions in
+                        Split-Plot Design
+sqfun                   Sum of Squared Values
+sqmad                   Squared Median Absolute Deviation
+srg1.vs.2               Compare Proportions Across 8 Intervals for Two
+                        Groups
+stackit                 Stack Matrix by Column Groups
+stacklist               Stack List of Matrices
+standm                  Standardize a Matrix
+standmar                Standardize Matrix Columns
+stein1                  Stein's Two-Stage Method - First Stage
+                        (Classical)
+stein1.tr               Stein's Method with Trimming for Dependent
+                        Groups
+stein2                  Stein's Two-Stage Method - Second Stage
+                        (Classical)
+stein2.tr               Stein's Second Stage with Trimming for
+                        Dependent Groups
+stepmcp                 Step-Down Multiple Comparison Procedure for
+                        Trimmed Means
+stsreg                  S-Type Theil-Sen Regression (General)
+stsregp1                S-Type Theil-Sen Regression (Single Predictor)
+sum.T                   Sum of Independent T Distributions
+sumplot2g               Summary Plot Panel for Two-Group Comparison
+t1way                   Heteroscedastic One-Way ANOVA for Trimmed Means
+                        (Welch-Type)
+t1way.EXES.ci           Confidence Interval for Explanatory Effect Size
+                        in One-Way ANOVA
+t1way.effect            Heteroscedastic One-Way ANOVA for Trimmed Means
+                        with Effect Size
+t1wayF                  Heteroscedastic One-Way ANOVA with Factor
+                        Variable
+t1waybt                 Bootstrap-t One-Way ANOVA for Trimmed Means
+t1waybtsqrk             Bootstrap One-Way ANOVA for Trimmed Means Using
+                        Squared Ranks
+t1waybtv2               Bootstrap-t One-Way ANOVA for Trimmed Means
+                        (Version 2)
+t1wayv2                 Heteroscedastic One-Way ANOVA with Effect Size
+                        (Version 2)
+t2way                   Heteroscedastic Two-Way ANOVA for Trimmed Means
+t2way.KMS.curve         Plot KMS Effect Size Curve for 2x2 Design with
+                        Covariate
+t2way.KMS.inter.sub     Helper Function for Two-Way KMS Interaction
+                        Bootstrap
+t2way.KMS.interbt       Bootstrap Test for KMS Interaction Effect in
+                        2x2 Design with Covariate
+t2way.no.p              Two-Way ANOVA on Trimmed Means Without p-values
+t2waybt                 Two-Way ANOVA on Trimmed Means Using
+                        Bootstrap-t Method
+t2waypbg                Two-Way ANOVA for Independent Groups Using
+                        Percentile Bootstrap
+t2wayv2                 Two-Way Independent Groups ANOVA for Trimmed
+                        Means (Version 2)
+t3way                   Three-Way ANOVA on Trimmed Means for
+                        Independent Groups
+t3wayv2                 Heteroscedastic Three-Way ANOVA for Trimmed
+                        Means (Version 2 with P-Values)
+tailci                  Confidence Interval for Tail Probability P(X-Y
+                        < threshold)
+tailci.reverse          Confidence Interval for Tail Probability P(X-Y
+                        > threshold)
+tamhane                 Tamhane's Two-Stage Multiple Comparison
+                        Procedure
+tau                     Kendall's Tau Correlation with Confidence
+                        Interval
+tauall                  Kendall's Tau for All Pairs of Variables
+tauci                   Kendall's Tau with Bootstrap CI
+taulc                   Tau Location and Scale
+tauloc                  Tau Measure of Location
+taureg                  Correlation-Based Regression using Kendall's
+                        Tau
+tauvar                  Tau Measure of Scale
+tbs                     Rocke's Trimmed Biweight S-Estimator
+tbscor                  TBS Correlation
+tbscov                  Compute Rocke's TBS S-Estimator Covariance
+                        Matrix
+test.4.break            Test for Regression Breakpoint
+thd                     Trimmed Harrell-Davis Quantile Estimator
+tkmcp                   Tukey-Kramer Multiple Comparison Procedure
+tlist                   Check for Tied Values in List Data
+tmcppb                  Multiple Comparisons with Percentile Bootstrap
+                        (Trimmed Means)
+tmean                   Trimmed Mean
+trange                  Critical Value for Range of T Statistics
+trim2gmul               Multivariate Two-Sample Trimmed Mean Comparison
+trimci                  Confidence Interval for Trimmed Mean
+trimci.dif              Trimmed Mean Confidence Interval for Paired
+                        Differences
+trimciQS                Trimmed Mean CI with Quantile Shift Effect Size
+trimcibt                Bootstrap-t Confidence Interval for Trimmed
+                        Mean
+trimcimul               Multivariate Trimmed Mean Tests with FWE
+                        Control
+trimciv2                Trimmed Mean CI with Standardized Effect Size
+trimmulCI               Multivariate Trimmed Mean Tests with
+                        Simultaneous CIs
+trimpb                  Percentile Bootstrap for Trimmed Mean
+                        Comparison
+trimpb2                 Percentile Bootstrap CI for Difference in
+                        Trimmed Means
+trimse                  Standard Error of Trimmed Mean
+trimww                  Two-Way Repeated Measures ANOVA with Trimmed
+                        Means
+trqreg                  Trimmed Quantile Regression
+tscor                   Theil-Sen Correlation
+tscorci                 Theil-Sen Correlation with Bootstrap CI
+tsgreg                  Theil-Sen Regression for Groups
+tshd                    Theil-Sen Regression with Harrell-Davis
+                        Estimator
+tshdreg                 Theil-Sen Regression with Harrell-Davis
+                        Estimator
+tsp1reg                 Single Predictor Theil-Sen Regression
+tsplit                  Split-Plot ANOVA on Trimmed Means
+tsplitbt                Bootstrap-t for Split-Plot Design with Trimmed
+                        Means
+tsreg                   Theil-Sen Regression Estimator
+tsregF                  Theil-Sen Regression with Gauss-Seidel
+                        Algorithm
+tsregNW                 Theil-Sen Regression Using Gauss-Seidel
+                        Algorithm
+tssnmreg                Hybrid Theil-Sen and Skipped Regression with
+                        Outlier Removal
+tstsreg                 Modified Theil-Sen Regression with Outlier
+                        Removal
+two.dep.pb              Compare Two Dependent Groups via Percentile
+                        Bootstrap
+twoDNOV                 Compare Two Robust Dependent Correlations
+                        (Non-Overlapping)
+twoDcorR                Compare Two Robust Dependent Correlations
+                        (Overlapping)
+twoKgen                 Multiple Comparisons Procedure for K
+                        Independent Tests (General Function)
+twoKlin                 Multiple Comparisons for K Independent Tests
+                        (Linear Contrasts/Trimmed Means)
+twobici                 Confidence Interval for Difference Between Two
+                        Binomial Proportions
+twobicipv               P-Value for Comparing Two Independent Binomial
+                        Proportions (Beal's Method)
+twobinom                Test for Equality of Two Binomial Proportions
+twocor                  Compare Two Correlation Coefficients from
+                        Independent Groups
+twohc4cor               Compare Two Independent Pearson Correlations
+                        (HC4 Method)
+twolsreg                Bootstrap CI for Difference Between Two
+                        Regression Slopes
+twomanbt                Multivariate Two-Sample Behrens-Fisher Test
+                        Using Bootstrap
+twopcor                 Bootstrap CI for Difference Between Two Pearson
+                        Correlations
+tworegwb                Test Equality of Regression Slopes for Two
+                        Independent Groups (Bootstrap)
+tworhobt                Bootstrap-t Test for Comparing Two Independent
+                        Correlations
+twoway.inter.2.delta    Kolmogorov-Smirnov Effect Size for 2x2
+                        Interaction
+twowayESM               Two-Way Effect Size Measures
+twwmcp                  Multiple Comparisons for Within-Within Designs
+                        Using Trimmed Means
+unidepth                Compute Univariate Depth
+varcom.IND.MP           Morgan-Pitman Test for Comparing Variances of
+                        Independent Groups
+vecnorm                 Vector p-Norm
+wAKP.avg                Average AKP Effect Size for Dependent Groups
+wband                   Confidence Band for Shift Function (Independent
+                        Groups)
+wilbinomci              Wilson Binomial Confidence Interval
+win                     Gamma Winsorized Mean
+winall                  Winsorized Correlation and Covariance Matrix
+winci                   Confidence Interval for Winsorized Mean
+wincor                  Winsorized Correlation
+wincorci                Winsorized Correlation with Bootstrap CI
+wincov                  Compute Winsorized Covariance Matrix
+wincovN                 Compute Normalized Winsorized Covariance Matrix
+winmean                 Winsorized Mean
+winreg                  Winsorized Regression
+winsd                   Winsorized Standard Deviation
+winsd05                 Winsorized Standard Deviation (Alternative
+                        Name)
+winsdN                  Normalized Winsorized Standard Deviation
+winse                   Standard Error of Winsorized Mean
+winsorized              Winsorize Data with Fixed Threshold
+winval                  Winsorize Data Values
+winvar                  Winsorized Variance
+winvarN                 Normalized Winsorized Variance
+wlogreg                 Bianco-Yohai Robust Logistic Regression
+wlogregci               Bootstrap Confidence Intervals for Robust
+                        Logistic Regression
+wmcpAKP                 Effect Sizes for All Pairwise Comparisons
+                        (Dependent Groups, AKP Method)
+wmcpQS                  Effect Sizes for All Pairwise Comparisons
+                        (Dependent Groups, Quantile Shift)
+wmcppb                  Repeated Measures Percentile Bootstrap Multiple
+                        Comparisons
+wmean.cov               Compute Winsorized Mean and Covariance Matrix
+wmve                    Skipped Estimators Using MVE Outlier Detection
+wmw                     Mann-Whitney U Test with Adjusted P-Value
+wmw.QC.mul              Test Symmetry at Multiple Quantile-Based
+                        Reference Points
+wmw.RZR                 Reiczigel et al. Improved Wilcoxon-Mann-Whitney
+                        Test
+wmw.anc.plot            Plot WMW ANCOVA: P(Y1 < Y2 | X) vs X
+wmw.ancbse              WMW-Based ANCOVA with Bootstrap Standard Errors
+wmw.ancbsep2            WMW-Based ANCOVA with Bootstrap for Multiple
+                        Covariates
+wmw.ancp2               Conditional WMW Effect Size at Design Points
+wmw.bca                 BCA Confidence Interval for P(X<Y)
+wmw.bcapv               BCA Confidence Interval and P-value for P(X<Y)
+wmw.bcapv.v2            BCA P-value for P(X<Y) Using Iteration
+wmw.bcav2               BCA Confidence Interval with Iterative
+                        Averaging
+wmw.det                 Compare Distribution Tails Based on Differences
+wmw.ref.dif             Test Symmetry of Difference Distribution Using
+                        Reference Points
+wmw.ref.dif.TOST        Test Symmetry with TOST (Two One-Sided Tests)
+                        Extension
+wmw.ref.mul             Test Symmetry at Multiple Reference Points
+wmw.ref.mul.TOST        Test Symmetry at Multiple Points with TOST
+                        Extension
+wmwaov                  WMW-Based Global Test for J Independent Groups
+wmwloc                  Estimate Location for Distribution of Pairwise
+                        Differences
+wmwpb                   Bootstrap Confidence Interval for Location of
+                        Pairwise Differences
+wreg                    Wilcoxon Rank-Based Regression
+ww.es                   Within-Within Design: Effect Sizes for Factor B
+wwQS                    Quantile Shift Effect Sizes for
+                        Within-by-Within Design
+wwiQS                   Quantile Shift Effect Size for Interactions
+                        (Within-by-Within Design)
+wwlin.es                Within-Within Design: Linear Contrast Effect
+                        Sizes
+wwmcp                   Within-by-Within Design Multiple Comparisons
+                        with P-value Adjustment
+wwmcpQS                 Within-By-Within Design Quantile Shift MCP
+wwmcpbt                 Within-By-Within Design Bootstrap-t MCP
+wwmcppb                 Within-By-Within Design Percentile Bootstrap
+                        MCP
+wwmed                   Two-Way Within-Within ANOVA for Medians with
+                        Multiple Comparisons
+wwtrim                  J × K ANOVA with Trimmed Means
+                        (Within-by-Within Design)
+wwtrimbt                Bootstrap-t Test for Within-by-Within ANOVA (J
+                        × K Design)
+wwwlin.es               Within-Within-Within Design: Linear Contrast
+                        Effect Sizes
+wwwmcpQS                Three-Way Within-Subjects Design Quantile Shift
+                        MCP
+wwwmcppb                Within-Within-Within Design Percentile
+                        Bootstrap MCP
+wwwmcppb.OLD            Multiple Comparisons for Three-Way
+                        Within-Subjects ANOVA (OLD Version)
+wwwmed                  Three-Way Within-Within-Within ANOVA for
+                        Medians with Multiple Comparisons
+wwwtrim                 Three-Way Within-Subjects ANOVA on Trimmed
+                        Means (J × K × L Design)
+wwwtrimbt               Bootstrap-t Test for Three-Way Within-Subjects
+                        ANOVA (J × K × L Design)
+xi2cohen                Convert Explanatory Measure of Effect Size (ξ)
+                        to Cohen's δ
+ydbt                    Bootstrap-t Confidence Interval for Difference
+                        in Trimmed Means (Dependent Groups)
+yhall                   Yuen's Test for Trimmed Means with Hall's
+                        Transformation
+yhbt                    Bootstrap-t with Hall's Transformation for
+                        Independent Groups
+yuen                    Yuen's Test for Trimmed Means (Independent
+                        Groups)
+yuen.effect             Explanatory Measure of Effect Size for Yuen's
+                        Test
+yuen.effect.ci          Explanatory Measure of Effect Size for Yuen's
+                        Test with CI
+yuenQS                  Yuen's Test with Quantile Shift Effect Size
+yuenbt                  Yuen's Bootstrap-t Test for Trimmed Means
+yuend                   Yuen's Test for Trimmed Means (Dependent
+                        Groups)
+yuend.QS.ci             Confidence Interval for Quantile Shift Effect
+                        Size (Dependent Groups)
+yuendna                 Yuen's Test for Dependent Groups with Missing
+                        Values
+yuendv2                 Yuen's Test for Dependent Groups with Effect
+                        Size
+yuenv2                  Yuen's Test for Independent Groups with
+                        Visualization
+z.power                 Power Analysis Using Normal Distribution
+                        Approximation
+zdepth                  Compute Zuo's Projection Depth
+zonoid                  Zonoid Data Depth
+zoudepth                Compute Projection Depth Using Zuo's Method
+zwe                     Zuo's Weighted Estimator of Location

@@ -464,6 +464,8 @@ newx
 
 #' Winsorized Correlation Matrix
 #'
+#' @rdname wincor_functions
+#'
 #' Convenience function to compute only the Winsorized correlation matrix from
 #' multivariate data.
 #'

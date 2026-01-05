@@ -937,23 +937,6 @@ list(coef=new$coef,residuals=resid,w=wt)
 # ============================================================================
 # regts1
 # ============================================================================
-
-#' Internal Bootstrap Helper for Regression Tests
-#'
-#' Internal function used by \code{\link{regtest}} for computing bootstrap
-#' test statistics. Not intended for direct use.
-#'
-#' @param vstar Bootstrap resampling vector
-#' @param yhat Vector of fitted values
-#' @param res Vector of residuals
-#' @param mflag Matrix of flags
-#' @param x Predictor matrix
-#' @param tr Trimming proportion
-#'
-#' @return Vector of resampled test statistics
-#'
-#' @keywords internal
-#' @export
 regts1<-function(vstar,yhat,res,mflag,x,tr){
 ystar<-yhat+res*vstar
 bres<-ystar-mean(ystar,tr)
@@ -1220,25 +1203,6 @@ list(coef=coef,residuals=res)
 # ============================================================================
 # twolsreg
 # ============================================================================
-
-#' Bootstrap Helper for Least Squares Slope Estimation
-#'
-#' Internal function that computes the least squares slope estimate for a
-#' bootstrap subsample. Used internally by bootstrap regression functions.
-#'
-#' @param isub Bootstrap sample indices (vector of length n)
-#' @param x Predictor values
-#' @param y Response values
-#'
-#' @return Numeric scalar, the least squares slope estimate for the subsample
-#'
-#' @details
-#' This function computes the least squares slope using only the observations
-#' indexed by \code{isub}, which is typically a bootstrap resample of the
-#' indices 1, 2, ..., n.
-#'
-#' @keywords internal
-#' @export
 twolsregsub<-function(isub, x, y)
 {
         #
@@ -2199,89 +2163,6 @@ list(n=n,output=regci)
 # ============================================================================
 # regpre
 # ============================================================================
-
-#' Estimate Prediction Error for Regression Models Using .632 Bootstrap
-#'
-#' Estimates prediction error for one or more regression models using the
-#' .632 bootstrap method. Can compare multiple models and select the best
-#' based on prediction error.
-#'
-#' @param x A numeric matrix of predictor variables (n by p).
-#' @param y A numeric vector of the dependent variable (length n).
-#' @param regfun Regression function to use (default: \code{lsfit}, but
-#'   \code{tsreg} recommended for robustness). Must return coefficients in
-#'   \code{regfun$coef}.
-#' @param error Error function for computing prediction error (default:
-#'   \code{absfun} for absolute error, can use \code{sqfun} for squared error).
-#' @param nboot Number of bootstrap samples (default: 100).
-#' @param adz Logical; if TRUE, include a null model (all slopes = 0) using
-#'   only \code{locfun}.
-#' @param mval Number of observations to resample per bootstrap sample
-#'   (default: \code{round(5*log(n))}, based on Shao 1996).
-#' @param model List specifying which predictors to include in each model.
-#'   \code{model[[i]]} contains predictor indices for model i. If NULL and
-#'   p ≤ 5, all possible models are considered.
-#' @param locfun Location measure for null model (default: \code{mean}).
-#' @param pr Logical; if TRUE, print informational messages.
-#' @param plotit Logical; if TRUE, create a plot of prediction errors.
-#' @param xlab Label for x-axis when plotting.
-#' @param ylab Label for y-axis when plotting.
-#' @inheritParams common-params
-#'
-#' @return A list with components:
-#' \describe{
-#'   \item{prederr}{Vector of prediction errors for each model}
-#'   \item{best.model}{Index of the model with smallest prediction error}
-#'   \item{models}{List of predictor indices for each model considered}
-#' }
-#'
-#' @details
-#' This function implements the .632 bootstrap method for estimating prediction
-#' error (Efron & Tibshirani, 1993). For each model:
-#' 1. Draw \code{nboot} bootstrap samples of size \code{mval}
-#' 2. Fit the model to each bootstrap sample
-#' 3. Predict the out-of-bag observations
-#' 4. Compute prediction error as: 0.632 * (out-of-bag error) + 0.368 * (training error)
-#'
-#' The default resample size \code{mval = 5*log(n)} is based on Shao (1996),
-#' who showed that resampling n observations may not lead to correct model
-#' selection as n → ∞.
-#'
-#' **Note**: While least squares is the default for backward compatibility,
-#' using \code{regfun=tsreg} (Theil-Sen estimator) is recommended for better
-#' robustness (Wilcox, 2008).
-#'
-#' @references
-#' Efron, B., & Tibshirani, R. (1993). \emph{An Introduction to the Bootstrap}.
-#' Chapman & Hall.
-#'
-#' Shao, J. (1996). Bootstrap model selection. \emph{Journal of the American
-#' Statistical Association}, 91, 655-665.
-#'
-#' Wilcox, R.R. (2008). Robust model selection using the .632 bootstrap.
-#' \emph{Journal of Applied Statistics}, 35, 1-8.
-#'
-#' @seealso \code{\link{regpreCV}} for cross-validation approach,
-#'   \code{\link{regpecv}} for simplified prediction error
-#'
-#' @examples
-#' \dontrun{
-#' # Generate data with 3 predictors
-#' set.seed(123)
-#' x <- matrix(rnorm(300), ncol=3)
-#' y <- x[,1] + 2*x[,2] + rnorm(100)  # Only x1 and x2 matter
-#'
-#' # Compare all models (with p=3, there are 2^3-1 = 7 models)
-#' result <- regpre(x, y, regfun=tsreg, nboot=200)
-#' result$best.model
-#' result$models[[result$best.model]]  # Should select x1 and x2
-#'
-#' # Specify specific models to compare
-#' models <- list(c(1,2), c(1,3), c(2,3), c(1,2,3))
-#' regpre(x, y, model=models, regfun=tsreg)
-#' }
-#'
-#' @export
 regpre<-function(x,y,regfun=lsfit,error=absfun,nboot=100,adz=TRUE,
 mval=round(5*log(length(y))),model=NULL,locfun=mean,pr=FALSE,
 xout=FALSE,outfun=out,STAND=TRUE,
@@ -3404,6 +3285,8 @@ val
 
 #' Quantile Regression using Koenker-Bassett Method
 #'
+#' @rdname qreg_functions
+#'
 #' Computes quantile regression using the Koenker-Bassett approach. This function
 #' estimates the \code{qval}-th conditional quantile of Y given X. Default uses
 #' the \code{rq} function from the \code{quantreg} package.
@@ -4303,71 +4186,6 @@ val
 # ============================================================================
 # poireg
 # ============================================================================
-
-#' Poisson Regression
-#'
-#' Performs Poisson regression for count data using generalized linear models.
-#' Optionally removes outliers among predictors before fitting.
-#'
-#' @param x A numeric matrix of predictor variables (n by p).
-#' @param y A numeric vector of count data (typically non-negative integers).
-#' @param xout Logical; if TRUE, remove outliers from predictors before
-#'   fitting (default: FALSE).
-#' @param outfun Outlier detection function (default: \code{outpro} for
-#'   projection method).
-#' @param plotit Logical; if TRUE and p=1, create a scatterplot with fitted
-#'   curve (default: FALSE).
-#' @param xlab Label for x-axis when plotting (default: "X").
-#' @param ylab Label for y-axis when plotting (default: "Y").
-#' @param varfun Variance function for prediction (default: \code{var}).
-#' @param YHAT Logical; if TRUE, return fitted values (default: FALSE).
-#' @param STAND Logical; if TRUE, standardize predictors before outlier
-#'   detection (default: TRUE).
-#' @param ... Additional arguments passed to \code{glm}.
-#'
-#' @return A list with components from \code{\link[stats]{glm}}, plus:
-#' \describe{
-#'   \item{fitted.values}{Fitted values (if \code{YHAT=TRUE})}
-#'   \item{n.keep}{Number of observations retained after outlier removal}
-#' }
-#'
-#' @details
-#' This function fits a Poisson regression model using \code{glm} with
-#' \code{family=poisson}. The response variable \code{y} should be count
-#' data (non-negative integers).
-#'
-#' **Outlier Removal** (\code{xout=TRUE}):
-#' - For 1 predictor: Uses MAD-median rule
-#' - For >1 predictor: Uses projection-based method (\code{outpro})
-#' - Can specify alternative method via \code{outfun} (e.g., \code{outfun=out}
-#'   for MVE method)
-#'
-#' @references
-#' McCullagh, P., & Nelder, J.A. (1989). \emph{Generalized Linear Models}
-#' (2nd ed.). Chapman & Hall.
-#'
-#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis
-#' Testing} (5th ed.). Academic Press.
-#'
-#' @seealso \code{\link[stats]{glm}}, \code{\link{outpro}}, \code{\link{out}}
-#'
-#' @examples
-#' \dontrun{
-#' # Poisson regression with single predictor
-#' set.seed(123)
-#' x <- rnorm(100)
-#' lambda <- exp(1 + 0.5*x)
-#' y <- rpois(100, lambda)
-#' poireg(x, y, plotit=TRUE)
-#'
-#' # Multiple predictors with outlier removal
-#' x <- matrix(rnorm(200), ncol=2)
-#' lambda <- exp(1 + 0.5*x[,1] - 0.3*x[,2])
-#' y <- rpois(100, lambda)
-#' poireg(x, y, xout=TRUE)
-#' }
-#'
-#' @export
 poireg<-function(x,y,xout=FALSE,outfun=outpro,plotit=FALSE,xlab="X",ylab="Y",
 varfun=var,YHAT=FALSE,STAND=TRUE,...){
 #
@@ -5445,89 +5263,6 @@ phat
 # ============================================================================
 # regpreCV
 # ============================================================================
-
-#' Regression Prediction Error via Cross-Validation with Model Selection
-#'
-#' Estimates prediction error using leave-one-out cross-validation across
-#' multiple regression models. Useful for model selection when several
-#' predictor combinations are under consideration.
-#'
-#' @param x A numeric matrix of predictor variables (n by p).
-#' @param y A numeric vector of the dependent variable (length n).
-#' @param regfun Regression function to use (default: \code{tsreg}).
-#'   Must return coefficients in \code{$coef} with intercept as first element.
-#' @param varfun Function to compute variation measure (default: \code{pbvar}).
-#'   Applied to cross-validation residuals.
-#' @param adz Logical. If \code{TRUE}, includes a model with all slopes = 0
-#'   (location-only model) in the comparison (default: \code{TRUE}).
-#' @param model List specifying which predictor combinations to consider.
-#'   \code{model[[i]]} is a vector of predictor indices for model i.
-#'   If \code{NULL}, all possible models are generated when p <= 5 (default: \code{NULL}).
-#' @param locfun Location function for the zero-slope model (default: \code{mean}).
-#' @param plotit Logical. If \code{TRUE}, plots prediction error vs. model number (default: \code{TRUE}).
-#' @param xlab Label for x-axis when \code{plotit=TRUE} (default: "Model Number").
-#' @param ylab Label for y-axis when \code{plotit=TRUE} (default: "Prediction Error").
-#' @inheritParams common-params
-#'
-#' @return A matrix with columns:
-#' \describe{
-#'   \item{est.error}{Estimated prediction error for each model}
-#'   \item{var.used}{Integer encoding which predictors are in the model}
-#'   \item{rank}{Rank of the model (1 = best, smallest prediction error)}
-#' }
-#' Each row corresponds to one model.
-#'
-#' @details
-#' This function compares multiple regression models using leave-one-out
-#' cross-validation (LOOCV) to estimate prediction error:
-#'
-#' 1. For each observation i, fit the model using all data except observation i
-#' 2. Predict y_i using the fitted model
-#' 3. Compute prediction error as the variance (or other dispersion measure) of residuals
-#'
-#' **Model specification**:
-#' - If \code{model=NULL} and p <= 5: all 2^p - 1 possible models are considered
-#' - If \code{model=NULL} and p > 5: only the full model is used
-#' - If \code{model} is specified: only those models are evaluated
-#' - If \code{adz=TRUE}: a location-only model (no predictors) is added
-#'
-#' **Model encoding**: The \code{var.used} column encodes which predictors
-#' are in the model. For example, if predictors 1 and 3 are used, the encoding
-#' is 103 (reading the binary pattern as a decimal).
-#'
-#' The function ranks models by prediction error, with rank 1 being the best
-#' (smallest error). The plot shows prediction error for each model, helping
-#' visualize which models perform well.
-#'
-#' @references
-#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
-#' (5th ed.). Academic Press.
-#'
-#' @seealso \code{\link{regpecv}} for single model prediction error,
-#'   \code{\link{modgen}} for generating model combinations,
-#'   \code{\link{locCV}} for location-only cross-validation
-#'
-#' @examples
-#' \dontrun{
-#' # Generate data with 3 predictors
-#' set.seed(123)
-#' x <- matrix(rnorm(300), ncol=3)
-#' # True model uses only predictors 1 and 2
-#' y <- 1 + 2*x[,1] - x[,2] + rnorm(100)
-#'
-#' # Compare all possible models
-#' results <- regpreCV(x, y)
-#' print(results)
-#'
-#' # Best model should include predictors 1 and 2
-#' results[results[,3]==1,]
-#'
-#' # Specify specific models to compare
-#' models <- list(c(1,2), c(1,3), c(2,3), c(1,2,3))
-#' regpreCV(x, y, model=models)
-#' }
-#'
-#' @export
 regpreCV<-function(x,y,regfun=tsreg,varfun=pbvar,adz=TRUE,model=NULL,locfun=mean,
 xout=FALSE,outfun=out,
 plotit=TRUE,xlab="Model Number",ylab="Prediction Error",...){
@@ -5744,73 +5479,6 @@ list(regci=regci,n=nrem,n.keep=nv)
 # ============================================================================
 # regpecv
 # ============================================================================
-
-#' Regression Prediction Error via Leave-One-Out Cross-Validation
-#'
-#' Estimates prediction error for a single regression model using leave-one-out
-#' cross-validation (LOOCV). Returns a robust measure of variation applied to
-#' the cross-validation residuals.
-#'
-#' @param x A numeric matrix of predictor variables (n by p).
-#' @param y A numeric vector of the dependent variable (length n).
-#' @param regfun Regression function to use (default: \code{tsreg}).
-#'   Must return coefficients in \code{$coef} with intercept as first element.
-#' @param varfun Function to compute variation measure (default: \code{pbvar}).
-#'   Applied to the vector of LOOCV residuals.
-#' @param ... Additional arguments passed to \code{regfun}.
-#'
-#' @return A single numeric value: the estimated prediction error.
-#'
-#' @details
-#' This function estimates how well the regression model predicts new data
-#' using leave-one-out cross-validation:
-#'
-#' 1. For each observation i = 1,...,n:
-#'    - Fit the regression model using all data except observation i
-#'    - Predict y_i using the fitted model: \eqn{\hat{y}_{-i}}
-#'    - Compute residual: \eqn{r_i = y_i - \hat{y}_{-i}}
-#' 2. Apply \code{varfun} to the vector of n residuals
-#'
-#' By default, \code{varfun=pbvar} computes the percentage bend midvariance,
-#' a robust measure of variation. This makes the prediction error estimate
-#' resistant to outliers in the residuals.
-#'
-#' **When to use**:
-#' - Estimating out-of-sample prediction accuracy
-#' - Model validation with limited data
-#' - Comparing different regression methods
-#' - Want robust measure of prediction error
-#'
-#' **Note**: LOOCV can be computationally expensive for large datasets as it
-#' requires fitting n regression models. For model selection among multiple
-#' predictor combinations, see \code{\link{regpreCV}}.
-#'
-#' @references
-#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
-#' (5th ed.). Academic Press.
-#'
-#' @seealso \code{\link{regpreCV}} for comparing multiple models,
-#'   \code{\link{pbvar}} for the default variation measure,
-#'   \code{\link{locCV}} for location-only cross-validation
-#'
-#' @examples
-#' \dontrun{
-#' # Generate linear regression data
-#' set.seed(123)
-#' x <- matrix(rnorm(200), ncol=2)
-#' y <- 1 + 2*x[,1] - x[,2] + rnorm(100)
-#'
-#' # Estimate prediction error using Theil-Sen
-#' pe1 <- regpecv(x, y)
-#'
-#' # Compare with OLS
-#' pe2 <- regpecv(x, y, regfun=lsfit)
-#'
-#' # Use different variation measure
-#' regpecv(x, y, varfun=var)
-#' }
-#'
-#' @export
 regpecv<-function(x,y,regfun=tsreg,varfun=pbvar,...){
 #
 # Estimate prediction error via leave-one-out cross-validation
@@ -6382,96 +6050,6 @@ list(n=n,output=regci)
 # ============================================================================
 # reg1wayISO
 # ============================================================================
-
-#' Test Equality of Slopes Across Independent Groups (Ignoring Intercepts)
-#'
-#' Tests the hypothesis that slope parameters are equal across two or more
-#' independent groups, ignoring any differences in intercepts. Uses a
-#' bootstrap-based Johansen-type MANOVA approach focusing only on slopes.
-#'
-#' @param x List of predictor matrices, one per group. \code{x[[j]]} contains the
-#'   n_j x p predictor matrix for group j.
-#' @param y List of response vectors, one per group. \code{y[[j]]} contains the
-#'   response values for group j.
-#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
-#'   Must return coefficients in \code{$coef} with intercept as first element.
-#' @param nboot Number of bootstrap samples per group (default: 100).
-#' @param SEED Logical; if TRUE, sets random seed for reproducibility (default: TRUE).
-#' @param alpha Significance level for the test (default: 0.05).
-#' @param pr Logical; if TRUE, prints progress messages and warnings (default: TRUE).
-#' @inheritParams common-params
-#'
-#' @return A list with components:
-#' \describe{
-#'   \item{n}{Original sample sizes for each group before outlier removal}
-#'   \item{n.keep}{Sample sizes after outlier removal (if \code{xout=TRUE})}
-#'   \item{test.stat}{The test statistic (chi-square type)}
-#'   \item{crit.value}{Critical value at significance level \code{alpha}}
-#'   \item{adjusted.crit}{Adjusted critical value (currently NULL, not computed)}
-#'   \item{p.value}{P-value for the test}
-#'   \item{adjusted.p.value}{Adjusted p-value (currently NULL, not computed)}
-#'   \item{est}{Data frame of estimated slopes for each group (intercepts set to 0)}
-#' }
-#'
-#' @details
-#' This function is similar to \code{\link{reg1way}} but tests only whether
-#' the **slopes** are equal across groups, allowing intercepts to differ freely.
-#' This is appropriate when:
-#' - Different groups may have different baseline levels
-#' - The research question concerns whether the relationship between predictors
-#'   and response is the same across groups
-#' - You want to test parallelism of regression lines
-#'
-#' **Test procedure**:
-#' 1. For each group, estimate regression parameters via \code{regfun}
-#' 2. Use bootstrap to estimate covariance matrix of slope estimates
-#' 3. Compute weighted average of slopes across groups
-#' 4. Calculate chi-square type statistic measuring deviation from common slopes
-#' 5. Compare to chi-square distribution with p*(J-1) degrees of freedom
-#'
-#' The test statistic is based on a Johansen-type MANOVA approach that accounts
-#' for different sample sizes and unequal variances across groups.
-#'
-#' **Note**: The adjusted critical value and adjusted p-value (Johansen correction)
-#' are currently disabled in the code as they appear not to be needed for this
-#' specific test.
-#'
-#' @references
-#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
-#' (5th ed.). Academic Press.
-#'
-#' @seealso \code{\link{reg1way}} for testing equality of all parameters (intercepts and slopes),
-#'   \code{\link{reg1wayISOMC}} for parallel processing version,
-#'   \code{\link{reg1mcp}} for all pairwise comparisons
-#'
-#' @examples
-#' \dontrun{
-#' # Three groups with same slopes but different intercepts
-#' set.seed(123)
-#' x1 <- matrix(rnorm(100), ncol=1)
-#' x2 <- matrix(rnorm(100), ncol=1)
-#' x3 <- matrix(rnorm(100), ncol=1)
-#' y1 <- 1 + 2*x1 + rnorm(100, sd=0.5)  # intercept = 1
-#' y2 <- 3 + 2*x2 + rnorm(100, sd=0.5)  # intercept = 3
-#' y3 <- 5 + 2*x3 + rnorm(100, sd=0.5)  # intercept = 5
-#'
-#' x <- list(x1, x2, x3)
-#' y <- list(as.vector(y1), as.vector(y2), as.vector(y3))
-#'
-#' # Should not reject (slopes are equal)
-#' reg1wayISO(x, y, nboot=200)
-#'
-#' # Three groups with different slopes
-#' y1b <- 1 + 2*x1 + rnorm(100, sd=0.5)
-#' y2b <- 1 + 3*x2 + rnorm(100, sd=0.5)
-#' y3b <- 1 + 4*x3 + rnorm(100, sd=0.5)
-#' yb <- list(as.vector(y1b), as.vector(y2b), as.vector(y3b))
-#'
-#' # Should reject (slopes differ)
-#' reg1wayISO(x, yb, nboot=200)
-#' }
-#'
-#' @export
 reg1wayISO<-function(x,y,regfun=tsreg,nboot=100,SEED=TRUE,xout=FALSE,outfun=outpro,STAND=TRUE,alpha=.05,pr=TRUE,...){
 #
 #  Test hypothesis that for two or more independent groups, all slope parameters
@@ -6936,79 +6514,6 @@ list(coef=coef,residuals=res,Strength.Assoc=stre,Explanatory.Power=e.pow)
 # ============================================================================
 # reg2cimcp
 # ============================================================================
-
-#' All Pairwise Comparisons of Independent Regression Lines
-#'
-#' Performs all pairwise comparisons of regression parameters between multiple
-#' independent groups. For each pair of groups, computes bootstrap confidence
-#' intervals for differences in parameters (intercepts and slopes).
-#'
-#' @param x List of predictor matrices, one per group. \code{x[[j]]} contains the
-#'   predictor matrix for group j.
-#' @param y List of response vectors, one per group. \code{y[[j]]} contains the
-#'   response values for group j.
-#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
-#'   Must return coefficients in \code{$coef} with intercept as first element.
-#' @param nboot Number of bootstrap samples (default: 599).
-#' @param alpha Significance level (default: 0.05).
-#' @param SEED Logical; if TRUE, sets random seed for reproducibility (default: TRUE).
-#' @inheritParams common-params
-#'
-#' @return NULL (results are printed to console). For each pair of groups (j, k)
-#' where j < k, prints the output from \code{\link{reg2ci}} including:
-#' - Sample sizes
-#' - Confidence intervals for parameter differences
-#' - P-values
-#' - Estimates for each group and their differences
-#'
-#' @details
-#' This is a convenience wrapper that performs all pairwise comparisons of
-#' regression lines across J independent groups. For J groups, it makes
-#' J(J-1)/2 pairwise comparisons.
-#'
-#' For each pair of groups (j, k):
-#' 1. Calls \code{\link{reg2ci}} to compare groups j and k
-#' 2. Prints the comparison results with group labels
-#'
-#' Each comparison tests whether the regression parameters (intercept and
-#' slopes) differ between the two groups using bootstrap confidence intervals.
-#'
-#' **Note**: This function does not adjust for multiple comparisons. If you
-#' need family-wise error rate control across all parameters and all groups,
-#' consider using \code{\link{reg1mcp}} instead, which applies Hochberg's
-#' correction.
-#'
-#' The function prints results directly rather than returning them, which
-#' is convenient for interactive use but less suitable for programmatic
-#' processing.
-#'
-#' @references
-#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
-#' (5th ed.). Academic Press.
-#'
-#' @seealso \code{\link{reg2ci}} for a single pairwise comparison,
-#'   \code{\link{reg1mcp}} for all pairwise comparisons with FWE control,
-#'   \code{\link{reg1way}} for omnibus test of equality
-#'
-#' @examples
-#' \dontrun{
-#' # Three groups with different regression lines
-#' set.seed(123)
-#' x1 <- matrix(rnorm(100), ncol=1)
-#' x2 <- matrix(rnorm(100), ncol=1)
-#' x3 <- matrix(rnorm(100), ncol=1)
-#' y1 <- 1 + 2*x1 + rnorm(100, sd=0.5)
-#' y2 <- 2 + 3*x2 + rnorm(100, sd=0.5)
-#' y3 <- 3 + 4*x3 + rnorm(100, sd=0.5)
-#'
-#' x <- list(x1, x2, x3)
-#' y <- list(as.vector(y1), as.vector(y2), as.vector(y3))
-#'
-#' # Compare all pairs: (1,2), (1,3), (2,3)
-#' reg2cimcp(x, y, nboot=500)
-#' }
-#'
-#' @export
 reg2cimcp<-function(x,y,regfun=tsreg,nboot=599,alpha=0.05,
 SEED=TRUE,xout=FALSE,outfun=out,...){
 #
@@ -7037,97 +6542,6 @@ print(res)
 # ============================================================================
 # reg1mcp
 # ============================================================================
-
-#' Multiple Comparisons for Independent Regression Lines with FWE Control
-#'
-#' Performs all pairwise comparisons of regression parameters (intercepts and slopes)
-#' among multiple independent groups, controlling the family-wise error rate (FWE)
-#' separately for each parameter type using Hochberg's method.
-#'
-#' @param x List of predictor matrices, one per group. \code{x[[j]]} contains the
-#'   predictor matrix for group j.
-#' @param y List of response vectors, one per group. \code{y[[j]]} contains the
-#'   response values for group j.
-#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
-#'   Must return coefficients in \code{$coef} with intercept as first element.
-#' @param SEED Logical; if TRUE, sets random seed for reproducibility (default: TRUE).
-#' @param nboot Number of bootstrap samples (default: 100).
-#' @param alpha Significance level for family-wise error rate (default: 0.05).
-#' @param pr Logical; if TRUE, prints progress messages (default: TRUE).
-#' @param MC Logical; if TRUE, uses parallel processing via \code{mclapply} (default: FALSE).
-#' @inheritParams common-params
-#'
-#' @return A list with components:
-#' \describe{
-#'   \item{n}{Original sample sizes for each group}
-#'   \item{nv.keep}{Sample sizes after outlier removal (if \code{xout=TRUE})}
-#'   \item{output}{Matrix containing all pairwise comparisons with columns:
-#'     \describe{
-#'       \item{Group}{First group in comparison}
-#'       \item{Group}{Second group in comparison}
-#'       \item{ci.lower}{Lower confidence limit for difference}
-#'       \item{ci.upper}{Upper confidence limit for difference}
-#'       \item{p.value}{Unadjusted p-value}
-#'       \item{p.crit}{Critical p-value after Hochberg adjustment}
-#'       \item{Sig}{Significance flag: "Sig" if p.value <= p.crit, else ""}
-#'     }
-#'   }
-#' }
-#'
-#' @details
-#' This function performs all J(J-1)/2 pairwise comparisons for each regression
-#' parameter, controlling the family-wise error rate **separately** for each
-#' parameter type (intercepts, first slope, second slope, etc.).
-#'
-#' **FWE control strategy**:
-#' 1. Compare all pairs of groups on intercepts, control FWE at level \code{alpha}
-#' 2. Compare all pairs of groups on first slope, control FWE at level \code{alpha}
-#' 3. Repeat for each slope parameter
-#'
-#' For each set of J(J-1)/2 comparisons (one per parameter), Hochberg's (1988)
-#' step-up method is used to control the family-wise error rate. This is more
-#' powerful than Bonferroni correction while maintaining FWE control.
-#'
-#' **Bootstrap procedure**:
-#' - For each group separately, bootstrap to estimate sampling distribution
-#' - Compute confidence intervals for differences between groups
-#' - P-values based on proportion of bootstrap samples where difference crosses zero
-#'
-#' **Output interpretation**:
-#' The output matrix has J(J-1)/2 rows for intercepts, followed by J(J-1)/2 rows
-#' for the first slope, etc. A comparison is significant if \code{p.value <= p.crit}.
-#'
-#' @references
-#' Hochberg, Y. (1988). A sharper Bonferroni procedure for multiple tests of
-#' significance. \emph{Biometrika}, 75, 800-802.
-#'
-#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
-#' (5th ed.). Academic Press.
-#'
-#' @seealso \code{\link{reg1way}} for omnibus test,
-#'   \code{\link{reg2cimcp}} for pairwise comparisons without FWE control,
-#'   \code{\link{reg1wayISO}} for testing equality of slopes only
-#'
-#' @examples
-#' \dontrun{
-#' # Three groups with different intercepts
-#' set.seed(123)
-#' x1 <- matrix(rnorm(100), ncol=1)
-#' x2 <- matrix(rnorm(100), ncol=1)
-#' x3 <- matrix(rnorm(100), ncol=1)
-#' y1 <- 1 + 2*x1 + rnorm(100, sd=0.5)
-#' y2 <- 3 + 2*x2 + rnorm(100, sd=0.5)
-#' y3 <- 5 + 2*x3 + rnorm(100, sd=0.5)
-#'
-#' x <- list(x1, x2, x3)
-#' y <- list(as.vector(y1), as.vector(y2), as.vector(y3))
-#'
-#' # All pairwise comparisons with FWE control
-#' result <- reg1mcp(x, y, nboot=200)
-#' print(result$output)
-#' }
-#'
-#' @export
 reg1mcp<-function(x,y,regfun=tsreg,SEED=TRUE,nboot=100,xout=FALSE,outfun=outpro,STAND=TRUE,alpha=.05,
 pr=TRUE,MC=FALSE,...){
 #
@@ -7392,87 +6806,6 @@ list(coef=t(c21),residuals=res)
 # ============================================================================
 # DregGOLS
 # ============================================================================
-
-#' Global Test for Equality of Dependent OLS Regression Lines
-#'
-#' Tests whether two dependent (paired) OLS regression lines are identical
-#' using a variation of Hotelling's T-squared test with bootstrap-estimated
-#' covariance matrix. This is the OLS-specific version of a global test for
-#' dependent groups.
-#'
-#' @param x1 Numeric vector or matrix of predictor variable(s) for the first group.
-#' @param y1 Numeric vector of the dependent variable for the first group.
-#' @param x2 Numeric vector or matrix of predictor variable(s) for the second group.
-#' @param y2 Numeric vector of the dependent variable for the second group.
-#' @param xout Logical; if TRUE, removes leverage points before analysis (default: FALSE).
-#' @param outfun Function for outlier detection (default: \code{outpro}).
-#' @param SEED Logical; if TRUE, sets random seed for reproducibility (default: TRUE).
-#' @param nboot Number of bootstrap samples (default: 200).
-#' @param STAND Logical; if TRUE, standardizes predictors for outlier detection (default: TRUE).
-#' @param ... Additional arguments passed to \code{outfun}.
-#'
-#' @return A list with components:
-#' \describe{
-#'   \item{test.statistic}{The F-type test statistic}
-#'   \item{degrees_of_freedom}{Vector of numerator and denominator df: c(p+1, n-p-1)}
-#'   \item{p.value}{P-value from the F distribution}
-#'   \item{est.1}{OLS coefficient estimates for group 1}
-#'   \item{est.2}{OLS coefficient estimates for group 2}
-#'   \item{estimate.dif}{Difference in estimates (group 1 - group 2)}
-#' }
-#'
-#' @details
-#' This function performs a **global test** that all regression parameters
-#' (intercept and all slopes) are equal between two dependent groups. It is
-#' designed specifically for **OLS regression** on paired/dependent data.
-#'
-#' **Test procedure**:
-#' 1. Bootstrap resample pairs (x1, y1, x2, y2) together to preserve dependence
-#' 2. For each bootstrap sample, estimate parameters for both groups via OLS
-#' 3. Compute differences in parameters
-#' 4. Estimate covariance matrix S of parameter differences from bootstrap
-#' 5. Construct Hotelling-type statistic: \eqn{T^2 = d' S^{-1} d} where d = est.1 - est.2
-#' 6. Transform to F-statistic and compute p-value
-#'
-#' **Key features**:
-#' - Uses bootstrap to estimate covariance of differences (robust to non-normality)
-#' - Tests all parameters simultaneously (omnibus test)
-#' - Accounts for dependence between groups
-#' - Specific to OLS regression (uses \code{lsfit})
-#'
-#' **When to use**:
-#' - Comparing regression lines from repeated measures (e.g., pre-post)
-#' - Want single omnibus test rather than parameter-by-parameter comparisons
-#' - Willing to assume approximate normality of parameter differences
-#' - Using OLS regression (for robust methods, see \code{\link{difreg}})
-#'
-#' @references
-#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
-#' (5th ed.). Academic Press.
-#'
-#' @seealso \code{\link{difreg}} for parameter-specific tests with robust regression,
-#'   \code{\link{difregOLS}} for OLS with bootstrap CIs,
-#'   \code{\link{reg2ci}} for independent groups
-#'
-#' @examples
-#' \dontrun{
-#' # Dependent groups with same regression line
-#' set.seed(123)
-#' x1 <- matrix(rnorm(100), ncol=1)
-#' x2 <- x1 + rnorm(100, sd=0.3)  # Correlated predictors
-#' y1 <- 1 + 2*x1 + rnorm(100, sd=0.5)
-#' y2 <- 1 + 2*x2 + rnorm(100, sd=0.5)
-#'
-#' # Should not reject (same parameters)
-#' DregGOLS(x1, as.vector(y1), x2, as.vector(y2), nboot=500)
-#'
-#' # Different slopes
-#' y2b <- 1 + 3*x2 + rnorm(100, sd=0.5)
-#' # Should reject
-#' DregGOLS(x1, as.vector(y1), x2, as.vector(y2b), nboot=500)
-#' }
-#'
-#' @export
 DregGOLS<-function(x1,y1,x2,y2,xout=FALSE,outfun=outpro,SEED=TRUE,nboot=200,
 STAND=TRUE,...){
 #
@@ -7697,82 +7030,6 @@ test.stat=test,standard.error=se,p.values=pvec,conf.intervals=ci)
 # ============================================================================
 # difregYvar
 # ============================================================================
-
-#' Estimate Variance of Predicted Y Differences for Dependent Groups
-#'
-#' Estimates the standard error (variance) of the difference between predicted Y
-#' values from two dependent regression models at specified predictor points.
-#' Uses bootstrap to estimate the sampling variability.
-#'
-#' @param x1 Numeric vector or matrix of predictor variable(s) for the first group.
-#' @param y1 Numeric vector of the dependent variable for the first group.
-#' @param x2 Numeric vector or matrix of predictor variable(s) for the second group.
-#' @param y2 Numeric vector of the dependent variable for the second group.
-#' @param regfun Regression function to use (default: \code{tsreg} for Theil-Sen).
-#'   Must return coefficients in \code{$coef} with intercept as first element.
-#' @param pts Matrix of predictor points at which to evaluate predictions.
-#'   If \code{NULL}, uses all unique predictor combinations from x1 and x2 (default: \code{NULL}).
-#' @param nboot Number of bootstrap samples (default: 100).
-#' @param SEED Logical; if TRUE, sets random seed for reproducibility (default: TRUE).
-#' @inheritParams common-params
-#'
-#' @return A numeric vector of length \code{nrow(pts)} containing the estimated
-#' variance of the difference in predicted Y values at each point in \code{pts}.
-#'
-#' @details
-#' For each point in \code{pts}, this function estimates the variance of:
-#' \deqn{\hat{Y}_1(x) - \hat{Y}_2(x)}
-#' where \eqn{\hat{Y}_1(x)} and \eqn{\hat{Y}_2(x)} are predicted values from
-#' the two regression models.
-#'
-#' **Bootstrap procedure**:
-#' 1. Resample cases (x1, y1, x2, y2) together to preserve dependence
-#' 2. For each bootstrap sample:
-#'    - Fit regression model 1 and predict at \code{pts}
-#'    - Fit regression model 2 and predict at \code{pts}
-#'    - Compute difference in predictions
-#' 3. For each point in \code{pts}, compute variance across bootstrap samples
-#'
-#' **When to use**:
-#' - Want to understand precision of predicted Y differences at specific X values
-#' - Building confidence bands for difference in regression functions
-#' - Comparing regression surfaces for dependent groups
-#' - Need point-wise standard errors for visualization or inference
-#'
-#' **Note**: This function returns **variances**, not standard errors. To get
-#' standard errors, take the square root of the returned values.
-#'
-#' If \code{pts} is not specified, predictions are made at all unique predictor
-#' combinations observed in either group, which can be computationally intensive
-#' for large datasets or many predictors.
-#'
-#' @references
-#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
-#' (5th ed.). Academic Press.
-#'
-#' @seealso \code{\link{difreg}} for testing parameter differences,
-#'   \code{\link{regYci}} for confidence intervals on predicted values (single group),
-#'   \code{\link{reg2difplot}} for plotting regression line differences (independent groups)
-#'
-#' @examples
-#' \dontrun{
-#' # Dependent groups with different slopes
-#' set.seed(123)
-#' x1 <- matrix(seq(-2, 2, length=50), ncol=1)
-#' x2 <- x1 + rnorm(50, sd=0.2)  # Correlated predictors
-#' y1 <- 1 + 2*x1 + rnorm(50, sd=0.5)
-#' y2 <- 1 + 3*x2 + rnorm(50, sd=0.5)
-#'
-#' # Evaluate at specific points
-#' pts <- matrix(seq(-2, 2, by=0.5), ncol=1)
-#' vars <- difregYvar(x1, as.vector(y1), x2, as.vector(y2), pts=pts, nboot=200)
-#'
-#' # Standard errors
-#' ses <- sqrt(vars)
-#' print(data.frame(x=pts, se=ses))
-#' }
-#'
-#' @export
 difregYvar<-function(x1,y1,x2,y2,regfun=tsreg,pts=NULL,
 nboot=100,xout=FALSE,outfun=out,SEED=TRUE,...){
 #
@@ -8731,6 +7988,8 @@ list(n=n,n.keep=nk,param=lvec,p.values=pvec,est.grp1=est1,est.grp2=est2,conf.int
 
 #' Quantile Regression
 #'
+#' @rdname qreg_functions
+#'
 #' Performs quantile regression using numerical optimization. Handles tied values
 #' in the dependent variable better than \code{qreg}. Estimates the qth conditional
 #' quantile of Y given X.
@@ -8837,38 +8096,8 @@ v
 }
 
 # ============================================================================
-# corregci.sub
+# scorreg
 # ============================================================================
-
-#' Bootstrap Helper for Correlations Between Predictors and Response
-#'
-#' Internal helper function used by correlation-based regression functions to
-#' compute correlations for a bootstrap sample. Not intended for direct use.
-#'
-#' @param isub Integer vector of bootstrap sample indices.
-#' @param x A numeric matrix of predictor variables (n by p).
-#' @param y A numeric vector of the dependent variable (length n).
-#' @param corfun Correlation function to use (e.g., \code{pbcor}, \code{wincor}).
-#'   Must return a list with component \code{$cor}.
-#'
-#' @return A numeric vector of length p containing the correlation between each
-#' predictor column and y for the bootstrap sample specified by \code{isub}.
-#'
-#' @details
-#' This is an internal utility function used in bootstrap procedures for
-#' correlation-based regression methods. It:
-#' 1. Extracts the bootstrap sample from x and y using indices in \code{isub}
-#' 2. Computes the correlation between each predictor and the response
-#' 3. Returns the vector of correlations
-#'
-#' The function is typically called via \code{apply()} or similar over a matrix
-#' of bootstrap sample indices.
-#'
-#' **Note**: This is an internal function not meant for end users. It is
-#' documented for completeness and to support package development.
-#'
-#' @keywords internal
-#' @export
 corregci.sub<-function(isub,x,y,corfun){
 p=ncol(x)
 xmat<-matrix(x[isub,],nrow(x),ncol(x))
@@ -9003,89 +8232,6 @@ yhat
 # ============================================================================
 # reg.reglev
 # ============================================================================
-
-#' Regression After Removing Bad Leverage Points
-#'
-#' Fits a regression model after identifying and removing bad leverage points
-#' using leverage point detection methods. Can use either the generalized
-#' Rousseeuw-van Zomeren method or the original method.
-#'
-#' @param x Numeric vector or matrix of predictor variable(s).
-#' @param y Numeric vector of the dependent variable.
-#' @param plotit Logical; if TRUE, creates diagnostic plots (default: TRUE).
-#'   Currently not implemented in the function body.
-#' @param xlab Label for x-axis if plotting (default: 'X').
-#' @param ylab Label for y-axis if plotting (default: 'Y').
-#' @param GEN Logical; if TRUE, uses generalized Rousseeuw-van Zomeren method via
-#'   \code{reglev.gen}; if FALSE, uses original method via \code{reglev} (default: TRUE).
-#' @param regfun Regression function to use after removing leverage points (default: \code{tsreg}).
-#' @param outfun Outlier detection function for leverage point identification (default: \code{outpro}).
-#' @param pr Logical; if TRUE, prints progress messages (default: TRUE).
-#' @param ... Additional arguments passed to \code{regfun}.
-#'
-#' @return A list with components:
-#' \describe{
-#'   \item{n}{Original sample size before leverage point removal}
-#'   \item{n.keep}{Sample size after removing bad leverage points}
-#'   \item{coef}{Regression coefficients from the model fitted after removal}
-#' }
-#'
-#' @details
-#' This function implements a two-stage approach to robust regression:
-#' 1. **Identify bad leverage points** using one of two methods:
-#'    - If \code{GEN=TRUE}: Uses \code{reglev.gen} (generalized method)
-#'    - If \code{GEN=FALSE}: Uses \code{reglev} (original Rousseeuw-van Zomeren)
-#' 2. **Remove identified points** and fit regression using \code{regfun}
-#'
-#' **Leverage point detection**:
-#' A leverage point is an observation with extreme predictor values. A "bad"
-#' leverage point is one that also has an unusual response value given its
-#' predictor values (i.e., influential outlier).
-#'
-#' The Rousseeuw-van Zomeren method identifies bad leverage points by examining:
-#' - Robust Mahalanobis distance in predictor space (leverage)
-#' - Standardized robust residuals (outlyingness in Y)
-#' - Points unusual in both dimensions are flagged
-#'
-#' **When to use**:
-#' - Concerned about influential outliers affecting regression
-#' - Want automatic leverage point removal before fitting
-#' - Prefer robust methods that down-weight rather than remove (consider \code{opreg}, \code{ltsreg})
-#'
-#' **Generalized vs. original method**:
-#' The generalized method (\code{GEN=TRUE}) is generally recommended as it
-#' works with any robust regression function. The original method is maintained
-#' for compatibility but offers no known advantages.
-#'
-#' @references
-#' Rousseeuw, P.J. & van Zomeren, B.C. (1990). Unmasking multivariate outliers
-#' and leverage points. \emph{Journal of the American Statistical Association},
-#' 85, 633-639.
-#'
-#' Wilcox, R.R. (2022). \emph{Introduction to Robust Estimation and Hypothesis Testing}
-#' (5th ed.). Academic Press.
-#'
-#' @seealso \code{\link{reglev}} for original leverage detection,
-#'   \code{\link{reglev.gen}} for generalized leverage detection,
-#'   \code{\link{opreg}} for outlier-pruned regression (alternative approach)
-#'
-#' @examples
-#' \dontrun{
-#' # Generate data with a bad leverage point
-#' set.seed(123)
-#' x <- c(rnorm(49), 5)  # Point 50 is a leverage point
-#' y <- c(1 + 2*rnorm(49) + rnorm(49, sd=0.5), 20)  # Point 50 is also an outlier in Y
-#'
-#' # Fit after removing bad leverage points
-#' result <- reg.reglev(x, y, plotit=FALSE)
-#' print(result$coef)
-#' print(paste("Removed", result$n - result$n.keep, "leverage points"))
-#'
-#' # Compare with ordinary regression (affected by outlier)
-#' lm(y ~ x)$coefficients
-#' }
-#'
-#' @export
 reg.reglev<-function(x,y,plotit=TRUE,xlab='X',ylab='Y',GEN=TRUE,regfun=tsreg,outfun=outpro,pr=TRUE,...){
 
 #

@@ -2729,6 +2729,8 @@ pdis
 
 #' Winsorized Correlation
 #'
+#' @rdname wincor_functions
+#'
 #' @description
 #' Computes the Winsorized correlation and covariance between two variables
 #' or a correlation matrix for multiple variables.
@@ -3942,6 +3944,8 @@ olsci<-olshc4
 
 #' Generate Contrast Coefficients for All Pairwise Comparisons
 #'
+#' @rdname con_all_pairs
+#'
 #' @description
 #' Creates a contrast matrix for performing all pairwise comparisons among J groups.
 #'
@@ -4347,5 +4351,50 @@ sx<-ifelse(psi<(-1),0,x)
 sx<-ifelse(psi>1,0,sx)
 pbos<-(sum(sx)+omhatx*(i2-i1))/(length(x)-i1-i2)
 pbos
+}
+
+#' Density Function for Normal Distribution (Helper Function)
+#'
+#' @description
+#' Computes x^2 * dnorm(x), used internally for calculating standardization terms
+#' in winsorized and trimmed mean effect sizes.
+#'
+#' @param x Numeric value or vector
+#'
+#' @return Numeric value or vector: x^2 * dnorm(x)
+#'
+#' @details
+#' This is a helper function used in conjunction with \code{\link{area}} to compute
+#' standardization constants for effect size calculations involving trimmed or
+#' winsorized estimators. It represents the integrand x^2 * phi(x) where phi is
+#' the standard normal density.
+#'
+#' @keywords internal
+#' @export
+dnormvar<-function(x){
+x^2*dnorm(x)
+}
+
+#' Numerical Integration Wrapper
+#'
+#' @description
+#' Computes the definite integral of a function over a specified interval using
+#' numerical integration.
+#'
+#' @param f Function to integrate
+#' @param a Lower limit of integration
+#' @param b Upper limit of integration
+#'
+#' @return Numeric value representing the definite integral
+#'
+#' @details
+#' This function is a simple wrapper around R's \code{\link[stats]{integrate}}
+#' function. It is used throughout the package to compute standardization
+#' constants for effect sizes based on trimmed and winsorized estimators.
+#'
+#' @keywords internal
+#' @export
+area<-function(f,a,b){
+integrate(f,a,b)$value
 }
 
