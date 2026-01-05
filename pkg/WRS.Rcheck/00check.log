@@ -334,7 +334,6 @@ SVM: no visible global function definition for ‘svm’
 Scov: no visible global function definition for ‘CovSest’
 Stein.pairs: no visible binding for global variable ‘pow’
 TKmeans: no visible global function definition for ‘trimkmeans’
-TWOpNOV: no visible binding for global variable ‘ZCI’
 UB.class.error: no visible binding for global variable ‘reps’
 UBROC: no visible global function definition for ‘prediction’
 UBROC: no visible global function definition for ‘performance’
@@ -696,10 +695,10 @@ Undefined global functions or variables:
   .. .pt AdaExp BYlogreg CI90_low CI90_up COR.method CovOgk CovSest
   DancGLOB_pv_C Danctspb.sub DetMCD Est.dif FBplot Inter.EP J JNH_sub1
   JNH_sub2 K MVECOR ND PcaLocantore RFreg SEED Stop TOST.p.value VA2 Z
-  ZCI aes alpha anc.best.PB anc.bestH.crit ancGLOB_pv_C ardata
-  backsolvet bagdistance bagplot bandwidth.sj bbmcppb.sub bcajack
-  bcajack2 binKMS.mpts.crit bwiPATEL center cidmulv2 cobs compBagplot
-  con coord_cartesian corblp covRob crit cv.glmnet dati decJK.Amain
+  aes alpha anc.best.PB anc.bestH.crit ancGLOB_pv_C ardata backsolvet
+  bagdistance bagplot bandwidth.sj bbmcppb.sub bcajack bcajack2
+  binKMS.mpts.crit bwiPATEL center cidmulv2 cobs compBagplot con
+  coord_cartesian corblp covRob crit cv.glmnet dati decJK.Amain
   decJK.Bmain depth.zonoid depthProjection dialogbox
   dialogbox.add.control dialogbox.display dif disp downdateR
   draw.circle editfield.control element_rect element_text enetLTS
@@ -2975,26 +2974,4 @@ Rd files without \description:
   ‘oph.astig.datasetconvexpoly.mean.Rd’ ‘pow2an.Rd’ ‘powt1an.Rd’
   ‘powt1est.Rd’ ‘smgridVRC.Rd’ ‘spearci.Rd’ ‘tsplit.Rd’
 * checking for unstated dependencies in examples ... OK
-* checking examples ... ERROR
-Running examples in ‘WRS-Ex.R’ failed
-The error most likely occurred in:
-
-> ### Name: TWOpNOV
-> ### Title: Compare Two Dependent Pearson Correlations (Non-Overlapping)
-> ### Aliases: TWOpNOV
-> 
-> ### ** Examples
-> 
-> set.seed(123)
-> n <- 50
-> x <- cbind(rnorm(n), rnorm(n))
-> y <- cbind(rnorm(n), rnorm(n))
-> 
-> result <- TWOpNOV(x, y)
-Error in TWOpNOV(x, y) : object 'ZCI' not found
-Execution halted
-* checking for unstated dependencies in ‘tests’ ... OK
-* checking tests ... OK
-  Running ‘test-backward-compat.R’
-* DONE
-Status: 1 ERROR, 6 WARNINGs, 2 NOTEs
+* checking examples ...

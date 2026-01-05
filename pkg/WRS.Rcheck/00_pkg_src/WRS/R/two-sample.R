@@ -1632,6 +1632,7 @@ list(phat=phat,center=center,crit.val=crit)
 #' @param y Matrix or data frame with 2 columns.
 #' @param HC4 Logical; if TRUE, uses HC4 heteroscedasticity correction. Required for
 #'   alpha not equal to 0.05.
+#' @param ZCI Logical; internal parameter for handling NA values in CI.
 #'
 #' @return A list with components:
 #'   \item{est.1}{Correlation between x[,1] and x[,2]}
@@ -1665,7 +1666,7 @@ list(phat=phat,center=center,crit.val=crit)
 #' result <- TWOpNOV(x, y)
 #' result$ci.lower
 #' result$ci.upper
-TWOpNOV<-function(x,y,HC4=FALSE,alpha=.05){
+TWOpNOV<-function(x,y,HC4=FALSE,alpha=.05,ZCI=FALSE){
 #
 #   Compute a .95 confidence interval
 #   for the difference between two dependent Pearson correlations,

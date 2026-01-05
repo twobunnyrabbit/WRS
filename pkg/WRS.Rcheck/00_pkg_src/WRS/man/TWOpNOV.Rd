@@ -4,7 +4,7 @@
 \alias{TWOpNOV}
 \title{Compare Two Dependent Pearson Correlations (Non-Overlapping)}
 \usage{
-TWOpNOV(x, y, HC4 = FALSE, alpha = 0.05)
+TWOpNOV(x, y, HC4 = FALSE, alpha = 0.05, ZCI = FALSE)
 }
 \arguments{
 \item{x}{Matrix or data frame with 2 columns.}
@@ -15,6 +15,8 @@ TWOpNOV(x, y, HC4 = FALSE, alpha = 0.05)
 alpha not equal to 0.05.}
 
 \item{alpha}{Significance level for confidence intervals (default: 0.05).}
+
+\item{ZCI}{Logical; internal parameter for handling NA values in CI.}
 }
 \value{
 A list with components:
