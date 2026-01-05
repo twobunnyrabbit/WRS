@@ -23,5 +23,5 @@ LazyLoad: yes
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 NeedsCompilation: no
-Packaged: 2026-01-05 01:50:47 UTC; mando
-Built: R 4.5.2; ; 2026-01-05 03:03:20 UTC; unix
+Packaged: 2026-01-05 06:35:33 UTC; mando
+Built: R 4.5.2; ; 2026-01-05 06:37:21 UTC; unix

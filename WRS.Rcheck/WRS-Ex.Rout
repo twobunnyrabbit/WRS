@@ -1147,3 +1147,852 @@ KMS         -0.3411206  0.0 -0.10 -0.25 -0.40
 > 
 > # With custom benchmarks
 > ES.summary(group1, group2, REL.MAG=c(0.1, 0.3, 0.5))
+                   Est NULL           S          M          L
+AKP         -0.6736421  0.0 -0.10000000 -0.3000000 -0.5000000
+EP           0.4796262  0.0  0.06030798  0.1985070  0.3321358
+QS (median)  0.3203333  0.5  0.47565000  0.4199830  0.3663500
+QStr         0.3066667  0.5  0.47608300  0.4204810  0.3667580
+WMW          0.7076667  0.5  0.47573158  0.4201727  0.3661890
+KMS         -0.3411206  0.0 -0.05000000 -0.1500000 -0.2500000
+> 
+> 
+> 
+> cleanEx()
+> nameEx("FQplot")
+> ### * FQplot
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: FQplot
+> ### Title: Plot Median and Quartiles of Multiple Curves
+> ### Aliases: FQplot
+> 
+> ### ** Examples
+> 
+> # Median and quartiles of multiple curves
+> set.seed(123)
+> t <- seq(0, 1, length = 50)
+> # Create 20 noisy sine curves with varying amplitude
+> x <- matrix(0, nrow = 20, ncol = 50)
+> for(i in 1:20) {
++   amp <- runif(1, 0.5, 1.5)
++   x[i,] <- amp * sin(2*pi*t) + rnorm(50, 0, 0.1)
++ }
+> FQplot(x)
+ [1]  0.0066880343  0.1426732717  0.2503310791  0.3827595820  0.4530628793
+ [6]  0.5509691473  0.6397628856  0.6771197704  0.7772370486  0.8374371698
+[11]  0.8678909533  0.8919218650  0.9018035052  0.8295460120  0.8990915298
+[16]  0.8322471812  0.8105760990  0.6906881842  0.6628811556  0.5503357850
+[21]  0.5258823456  0.4177090469  0.2166367432  0.1594600490  0.0765426827
+[26] -0.0838325416 -0.2031682206 -0.3278017013 -0.3749604064 -0.5099260273
+[31] -0.5605382933 -0.6506661055 -0.7063890054 -0.8193900087 -0.7783804393
+[36] -0.8518374670 -0.9148947680 -0.9121600810 -0.8491119274 -0.8640139005
+[41] -0.8233193084 -0.7418167208 -0.6995880549 -0.5963700997 -0.5753759166
+[46] -0.3920827526 -0.3151530745 -0.2575727659 -0.0984070116 -0.0006267078
+> 
+> 
+> 
+> cleanEx()
+> nameEx("Flplot")
+> ### * Flplot
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: Flplot
+> ### Title: Plot Average of Multiple Curves
+> ### Aliases: Flplot
+> 
+> ### ** Examples
+> 
+> # Average of multiple curves
+> set.seed(123)
+> t <- seq(0, 1, length = 50)
+> # Create 20 noisy sine curves
+> x <- matrix(0, nrow = 20, ncol = 50)
+> for(i in 1:20) {
++   x[i,] <- sin(2*pi*t) + rnorm(50, 0, 0.2)
++ }
+> Flplot(x)
+ [1]  0.03201835  0.05539671  0.29651195  0.38230299  0.53246142  0.53676676
+ [7]  0.67939045  0.73444307  0.83461893  0.96506308  1.02905273  1.00268508
+[13]  1.00898695  0.99982832  0.95860894  1.02250480  0.90501718  0.74753016
+[19]  0.73777204  0.71382997  0.54135266  0.35988540  0.27906396  0.18863769
+[25]  0.08771680 -0.04801513 -0.14712642 -0.34372185 -0.41584977 -0.57836383
+[31] -0.56269558 -0.75615143 -0.84554801 -0.87687432 -0.95417942 -1.00148001
+[37] -0.98427445 -0.99730188 -1.00403475 -0.96563257 -0.94143866 -0.81204582
+[43] -0.70179565 -0.74025142 -0.60045561 -0.47841363 -0.34125112 -0.27561777
+[49] -0.06750754 -0.03014108
+> 
+> # Use median instead of mean
+> Flplot(x, est = median)
+ [1]  0.01797625  0.04867178  0.29922952  0.39881568  0.53127378  0.56499773
+ [7]  0.71262389  0.72659389  0.88219904  0.92108174  1.06186977  1.03316578
+[13]  1.02524850  0.98698341  0.92339477  1.03917368  0.91772305  0.74306011
+[19]  0.73903949  0.69404557  0.48259526  0.39087119  0.30316250  0.18504249
+[25]  0.04283446 -0.04292718 -0.17032098 -0.29985702 -0.37845293 -0.57261153
+[31] -0.56735146 -0.73028692 -0.81961748 -0.89660008 -0.94517860 -0.98124164
+[37] -0.93513458 -0.99720366 -1.03053727 -0.98908026 -0.93413447 -0.78255916
+[43] -0.64542449 -0.78201389 -0.62037268 -0.48664933 -0.37543173 -0.32195437
+[49] -0.06835420 -0.02632753
+> 
+> 
+> 
+> cleanEx()
+> nameEx("Flplot2g")
+> ### * Flplot2g
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: Flplot2g
+> ### Title: Plot Average Curves for Two Groups
+> ### Aliases: Flplot2g
+> 
+> ### ** Examples
+> 
+> # Compare two groups of curves
+> set.seed(123)
+> t <- seq(0, 1, length = 50)
+> 
+> # Group 1: baseline curves
+> x1 <- matrix(0, nrow = 15, ncol = 50)
+> for(i in 1:15) {
++   x1[i,] <- sin(2*pi*t) + rnorm(50, 0, 0.2)
++ }
+> 
+> # Group 2: shifted curves
+> x2 <- matrix(0, nrow = 15, ncol = 50)
+> for(i in 1:15) {
++   x2[i,] <- sin(2*pi*t) + 0.5 + rnorm(50, 0, 0.2)
++ }
+> 
+> Flplot2g(x1, x2)
+$est.1
+ [1]  0.02533640  0.06672755  0.27294604  0.35686949  0.49502647  0.55400212
+ [7]  0.66695983  0.69370131  0.86423703  0.94881103  1.02181164  1.00374667
+[13]  1.02006007  1.05577924  0.93758593  0.97706670  0.92689796  0.74299066
+[19]  0.75607555  0.69626131  0.59856384  0.36020954  0.29718580  0.19660943
+[25]  0.05364007 -0.08874375 -0.12618482 -0.35310436 -0.44606474 -0.57230060
+[31] -0.59869898 -0.71968610 -0.85806440 -0.88460168 -0.96651826 -0.99437519
+[37] -0.94376328 -0.95237339 -0.95808159 -1.00880630 -0.95537185 -0.80966888
+[43] -0.64952509 -0.77068442 -0.61184013 -0.47571857 -0.33516252 -0.29497214
+[49] -0.06635665 -0.03216433
+
+$est.2
+ [1]  0.54048152  0.54747378  0.80508383  0.89596323  1.08399998  1.14072248
+ [7]  1.15276647  1.38515524  1.26048760  1.45225532  1.59000242  1.54574147
+[13]  1.53757353  1.44611462  1.47791524  1.51506493  1.35388051  1.28973902
+[19]  1.24990746  1.23029712  0.98559871  0.84751839  0.80609814  0.70726541
+[25]  0.53197994  0.56450365  0.32321664  0.20805847  0.04419374 -0.11003858
+[31] -0.05968950 -0.25846738 -0.30891975 -0.45320981 -0.47575831 -0.57657191
+[37] -0.59695643 -0.54308486 -0.49091170 -0.45752802 -0.40896624 -0.30055695
+[43] -0.26494083 -0.11267714 -0.12476042 -0.03443351  0.08426567  0.30449609
+[49]  0.43348230  0.50960864
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("H.lasso")
+> ### * H.lasso
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: H.lasso
+> ### Title: Huberized Lasso Regression
+> ### Aliases: H.lasso
+> ### Keywords: regression robust
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # Simulated data with outliers
+> ##D set.seed(123)
+> ##D n <- 100; p <- 10
+> ##D x <- matrix(rnorm(n*p), n, p)
+> ##D y <- x[,1] + 2*x[,2] + rnorm(n)
+> ##D y[1:5] <- y[1:5] + 10  # Add outliers
+> ##D 
+> ##D # Fit Huberized lasso
+> ##D fit <- H.lasso(x, y)
+> ##D fit$coef
+> ## End(Not run)
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("HQreg")
+> ### * HQreg
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: HQreg
+> ### Title: Robust Elastic Net Regression (Huber/Quantile Loss)
+> ### Aliases: HQreg
+> ### Keywords: regression robust
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # Simulated data with outliers
+> ##D set.seed(123)
+> ##D n <- 100; p <- 10
+> ##D x <- matrix(rnorm(n*p), n, p)
+> ##D y <- x[,1] + 2*x[,2] + rnorm(n)
+> ##D y[1:5] <- y[1:5] + 10  # Add outliers
+> ##D 
+> ##D # Fit robust elastic net with Huber loss
+> ##D fit <- HQreg(x, y, alpha = 0.5, method = 'huber')
+> ##D fit$coef
+> ##D 
+> ##D # Fit robust quantile regression (median)
+> ##D fit_med <- HQreg(x, y, alpha = 1, method = 'quantile', tau = 0.5)
+> ## End(Not run)
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("IND.PAIR.ES")
+> ### * IND.PAIR.ES
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: IND.PAIR.ES
+> ### Title: Pairwise Effect Sizes for Independent Groups
+> ### Aliases: IND.PAIR.ES
+> 
+> ### ** Examples
+> 
+> # Three independent groups, all pairwise comparisons
+> set.seed(123)
+> group1 <- rnorm(20, mean=100, sd=15)
+> group2 <- rnorm(20, mean=105, sd=15)
+> group3 <- rnorm(20, mean=110, sd=15)
+> x <- cbind(group1, group2, group3)
+> 
+> # Get comprehensive effect sizes for all pairs
+> result <- IND.PAIR.ES(x)
+> result$effect.size[[1]]  # Compare groups 1 vs 2
+                   Est NULL     S     M     L
+AKP         -0.2754963  0.0 -0.20 -0.50 -0.80
+EP           0.1715350  0.0  0.14  0.34  0.52
+QS (median)  0.4650000  0.5  0.45  0.36  0.29
+QStr         0.4625000  0.5  0.45  0.36  0.29
+WMW          0.5275000  0.5  0.55  0.64  0.71
+KMS         -0.1377482  0.0 -0.10 -0.25 -0.40
+> 
+> # Get only AKP effect size
+> result2 <- IND.PAIR.ES(x, fun=ESfun, method='AKP')
+> 
+> 
+> 
+> cleanEx()
+> nameEx("IQR2g.W")
+> ### * IQR2g.W
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: IQR2g.W
+> ### Title: Wald-Type Test for Comparing Interquartile Ranges
+> ### Aliases: IQR2g.W
+> 
+> ### ** Examples
+> 
+> set.seed(123)
+> x <- rnorm(30)
+> y <- rnorm(30, sd = 1.5)
+> result <- IQR2g.W(x, y, nboot = 200)
+> result$p.value
+[1] 0.467774
+> 
+> 
+> 
+> cleanEx()
+> nameEx("IQRhd")
+> ### * IQRhd
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: IQRhd
+> ### Title: Interquartile Range Using Harrell-Davis Estimator
+> ### Aliases: IQRhd
+> 
+> ### ** Examples
+> 
+> x <- rnorm(50)
+> IQRhd(x)
+[1] 1.093431
+> IQR(x)  # Compare with standard IQR
+[1] 1.100049
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("IQRstand")
+> ### * IQRstand
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: IQRstand
+> ### Title: IQR Standardization
+> ### Aliases: IQRstand
+> 
+> ### ** Examples
+> 
+> x <- c(1:10, 100)  # Data with outlier
+> x_std <- IQRstand(x)
+> range(x_std)
+[1]  0.1764706 17.6470588
+> 
+> 
+> 
+> cleanEx()
+> nameEx("JK.AB.KS.ES")
+> ### * JK.AB.KS.ES
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: JK.AB.KS.ES
+> ### Title: Main Effect Sizes for J×K Design (KS Method)
+> ### Aliases: JK.AB.KS.ES
+> 
+> ### ** Examples
+> 
+> # 2x3 design
+> set.seed(123)
+> x <- list(
++   rnorm(20), rnorm(20, 0.5), rnorm(20, 1),
++   rnorm(20, 0.3), rnorm(20, 0.8), rnorm(20, 1.3)
++ )
+> result <- JK.AB.KS.ES(J = 2, K = 3, x)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KMS.ES.M")
+> ### * KMS.ES.M
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KMS.ES.M
+> ### Title: KMS Robust Effect Size Using M-Estimator
+> ### Aliases: KMS.ES.M
+> 
+> ### ** Examples
+> 
+> set.seed(123)
+> x <- rnorm(30, mean = 0)
+> y <- rnorm(30, mean = 0.5)
+> KMS.ES.M(x, y)
+$effect.size
+[1] -0.3759687
+
+$Cohen.d.equiv
+[1] -0.7519374
+
+> 
+> # With outliers - robust to contamination
+> x2 <- c(x, 10, 15)
+> y2 <- c(y, -10)
+> KMS.ES.M(x2, y2)
+$effect.size
+[1] -0.2598444
+
+$Cohen.d.equiv
+[1] -0.5196889
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KMS.ci")
+> ### * KMS.ci
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KMS.ci
+> ### Title: KMS Effect Size: Confidence Interval for Two Groups
+> ### Aliases: KMS.ci
+> 
+> ### ** Examples
+> 
+> # Compare two groups
+> set.seed(123)
+> x <- rnorm(30)
+> y <- rnorm(30, mean = 0.5)
+> result <- KMS.ci(x, y, nboot = 500)
+> result$effect.size
+[1] -0.4439576
+> result$ci
+[1] -0.7823953 -0.1331538
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KMS.inter.pbci")
+> ### * KMS.inter.pbci
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KMS.inter.pbci
+> ### Title: 2×2 Design: Test Interaction via KMS Effect Sizes
+> ### Aliases: KMS.inter.pbci
+> 
+> ### ** Examples
+> 
+> # 2x2 design
+> set.seed(123)
+> x <- list(
++   rnorm(20), rnorm(20, mean = 0.5),
++   rnorm(20, mean = 0.3), rnorm(20, mean = 1.2)
++ )
+> result <- KMS.inter.pbci(x, nboot = 500)
+> result$p.value
+[1] 0.496
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KMS2way")
+> ### * KMS2way
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KMS2way
+> ### Title: Two-Way ANOVA: Complete KMS Effect Size Analysis
+> ### Aliases: KMS2way
+> 
+> ### ** Examples
+> 
+> # 3x2 two-way design
+> set.seed(123)
+> x <- list()
+> for(i in 1:6) x[[i]] <- rnorm(20)
+> result <- KMS2way(J = 3, K = 2, x = x, nboot = 500)
+> result$Factor.A
+     Group Group Effect.Size     low.ci     up.ci p.value p.adjust
+[1,]     1     2  0.08494945 -0.2854906 0.4593438   0.632    0.632
+[2,]     1     3  0.20725644 -0.1080135 0.5868232   0.228    0.632
+[3,]     2     3  0.14086265 -0.2544193 0.4646613   0.444    0.632
+> result$Interaction
+$CON
+     Con.num     Est.1     Est.2         Dif     ci.low     ci.up   p.value
+[1,]       1 0.0457974 0.1234754 -0.07767801 -0.5548850 0.4332599 0.8668669
+[2,]       2 0.0457974 0.4186158 -0.37281841 -0.9420883 0.1659110 0.1721722
+[3,]       3 0.1234754 0.4186158 -0.29514040 -0.8479263 0.1629286 0.2102102
+     p.adjusted
+[1,]  0.8668669
+[2,]  0.4204204
+[3,]  0.4204204
+
+$con
+     [,1] [,2] [,3]
+[1,]    1    1    0
+[2,]   -1   -1    0
+[3,]   -1    0    1
+[4,]    1    0   -1
+[5,]    0   -1   -1
+[6,]    0    1    1
+
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KMSgrid.mcp")
+> ### * KMSgrid.mcp
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KMSgrid.mcp
+> ### Title: Grid-Based KMS Analysis: Multiple Comparisons Across Quantile
+> ###   Grids
+> ### Aliases: KMSgrid.mcp
+> 
+> ### ** Examples
+> 
+> # Create 2x2 grid via median splits
+> set.seed(123)
+> x <- matrix(rnorm(200), ncol = 2)
+> y <- rnorm(100)
+> result <- KMSgrid.mcp(x, y, Qsplit1 = .5, Qsplit2 = .5)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KMSgridAB")
+> ### * KMSgridAB
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KMSgridAB
+> ### Title: Grid-Based Analysis: Test Main Effects Across Quantile Grids
+> ### Aliases: KMSgridAB
+> 
+> ### ** Examples
+> 
+> # 2x2 grid analysis
+> set.seed(123)
+> x <- matrix(rnorm(200), ncol = 2)
+> y <- rnorm(100)
+> result <- KMSgridAB(x, y, Qsplit1 = .5, Qsplit2 = .5)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KMSgridAV")
+> ### * KMSgridAV
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KMSgridAV
+> ### Title: Grid-Based KMS ANOVA: Average Pairwise Effect Sizes
+> ### Aliases: KMSgridAV
+> 
+> ### ** Examples
+> 
+> # 2x2 grid with average KMS effect sizes
+> set.seed(123)
+> x <- matrix(rnorm(200), ncol = 2)
+> y <- rnorm(100)
+> result <- KMSgridAV(x, y, Qsplit1 = .5, Qsplit2 = .5, nboot = 500)
+> result$Factor.A
+     Level Level     Est. 1      Est.2       Dif     ci.low     ci.up p-value
+[1,]     1     2 0.09213192 -0.1799302 0.2720621 -0.1110142 0.7319837   0.184
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KMSgridRC")
+> ### * KMSgridRC
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KMSgridRC
+> ### Title: Grid-Based KMS ANOVA: Global Effect Sizes Across Rows and
+> ###   Columns
+> ### Aliases: KMSgridRC
+> 
+> ### ** Examples
+> 
+> # 2x2 grid with global KMS effect sizes
+> set.seed(123)
+> x <- matrix(rnorm(200), ncol = 2)
+> y <- rnorm(100)
+> result <- KMSgridRC(x, y, Qsplit1 = .5, Qsplit2 = .5, iter = 1000)
+> result$Factor.A
+     A.Level A.Level   B.Est.1  B.Est.2         Dif p-value     ci.low
+[1,]       1       2 0.0936566 0.187814 -0.09415742   0.434 -0.4294254
+         ci.up
+[1,] 0.1909582
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KMSinter.mcp")
+> ### * KMSinter.mcp
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KMSinter.mcp
+> ### Title: Two-Way ANOVA: Interaction Tests Using KMS Effect Sizes
+> ### Aliases: KMSinter.mcp
+> 
+> ### ** Examples
+> 
+> # 3x2 design interaction tests
+> set.seed(123)
+> x <- list()
+> for(i in 1:6) x[[i]] <- rnorm(20)
+> result <- KMSinter.mcp(J = 3, K = 2, x = x, nboot = 500)
+> result$CON
+     Con.num     Est.1     Est.2         Dif     ci.low     ci.up p.value
+[1,]       1 0.0457974 0.1234754 -0.07767801 -0.5418271 0.4324338   0.876
+[2,]       2 0.0457974 0.4186158 -0.37281841 -0.9957929 0.1860476   0.196
+[3,]       3 0.1234754 0.4186158 -0.29514040 -0.8745928 0.2105556   0.240
+     p.adjusted
+[1,]      0.876
+[2,]      0.480
+[3,]      0.480
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KMSmcp.ci")
+> ### * KMSmcp.ci
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KMSmcp.ci
+> ### Title: One-Way ANOVA: KMS Effect Sizes for All Pairwise Comparisons
+> ### Aliases: KMSmcp.ci
+> 
+> ### ** Examples
+> 
+> # Compare 4 groups
+> set.seed(123)
+> x <- list(
++   rnorm(20),
++   rnorm(20, mean = 0.5),
++   rnorm(20, mean = 1),
++   rnorm(20, mean = 0.3)
++ )
+> result <- KMSmcp.ci(x, nboot = 500)
+> result
+     Group Group Effect.Size     low.ci       up.ci p.value p.adjust
+[1,]     1     2 -0.22952096 -0.5787567  0.15793901   0.360    0.720
+[2,]     1     3 -0.60288709 -0.9793461 -0.11673598   0.008    0.040
+[3,]     1     4 -0.04189456 -0.4217073  0.36837455   0.944    0.944
+[4,]     2     3 -0.30192327 -0.6861029  0.03822698   0.072    0.288
+[5,]     2     4  0.19756446 -0.1553133  0.59216229   0.308    0.720
+[6,]     3     4  0.57809998  0.1305079  0.98909787   0.008    0.040
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KNN")
+> ### * KNN
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KNN
+> ### Title: K-Nearest Neighbors Classification
+> ### Aliases: KNN
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # Generate training data
+> ##D set.seed(123)
+> ##D x1 <- matrix(rnorm(50), ncol = 2)
+> ##D x2 <- matrix(rnorm(50, mean = 2), ncol = 2)
+> ##D 
+> ##D # Generate test data
+> ##D test <- matrix(rnorm(20, mean = 1), ncol = 2)
+> ##D 
+> ##D # KNN classification with k=3
+> ##D KNN(x1 = x1, x2 = x2, test = test, k = 3)
+> ##D 
+> ##D # KNN classification with k=5
+> ##D KNN(x1 = x1, x2 = x2, test = test, k = 5)
+> ##D 
+> ##D # Using train/g specification
+> ##D train <- rbind(x1, x2)
+> ##D g <- c(rep(1, nrow(x1)), rep(2, nrow(x2)))
+> ##D KNN(train = train, g = g, test = test, k = 3)
+> ## End(Not run)
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KNNdist")
+> ### * KNNdist
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KNNdist
+> ### Title: K-Nearest Neighbors Classification Using Data Depths
+> ### Aliases: KNNdist
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # Generate training data
+> ##D set.seed(123)
+> ##D x1 <- matrix(rnorm(50), ncol = 2)
+> ##D x2 <- matrix(rnorm(50, mean = 2), ncol = 2)
+> ##D 
+> ##D # Generate test data
+> ##D test <- matrix(rnorm(20, mean = 1), ncol = 2)
+> ##D 
+> ##D # KNN classification using depths
+> ##D KNNdist(x1 = x1, x2 = x2, test = test, k = 5)
+> ##D 
+> ##D # With DD-plot visualization
+> ##D KNNdist(x1 = x1, x2 = x2, test = test, plotit = TRUE)
+> ##D 
+> ##D # Using train/g specification
+> ##D train <- rbind(x1, x2)
+> ##D g <- c(rep(1, nrow(x1)), rep(2, nrow(x2)))
+> ##D KNNdist(train = train, g = g, test = test, k = 5)
+> ## End(Not run)
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KNNreg")
+> ### * KNNreg
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KNNreg
+> ### Title: K-Nearest Neighbors Regression with Robust Estimation
+> ### Aliases: KNNreg
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # KNN regression with 2 predictors
+> ##D set.seed(123)
+> ##D x <- matrix(rnorm(200), ncol=2)
+> ##D y <- x[,1]^2 + x[,2] + rnorm(100)
+> ##D # Predict at observed points using 10 nearest neighbors
+> ##D yhat <- KNNreg(x, y, K=10)
+> ## End(Not run)
+> 
+> 
+> 
+> cleanEx()
+> nameEx("KNNv2")
+> ### * KNNv2
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: KNNv2
+> ### Title: K-Nearest Neighbors Classification (Version 2)
+> ### Aliases: KNNv2
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # Generate training data
+> ##D set.seed(123)
+> ##D x1 <- matrix(rnorm(50), ncol = 2)
+> ##D x2 <- matrix(rnorm(50, mean = 2), ncol = 2)
+> ##D 
+> ##D # Generate test data
+> ##D test <- matrix(rnorm(20, mean = 1), ncol = 2)
+> ##D 
+> ##D # KNN classification with k=3
+> ##D KNNv2(x1 = x1, x2 = x2, test = test, k = 3)
+> ##D 
+> ##D # Try different k values
+> ##D KNNv2(x1 = x1, x2 = x2, test = test, k = 5)
+> ##D KNNv2(x1 = x1, x2 = x2, test = test, k = 7)
+> ##D 
+> ##D # Using train/g specification
+> ##D train <- rbind(x1, x2)
+> ##D g <- c(rep(1, nrow(x1)), rep(2, nrow(x2)))
+> ##D KNNv2(train = train, g = g, test = test, k = 3)
+> ## End(Not run)
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("Kmeans")
+> ### * Kmeans
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: Kmeans
+> ### Title: K-Means Clustering with Optional Outlier Removal
+> ### Aliases: Kmeans
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # Generate data with 3 clusters
+> ##D set.seed(123)
+> ##D x <- rbind(
+> ##D   matrix(rnorm(100, mean = 0), ncol = 2),
+> ##D   matrix(rnorm(100, mean = 3), ncol = 2),
+> ##D   matrix(rnorm(100, mean = 6), ncol = 2)
+> ##D )
+> ##D 
+> ##D # K-means clustering without outlier removal
+> ##D res1 <- Kmeans(x, k = 3, xout = FALSE)
+> ##D res1$centers
+> ##D 
+> ##D # K-means clustering with outlier removal
+> ##D res2 <- Kmeans(x, k = 3, xout = TRUE)
+> ##D res2$centers
+> ## End(Not run)
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("Kmeans.grp")
+> ### * Kmeans.grp
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: Kmeans.grp
+> ### Title: K-Means Clustering with Group Sorting
+> ### Aliases: Kmeans.grp
+> 
+> ### ** Examples
+> 
+> ## Not run: 
+> ##D # Generate clustering variables
+> ##D set.seed(123)
+> ##D x <- rbind(
+> ##D   matrix(rnorm(100, mean = 0), ncol = 2),
+> ##D   matrix(rnorm(100, mean = 3), ncol = 2)
+> ##D )
+> ##D 
+> ##D # Generate response variables to sort
+> ##D y <- matrix(rnorm(100), ncol = 2)
+> ##D 
+> ##D # Cluster based on x, sort y into groups
+> ##D groups <- Kmeans.grp(x, k = 2, y)
+> ##D 
+> ##D # Examine y values in each cluster
+> ##D lapply(groups, colMeans)
+> ## End(Not run)
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("L.ties")
+> ### * L.ties
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: L.ties
+> ### Title: Check for Tied Values in List or Matrix
+> ### Aliases: L.ties
+> ### Keywords: utilities
+> 
+> ### ** Examples
+> 
+> x <- list(c(1, 2, 3, 3), c(4, 5, 6))  # Group 1 has ties
+> L.ties(x)  # Returns TRUE
+[1] TRUE
+> 
+> 
+> 
+> 
+> cleanEx()
+> nameEx("LCES")
+> ### * LCES
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: LCES
+> ### Title: Linear Contrast Effect Sizes (Multiple Measures)
+> ### Aliases: LCES
+> 
+> ### ** Examples
+> 
+> # Three-group comparison
+> set.seed(123)
+> g1 <- rnorm(20, mean = 0)
+> g2 <- rnorm(20, mean = 0.5)
+> g3 <- rnorm(20, mean = 1)
+> x <- list(g1, g2, g3)
+> 
+> # Pairwise contrasts
+> con <- matrix(c(1, -1, 0,
++                  1, 0, -1,
++                  0, 1, -1), ncol = 3)
+> LCES(x, con)
+Error in lin.akp(x, con[, i], locfun = mean, nreps = nreps, tr = tr) : 
+  could not find function "lin.akp"
+Calls: LCES
+Execution halted

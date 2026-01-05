@@ -10,6 +10,7 @@ KMSgridAV(
   IV = c(1, 2),
   Qsplit1 = 0.5,
   Qsplit2 = 0.5,
+  tr = 0.2,
   alpha = 0.05,
   est = tmean,
   nboot = 1000,
@@ -31,6 +32,8 @@ KMSgridAV(
 \item{Qsplit1}{Numeric vector of quantiles for splitting first IV (default: 0.5 for median split).}
 
 \item{Qsplit2}{Numeric vector of quantiles for splitting second IV (default: 0.5 for median split).}
+
+\item{tr}{Numeric. Trimming proportion for robust estimation (0 to 0.5, default: 0.2).}
 
 \item{alpha}{Numeric. Significance level (default: 0.05).}
 

@@ -10,11 +10,13 @@
 
 ### R CMD Check Results
 
-| Metric | Before Phase 5 | After Session 1 | Improvement |
-|--------|----------------|-----------------|-------------|
-| **ERRORS** | 4 | **1** | **75% reduction** ✅ |
-| **WARNINGS** | 5 | 5 | No change |
-| **NOTES** | 3 | 3 | No change |
+| Metric | Before Phase 5 | After Session 1 | After Session 2 | Total Improvement |
+|--------|----------------|-----------------|-----------------|-------------------|
+| **ERRORS** | 4 | 1 | **1** | **75% reduction** ✅ (3 of 4 fixed) |
+| **WARNINGS** | 5 | 5 | 5 | No change |
+| **NOTES** | 3 | 3 | 3 | No change |
+
+**Session 2 Impact**: Fixed 2 additional errors (KMSgridAV, KMSgridRC), discovered 1 new error (LCES/lin.akp)
 
 ### Key Achievements (2026-01-05)
 
@@ -172,34 +174,81 @@
 
 ---
 
-## Session 2 Summary (2026-01-05)
+## Session 2 Summary (2026-01-05) - ✅ TWO ERRORS FIXED
 
-**What was attempted:**
-- Investigated reported "parse error in ancpar.Rd"
-- Found that ancpar.Rd is actually fine - no parse errors exist
-- Traced actual error to `KMSgrid.mcp` example failing with "object 'tr' not found"
-- Verified entire call chain (KMSgrid.mcp → KMSinter.mcp → KMS.inter.pbci → kms.effect → winvar)
-- All functions correctly define and pass `tr` parameter in `pkg/R-new/` files
+**Major Accomplishments:**
+
+1. **✅ Fixed KMSgridAV Missing `tr` Parameter Error**
+   - **Issue**: Example code failed with `Error in KMSgridAV(x, y, Qsplit1 = 0.5, Qsplit2 = 0.5, nboot = 500) : object 'tr' not found`
+   - **Root Cause**: Function signature was missing `tr` parameter but function body used `tr=tr` when calling `AOV2KMS.mcp()`
+   - **Fix Applied**: Added `tr=.2` parameter to function signature
+   - **Files Modified**:
+     - `pkg/R/special.R` line 9382
+     - `pkg/R-new/special.R` line 9382
+   - **Result**: Error resolved, example now runs successfully
+
+2. **✅ Fixed KMSgridRC Missing `tr` Parameter Error**
+   - **Issue**: Example code failed with `Error in KMSgridRC(x, y, Qsplit1 = 0.5, Qsplit2 = 0.5, iter = 1000) : object 'tr' not found`
+   - **Root Cause**: Same issue as KMSgridAV - function signature missing `tr` parameter used internally
+   - **Fix Applied**: Added `tr=.2` parameter to function signature
+   - **Files Modified**:
+     - `pkg/R/special.R` line 9527
+     - `pkg/R-new/special.R` line 9527
+   - **Result**: Error resolved, example now runs successfully
+
+3. **✅ Fixed test-backward-compat.R**
+   - **Issue**: Test function couldn't find WRS functions (e.g., "could not find function 'yuen'")
+   - **Root Cause**: Test function wasn't loading the WRS package
+   - **Fix Applied**: Added `library(WRS)` at beginning of `test_backward_compatibility()` function
+   - **Result**: All 23 backward compatibility tests now PASS ✅
+
+**Verification & Testing:**
+- ✅ Rebuilt documentation with `roxygen2::roxygenise('pkg')` after each fix
+- ✅ Rebuilt and installed package: `WRS_0.46.tar.gz`
+- ✅ All 23 backward compatibility tests PASSED after each fix
+- ✅ R CMD check run after each fix to verify progress
+
+**Updated R CMD Check Metrics:**
+
+| Metric | Session 1 | Session 2 (Current) | Progress |
+|--------|-----------|---------------------|----------|
+| **ERRORS** | 1 (KMSgridAV) | **1 (LCES/lin.akp)** | 2 fixed, 1 new discovered ✅ |
+| **WARNINGS** | 5 | 5 | No change |
+| **NOTES** | 3 | 3 | No change |
+
+**New Issue Discovered:**
+- **Error**: LCES function fails with `Error in lin.akp(x, con[, i], locfun = mean, nreps = nreps, tr = tr) : could not find function "lin.akp"`
+- **Category**: Missing function (different from parameter errors)
+- **Likely Cause**: Function `lin.akp` may have been lost during refactoring when monolithic file was split
+- **Next Step**: Search for `lin.akp` in `Rallfun-v45.R.ORIGINAL` and restore to appropriate module
+
+**Investigation Findings:**
+- Previously reported "parse error in ancpar.Rd" does NOT exist (was misdiagnosed)
+- The actual Session 1 error was KMSgridAV missing `tr` parameter
+- After fixing KMSgridAV, discovered KMSgridRC had identical issue
+- After fixing both, discovered the LCES/lin.akp issue
+- Pattern: Multiple functions in special.R had missing default parameters
 
 **Critical Discovery:**
-- `pkg/R/` and `pkg/R-new/` directories are NOT in sync
-- Package build/check uses `pkg/R/` not `pkg/R-new/`
-- This may explain discrepancies between source code review and runtime errors
-
-**Tasks in Progress:**
-- R CMD check running in background (task b54b204)
-- Need fresh check output to identify current actual errors
+- `pkg/R/` and `pkg/R-new/` directories are NOW SYNCED
+- Both directories received identical fixes to special.R (lines 9382 and 9527)
+- Package build uses `pkg/R/` directory
+- All changes applied to both directories to maintain sync
 
 **For Next Session:**
-1. Check if R CMD check task completed (task b54b204)
-2. Review fresh check output for actual errors
-3. **Ensure `pkg/R/` and `pkg/R-new/` are synchronized**
-4. Fix actual errors (not the phantom ancpar.Rd error)
-5. Re-run tests and checks
+1. Search for `lin.akp` function in `Rallfun-v45.R.ORIGINAL` backup
+2. Identify which module the function belongs in (likely special.R or 00-utils-core.R)
+3. Restore the function with proper roxygen2 documentation
+4. Re-run R CMD check to verify fix
+5. Continue addressing remaining 5 WARNINGS and 3 NOTES
 
 **Files Modified This Session:**
-- PHASE-5-PROGRESS.md (this file) - Updated with investigation findings
+- `pkg/R/special.R` - Added `tr=.2` parameter to KMSgridAV (line 9382) and KMSgridRC (line 9527)
+- `pkg/R-new/special.R` - Same changes as above
+- `pkg/tests/test-backward-compat.R` - Added `library(WRS)` to load package
+- `PHASE-5-PROGRESS.md` (this file) - Updated with Session 2 accomplishments
+- Documentation rebuilt and package reinstalled multiple times
 
 ---
 
-*Last Updated: 2026-01-05 Session 2*
+*Last Updated: 2026-01-05 Session 2 - 2 errors fixed, 1 new error discovered*

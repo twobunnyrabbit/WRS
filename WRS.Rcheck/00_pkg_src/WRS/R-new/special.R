@@ -9335,6 +9335,7 @@ list(est.loc.4.DV=est.mat,n=n.mat,A=A,B=B,A.effect.sizes=A,B.effect.sizes=B)
 #' @param IV Integer vector of length 2 specifying columns in \code{x} to use as IVs (default: c(1,2)).
 #' @param Qsplit1 Numeric vector of quantiles for splitting first IV (default: 0.5 for median split).
 #' @param Qsplit2 Numeric vector of quantiles for splitting second IV (default: 0.5 for median split).
+#' @param tr Numeric. Trimming proportion for robust estimation (0 to 0.5, default: 0.2).
 #' @param alpha Numeric. Significance level (default: 0.05).
 #' @param est Estimator function for location (default: \code{tmean}).
 #' @param nboot Integer. Number of bootstrap samples (default: 1000).
@@ -9378,7 +9379,7 @@ list(est.loc.4.DV=est.mat,n=n.mat,A=A,B=B,A.effect.sizes=A,B.effect.sizes=B)
 #' y <- rnorm(100)
 #' result <- KMSgridAV(x, y, Qsplit1 = .5, Qsplit2 = .5, nboot = 500)
 #' result$Factor.A
-KMSgridAV<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,alpha=.05,est=tmean,nboot=1000,pr=TRUE,method='hoch',
+KMSgridAV<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,tr=.2,alpha=.05,est=tmean,nboot=1000,pr=TRUE,method='hoch',
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
 #
 # Compare measures of effect among grids defined by quantiles of two IVs.
@@ -9523,7 +9524,7 @@ list(Factor.A=a,Factor.B=b)
 #' y <- rnorm(100)
 #' result <- KMSgridRC(x, y, Qsplit1 = .5, Qsplit2 = .5, iter = 1000)
 #' result$Factor.A
-KMSgridRC<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,VAL1=NULL,VAL2=NULL,
+KMSgridRC<-function(x,y,IV=c(1,2),Qsplit1=.5,Qsplit2=.5,tr=.2,VAL1=NULL,VAL2=NULL,
 alpha=.05,nulldist.a=NULL,nulldist.b=NULL,est=tmean,iter=5000,pr=TRUE,method='hoch',
 xout=FALSE,outfun=outpro,SEED=TRUE,...){
 #

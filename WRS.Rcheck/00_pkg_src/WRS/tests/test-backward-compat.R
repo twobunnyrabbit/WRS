@@ -2,6 +2,9 @@
 # Compares current implementation against v0.45 reference outputs
 
 test_backward_compatibility <- function() {
+  # Load WRS package
+  library(WRS)
+
   # Load reference outputs from v0.45
   reference_file <- "/home/mando/coding/R-Projects/WRS/reference-outputs.rds"
 

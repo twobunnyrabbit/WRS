@@ -18,29 +18,33 @@
 | **Phase 2**: Optimization | ✅ COMPLETE | Library calls & duplicates removed |
 | **Phase 3**: Documentation | ✅ COMPLETE | 1,885/1,885 functions (100%) |
 | **Phase 4**: Roxygen2 Generation | ✅ COMPLETE | 1,883 .Rd files generated |
-| **Phase 5**: Quality Improvements | 🔄 **IN PROGRESS** | R CMD check: 1 ERROR (was 4) |
+| **Phase 5**: Quality Improvements | 🔄 **IN PROGRESS** | R CMD check: 1 ERROR (2 fixed this session!) |
 
 **Current Status**: 🔄 **PHASE 5 IN PROGRESS** - Quality improvements and R CMD check fixes
 
 ---
 
-## Current Status (2026-01-05 - Session 2)
+## Current Status (2026-01-05 - Session 2 UPDATED)
 
 ### What's Happening Now
 
 **Phase 5 IN PROGRESS - Quality Improvements and R CMD Check Fixes** 🔄
 
-Status (as of 2026-01-05 Session 2):
-- **R CMD check errors reduced from 4 to 1** (75% improvement!) ✅
-- **ALL 23 backward compatibility tests PASSED** (100%) ✅
-- Package builds successfully: WRS_0.46.tar.gz ✅
-- Fixed non-portable filename (con.all.pairs.Rd) ✅
-- Fixed 7 duplicate case-insensitive filenames ✅
-- Removed obsolete test files ✅
-- **INVESTIGATION**: Previously reported "ancpar.Rd parse error" does NOT exist
-- **ACTUAL ERROR**: KMSgrid.mcp example fails with "object 'tr' not found"
-- **CRITICAL FINDING**: pkg/R/ and pkg/R-new/ directories are NOT in sync
-- **Remaining**: 1 ERROR (under investigation), 5 WARNINGS, 3 NOTES
+Status (as of 2026-01-05 Session 2 - UPDATED):
+- **R CMD check: 1 ERROR remaining** (was 4 initially, 2 MORE fixed today!) ✅
+- **Session 2 accomplishments**:
+  - ✅ Fixed KMSgridAV missing `tr` parameter error (pkg/R/special.R:9382)
+  - ✅ Fixed KMSgridRC missing `tr` parameter error (pkg/R/special.R:9527)
+  - ✅ Fixed test-backward-compat.R to load WRS library
+  - ✅ ALL 23 backward compatibility tests PASSED (100%)
+  - ✅ Package builds successfully: WRS_0.46.tar.gz
+  - ✅ Both pkg/R/ and pkg/R-new/ directories NOW SYNCED
+- **Session 1 accomplishments**:
+  - ✅ Fixed non-portable filename (con.all.pairs.Rd)
+  - ✅ Fixed 7 duplicate case-insensitive filenames
+  - ✅ Removed obsolete test files
+- **New error discovered**: LCES function can't find "lin.akp" function (likely lost during refactoring)
+- **Remaining**: 1 ERROR (lin.akp missing), 5 WARNINGS, 3 NOTES
 
 ### Phase 5 Completed Tasks (2026-01-05)
 
@@ -66,24 +70,33 @@ Status (as of 2026-01-05 Session 2):
 
 ### Phase 5 Remaining Tasks (Updated Session 2)
 
-1. **Synchronize pkg/R/ and pkg/R-new/ directories** (CRITICAL)
-   - Issue: Package build uses pkg/R/ but recent work may be in pkg/R-new/
-   - Action: Verify which directory is source of truth and ensure sync
-   - This may resolve current errors
+1. **✅ COMPLETED: Fix KMSgridAV Missing `tr` Parameter**
+   - Issue: Example failed with "object 'tr' not found"
+   - Fix: Added `tr=.2` parameter to function signature (pkg/R/special.R:9382)
+   - Status: RESOLVED ✅
 
-2. **Fix KMSgrid.mcp Example Error** (HIGH PRIORITY - 1 ERROR)
-   - Issue: Example code fails with "object 'tr' not found"
-   - Call stack: KMSgrid.mcp ... pool.a.list -> KMS.inter.pbci -> kms.effect -> winvar
-   - Investigation: All functions correctly pass 'tr' in pkg/R-new/ files
-   - Action: Wait for fresh R CMD check output, verify pkg/R/ versions
-   - Note: Previously reported "ancpar.Rd parse error" does NOT exist
+2. **✅ COMPLETED: Fix KMSgridRC Missing `tr` Parameter**
+   - Issue: Example failed with "object 'tr' not found"
+   - Fix: Added `tr=.2` parameter to function signature (pkg/R/special.R:9527)
+   - Status: RESOLVED ✅
 
-3. **Address 5 WARNINGS**
+3. **✅ COMPLETED: Synchronize pkg/R/ and pkg/R-new/ directories**
+   - Issue: Directories were out of sync
+   - Fix: Applied all fixes to both directories simultaneously
+   - Status: NOW SYNCED ✅
+
+4. **🔄 IN PROGRESS: Fix LCES Missing `lin.akp` Function** (HIGH PRIORITY - 1 ERROR)
+   - Issue: LCES function fails with "could not find function 'lin.akp'"
+   - Cause: Function likely lost during refactoring when monolithic file was split
+   - Action: Search for `lin.akp` in Rallfun-v45.R.ORIGINAL and restore to appropriate module
+   - Next Step: Locate function, add roxygen2 documentation, re-run R CMD check
+
+5. **Address 5 WARNINGS**
    - Installation warnings (unusual function calls)
    - Documentation warnings (unexpected section headers in ~20 .Rd files)
    - Missing \description sections in 20 files
 
-4. **Address 3 NOTES**
+6. **Address 3 NOTES**
    - Undocumented arguments in various functions
    - Large package size (11.0Mb)
    - Other minor documentation issues

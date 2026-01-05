@@ -6,7 +6,7 @@
     GNU Fortran (Ubuntu 11.4.0-1ubuntu1~22.04.2) 11.4.0
 * running under: Ubuntu 22.04.5 LTS
 * using session charset: UTF-8
-* using option ‘--no-manual’
+* using options ‘--no-manual --no-build-vignettes’
 * checking for file ‘WRS/DESCRIPTION’ ... OK
 * checking extension type ... Package
 * this is package ‘WRS’ version ‘0.46’
@@ -288,8 +288,6 @@ H.lasso: no visible global function definition for ‘cv.glmnet’
 H.lasso: no visible global function definition for ‘glmnet’
 HQreg: no visible binding for global variable ‘plotit’
 HQreg: no visible global function definition for ‘hqreg’
-KMSgridAV: no visible binding for global variable ‘tr’
-KMSgridRC: no visible binding for global variable ‘tr’
 KNN: no visible global function definition for ‘knn’
 KNNdist: no visible global function definition for ‘knn’
 KNNreg: no visible binding for global variable ‘plotit’
@@ -2547,26 +2545,7 @@ All user-level objects in a package (including S4 classes and methods)
 should have documentation entries.
 See chapter ‘Writing R documentation files’ in the ‘Writing R
 Extensions’ manual.
-* checking for code/documentation mismatches ... WARNING
-Codoc mismatches from Rd file 'KMSgrid.mcp.Rd':
-KMSgrid.mcp
-  Code: function(x, y, IV = c(1, 2), Qsplit1 = 0.5, Qsplit2 = 0.5, VAL1
-                 = NULL, VAL2 = NULL, alpha = 5, SW = FALSE, nulldist =
-                 NULL, est = tmean, tr = 0.2, iter = 1000, pr = TRUE,
-                 method = "hoch", xout = FALSE, outfun = outpro, SEED =
-                 TRUE, ...)
-  Docs: function(x, y, IV = c(1, 2), Qsplit1 = 0.5, Qsplit2 = 0.5, VAL1
-                 = NULL, VAL2 = NULL, alpha = 5, SW = FALSE, nulldist =
-                 NULL, est = tmean, iter = 1000, pr = TRUE, method =
-                 "hoch", xout = FALSE, outfun = outpro, SEED = TRUE,
-                 ...)
-  Argument names in code not in docs:
-    tr
-  Mismatches in argument names (first 3):
-    Position: 12 Code: tr Docs: iter
-    Position: 13 Code: iter Docs: pr
-    Position: 14 Code: pr Docs: method
-
+* checking for code/documentation mismatches ... OK
 * checking Rd \usage sections ... WARNING
 Undocumented arguments in Rd file 'Bagplot.Rd'
   ‘colorloop’ ‘colorchull’ ‘databag’ ‘dataloop’ ‘plot.fence’ ‘type’
@@ -2610,6 +2589,12 @@ Undocumented arguments in Rd file 'Depth.class.bag.Rd'
 
 Undocumented arguments in Rd file 'Dmul.loc2g.Rd'
   ‘m1’
+
+Undocumented arguments in Rd file 'KMSgrid.mcp.Rd'
+  ‘tr’
+
+Undocumented arguments in Rd file 'KMSgridRC.Rd'
+  ‘tr’
 
 Undocumented arguments in Rd file 'KNNbag.Rd'
   ‘g’
@@ -2993,4 +2978,34 @@ Rd files without \description:
   ‘oph.astig.datasetconvexpoly.mean.Rd’ ‘pow2an.Rd’ ‘powt1an.Rd’
   ‘powt1est.Rd’ ‘smgridVRC.Rd’ ‘spearci.Rd’ ‘tsplit.Rd’
 * checking for unstated dependencies in examples ... OK
-* checking examples ...
+* checking examples ... ERROR
+Running examples in ‘WRS-Ex.R’ failed
+The error most likely occurred in:
+
+> ### Name: LCES
+> ### Title: Linear Contrast Effect Sizes (Multiple Measures)
+> ### Aliases: LCES
+> 
+> ### ** Examples
+> 
+> # Three-group comparison
+> set.seed(123)
+> g1 <- rnorm(20, mean = 0)
+> g2 <- rnorm(20, mean = 0.5)
+> g3 <- rnorm(20, mean = 1)
+> x <- list(g1, g2, g3)
+> 
+> # Pairwise contrasts
+> con <- matrix(c(1, -1, 0,
++                  1, 0, -1,
++                  0, 1, -1), ncol = 3)
+> LCES(x, con)
+Error in lin.akp(x, con[, i], locfun = mean, nreps = nreps, tr = tr) : 
+  could not find function "lin.akp"
+Calls: LCES
+Execution halted
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... OK
+  Running ‘test-backward-compat.R’
+* DONE
+Status: 1 ERROR, 5 WARNINGs, 3 NOTEs
