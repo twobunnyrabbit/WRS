@@ -1049,3 +1049,101 @@ $estimate.dif
 > 
 > # Use Cohen's d conventions
 > ES.sum.REL.MAG(REL.M = c(0.2, 0.5, 0.8), reps = 5)
+                    S         M         L
+AKP         0.2076791 0.5082620 0.8088449
+EP          0.1461098 0.3474223 0.5262047
+QS (median) 0.5524540 0.6360710 0.7137540
+QStr        0.5508170 0.6345870 0.7124000
+WMW         0.4425746 0.3609078 0.2853056
+KMS         0.1038396 0.2541310 0.4044224
+> 
+> # Custom magnitude definitions
+> ES.sum.REL.MAG(REL.M = c(0.3, 0.6, 1.0), reps = 5)
+                    S         M         L
+AKP         0.3024074 0.6011481 0.9994691
+EP          0.2113540 0.4080932 0.6312411
+QS (median) 0.5924850 0.6710570 0.7645490
+QStr        0.5924580 0.6711950 0.7645230
+WMW         0.4135005 0.3333801 0.2374953
+KMS         0.1512037 0.3005741 0.4997345
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ES.summary.CI")
+> ### * ES.summary.CI
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ES.summary.CI
+> ### Title: Comprehensive Effect Size Summary with Confidence Intervals
+> ### Aliases: ES.summary.CI
+> 
+> ### ** Examples
+> 
+> # Compare two groups with CIs
+> set.seed(123)
+> group1 <- rnorm(40, mean=100, sd=15)
+> group2 <- rnorm(45, mean=108, sd=15)
+> result <- ES.summary.CI(group1, group2, nboot=500)
+> result
+                   Est NULL     S     M     L      ci.low       ci.up
+AKP         -0.5307421  0.0 -0.20 -0.50 -0.80 -1.04025560 -0.08695156
+EP           0.3653096  0.0  0.14  0.34  0.52  0.04905791  0.63619584
+QS (median)  0.3533333  0.5  0.45  0.36  0.29  0.23611111  0.48000000
+QStr         0.3566667  0.5  0.45  0.36  0.29  0.24888889  0.46611111
+WMW          0.6450000  0.5  0.55  0.64  0.71  0.52075596  0.75235154
+KMS         -0.2628042  0.0 -0.10 -0.25 -0.40 -0.51681452 -0.03970786
+               p.value adj.p.value
+AKP         0.01600000        0.03
+EP          0.02953989        0.03
+QS (median) 0.00400000        0.02
+QStr        0.00000000        0.00
+WMW         0.03000000        0.03
+KMS         0.01600000        0.03
+> 
+> # Check which effects are significant after adjustment
+> result[result[,"adj.p.value"] < 0.05, ]
+                   Est NULL     S     M     L      ci.low       ci.up
+AKP         -0.5307421  0.0 -0.20 -0.50 -0.80 -1.04025560 -0.08695156
+EP           0.3653096  0.0  0.14  0.34  0.52  0.04905791  0.63619584
+QS (median)  0.3533333  0.5  0.45  0.36  0.29  0.23611111  0.48000000
+QStr         0.3566667  0.5  0.45  0.36  0.29  0.24888889  0.46611111
+WMW          0.6450000  0.5  0.55  0.64  0.71  0.52075596  0.75235154
+KMS         -0.2628042  0.0 -0.10 -0.25 -0.40 -0.51681452 -0.03970786
+               p.value adj.p.value
+AKP         0.01600000        0.03
+EP          0.02953989        0.03
+QS (median) 0.00400000        0.02
+QStr        0.00000000        0.00
+WMW         0.03000000        0.03
+KMS         0.01600000        0.03
+> 
+> 
+> 
+> cleanEx()
+> nameEx("ES.summary")
+> ### * ES.summary
+> 
+> flush(stderr()); flush(stdout())
+> 
+> ### Name: ES.summary
+> ### Title: Comprehensive Effect Size Summary (Independent Groups)
+> ### Aliases: ES.summary
+> 
+> ### ** Examples
+> 
+> # Compare two groups
+> group1 <- rnorm(50, mean=100, sd=15)
+> group2 <- rnorm(60, mean=110, sd=15)
+> ES.summary(group1, group2)
+                   Est NULL     S     M     L
+AKP         -0.6736421  0.0 -0.20 -0.50 -0.80
+EP           0.4796262  0.0  0.14  0.34  0.52
+QS (median)  0.3203333  0.5  0.45  0.36  0.29
+QStr         0.3066667  0.5  0.45  0.36  0.29
+WMW          0.7076667  0.5  0.55  0.64  0.71
+KMS         -0.3411206  0.0 -0.10 -0.25 -0.40
+> 
+> # With custom benchmarks
+> ES.summary(group1, group2, REL.MAG=c(0.1, 0.3, 0.5))
