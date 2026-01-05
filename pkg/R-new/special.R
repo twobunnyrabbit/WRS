@@ -3784,7 +3784,7 @@ if(sum(id>0))Best=output[id,2]
 if(flag==Jm1)Best='All'
 #setClass('BIN',slots=c('Group.with.largest.estimate','Select.Best.p.value','Larger.than','n','output'))  #not sure select p.value is valid
 #put=new('BIN',Group.with.largest.estimate=R[[1]],Select.Best.p.value=dpv,Larger.than=Best,n=n,output=output)
-setClass('BIN',slots=c('Group.with.largest.estimate','Larger.than','n','output'))
+# setClass('BIN',slots=c('Group.with.largest.estimate','Larger.than','n','output'))  # Defined in .onLoad
 put=new('BIN',Group.with.largest.estimate=R[[1]],Larger.than=Best,n=n,output=output)
 put
 }
@@ -3968,7 +3968,7 @@ flag=sum(output[,7]<=output[,8])
 id=output[,7]<=output[,8]
 if(sum(id>0))Best=output[id,2]
 if(flag==Jm1)Best='All'
-setClass('BIN',slots=c('Group.with.largest.estimate','Select.Best.p.value','Larger.than','n','output'))
+# setClass('BIN',slots=c('Group.with.largest.estimate','Select.Best.p.value','Larger.than','n','output'))  # Defined in .onLoad
 put=new('BIN',Group.with.largest.estimate=R[[1]],Select.Best.p.value=pv,Larger.than=Best,n=n,output=output)
 put
 }
@@ -4110,7 +4110,7 @@ flag=sum(output[,7]<=output[,8])
 id=output[,7]<=output[,8]
 if(sum(id>0))Best=output[id,2]
 if(flag==Jm1)Best='All'
-setClass('BIN',slots=c('Group.with.largest.estimate','Larger.than','n','output'))
+# setClass('BIN',slots=c('Group.with.largest.estimate','Larger.than','n','output'))  # Defined in .onLoad
 put=new('BIN',Group.with.largest.estimate=R[[1]],Larger.than=Best,n=n,output=output)
 put
 }
@@ -7704,7 +7704,7 @@ flag=sum(output[,5]<=alpha)
 id=output[,5]<=alpha
 if(sum(flag>0))Best=output[id,2]
 if(flag==Jm1)Best='Smaller.than.all'
-setClass('SSV',slots=c('Group.with.smallest.estimate','Less.than','n','output'))
+# setClass('SSV',slots=c('Group.with.smallest.estimate','Less.than','n','output'))  # Defined in .onLoad
 put=new('SSV',Group.with.smallest.estimate=R[[1]],Less.than=Best,n=n,output=output)
 put
 }
@@ -14184,7 +14184,6 @@ output
 
 #' Effect Sizes for Two-Way ANOVA Main Effects
 #'
-#' @description
 #' Computes robust heteroscedastic effect sizes for main effects of Factor A and
 #' Factor B in a two-way design, ignoring the other factor. Uses a robust analog
 #' of Cohen's d based on the KS (Kulinskaya-Staudte) method.
@@ -47159,7 +47158,7 @@ if(chk==Jm1)break
 ORD.ID='NO'
 id=output[,8]<=output[,9]
 if(sum(id)==Jm1)ORD.ID='YES'
-setClass('BIN',slots=c('Make.a.Decison','Decision.p.value','Estimates','n','output'))
+# setClass('BIN',slots=c('Make.a.Decison','Decision.p.value','Estimates','n','output'))  # Defined in .onLoad
 put=new('BIN',Make.a.Decison=ORD.ID,Decision.p.value=pv,Estimates=est,n=n,output=output)
 put
 }

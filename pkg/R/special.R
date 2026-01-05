@@ -14184,7 +14184,6 @@ output
 
 #' Effect Sizes for Two-Way ANOVA Main Effects
 #'
-#' @description
 #' Computes robust heteroscedastic effect sizes for main effects of Factor A and
 #' Factor B in a two-way design, ignoring the other factor. Uses a robust analog
 #' of Cohen's d based on the KS (Kulinskaya-Staudte) method.
