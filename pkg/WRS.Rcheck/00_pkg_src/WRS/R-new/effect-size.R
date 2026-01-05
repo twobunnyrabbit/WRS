@@ -730,6 +730,124 @@ ef.size
 }
 
 
+#' AKP Effect Size for Linear Contrasts
+#'
+#' Computes the Algina-Keselman-Penfield (AKP) robust effect size for a linear
+#' contrast, providing a robust generalization of Cohen's d using trimmed means
+#' and winsorized variance.
+#'
+#' @inheritParams lin.ES
+#' @param tr Proportion of trimming (default: 0.2 for 20% trimming on each tail).
+#'
+#' @return A list with component:
+#'   \item{Effect.Size}{The AKP effect size estimate for the linear contrast.}
+#'
+#' @details
+#' This function computes the AKP effect size for a linear contrast:
+#' \deqn{ES_{AKP} = c \cdot \frac{\bar{X}_{tr}(L)}{\sqrt{Var_{win}(L)}}}
+#' where:
+#' \itemize{
+#'   \item L is the linear contrast distribution \eqn{\sum c_i X_i}
+#'   \item \eqn{\bar{X}_{tr}} is the trimmed mean
+#'   \item \eqn{Var_{win}} is the winsorized variance
+#'   \item c is a correction factor accounting for trimming
+#' }
+#'
+#' The AKP effect size is a robust alternative to Cohen's d that:
+#' \itemize{
+#'   \item Uses trimmed means instead of arithmetic means (resistant to outliers)
+#'   \item Uses winsorized variance for scale (resistant to extreme values)
+#'   \item Includes a correction factor to maintain proper interpretation with trimming
+#' }
+#'
+#' The function generates bootstrap samples to estimate the distribution of the
+#' linear contrast, then computes the AKP effect size. Contrast coefficients must
+#' sum to zero. Missing values are removed before computation.
+#'
+#' @references
+#' Algina, J., Keselman, H. J., & Penfield, R. D. (2005). An alternative to Cohen's
+#' standardized mean difference effect size: A robust parameter and confidence interval
+#' in the two independent groups case. \emph{Psychological Methods}, \emph{10}(3), 317-328.
+#'
+#' Wilcox, R.R. (2022). Introduction to Robust Estimation and Hypothesis Testing (5th ed.).
+#'
+#' @seealso \code{\link{lin.ES}} for quantile shift effect sizes,
+#'   \code{\link{akp.effect}} for two-group AKP effect size,
+#'   \code{\link{LCES}} which uses this function
+#'
+#' @export
+#' @examples
+#' # Three-group comparison
+#' set.seed(123)
+#' g1 <- rnorm(20, mean = 0)
+#' g2 <- rnorm(20, mean = 0.5)
+#' g3 <- rnorm(20, mean = 1)
+#' x <- list(g1, g2, g3)
+#'
+#' # Linear trend contrast
+#' con <- c(-1, 0, 1)
+#' lin.akp(x, con)
+#'
+#' # Pairwise comparison (group 1 vs group 2)
+#' con <- c(1, -1, 0)
+#' lin.akp(x, con, tr = 0.1)
+lin.akp<-function(x,con,locfun=tmean,tr=.2,nreps=200,SEED=TRUE,nmax=10^8,...){
+#
+# Compute AKP effect size for a linear contrast
+# AKP = cterm * mean(L) / sqrt(winvar(L))
+# where L is the linear contrast distribution
+#
+if(sum(con)!=0)stop('Contrast coefficients must sum to zero')
+if(SEED)set.seed(2)
+if(is.data.frame(x))x=as.matrix(x)
+if(is.matrix(x))x<-listm(x)
+nv=as.vector(matl(lapply(x,FUN='length')))
+if(!is.list(x))stop('Data must be stored in a matrix or in list mode.')
+J<-length(x)
+nv=as.vector(matl(lapply(x,FUN='length')))
+if(length(con)!=J)stop('Length of con should equal number of groups')
+x=elimna(x)
+# Generate bootstrap samples and compute linear contrasts
+np=prod(nv)
+nmin=min(nv)
+if(np>nmax){
+nmin=min(c(nmin,100))
+}
+B=list()
+M=matrix(NA,nrow=nmin,ncol=J)
+for(i in 1:nreps){
+for(j in 1:J)M[,j]=sample(x[[j]],nmin)
+B[[i]]=M
+}
+# Compute linear contrasts
+L=lapply(B,linWMWMC.sub,con=con)
+# Compute AKP effect size for each bootstrap sample
+ef.size=NA
+for(j in 1:length(L))ef.size[j]=linAKP.sub(L[[j]],tr=tr)
+ef=mean(ef.size)
+list(Effect.Size=ef)
+}
+
+
+#' @keywords internal
+linAKP.sub<-function(L,tr=.2){
+# Compute AKP effect size for linear contrast distribution
+# AKP = cterm * tmean(L, tr) / sqrt(winvar(L, tr))
+#
+# Correction term for trimming
+library(MASS)
+cterm=1
+if(tr>0)cterm=area(dnormvar,qnorm(tr),qnorm(1-tr))+2*(qnorm(tr)^2)*tr
+cterm=sqrt(cterm)
+# Compute effect size
+numerator=cterm*tmean(L,tr=tr)
+denominator=sqrt(winvar(L,tr=tr))
+if(denominator==0)return(0)
+ef.size=numerator/denominator
+ef.size
+}
+
+
 #' Dependent Groups Linear Contrast Effect Sizes
 #'
 #' For dependent (repeated measures) groups, computes the Algina et al. robust effect

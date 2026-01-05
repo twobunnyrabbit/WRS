@@ -16,6 +16,7 @@ KMSgrid.mcp(
   SW = FALSE,
   nulldist = NULL,
   est = tmean,
+  tr = 0.2,
   iter = 1000,
   pr = TRUE,
   method = "hoch",

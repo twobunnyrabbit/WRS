@@ -24,3 +24,4 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 NeedsCompilation: no
 Packaged: 2026-01-05 10:19:28 UTC; mando
+Built: R 4.5.2; ; 2026-01-05 10:21:00 UTC; unix

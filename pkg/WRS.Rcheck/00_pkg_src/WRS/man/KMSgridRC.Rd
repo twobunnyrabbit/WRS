@@ -10,6 +10,7 @@ KMSgridRC(
   IV = c(1, 2),
   Qsplit1 = 0.5,
   Qsplit2 = 0.5,
+  tr = 0.2,
   VAL1 = NULL,
   VAL2 = NULL,
   alpha = 0.05,

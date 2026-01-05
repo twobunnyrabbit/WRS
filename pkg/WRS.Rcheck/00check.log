@@ -12,17 +12,2989 @@
 * this is package ‘WRS’ version ‘0.46’
 * package encoding: UTF-8
 * checking package namespace information ... OK
-* checking package dependencies ... ERROR
-Packages suggested but not available:
+* checking package dependencies ... INFO
+Packages suggested but not available for checking:
   'bcaboot', 'mrfDepth', 'randomForest', 'neuralnet', 'mboost', 'gbm',
   'DetMCD', 'ICSOutlier', 'ROCR', 'hqreg', 'enetLTS', 'ddalpha',
   'viridis', 'reshape', 'plotrix', 'hrbrthemes', 'segmented'
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘WRS’ can be installed ... WARNING
+Found the following significant warnings:
+  Note: possible error in 'sband(outer(x[[1]], x[[2]], ': unused argument (flag = FALSE) 
+  Note: possible error in 'binom2g.ZHZ(r1, n1, r2, ': unused argument (binCI = binCI) 
+  Note: possible error in 'lincon(x, con = con, ': unused argument (alist()) 
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ABES.KS.Rd:20: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ABES.KS.Rd:27: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ABES.KS.Rd:32: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ABES.KS.Rd:38: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ABES.KS.Rd:41: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ABES.KS.Rd:42: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Bagplot.Rd:26: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Bagplot.Rd:28: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Bagplot.Rd:30: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Bagplot.Rd:32: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Bagplot.Rd:34: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Bagplot.Rd:36: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Bagplot.Rd:43: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Bagplot.Rd:47: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Bagplot.Rd:52: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Bagplot.Rd:62: unexpected section header '\examples'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Bagplot.Rd:70: unexpected section header '\references'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Bagplot.Rd:74: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Bagplot.Rd:77: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/LCO.CI.Rd:14: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/LCO.CI.Rd:16: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/LCO.CI.Rd:22: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/LCO.CI.Rd:26: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/LCO.CI.Rd:35: unexpected section header '\examples'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/LCO.CI.Rd:40: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/LCO.CI.Rd:41: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ODDSR.CI.Rd:16: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ODDSR.CI.Rd:23: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ODDSR.CI.Rd:27: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ODDSR.CI.Rd:52: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ODDSR.CI.Rd:55: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Q3anova.Rd:30: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/Q3anova.Rd:32: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:26: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:28: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:30: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:32: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:34: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:36: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:38: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:42: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:46: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:55: unexpected section header '\examples'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:65: unexpected section header '\references'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:70: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:73: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:74: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/TKmeans.Rd:75: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomci.Rd:21: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomci.Rd:30: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomci.Rd:35: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomci.Rd:47: unexpected section header '\references'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomci.Rd:51: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomci.Rd:54: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomci.Rd:55: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomciv2.Rd:28: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomciv2.Rd:30: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomciv2.Rd:40: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomciv2.Rd:45: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomciv2.Rd:58: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomciv2.Rd:61: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/acbinomciv2.Rd:62: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bg2ci.Rd:14: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bg2ci.Rd:22: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bg2ci.Rd:27: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bg2ci.Rd:41: unexpected section header '\references'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bg2ci.Rd:45: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bg2ci.Rd:48: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bg2ci.Rd:49: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bg2ci.Rd:50: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bwwA.es.Rd:21: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bwwA.es.Rd:23: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bwwA.es.Rd:25: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bwwA.es.Rd:30: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bwwA.es.Rd:35: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bwwA.es.Rd:49: unexpected section header '\examples'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bwwA.es.Rd:61: unexpected section header '\references'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bwwA.es.Rd:64: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/bwwA.es.Rd:67: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/calwork.Rd:33: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/con2way.Rd:18: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ees.ci.Rd:22: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ees.ci.Rd:24: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ees.ci.Rd:28: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ees.ci.Rd:33: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ees.ci.Rd:53: unexpected section header '\examples'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ees.ci.Rd:61: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ees.ci.Rd:64: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ees.ci.Rd:65: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ees.ci.Rd:66: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/lincdtr.Rd:20: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/lincdtr.Rd:27: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/lincdtr.Rd:31: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/lincdtr.Rd:36: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/lincdtr.Rd:39: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/lincdtr.Rd:40: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ols.pred.ci.Rd:29: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ols.pred.ci.Rd:31: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ols.pred.ci.Rd:33: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ols.pred.ci.Rd:36: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ols.pred.ci.Rd:40: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ols.pred.ci.Rd:44: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ols.pred.ci.Rd:59: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/ols.pred.ci.Rd:62: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.Rd:24: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.Rd:27: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.Rd:29: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.Rd:31: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.Rd:34: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.Rd:39: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.Rd:44: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.Rd:56: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.Rd:60: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.Rd:61: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.mean.Rd:22: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.mean.Rd:25: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.mean.Rd:27: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.mean.Rd:32: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.mean.Rd:37: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.mean.Rd:50: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.mean.Rd:54: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/oph.astig.datasetconvexpoly.mean.Rd:55: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/pow2an.Rd:27: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/pow2an.Rd:31: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/pow2an.Rd:47: unexpected section header '\examples'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/pow2an.Rd:60: unexpected section header '\references'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/pow2an.Rd:63: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/pow2an.Rd:66: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/powt1an.Rd:25: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/powt1an.Rd:29: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/powt1an.Rd:45: unexpected section header '\examples'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/powt1an.Rd:57: unexpected section header '\references'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/powt1an.Rd:60: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/powt1an.Rd:63: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/powt1est.Rd:24: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/powt1est.Rd:28: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/powt1est.Rd:45: unexpected section header '\examples'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/powt1est.Rd:57: unexpected section header '\references'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/powt1est.Rd:60: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/powt1est.Rd:63: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/regmediate.Rd:61: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:44: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:46: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:49: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:52: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:55: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:57: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:59: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:61: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:63: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:65: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:67: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:69: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:71: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:81: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:86: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:96: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:100: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:101: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:102: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/smgridVRC.Rd:103: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/spearci.Rd:19: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/spearci.Rd:21: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/spearci.Rd:24: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/spearci.Rd:28: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/spearci.Rd:31: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/spearci.Rd:40: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/spearci.Rd:43: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/spearci.Rd:44: unexpected END_OF_INPUT '
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/tsplit.Rd:18: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/tsplit.Rd:20: unknown macro '\item'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/tsplit.Rd:22: unexpected section header '\value'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/tsplit.Rd:26: unexpected section header '\description'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/tsplit.Rd:30: unexpected section header '\details'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/tsplit.Rd:49: unexpected section header '\examples'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/tsplit.Rd:56: unexpected section header '\seealso'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/tsplit.Rd:59: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/tsplit.Rd:60: unexpected section header '\keyword'
+  Warning: /home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00_pkg_src/WRS/man/tsplit.Rd:61: unexpected END_OF_INPUT '
+See ‘/home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck/00install.out’ for details.
+Information on the location(s) of code generating the ‘Note’s can be
+obtained by re-running with environment variable R_KEEP_PKG_SOURCE set
+to ‘yes’.
+* checking installed package size ... INFO
+  installed size is 11.0Mb
+  sub-directories of 1Mb or more:
+    R      4.8Mb
+    help   5.6Mb
+* checking package directory ... OK
+* checking DESCRIPTION meta-information ... OK
+* checking top-level files ... OK
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking code files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking loading without being on the library search path ... OK
+* checking whether startup messages can be suppressed ... OK
+* checking dependencies in R code ... WARNING
+'library' or 'require' call not declared from: ‘MASS’
+'library' or 'require' calls in package code:
+  ‘DepthProc’ ‘DetMCD’ ‘ICSOutlier’ ‘MASS’ ‘ROCR’ ‘Rfit’ ‘WRScpp’
+  ‘bcaboot’ ‘class’ ‘cobs’ ‘ddalpha’ ‘e1071’ ‘enetLTS’ ‘fda’ ‘gbm’
+  ‘ggplot2’ ‘glmnet’ ‘hqreg’ ‘hrbrthemes’ ‘lars’ ‘mboost’ ‘mc2d’ ‘mgcv’
+  ‘mrfDepth’ ‘neuralnet’ ‘nnet’ ‘plotrix’ ‘psych’ ‘pwr’ ‘quantreg’
+  ‘ragg’ ‘randomForest’ ‘rankFD’ ‘reshape’ ‘robust’ ‘robustbase’
+  ‘rrcov’ ‘scatterplot3d’ ‘segmented’ ‘tidyverse’ ‘trimcluster’
+  ‘tseries’ ‘viridis’
+  Please use :: or requireNamespace() instead.
+  See section 'Suggested packages' in the 'Writing R Extensions' manual.
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... NOTE
+Dancovapts: warning in matrix(NA, nrow = npts, nco = 9): partial
+  argument match of 'nco' to 'ncol'
+Stein.pairs: warning in Stein2g(x[[j]], x[[k]], pow = pow, SEED = SEED,
+  delta = delta, alpha = alpha, tr = tr, reps = reps, z.sqrt = z.sqrt):
+  partial argument match of 'pow' to 'power'
+ancov2COV: warning in lplot(points[, 1:2], results[, 3], xlab = xlab,
+  ylab = ylab, zlab = zlab, tick = "det", span = span): partial
+  argument match of 'tick' to 'ticktype'
+ancov2COV: warning in lplot(points[, 1:2], est.dif, xlab = xlab, ylab =
+  ylab, zlab = zlab, tick = "det", span = span): partial argument match
+  of 'tick' to 'ticktype'
+ANOG2KMS: no visible binding for global variable ‘ND’
+Aband: no visible binding for global variable ‘v1’
+Aband: no visible binding for global variable ‘v2’
+Aband: possible error in sband(outer(x[[1]], x[[2]], FUN = "+"),
+  outer(x[[3]], x[[4]], FUN = "+"), plotit = plotit, crit = crit, flag
+  = FALSE, sm = sm, xlab = xlab, ylab = ylab): unused argument (flag =
+  FALSE)
+BWPHmcp: no visible binding for global variable ‘alpha’
+Bagdist: no visible global function definition for ‘bagdistance’
+Bagplot: no visible global function definition for ‘compBagplot’
+Bagplot: no visible global function definition for ‘bagplot’
+Bband: no visible binding for global variable ‘v1’
+Bband: no visible binding for global variable ‘v2’
+Bband: possible error in sband(outer(x[[1]], x[[2]], FUN = "+"),
+  outer(x[[3]], x[[4]], FUN = "+"), plotit = plotit, crit = crit, flag
+  = FALSE, sm = sm, xlab = xlab, ylab = ylab): unused argument (flag =
+  FALSE)
+COR.PAIR: no visible global function definition for ‘MVECOR’
+COR.ROB: no visible global function definition for ‘MVECOR’
+DEPanc: no visible binding for global variable ‘na.rm’
+DEPancpb: no visible binding for global variable ‘grp’
+DETMCD: no visible global function definition for ‘DetMCD’
+DETS: no visible global function definition for ‘CovSest’
+DancGLOB_pv: no visible global function definition for ‘DancGLOB_pv_C’
+Dancdet: no visible binding for global variable ‘n’
+Danctspb: no visible binding for global variable ‘Danctspb.sub’
+DanctspbMC: no visible binding for global variable ‘Danctspb.sub’
+H.lasso: no visible global function definition for ‘cv.glmnet’
+H.lasso: no visible global function definition for ‘glmnet’
+HQreg: no visible binding for global variable ‘plotit’
+HQreg: no visible global function definition for ‘hqreg’
+KNN: no visible global function definition for ‘knn’
+KNNdist: no visible global function definition for ‘knn’
+KNNreg: no visible binding for global variable ‘plotit’
+KNNv2: no visible global function definition for ‘knn’
+LAD.lasso: no visible global function definition for ‘rq’
+LADlasso.Z: no visible global function definition for ‘rq’
+LADlasso.Z: no visible global function definition for ‘rq.fit.lasso’
+LG.samp: no visible binding for global variable ‘tr’
+LMSreg: no visible global function definition for ‘lmsreg’
+LTS.EN: no visible binding for global variable ‘plotit’
+LTS.EN: no visible global function definition for ‘enetLTS’
+M2m.loc: no visible binding for global variable ‘gprc’
+MARONNA.sub: no visible binding for global variable ‘n’
+MCDCOR: no visible global function definition for ‘DetMCD’
+MCWB.crit: no visible binding for global variable ‘tr’
+MMreg: no visible global function definition for ‘lmrob’
+NN.class: no visible global function definition for ‘neuralnet’
+OGK: no visible global function definition for ‘CovOgk’
+OS.lasso: no visible global function definition for ‘cv.glmnet’
+OS.lasso: no visible global function definition for ‘glmnet’
+PMD.PB.PCD: no visible global function definition for ‘anc.best.PB’
+PMD.PB.PCD: no visible binding for global variable ‘nboot’
+QS2by2: no visible binding for global variable ‘n’
+QSanc: ... may be used in an incorrect context: ‘outfun(x1, plotit =
+  FALSE, ...)’
+QSanc: ... may be used in an incorrect context: ‘outfun(x2, plotit =
+  FALSE, ...)’
+Qancsm: no visible global function definition for ‘cobs’
+Qdepthcomsub: no visible global function definition for ‘cobs’
+RA.lasso: no visible global function definition for ‘rq’
+RA.lasso: no visible global function definition for ‘rq.fit.lasso’
+RCmcp: no visible binding for global variable ‘tr’
+RM.PMD.PCD: no visible global function definition for ‘mvrnorm’
+RMPB.PMD.PCD: no visible global function definition for ‘mvrnorm’
+RMPB.PMD.PCD: no visible global function definition for ‘rmanc.best.PB’
+ROCmul.curve: no visible global function definition for ‘prediction’
+ROCmul.curve: no visible global function definition for ‘performance’
+Rdepth: no visible global function definition for ‘rdepth’
+Rfit: no visible global function definition for ‘rfit’
+RobRsq: no visible global function definition for ‘lmRob’
+SPCA: no visible global function definition for ‘PcaLocantore’
+SVM: no visible global function definition for ‘svm’
+Scov: no visible global function definition for ‘CovSest’
+Stein.pairs: no visible binding for global variable ‘pow’
+TKmeans: no visible global function definition for ‘trimkmeans’
+TWOpNOV: no visible binding for global variable ‘ZCI’
+UB.class.error: no visible binding for global variable ‘reps’
+UBROC: no visible global function definition for ‘prediction’
+UBROC: no visible global function definition for ‘performance’
+YYmcp: no visible binding for global variable ‘nboot’
+ZL.break: no visible binding for global variable ‘p’
+ZL.break: no visible binding for global variable ‘p1’
+anc.2gbin: ... may be used in an incorrect context: ‘outfun(x1, ...)’
+anc.2gbin: ... may be used in an incorrect context: ‘outfun(x2, ...)’
+anc.2gbin: no visible global function definition for ‘binKMS.mpts.crit’
+anc.bestH: no visible global function definition for ‘anc.bestH.crit’
+ancCR: no visible binding for global variable ‘JNH_sub1’
+ancCR: no visible binding for global variable ‘JNH_sub2’
+ancDEP.MULC.ES: no visible binding for global variable ‘j’
+ancGLOB: no visible global function definition for ‘ancGLOB_pv_C’
+ancM.COV.ES: no visible binding for global variable ‘j’
+ancdet2C: no visible binding for global variable ‘p.crit2’
+ancova.ES: no visible global function definition for ‘regIQRsd’
+ancova.KMS: no visible global function definition for ‘regIQRsd’
+ancovad.ESci: no visible binding for global variable ‘id’
+ancovampG: no visible global function definition for ‘scatterplot3d’
+ancovap2.KMS: no visible global function definition for ‘regIQRsd’
+ancovap2.KMS.plot: no visible global function definition for
+  ‘scatterplot3d’
+ancovap2.wmw.plot: no visible global function definition for
+  ‘scatterplot3d’
+aov2depth: no visible global function definition for ‘scatterplot3d’
+attract: no visible global function definition for ‘l1fit’
+bagdepth: no visible global function definition for ‘bagdistance’
+bbmcpQS: no visible binding for global variable ‘..’
+bbmcppb: no visible global function definition for ‘bbmcppb.sub’
+bca.mean: no visible global function definition for ‘bcajack2’
+bdmP: no visible global function definition for ‘rankFD’
+bestPB.DO: no visible binding for global variable ‘tr’
+bestPB.DO: no visible binding for global variable ‘Z’
+bestPB.DO: no visible binding for global variable ‘dif’
+binband: no visible global function definition for ‘splotg2’
+binom2g: possible error in binom2g.ZHZ(r1, n1, r2, n2, binCI = binCI,
+  alpha = alpha): unused argument (binCI = binCI)
+bmp: no visible binding for global variable ‘rval’
+box_plot1: no visible global function definition for ‘melt’
+box_plot1: no visible global function definition for ‘ggplot’
+box_plot1: no visible global function definition for ‘aes’
+box_plot1: no visible binding for global variable ‘variable’
+box_plot1: no visible binding for global variable ‘value’
+box_plot1: no visible global function definition for ‘geom_boxplot’
+box_plot1: no visible global function definition for
+  ‘scale_fill_viridis’
+box_plot1: no visible global function definition for ‘geom_jitter’
+box_plot1: no visible global function definition for ‘theme_ipsum’
+box_plot1: no visible global function definition for ‘theme’
+box_plot1: no visible global function definition for ‘element_text’
+box_plot1: no visible global function definition for ‘ggtitle’
+box_plot1: no visible global function definition for ‘xlab’
+box_plot1: no visible global function definition for ‘ylab’
+box_plot1: no visible global function definition for ‘ggsave’
+bwmcpORD: no visible global function definition for ‘cidmulv2’
+bwmcpORD: no visible global function definition for ‘bwiPATEL’
+bwmedimcp: no visible binding for global variable ‘con’
+cgen.bt: no visible global function definition for ‘rejpt.bt.lim’
+chreg: no visible binding for global variable ‘plotit’
+chreg: no visible global function definition for ‘ltsReg’
+chregF: no visible binding for global variable ‘plotit’
+chregF: no visible global function definition for ‘ltsReg’
+class.ada: no visible global function definition for ‘mboost’
+class.ada: no visible global function definition for ‘AdaExp’
+class.error.CM: no visible global function definition for ‘prediction’
+class.error.CM: no visible global function definition for ‘performance’
+class.error.CP: no visible global function definition for ‘prediction’
+class.error.CP: no visible global function definition for ‘performance’
+class.forest: no visible global function definition for ‘randomForest’
+class.gbm: no visible global function definition for ‘gbm’
+class.uni.error: no visible binding for global variable ‘x1’
+class.uni.error: no visible binding for global variable ‘x2’
+cobs2g: no visible global function definition for ‘cobs’
+coefalpha: no visible global function definition for ‘alpha’
+comdepthsvm: no visible global function definition for ‘svm’
+comsvm.bestv2: no visible binding for global variable ‘idc’
+conc2: no visible global function definition for ‘l1fit’
+cor.skip.com: no visible global function definition for ‘bcajack’
+corCOM.DVvsIV.crit: no visible binding for global variable ‘alpha’
+corCOM.PMDPCD: no visible binding for global variable ‘COR.method’
+corREGorder.crit: no visible binding for global variable ‘alpha’
+corblp.bca.C: no visible global function definition for ‘corblp’
+corblp.bca.C: no visible global function definition for ‘bcajack2’
+corblp.sub: no visible global function definition for ‘corblp’
+corblppb: no visible global function definition for ‘corblp’
+corskip.comPV: no visible global function definition for ‘bcajack’
+cov.roc: no visible global function definition for ‘covRob’
+covroc: no visible global function definition for ‘covRob’
+dec2way.mcp: no visible global function definition for ‘decJK.Amain’
+dec2way.mcp: no visible global function definition for ‘decJK.Bmain’
+depthg2: no visible global function definition for ‘lsqs2.for’
+disc2comSK: no visible global function definition for ‘rmultinomial’
+discANOVA: no visible global function definition for ‘rmultinomial’
+discmcp: no visible binding for global variable ‘test’
+discstep: no visible global function definition for ‘rmultinomial’
+ebarplot.med: no visible binding for global variable ‘uiw’
+fbplot: no visible global function definition for ‘is.fdSmooth’
+fbplot: no visible global function definition for ‘is.fdPar’
+fbplot: no visible global function definition for ‘is.fd’
+fbplot: no visible global function definition for ‘eval.fd’
+fflynx: no visible binding for global variable ‘lynx’
+ffplot: no visible global function definition for ‘lmsreg’
+ffplot2: no visible global function definition for ‘lmsreg’
+funloc: no visible global function definition for ‘FBplot’
+funlocpb: no visible global function definition for ‘FBplot’
+funyuenpb: no visible global function definition for ‘FBplot’
+fysim: no visible global function definition for ‘ardata’
+gamplot: no visible global function definition for ‘gam’
+gamplotINT: no visible global function definition for ‘gam’
+gamplotv2: no visible global function definition for ‘gam’
+gamplotv2: no visible global function definition for ‘gamplotv2.sub’
+gvar2g: no visible binding for global variable ‘n’
+gvar2g: no visible binding for global variable ‘skipcov.for’
+gyreg: no visible binding for global variable ‘lmsreg’
+indt0: no visible binding for global variable ‘tr’
+kerSORT: no visible binding for global variable ‘n’
+ks: no visible global function definition for ‘ks.crit’
+larsR: no visible global function definition for ‘lars’
+lasso.est: no visible global function definition for ‘cv.glmnet’
+lincon.binPV: no visible binding for global variable ‘n1’
+lincon.binPV: no visible binding for global variable ‘n2’
+linconEP: no visible global function definition for ‘Inter.EP’
+linconES: no visible binding for global variable ‘nreps’
+linconMpb: no visible binding for global variable ‘linconMpb.sub’
+linconQS: no visible binding for global variable ‘nreps’
+linconSpb: no visible binding for global variable ‘linconSpb.sub’
+linpbg: no visible binding for global variable ‘tr’
+lmsviews: no visible global function definition for ‘lmsreg’
+logSM.pts.CI: no visible binding for global variable ‘fr1’
+logSM.pts.CI: no visible binding for global variable ‘fr2’
+logSM.pts.CI: no visible binding for global variable ‘nmin’
+logistic.LR: ... may be used in an incorrect context: ‘outfun(x, plotit
+  = FALSE, ...)’
+logistic.lasso: no visible global function definition for ‘cv.glmnet’
+logreg.plot: no visible global function definition for ‘BYlogreg’
+logreg.pred: no visible global function definition for ‘logistic.ridge’
+long2g: no visible global function definition for ‘smean2’
+longcov2mat: no visible global function definition for ‘is.wholenumber’
+lplotv2: no visible global function definition for ‘lplot.sub’
+lsa.linear : lars.lsa: no visible global function definition for
+  ‘updateR’
+lsa.linear : lars.lsa: no visible global function definition for
+  ‘backsolvet’
+lsa.linear : lars.lsa: no visible global function definition for
+  ‘downdateR’
+ltsgreg: no visible binding for global variable ‘plotit’
+ltsgreg: no visible global function definition for ‘ltsReg’
+ltsreg: no visible binding for global variable ‘plotit’
+ltsreg: no visible global function definition for ‘ltsReg’
+ltsreg.2: no visible binding for global variable ‘plotit’
+ltsreg.2: no visible global function definition for ‘ltsReg’
+mbmreg: no visible global function definition for ‘lmsreg’
+mcp3atm: possible error in lincon(x, con = con, tr = tr, alpha = alpha,
+  , pr = pr): unused argument (alist())
+mdepreg: no visible global function definition for ‘rdepthmedian’
+mdepreg.coef: no visible global function definition for ‘rdepthmedian’
+mdepreg.orig: no visible binding for global variable ‘n’
+mdiflcr: no visible binding for global variable ‘mdif’
+mdiflcr: no visible binding for global variable ‘center’
+mdifloc: no visible binding for global variable ‘tukmed’
+medcurve: no visible global function definition for ‘FBplot’
+medr: no visible global function definition for ‘pdis.for’
+mgvfreg: no visible binding for global variable ‘SEED’
+multireg.prob: no visible global function definition for ‘multinom’
+mve.cor: no visible global function definition for ‘MVECOR’
+nearNN: no visible binding for global variable ‘pts’
+ols.ridge: no visible binding for global variable ‘n’
+ols.ridge: no visible global function definition for ‘lm.ridge’
+oph.astig.datasetconvexpoly.median: no visible binding for global
+  variable ‘pch’
+oph.astig.mcnemar: no visible global function definition for ‘istop’
+out3d: no visible global function definition for ‘scatterplot3d’
+outICS: no visible global function definition for ‘ics2’
+outICS: no visible global function definition for ‘ics.outlier’
+outICS: no visible global function definition for ‘ics.distances’
+outbag: no visible global function definition for ‘compBagplot’
+outmgvad: no visible binding for global variable ‘gval’
+outmgvf: no visible binding for global variable ‘id’
+outpro.depth: no visible binding for global variable ‘id’
+pb3trmcp: no visible binding for global variable ‘x’
+pbanovag: no visible binding for global variable ‘crit’
+pbcan: no visible binding for global variable ‘alpha’
+pcorhc4sub: no visible global function definition for ‘olshc4sub’
+ph.inter: no visible binding for global variable ‘J’
+ph.inter: no visible binding for global variable ‘K’
+plotDAP: no visible global function definition for ‘draw.circle’
+power.chisq.test: no visible global function definition for
+  ‘pwr.chisq.test’
+pro.class: no visible global function definition for ‘mulwmw.dist.new’
+pro.class.probs: no visible global function definition for
+  ‘mulwmw.dist.new’
+pro.classPD: no visible global function definition for
+  ‘mulwmw.dist.new’
+prodepth: no visible global function definition for ‘depthProjection’
+pts.to.equivalence: no visible global function definition for ‘ggplot’
+pts.to.equivalence: no visible global function definition for ‘aes’
+pts.to.equivalence: no visible binding for global variable ‘pts’
+pts.to.equivalence: no visible global function definition for
+  ‘geom_rect’
+pts.to.equivalence: no visible global function definition for
+  ‘geom_linerange’
+pts.to.equivalence: no visible binding for global variable ‘CI90_low’
+pts.to.equivalence: no visible binding for global variable ‘CI90_up’
+pts.to.equivalence: no visible global function definition for
+  ‘geom_line’
+pts.to.equivalence: no visible binding for global variable ‘Est.dif’
+pts.to.equivalence: no visible global function definition for
+  ‘geom_hline’
+pts.to.equivalence: no visible global function definition for
+  ‘geom_label’
+pts.to.equivalence: no visible binding for global variable
+  ‘TOST.p.value’
+pts.to.equivalence: no visible binding for global variable ‘.pt’
+pts.to.equivalence: no visible global function definition for
+  ‘scale_fill_gradientn’
+pts.to.equivalence: no visible global function definition for
+  ‘scale_x_continuous’
+pts.to.equivalence: no visible global function definition for
+  ‘sec_axis’
+pts.to.equivalence: no visible global function definition for
+  ‘scale_y_continuous’
+pts.to.equivalence: no visible global function definition for ‘labs’
+pts.to.equivalence: no visible global function definition for
+  ‘theme_minimal’
+pts.to.equivalence: no visible global function definition for ‘theme’
+pts.to.equivalence: no visible global function definition for
+  ‘element_text’
+pts.to.equivalence: no visible global function definition for
+  ‘geom_point’
+pts.to.equivalence: no visible binding for global variable ‘svals’
+pts.to.equivalence: no visible binding for global variable ‘test’
+pts.to.equivalence: no visible global function definition for
+  ‘scale_color_manual’
+pts.to.equivalence: no visible global function definition for
+  ‘coord_cartesian’
+pts.to.equivalence: no visible global function definition for
+  ‘element_rect’
+qcor: no visible binding for global variable ‘plotit’
+qdec2ci: no visible binding for global variable ‘n’
+qreg: no visible global function definition for ‘rq’
+qregplots: no visible global function definition for ‘rq’
+qsmcobs: no visible global function definition for ‘cobs’
+quantregForest: no visible global function definition for
+  ‘parallelRandomForest’
+quantregForest: no visible global function definition for
+  ‘randomForest’
+r.gauss.pro: no visible global function definition for ‘mvrnorm’
+ratmn: no visible binding for global variable ‘trmn’
+reg2ci: no visible binding for global variable ‘y2’
+reg2ciMC: no visible binding for global variable ‘y2’
+reg2difplot: no visible global function definition for ‘scatterplot3d’
+reg2g.p2plot: no visible global function definition for ‘scatterplot3d’
+regYci: no visible global function definition for ‘scatterplot3d’
+regci.inter: no visible global function definition for ‘regciMC’
+regcits: no visible global function definition for ‘regciMC’
+reghet.blp.ci: no visible global function definition for ‘reg.bca’
+reglev: no visible global function definition for ‘lmsreg’
+regmed2: no visible global function definition for ‘regciMC’
+regp2plot: no visible global function definition for ‘scatterplot3d’
+regpord: no visible global function definition for ‘outfun’
+rfitv2: no visible global function definition for ‘rq’
+rfitv2: no visible global function definition for ‘disp’
+rfitv2: no visible global function definition for ‘jaeckel’
+rfitv2: no visible global function definition for ‘signedrank’
+rfitv2: no visible binding for global variable ‘gettauF0’
+rfitv2: no visible binding for global variable ‘gettau’
+rfitv2: no visible global function definition for ‘taustar’
+rmanc.best.crit: no visible global function definition for ‘mvrnorm’
+rmanc.best.crit.det: no visible global function definition for
+  ‘mvrnorm’
+rmanc.bestPB: no visible binding for global variable ‘tr’
+rmanc.bestPB: no visible global function definition for
+  ‘rmanc.best.critPB’
+rmaseq: possible error in rmmcp(x, est = est, alpha = alpha, con = con,
+  nboot = nboot, ...): unused arguments (est = est, nboot = nboot)
+rmdzeroOP: no visible binding for global variable ‘plotit’
+rmlinES: no visible binding for global variable ‘tr’
+rmul: no visible global function definition for ‘mvrnorm’
+rmul.MAR: no visible global function definition for ‘mvrnorm’
+rngh: no visible global function definition for ‘mvrnorm’
+rngh.sub: no visible global function definition for ‘mvrnorm’
+rob.ridge.test: no visible global function definition for ‘regciMC’
+robpca: no visible global function definition for ‘dialogbox’
+robpca: no visible global function definition for
+  ‘dialogbox.add.control’
+robpca: no visible global function definition for ‘statictext.control’
+robpca: no visible global function definition for ‘editfield.control’
+robpca: no visible global function definition for ‘dialogbox.display’
+rplot: no visible global function definition for ‘Stop’
+rplotCI: no visible binding for global variable ‘nreps’
+rplotv2: no visible global function definition for ‘rplot4g’
+rqfit: no visible global function definition for ‘rq’
+rrplot: no visible global function definition for ‘l1fit’
+rrplot: no visible global function definition for ‘lmsreg’
+rrplot: no visible binding for global variable ‘mba’
+rrplot2: no visible global function definition for ‘lmsreg’
+rrplot2: no visible binding for global variable ‘mba’
+rslopesm: no visible global function definition for ‘outfun’
+rung3dlchk: no visible global function definition for ‘runm3ds1’
+rung3dlchk: no visible binding for global variable ‘tr’
+runstest.med: no visible global function definition for ‘runs.test’
+sband: no visible global function definition for ‘ks.crit’
+scat3d2g: no visible global function definition for ‘scatterplot3d’
+scorregci: no visible global function definition for ‘scorregci.cr’
+scorregci: no visible binding for global variable ‘nval’
+simp.break: no visible binding for global variable ‘dati’
+simp.break: no visible global function definition for ‘segmented’
+simp.break: no visible binding for global variable ‘ut.lm’
+skerd: no visible global function definition for ‘bandwidth.sj’
+skmcp: no visible binding for global variable ‘test’
+smbin.inter: no visible binding for global variable ‘pr’
+smbinAB: no visible binding for global variable ‘pr’
+smbinRC: no visible binding for global variable ‘pr’
+smgridVRC: no visible binding for global variable ‘VA2’
+smpred: no visible global function definition for ‘RFreg’
+snmreg: no visible binding for global variable ‘plotit’
+stsregp1: no visible binding for global variable ‘plotit’
+trimmulCI: no visible global function definition for ‘trimmul.crit’
+trimpb: no visible binding for global variable ‘rval’
+trqreg: no visible global function definition for ‘rq.fit.br’
+trqreg: no visible global function definition for ‘trq.fit’
+twomanbt: no visible binding for global variable ‘mat’
+wlogreg: no visible global function definition for ‘BYlogreg’
+wmw.QC.mul: no visible global function definition for ‘wmw.QC’
+wmw.QC.mul: no visible binding for global variable ‘morig’
+wmw.anc: ... may be used in an incorrect context: ‘outfun(x1, plotit =
+  FALSE, ...)’
+wmw.anc: ... may be used in an incorrect context: ‘outfun(x2, plotit =
+  FALSE, ...)’
+wmw.anc.plot: no visible binding for global variable ‘x’
+wmw.anc.plot: no visible binding for global variable ‘y’
+wmw.bca: no visible global function definition for ‘bcajack’
+wmw.bcapv: no visible global function definition for ‘bcajack’
+wmw.bcav2: no visible global function definition for ‘bcajack’
+wmw.ref.dif.TOST: no visible global function definition for ‘ggplot’
+wmw.ref.dif.TOST: no visible global function definition for ‘aes’
+wmw.ref.dif.TOST: no visible binding for global variable ‘estimate’
+wmw.ref.dif.TOST: no visible global function definition for ‘geom_rect’
+wmw.ref.dif.TOST: no visible binding for global variable ‘xmin’
+wmw.ref.dif.TOST: no visible binding for global variable ‘xmax’
+wmw.ref.dif.TOST: no visible global function definition for
+  ‘geom_segment’
+wmw.ref.dif.TOST: no visible binding for global variable ‘lower’
+wmw.ref.dif.TOST: no visible binding for global variable ‘upper’
+wmw.ref.dif.TOST: no visible global function definition for
+  ‘geom_point’
+wmw.ref.dif.TOST: no visible global function definition for ‘labs’
+wmw.ref.dif.TOST: no visible global function definition for
+  ‘geom_vline’
+wmw.ref.dif.TOST: no visible global function definition for
+  ‘scale_x_continuous’
+wmw.ref.dif.TOST: no visible global function definition for
+  ‘scale_y_continuous’
+wmw.ref.dif.TOST: no visible global function definition for
+  ‘theme_minimal’
+zonoid: no visible global function definition for ‘depth.zonoid’
+Undefined global functions or variables:
+  .. .pt AdaExp BYlogreg CI90_low CI90_up COR.method CovOgk CovSest
+  DancGLOB_pv_C Danctspb.sub DetMCD Est.dif FBplot Inter.EP J JNH_sub1
+  JNH_sub2 K MVECOR ND PcaLocantore RFreg SEED Stop TOST.p.value VA2 Z
+  ZCI aes alpha anc.best.PB anc.bestH.crit ancGLOB_pv_C ardata
+  backsolvet bagdistance bagplot bandwidth.sj bbmcppb.sub bcajack
+  bcajack2 binKMS.mpts.crit bwiPATEL center cidmulv2 cobs compBagplot
+  con coord_cartesian corblp covRob crit cv.glmnet dati decJK.Amain
+  decJK.Bmain depth.zonoid depthProjection dialogbox
+  dialogbox.add.control dialogbox.display dif disp downdateR
+  draw.circle editfield.control element_rect element_text enetLTS
+  estimate eval.fd fr1 fr2 gam gamplotv2.sub gbm geom_boxplot
+  geom_hline geom_jitter geom_label geom_line geom_linerange geom_point
+  geom_rect geom_segment geom_vline gettau gettauF0 ggplot ggsave
+  ggtitle glmnet gprc grp gval hqreg ics.distances ics.outlier ics2 id
+  idc is.fd is.fdPar is.fdSmooth is.wholenumber istop j jaeckel knn
+  ks.crit l1fit labs lars linconMpb.sub linconSpb.sub lm.ridge lmRob
+  lmrob lmsreg logistic.ridge lower lplot.sub lsqs2.for ltsReg lynx mat
+  mba mboost mdif melt morig multinom mulwmw.dist.new mvrnorm n n1 n2
+  na.rm nboot neuralnet nmin nreps nval olshc4sub outfun p p.crit2 p1
+  parallelRandomForest pch pdis.for performance plotit pow pr
+  prediction pts pwr.chisq.test randomForest rankFD rdepth rdepthmedian
+  reg.bca regIQRsd regciMC rejpt.bt.lim reps rfit rmanc.best.PB
+  rmanc.best.critPB rmultinomial rplot4g rq rq.fit.br rq.fit.lasso
+  runm3ds1 runs.test rval scale_color_manual scale_fill_gradientn
+  scale_fill_viridis scale_x_continuous scale_y_continuous
+  scatterplot3d scorregci.cr sec_axis segmented signedrank skipcov.for
+  smean2 splotg2 statictext.control svals svm taustar test theme
+  theme_ipsum theme_minimal tr trimkmeans trimmul.crit trmn trq.fit
+  tukmed uiw updateR upper ut.lm v1 v2 value variable wmw.QC x x1 x2
+  xlab xmax xmin y y2 ylab
+Consider adding
+  importFrom("datasets", "lynx")
+to your NAMESPACE file.
+* checking Rd files ... WARNING
+prepare_Rd: ./man/ABES.KS.Rd:20: unexpected section header '\value'
+prepare_Rd: ./man/ABES.KS.Rd:27: unexpected section header '\description'
+prepare_Rd: ./man/ABES.KS.Rd:32: unexpected section header '\details'
+prepare_Rd: ./man/ABES.KS.Rd:38: unexpected section header '\seealso'
+prepare_Rd: ./man/ABES.KS.Rd:41: unexpected section header '\keyword'
+prepare_Rd: ./man/ABES.KS.Rd:42: unexpected END_OF_INPUT '
+'
+checkRd: (-1) ABES.KS.Rd:20-26: Lost braces
+    20 | \value{
+       |       ^
+checkRd: (-1) ABES.KS.Rd:27-31: Lost braces
+    27 | \description{
+       |             ^
+checkRd: (-1) ABES.KS.Rd:32-37: Lost braces
+    32 | \details{
+       |         ^
+checkRd: (-1) ABES.KS.Rd:38-40: Lost braces
+    38 | \seealso{
+       |         ^
+checkRd: (-1) ABES.KS.Rd:41: Lost braces; missing escapes or markup?
+    41 | \keyword{multivariate}
+       |         ^
+prepare_Rd: ./man/Bagplot.Rd:26: unknown macro '\item'
+prepare_Rd: ./man/Bagplot.Rd:28: unknown macro '\item'
+prepare_Rd: ./man/Bagplot.Rd:30: unknown macro '\item'
+prepare_Rd: ./man/Bagplot.Rd:32: unknown macro '\item'
+prepare_Rd: ./man/Bagplot.Rd:34: unknown macro '\item'
+prepare_Rd: ./man/Bagplot.Rd:36: unknown macro '\item'
+prepare_Rd: ./man/Bagplot.Rd:43: unexpected section header '\value'
+prepare_Rd: ./man/Bagplot.Rd:47: unexpected section header '\description'
+prepare_Rd: ./man/Bagplot.Rd:52: unexpected section header '\details'
+prepare_Rd: ./man/Bagplot.Rd:62: unexpected section header '\examples'
+prepare_Rd: ./man/Bagplot.Rd:70: unexpected section header '\references'
+prepare_Rd: ./man/Bagplot.Rd:74: unexpected section header '\seealso'
+prepare_Rd: ./man/Bagplot.Rd:77: unexpected END_OF_INPUT '
+'
+checkRd: (-1) Bagplot.Rd:26: Lost braces
+    26 | \item{colorloop}{Color for the loop region (fence). NULL uses default.}
+       |      ^
+checkRd: (-1) Bagplot.Rd:26: Lost braces
+    26 | \item{colorloop}{Color for the loop region (fence). NULL uses default.}
+       |                 ^
+checkRd: (-1) Bagplot.Rd:28: Lost braces
+    28 | \item{colorchull}{Color for the convex hull. NULL uses default.}
+       |      ^
+checkRd: (-1) Bagplot.Rd:28: Lost braces
+    28 | \item{colorchull}{Color for the convex hull. NULL uses default.}
+       |                  ^
+checkRd: (-1) Bagplot.Rd:30: Lost braces
+    30 | \item{databag}{Logical; if \code{TRUE}, plots points in the bag region.}
+       |      ^
+checkRd: (-1) Bagplot.Rd:30: Lost braces
+    30 | \item{databag}{Logical; if \code{TRUE}, plots points in the bag region.}
+       |               ^
+checkRd: (-1) Bagplot.Rd:32: Lost braces
+    32 | \item{dataloop}{Logical; if \code{TRUE}, plots points in the loop region.}
+       |      ^
+checkRd: (-1) Bagplot.Rd:32: Lost braces
+    32 | \item{dataloop}{Logical; if \code{TRUE}, plots points in the loop region.}
+       |                ^
+checkRd: (-1) Bagplot.Rd:34: Lost braces
+    34 | \item{plot.fence}{Logical; if \code{TRUE}, plots the fence boundary.}
+       |      ^
+checkRd: (-1) Bagplot.Rd:34: Lost braces
+    34 | \item{plot.fence}{Logical; if \code{TRUE}, plots the fence boundary.}
+       |                  ^
+checkRd: (-1) Bagplot.Rd:36: Lost braces
+    36 | \item{type}{Character string specifying depth measure (default: 'hdepth'):
+       |      ^
+checkRd: (-1) Bagplot.Rd:36-41: Lost braces
+    36 | \item{type}{Character string specifying depth measure (default: 'hdepth'):
+       |            ^
+checkRd: (-1) Bagplot.Rd:43-46: Lost braces
+    43 | \value{
+       |       ^
+checkRd: (-1) Bagplot.Rd:47-51: Lost braces
+    47 | \description{
+       |             ^
+checkRd: (-1) Bagplot.Rd:52-61: Lost braces
+    52 | \details{
+       |         ^
+checkRd: (-1) Bagplot.Rd:62-69: Lost braces
+    62 | \examples{
+       |          ^
+checkRd: (7) Bagplot.Rd:63-68: Tag \dontrun not recognized
+checkRd: (-1) Bagplot.Rd:70-73: Lost braces
+    70 | \references{
+       |            ^
+checkRd: (-1) Bagplot.Rd:74-76: Lost braces
+    74 | \seealso{
+       |         ^
+prepare_Rd: ./man/LCO.CI.Rd:14: unknown macro '\item'
+prepare_Rd: ./man/LCO.CI.Rd:16: unexpected section header '\value'
+prepare_Rd: ./man/LCO.CI.Rd:22: unexpected section header '\description'
+prepare_Rd: ./man/LCO.CI.Rd:26: unexpected section header '\details'
+prepare_Rd: ./man/LCO.CI.Rd:35: unexpected section header '\examples'
+prepare_Rd: ./man/LCO.CI.Rd:40: unexpected section header '\keyword'
+prepare_Rd: ./man/LCO.CI.Rd:41: unexpected END_OF_INPUT '
+'
+checkRd: (-1) LCO.CI.Rd:14: Lost braces
+    14 | \item{dp}{Decimal place accuracy for rounding (e.g., 3 for 3 decimal places).}
+       |      ^
+checkRd: (-1) LCO.CI.Rd:14: Lost braces
+    14 | \item{dp}{Decimal place accuracy for rounding (e.g., 3 for 3 decimal places).}
+       |          ^
+checkRd: (-1) LCO.CI.Rd:16-21: Lost braces
+    16 | \value{
+       |       ^
+checkRd: (-1) LCO.CI.Rd:22-25: Lost braces
+    22 | \description{
+       |             ^
+checkRd: (-1) LCO.CI.Rd:26-34: Lost braces
+    26 | \details{
+       |         ^
+checkRd: (-1) LCO.CI.Rd:35-39: Lost braces
+    35 | \examples{
+       |          ^
+checkRd: (-1) LCO.CI.Rd:40: Lost braces; missing escapes or markup?
+    40 | \keyword{htest}
+       |         ^
+prepare_Rd: ./man/ODDSR.CI.Rd:16: unexpected section header '\value'
+prepare_Rd: ./man/ODDSR.CI.Rd:23: unexpected section header '\description'
+prepare_Rd: ./man/ODDSR.CI.Rd:27: unexpected section header '\details'
+prepare_Rd: ./man/ODDSR.CI.Rd:52: unexpected section header '\seealso'
+prepare_Rd: ./man/ODDSR.CI.Rd:55: unexpected END_OF_INPUT '
+'
+checkRd: (-1) ODDSR.CI.Rd:16-22: Lost braces
+    16 | \value{
+       |       ^
+checkRd: (-1) ODDSR.CI.Rd:23-26: Lost braces
+    23 | \description{
+       |             ^
+checkRd: (-1) ODDSR.CI.Rd:27-51: Lost braces
+    27 | \details{
+       |         ^
+checkRd: (-1) ODDSR.CI.Rd:52-54: Lost braces
+    52 | \seealso{
+       |         ^
+prepare_Rd: ./man/Q3anova.Rd:30: unknown macro '\item'
+prepare_Rd: ./man/Q3anova.Rd:32: unknown macro '\item'
+checkRd: (-1) Q3anova.Rd:30: Lost braces
+    30 | \item{Fac.AC}{Results for A}C interaction}
+       |      ^
+checkRd: (-1) Q3anova.Rd:30: Lost braces
+    30 | \item{Fac.AC}{Results for A}C interaction}
+       |              ^
+checkRd: (-1) Q3anova.Rd:32: Lost braces
+    32 | \item{Fac.ABC}{Results for A}B*C three-way interaction}
+       |      ^
+checkRd: (-1) Q3anova.Rd:32: Lost braces
+    32 | \item{Fac.ABC}{Results for A}B*C three-way interaction}
+       |               ^
+checkRd: (-1) Qregci.Rd:60: Lost braces; missing escapes or markup?
+    60 | For alpha in {0.1, 0.05, 0.025, 0.01}, adjusted critical values provide
+       |              ^
+prepare_Rd: ./man/TKmeans.Rd:26: unknown macro '\item'
+prepare_Rd: ./man/TKmeans.Rd:28: unknown macro '\item'
+prepare_Rd: ./man/TKmeans.Rd:30: unknown macro '\item'
+prepare_Rd: ./man/TKmeans.Rd:32: unknown macro '\item'
+prepare_Rd: ./man/TKmeans.Rd:34: unknown macro '\item'
+prepare_Rd: ./man/TKmeans.Rd:36: unknown macro '\item'
+prepare_Rd: ./man/TKmeans.Rd:38: unexpected section header '\value'
+prepare_Rd: ./man/TKmeans.Rd:42: unexpected section header '\description'
+prepare_Rd: ./man/TKmeans.Rd:46: unexpected section header '\details'
+prepare_Rd: ./man/TKmeans.Rd:55: unexpected section header '\examples'
+prepare_Rd: ./man/TKmeans.Rd:65: unexpected section header '\references'
+prepare_Rd: ./man/TKmeans.Rd:70: unexpected section header '\seealso'
+prepare_Rd: ./man/TKmeans.Rd:73: unexpected section header '\keyword'
+prepare_Rd: ./man/TKmeans.Rd:74: unexpected section header '\keyword'
+prepare_Rd: ./man/TKmeans.Rd:75: unexpected END_OF_INPUT '
+'
+checkRd: (-1) TKmeans.Rd:26: Lost braces
+    26 | \item{scaling}{Logical. If TRUE, scale variables to unit variance (default: FALSE)}
+       |      ^
+checkRd: (-1) TKmeans.Rd:26: Lost braces
+    26 | \item{scaling}{Logical. If TRUE, scale variables to unit variance (default: FALSE)}
+       |               ^
+checkRd: (-1) TKmeans.Rd:28: Lost braces
+    28 | \item{runs}{Integer. Number of random initializations (default: 100)}
+       |      ^
+checkRd: (-1) TKmeans.Rd:28: Lost braces
+    28 | \item{runs}{Integer. Number of random initializations (default: 100)}
+       |            ^
+checkRd: (-1) TKmeans.Rd:30: Lost braces
+    30 | \item{points}{Matrix. Optional starting cluster centers}
+       |      ^
+checkRd: (-1) TKmeans.Rd:30: Lost braces
+    30 | \item{points}{Matrix. Optional starting cluster centers}
+       |              ^
+checkRd: (-1) TKmeans.Rd:32: Lost braces
+    32 | \item{countmode}{Integer. Controls console output frequency (default: runs+1)}
+       |      ^
+checkRd: (-1) TKmeans.Rd:32: Lost braces
+    32 | \item{countmode}{Integer. Controls console output frequency (default: runs+1)}
+       |                 ^
+checkRd: (-1) TKmeans.Rd:34: Lost braces
+    34 | \item{printcrit}{Logical. If TRUE, print optimization criterion (default: FALSE)}
+       |      ^
+checkRd: (-1) TKmeans.Rd:34: Lost braces
+    34 | \item{printcrit}{Logical. If TRUE, print optimization criterion (default: FALSE)}
+       |                 ^
+checkRd: (-1) TKmeans.Rd:36: Lost braces
+    36 | \item{maxit}{Integer. Maximum iterations per run (default: 2*nrow(x))}
+       |      ^
+checkRd: (-1) TKmeans.Rd:36: Lost braces
+    36 | \item{maxit}{Integer. Maximum iterations per run (default: 2*nrow(x))}
+       |             ^
+checkRd: (-1) TKmeans.Rd:38-41: Lost braces
+    38 | \value{
+       |       ^
+checkRd: (-1) TKmeans.Rd:42-45: Lost braces
+    42 | \description{
+       |             ^
+checkRd: (-1) TKmeans.Rd:46-54: Lost braces
+    46 | \details{
+       |         ^
+checkRd: (-1) TKmeans.Rd:55-64: Lost braces
+    55 | \examples{
+       |          ^
+checkRd: (-1) TKmeans.Rd:65-69: Lost braces
+    65 | \references{
+       |            ^
+checkRd: (-1) TKmeans.Rd:70-72: Lost braces
+    70 | \seealso{
+       |         ^
+checkRd: (-1) TKmeans.Rd:73: Lost braces; missing escapes or markup?
+    73 | \keyword{cluster}
+       |         ^
+checkRd: (-1) TKmeans.Rd:74: Lost braces; missing escapes or markup?
+    74 | \keyword{robust}
+       |         ^
+prepare_Rd: ./man/acbinomci.Rd:21: unexpected section header '\value'
+prepare_Rd: ./man/acbinomci.Rd:30: unexpected section header '\description'
+prepare_Rd: ./man/acbinomci.Rd:35: unexpected section header '\details'
+prepare_Rd: ./man/acbinomci.Rd:47: unexpected section header '\references'
+prepare_Rd: ./man/acbinomci.Rd:51: unexpected section header '\seealso'
+prepare_Rd: ./man/acbinomci.Rd:54: unexpected section header '\keyword'
+prepare_Rd: ./man/acbinomci.Rd:55: unexpected END_OF_INPUT '
+'
+checkRd: (-1) acbinomci.Rd:21-29: Lost braces
+    21 | \value{
+       |       ^
+checkRd: (-1) acbinomci.Rd:30-34: Lost braces
+    30 | \description{
+       |             ^
+checkRd: (-1) acbinomci.Rd:35-46: Lost braces
+    35 | \details{
+       |         ^
+checkRd: (-1) acbinomci.Rd:47-50: Lost braces
+    47 | \references{
+       |            ^
+checkRd: (-1) acbinomci.Rd:51-53: Lost braces
+    51 | \seealso{
+       |         ^
+checkRd: (-1) acbinomci.Rd:54: Lost braces; missing escapes or markup?
+    54 | \keyword{htest}
+       |         ^
+prepare_Rd: ./man/acbinomciv2.Rd:28: unknown macro '\item'
+prepare_Rd: ./man/acbinomciv2.Rd:30: unexpected section header '\value'
+prepare_Rd: ./man/acbinomciv2.Rd:40: unexpected section header '\description'
+prepare_Rd: ./man/acbinomciv2.Rd:45: unexpected section header '\details'
+prepare_Rd: ./man/acbinomciv2.Rd:58: unexpected section header '\seealso'
+prepare_Rd: ./man/acbinomciv2.Rd:61: unexpected section header '\keyword'
+prepare_Rd: ./man/acbinomciv2.Rd:62: unexpected END_OF_INPUT '
+'
+checkRd: (-1) acbinomciv2.Rd:28: Lost braces
+    28 | \item{nullval}{Null hypothesis value for probability of success (default: 0.5)}
+       |      ^
+checkRd: (-1) acbinomciv2.Rd:28: Lost braces
+    28 | \item{nullval}{Null hypothesis value for probability of success (default: 0.5)}
+       |               ^
+checkRd: (-1) acbinomciv2.Rd:30-39: Lost braces
+    30 | \value{
+       |       ^
+checkRd: (-1) acbinomciv2.Rd:40-44: Lost braces
+    40 | \description{
+       |             ^
+checkRd: (-1) acbinomciv2.Rd:45-57: Lost braces
+    45 | \details{
+       |         ^
+checkRd: (-1) acbinomciv2.Rd:58-60: Lost braces
+    58 | \seealso{
+       |         ^
+checkRd: (-1) acbinomciv2.Rd:61: Lost braces; missing escapes or markup?
+    61 | \keyword{htest}
+       |         ^
+checkRd: (-1) adrun.Rd:84: Lost braces; missing escapes or markup?
+    84 | \item For each predictor j: computes partial residuals Y - Σ_{k≠j} f_k(X_k)
+       |                                                              ^
+ancova.ES.Rd:70: Bad \link topic -- must be text
+prepare_Rd: ./man/bg2ci.Rd:14: unexpected section header '\value'
+prepare_Rd: ./man/bg2ci.Rd:22: unexpected section header '\description'
+prepare_Rd: ./man/bg2ci.Rd:27: unexpected section header '\details'
+prepare_Rd: ./man/bg2ci.Rd:41: unexpected section header '\references'
+prepare_Rd: ./man/bg2ci.Rd:45: unexpected section header '\seealso'
+prepare_Rd: ./man/bg2ci.Rd:48: unexpected section header '\keyword'
+prepare_Rd: ./man/bg2ci.Rd:49: unexpected section header '\keyword'
+prepare_Rd: ./man/bg2ci.Rd:50: unexpected END_OF_INPUT '
+'
+checkRd: (-1) bg2ci.Rd:14-21: Lost braces
+    14 | \value{
+       |       ^
+checkRd: (-1) bg2ci.Rd:22-26: Lost braces
+    22 | \description{
+       |             ^
+checkRd: (-1) bg2ci.Rd:27-40: Lost braces
+    27 | \details{
+       |         ^
+checkRd: (-1) bg2ci.Rd:41-44: Lost braces
+    41 | \references{
+       |            ^
+checkRd: (-1) bg2ci.Rd:45-47: Lost braces
+    45 | \seealso{
+       |         ^
+checkRd: (-1) bg2ci.Rd:48: Lost braces; missing escapes or markup?
+    48 | \keyword{robust}
+       |         ^
+checkRd: (-1) bg2ci.Rd:49: Lost braces; missing escapes or markup?
+    49 | \keyword{univar}
+       |         ^
+prepare_Rd: ./man/bwwA.es.Rd:21: unknown macro '\item'
+prepare_Rd: ./man/bwwA.es.Rd:23: unknown macro '\item'
+prepare_Rd: ./man/bwwA.es.Rd:25: unexpected section header '\value'
+prepare_Rd: ./man/bwwA.es.Rd:30: unexpected section header '\description'
+prepare_Rd: ./man/bwwA.es.Rd:35: unexpected section header '\details'
+prepare_Rd: ./man/bwwA.es.Rd:49: unexpected section header '\examples'
+prepare_Rd: ./man/bwwA.es.Rd:61: unexpected section header '\references'
+prepare_Rd: ./man/bwwA.es.Rd:64: unexpected section header '\seealso'
+prepare_Rd: ./man/bwwA.es.Rd:67: unexpected END_OF_INPUT '
+'
+checkRd: (-1) bwwA.es.Rd:21: Lost braces
+    21 | \item{nboot}{Number of bootstrap samples (default: 1000).}
+       |      ^
+checkRd: (-1) bwwA.es.Rd:21: Lost braces
+    21 | \item{nboot}{Number of bootstrap samples (default: 1000).}
+       |             ^
+checkRd: (-1) bwwA.es.Rd:23: Lost braces
+    23 | \item{...}{Additional arguments passed to \code{fun}.}
+       |      ^
+checkRd: (-1) bwwA.es.Rd:23: Lost braces
+    23 | \item{...}{Additional arguments passed to \code{fun}.}
+       |           ^
+checkRd: (-1) bwwA.es.Rd:25-29: Lost braces
+    25 | \value{
+       |       ^
+checkRd: (-1) bwwA.es.Rd:30-34: Lost braces
+    30 | \description{
+       |             ^
+checkRd: (-1) bwwA.es.Rd:35-48: Lost braces
+    35 | \details{
+       |         ^
+checkRd: (-1) bwwA.es.Rd:49-60: Lost braces
+    49 | \examples{
+       |          ^
+checkRd: (-1) bwwA.es.Rd:61-63: Lost braces
+    61 | \references{
+       |            ^
+checkRd: (-1) bwwA.es.Rd:64-66: Lost braces
+    64 | \seealso{
+       |         ^
+prepare_Rd: ./man/calwork.Rd:33: unknown macro '\item'
+prepare_Rd: ./man/con2way.Rd:18: unknown macro '\item'
+checkRd: (-1) con2way.Rd:18: Lost braces
+    18 | \item{conB}{Matrix of contrast coefficients for Factor B main effects
+       |      ^
+checkRd: (-1) con2way.Rd:18-19: Lost braces
+    18 | \item{conB}{Matrix of contrast coefficients for Factor B main effects
+       |            ^
+prepare_Rd: ./man/ees.ci.Rd:22: unknown macro '\item'
+prepare_Rd: ./man/ees.ci.Rd:24: unexpected section header '\value'
+prepare_Rd: ./man/ees.ci.Rd:28: unexpected section header '\description'
+prepare_Rd: ./man/ees.ci.Rd:33: unexpected section header '\details'
+prepare_Rd: ./man/ees.ci.Rd:53: unexpected section header '\examples'
+prepare_Rd: ./man/ees.ci.Rd:61: unexpected section header '\seealso'
+prepare_Rd: ./man/ees.ci.Rd:64: unexpected section header '\keyword'
+prepare_Rd: ./man/ees.ci.Rd:65: unexpected section header '\keyword'
+prepare_Rd: ./man/ees.ci.Rd:66: unexpected END_OF_INPUT '
+'
+checkRd: (-1) ees.ci.Rd:22: Lost braces
+    22 | \item{pr}{Logical. If TRUE, prints results (default: TRUE).}
+       |      ^
+checkRd: (-1) ees.ci.Rd:22: Lost braces
+    22 | \item{pr}{Logical. If TRUE, prints results (default: TRUE).}
+       |          ^
+checkRd: (-1) ees.ci.Rd:24-27: Lost braces
+    24 | \value{
+       |       ^
+checkRd: (-1) ees.ci.Rd:28-32: Lost braces
+    28 | \description{
+       |             ^
+checkRd: (-1) ees.ci.Rd:33-52: Lost braces
+    33 | \details{
+       |         ^
+checkRd: (-1) ees.ci.Rd:53-60: Lost braces
+    53 | \examples{
+       |          ^
+checkRd: (-1) ees.ci.Rd:61-63: Lost braces
+    61 | \seealso{
+       |         ^
+checkRd: (-1) ees.ci.Rd:64: Lost braces; missing escapes or markup?
+    64 | \keyword{htest}
+       |         ^
+checkRd: (-1) ees.ci.Rd:65: Lost braces; missing escapes or markup?
+    65 | \keyword{robust}
+       |         ^
+checkRd: (-1) ffL.Rd:28: Lost braces; missing escapes or markup?
+    28 | \item For each λ ∈ {-1, -0.5, 0, 0.5, 1}, transforms Y using:
+       |                    ^
+checkRd: (-1) inter.ES.Rd:48: Lost braces; missing escapes or markup?
+    48 | between Factor B levels (X_{A1B1} - X_{A1B2})
+       |                            ^
+checkRd: (-1) inter.ES.Rd:48: Lost braces; missing escapes or markup?
+    48 | between Factor B levels (X_{A1B1} - X_{A1B2})
+       |                                       ^
+checkRd: (-1) inter.ES.Rd:50: Lost braces; missing escapes or markup?
+    50 | between Factor B levels (X_{A2B1} - X_{A2B2})
+       |                            ^
+checkRd: (-1) inter.ES.Rd:50: Lost braces; missing escapes or markup?
+    50 | between Factor B levels (X_{A2B1} - X_{A2B2})
+       |                                       ^
+prepare_Rd: ./man/lincdtr.Rd:20: unexpected section header '\value'
+prepare_Rd: ./man/lincdtr.Rd:27: unexpected section header '\description'
+prepare_Rd: ./man/lincdtr.Rd:31: unexpected section header '\details'
+prepare_Rd: ./man/lincdtr.Rd:36: unexpected section header '\seealso'
+prepare_Rd: ./man/lincdtr.Rd:39: unexpected section header '\keyword'
+prepare_Rd: ./man/lincdtr.Rd:40: unexpected END_OF_INPUT '
+'
+checkRd: (-1) lincdtr.Rd:20-26: Lost braces
+    20 | \value{
+       |       ^
+checkRd: (-1) lincdtr.Rd:27-30: Lost braces
+    27 | \description{
+       |             ^
+checkRd: (-1) lincdtr.Rd:31-35: Lost braces
+    31 | \details{
+       |         ^
+checkRd: (-1) lincdtr.Rd:36-38: Lost braces
+    36 | \seealso{
+       |         ^
+checkRd: (-1) lincdtr.Rd:39: Lost braces; missing escapes or markup?
+    39 | \keyword{htest}
+       |         ^
+checkRd: (-1) lintest.Rd:47: Lost braces in \itemize; meant \describe ?
+checkRd: (-1) lintest.Rd:48: Lost braces in \itemize; meant \describe ?
+checkRd: (-1) lstest4.Rd:32: Lost braces; missing escapes or markup?
+    32 | \item Returns Wald statistic: beta' Sigma^{-1} beta
+       |                                           ^
+prepare_Rd: ./man/ols.pred.ci.Rd:29: unknown macro '\item'
+prepare_Rd: ./man/ols.pred.ci.Rd:31: unknown macro '\item'
+prepare_Rd: ./man/ols.pred.ci.Rd:33: unknown macro '\item'
+prepare_Rd: ./man/ols.pred.ci.Rd:36: unexpected section header '\value'
+prepare_Rd: ./man/ols.pred.ci.Rd:40: unexpected section header '\description'
+prepare_Rd: ./man/ols.pred.ci.Rd:44: unexpected section header '\details'
+prepare_Rd: ./man/ols.pred.ci.Rd:59: unexpected section header '\seealso'
+prepare_Rd: ./man/ols.pred.ci.Rd:62: unexpected END_OF_INPUT '
+'
+checkRd: (-1) ols.pred.ci.Rd:29: Lost braces
+    29 | \item{xout}{Logical. If TRUE, removes leverage points in \code{x} before fitting (default: FALSE).}
+       |      ^
+checkRd: (-1) ols.pred.ci.Rd:29: Lost braces
+    29 | \item{xout}{Logical. If TRUE, removes leverage points in \code{x} before fitting (default: FALSE).}
+       |            ^
+checkRd: (-1) ols.pred.ci.Rd:31: Lost braces
+    31 | \item{RETURN}{Logical. If TRUE, returns predicted values and CI instead of just plotting (default: FALSE).}
+       |      ^
+checkRd: (-1) ols.pred.ci.Rd:31: Lost braces
+    31 | \item{RETURN}{Logical. If TRUE, returns predicted values and CI instead of just plotting (default: FALSE).}
+       |              ^
+checkRd: (-1) ols.pred.ci.Rd:33: Lost braces
+    33 | \item{newx}{Numeric vector or NULL. X-values for prediction. If NULL, uses
+       |      ^
+checkRd: (-1) ols.pred.ci.Rd:33-34: Lost braces
+    33 | \item{newx}{Numeric vector or NULL. X-values for prediction. If NULL, uses
+       |            ^
+checkRd: (-1) ols.pred.ci.Rd:36-39: Lost braces
+    36 | \value{
+       |       ^
+checkRd: (-1) ols.pred.ci.Rd:40-43: Lost braces
+    40 | \description{
+       |             ^
+checkRd: (-1) ols.pred.ci.Rd:44-58: Lost braces
+    44 | \details{
+       |         ^
+checkRd: (-1) ols.pred.ci.Rd:59-61: Lost braces
+    59 | \seealso{
+       |         ^
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.Rd:24: unknown macro '\item'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.Rd:27: unknown macro '\item'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.Rd:29: unknown macro '\item'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.Rd:31: unknown macro '\item'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.Rd:34: unexpected section header '\value'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.Rd:39: unexpected section header '\description'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.Rd:44: unexpected section header '\details'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.Rd:56: unexpected section header '\seealso'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.Rd:60: unexpected section header '\keyword'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.Rd:61: unexpected END_OF_INPUT '
+'
+checkRd: (-1) oph.astig.datasetconvexpoly.Rd:24: Lost braces
+    24 | \item{plotit}{Logical. If \code{TRUE}, plots data points with convex hull overlay.
+       |      ^
+checkRd: (-1) oph.astig.datasetconvexpoly.Rd:24-25: Lost braces
+    24 | \item{plotit}{Logical. If \code{TRUE}, plots data points with convex hull overlay.
+       |              ^
+checkRd: (-1) oph.astig.datasetconvexpoly.Rd:27: Lost braces
+    27 | \item{xlab, ylab}{Axis labels for plots. Defaults are 'V1' and 'V2'.}
+       |      ^
+checkRd: (-1) oph.astig.datasetconvexpoly.Rd:27: Lost braces
+    27 | \item{xlab, ylab}{Axis labels for plots. Defaults are 'V1' and 'V2'.}
+       |                  ^
+checkRd: (-1) oph.astig.datasetconvexpoly.Rd:29: Lost braces
+    29 | \item{pch}{Plotting character for data points. Default is '.'.}
+       |      ^
+checkRd: (-1) oph.astig.datasetconvexpoly.Rd:29: Lost braces
+    29 | \item{pch}{Plotting character for data points. Default is '.'.}
+       |           ^
+checkRd: (-1) oph.astig.datasetconvexpoly.Rd:31: Lost braces
+    31 | \item{reset}{Logical. If \code{TRUE}, resets graphics parameters after plotting.
+       |      ^
+checkRd: (-1) oph.astig.datasetconvexpoly.Rd:31-32: Lost braces
+    31 | \item{reset}{Logical. If \code{TRUE}, resets graphics parameters after plotting.
+       |             ^
+checkRd: (-1) oph.astig.datasetconvexpoly.Rd:34-38: Lost braces
+    34 | \value{
+       |       ^
+checkRd: (-1) oph.astig.datasetconvexpoly.Rd:39-43: Lost braces
+    39 | \description{
+       |             ^
+checkRd: (-1) oph.astig.datasetconvexpoly.Rd:44-55: Lost braces
+    44 | \details{
+       |         ^
+checkRd: (-1) oph.astig.datasetconvexpoly.Rd:56-59: Lost braces
+    56 | \seealso{
+       |         ^
+checkRd: (-1) oph.astig.datasetconvexpoly.Rd:60: Lost braces; missing escapes or markup?
+    60 | \keyword{ophthalmology}
+       |         ^
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.mean.Rd:22: unknown macro '\item'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.mean.Rd:25: unknown macro '\item'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.mean.Rd:27: unexpected section header '\value'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.mean.Rd:32: unexpected section header '\description'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.mean.Rd:37: unexpected section header '\details'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.mean.Rd:50: unexpected section header '\seealso'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.mean.Rd:54: unexpected section header '\keyword'
+prepare_Rd: ./man/oph.astig.datasetconvexpoly.mean.Rd:55: unexpected END_OF_INPUT '
+'
+checkRd: (-1) oph.astig.datasetconvexpoly.mean.Rd:22: Lost braces
+    22 | \item{plotit}{Logical. If \code{TRUE}, plots data points with convex hull overlay.
+       |      ^
+checkRd: (-1) oph.astig.datasetconvexpoly.mean.Rd:22-23: Lost braces
+    22 | \item{plotit}{Logical. If \code{TRUE}, plots data points with convex hull overlay.
+       |              ^
+checkRd: (-1) oph.astig.datasetconvexpoly.mean.Rd:25: Lost braces
+    25 | \item{xlab, ylab}{Axis labels for plots. Defaults are 'V1' and 'V2'.}
+       |      ^
+checkRd: (-1) oph.astig.datasetconvexpoly.mean.Rd:25: Lost braces
+    25 | \item{xlab, ylab}{Axis labels for plots. Defaults are 'V1' and 'V2'.}
+       |                  ^
+checkRd: (-1) oph.astig.datasetconvexpoly.mean.Rd:27-31: Lost braces
+    27 | \value{
+       |       ^
+checkRd: (-1) oph.astig.datasetconvexpoly.mean.Rd:32-36: Lost braces
+    32 | \description{
+       |             ^
+checkRd: (-1) oph.astig.datasetconvexpoly.mean.Rd:37-49: Lost braces
+    37 | \details{
+       |         ^
+checkRd: (-1) oph.astig.datasetconvexpoly.mean.Rd:50-53: Lost braces
+    50 | \seealso{
+       |         ^
+checkRd: (-1) oph.astig.datasetconvexpoly.mean.Rd:54: Lost braces; missing escapes or markup?
+    54 | \keyword{ophthalmology}
+       |         ^
+prepare_Rd: ./man/pow2an.Rd:27: unexpected section header '\description'
+prepare_Rd: ./man/pow2an.Rd:31: unexpected section header '\details'
+prepare_Rd: ./man/pow2an.Rd:47: unexpected section header '\examples'
+prepare_Rd: ./man/pow2an.Rd:60: unexpected section header '\references'
+prepare_Rd: ./man/pow2an.Rd:63: unexpected section header '\seealso'
+prepare_Rd: ./man/pow2an.Rd:66: unexpected END_OF_INPUT '
+'
+checkRd: (-1) pow2an.Rd:27-30: Lost braces
+    27 | \description{
+       |             ^
+checkRd: (-1) pow2an.Rd:31-46: Lost braces
+    31 | \details{
+       |         ^
+checkRd: (-1) pow2an.Rd:47-59: Lost braces
+    47 | \examples{
+       |          ^
+checkRd: (7) pow2an.Rd:56-58: Tag \dontrun not recognized
+checkRd: (-1) pow2an.Rd:60-62: Lost braces
+    60 | \references{
+       |            ^
+checkRd: (-1) pow2an.Rd:63-65: Lost braces
+    63 | \seealso{
+       |         ^
+prepare_Rd: ./man/powt1an.Rd:25: unexpected section header '\description'
+prepare_Rd: ./man/powt1an.Rd:29: unexpected section header '\details'
+prepare_Rd: ./man/powt1an.Rd:45: unexpected section header '\examples'
+prepare_Rd: ./man/powt1an.Rd:57: unexpected section header '\references'
+prepare_Rd: ./man/powt1an.Rd:60: unexpected section header '\seealso'
+prepare_Rd: ./man/powt1an.Rd:63: unexpected END_OF_INPUT '
+'
+checkRd: (-1) powt1an.Rd:25-28: Lost braces
+    25 | \description{
+       |             ^
+checkRd: (-1) powt1an.Rd:29-44: Lost braces
+    29 | \details{
+       |         ^
+checkRd: (-1) powt1an.Rd:45-56: Lost braces
+    45 | \examples{
+       |          ^
+checkRd: (7) powt1an.Rd:53-55: Tag \dontrun not recognized
+checkRd: (-1) powt1an.Rd:57-59: Lost braces
+    57 | \references{
+       |            ^
+checkRd: (-1) powt1an.Rd:60-62: Lost braces
+    60 | \seealso{
+       |         ^
+prepare_Rd: ./man/powt1est.Rd:24: unexpected section header '\description'
+prepare_Rd: ./man/powt1est.Rd:28: unexpected section header '\details'
+prepare_Rd: ./man/powt1est.Rd:45: unexpected section header '\examples'
+prepare_Rd: ./man/powt1est.Rd:57: unexpected section header '\references'
+prepare_Rd: ./man/powt1est.Rd:60: unexpected section header '\seealso'
+prepare_Rd: ./man/powt1est.Rd:63: unexpected END_OF_INPUT '
+'
+checkRd: (-1) powt1est.Rd:24-27: Lost braces
+    24 | \description{
+       |             ^
+checkRd: (-1) powt1est.Rd:28-44: Lost braces
+    28 | \details{
+       |         ^
+checkRd: (-1) powt1est.Rd:45-56: Lost braces
+    45 | \examples{
+       |          ^
+checkRd: (7) powt1est.Rd:53-55: Tag \dontrun not recognized
+checkRd: (-1) powt1est.Rd:57-59: Lost braces
+    57 | \references{
+       |            ^
+checkRd: (-1) powt1est.Rd:60-62: Lost braces
+    60 | \seealso{
+       |         ^
+checkRd: (-1) qrchk.Rd:67: Lost braces; missing escapes or markup?
+    67 | alpha in {0.1, 0.05, 0.025, 0.01}. Otherwise, it computes critical values via
+       |          ^
+prepare_Rd: ./man/regmediate.Rd:61: unknown macro '\item'
+checkRd: (-1) rmmcp.Rd:43: Lost braces; missing escapes or markup?
+    43 | If FALSE and alpha ∈ {.05, .01} with ≤10 contrasts, Rom's method is used.}
+       |                      ^
+checkRd: (-1) rmmcpQS.Rd:32: Lost braces; missing escapes or markup?
+    32 | If FALSE and alpha ∈ {.05, .01} with ≤10 contrasts, Rom's method is used.}
+       |                      ^
+prepare_Rd: ./man/smgridVRC.Rd:44: unknown macro '\item'
+prepare_Rd: ./man/smgridVRC.Rd:46: unknown macro '\item'
+prepare_Rd: ./man/smgridVRC.Rd:49: unknown macro '\item'
+prepare_Rd: ./man/smgridVRC.Rd:52: unknown macro '\item'
+prepare_Rd: ./man/smgridVRC.Rd:55: unknown macro '\item'
+prepare_Rd: ./man/smgridVRC.Rd:57: unknown macro '\item'
+prepare_Rd: ./man/smgridVRC.Rd:59: unknown macro '\item'
+prepare_Rd: ./man/smgridVRC.Rd:61: unknown macro '\item'
+prepare_Rd: ./man/smgridVRC.Rd:63: unknown macro '\item'
+prepare_Rd: ./man/smgridVRC.Rd:65: unknown macro '\item'
+prepare_Rd: ./man/smgridVRC.Rd:67: unknown macro '\item'
+prepare_Rd: ./man/smgridVRC.Rd:69: unknown macro '\item'
+prepare_Rd: ./man/smgridVRC.Rd:71: unexpected section header '\value'
+prepare_Rd: ./man/smgridVRC.Rd:81: unexpected section header '\description'
+prepare_Rd: ./man/smgridVRC.Rd:86: unexpected section header '\details'
+prepare_Rd: ./man/smgridVRC.Rd:96: unexpected section header '\seealso'
+prepare_Rd: ./man/smgridVRC.Rd:100: unexpected section header '\keyword'
+prepare_Rd: ./man/smgridVRC.Rd:101: unexpected section header '\keyword'
+prepare_Rd: ./man/smgridVRC.Rd:102: unexpected section header '\keyword'
+prepare_Rd: ./man/smgridVRC.Rd:103: unexpected END_OF_INPUT '
+'
+checkRd: (-1) smgridVRC.Rd:44: Lost braces
+    44 | \item{alpha}{Significance level. Default is 0.05.}
+       |      ^
+checkRd: (-1) smgridVRC.Rd:44: Lost braces
+    44 | \item{alpha}{Significance level. Default is 0.05.}
+       |             ^
+checkRd: (-1) smgridVRC.Rd:46: Lost braces
+    46 | \item{VAL1}{Explicit values for splitting first IV. If \code{NULL} (default),
+       |      ^
+checkRd: (-1) smgridVRC.Rd:46-47: Lost braces
+    46 | \item{VAL1}{Explicit values for splitting first IV. If \code{NULL} (default),
+       |            ^
+checkRd: (-1) smgridVRC.Rd:49: Lost braces
+    49 | \item{VAL2}{Explicit values for splitting second IV. If \code{NULL} (default),
+       |      ^
+checkRd: (-1) smgridVRC.Rd:49-50: Lost braces
+    49 | \item{VAL2}{Explicit values for splitting second IV. If \code{NULL} (default),
+       |            ^
+checkRd: (-1) smgridVRC.Rd:52: Lost braces
+    52 | \item{PB}{Logical. If \code{TRUE}, uses percentile bootstrap. Automatically set
+       |      ^
+checkRd: (-1) smgridVRC.Rd:52-53: Lost braces
+    52 | \item{PB}{Logical. If \code{TRUE}, uses percentile bootstrap. Automatically set
+       |          ^
+checkRd: (-1) smgridVRC.Rd:55: Lost braces
+    55 | \item{est}{Estimator function for location. Default is \code{\link{tmean}}.}
+       |      ^
+checkRd: (-1) smgridVRC.Rd:55: Lost braces
+    55 | \item{est}{Estimator function for location. Default is \code{\link{tmean}}.}
+       |           ^
+checkRd: (-1) smgridVRC.Rd:57: Lost braces
+    57 | \item{nboot}{Number of bootstrap samples if \code{PB=TRUE}. Default is 1000.}
+       |      ^
+checkRd: (-1) smgridVRC.Rd:57: Lost braces
+    57 | \item{nboot}{Number of bootstrap samples if \code{PB=TRUE}. Default is 1000.}
+       |             ^
+checkRd: (-1) smgridVRC.Rd:59: Lost braces
+    59 | \item{pr}{Logical. If \code{TRUE} (default), prints messages about eliminated groups.}
+       |      ^
+checkRd: (-1) smgridVRC.Rd:59: Lost braces
+    59 | \item{pr}{Logical. If \code{TRUE} (default), prints messages about eliminated groups.}
+       |          ^
+checkRd: (-1) smgridVRC.Rd:61: Lost braces
+    61 | \item{method}{P-value adjustment method. Default is \code{'hoch'} (Hochberg).}
+       |      ^
+checkRd: (-1) smgridVRC.Rd:61: Lost braces
+    61 | \item{method}{P-value adjustment method. Default is \code{'hoch'} (Hochberg).}
+       |              ^
+checkRd: (-1) smgridVRC.Rd:63: Lost braces
+    63 | \item{xout}{Logical. If \code{TRUE}, removes outliers. Default is \code{FALSE}.}
+       |      ^
+checkRd: (-1) smgridVRC.Rd:63: Lost braces
+    63 | \item{xout}{Logical. If \code{TRUE}, removes outliers. Default is \code{FALSE}.}
+       |            ^
+checkRd: (-1) smgridVRC.Rd:65: Lost braces
+    65 | \item{outfun}{Outlier detection function. Default is \code{\link{outpro}}.}
+       |      ^
+checkRd: (-1) smgridVRC.Rd:65: Lost braces
+    65 | \item{outfun}{Outlier detection function. Default is \code{\link{outpro}}.}
+       |              ^
+checkRd: (-1) smgridVRC.Rd:67: Lost braces
+    67 | \item{SEED}{Logical. If \code{TRUE} (default), sets random seed for reproducibility.}
+       |      ^
+checkRd: (-1) smgridVRC.Rd:67: Lost braces
+    67 | \item{SEED}{Logical. If \code{TRUE} (default), sets random seed for reproducibility.}
+       |            ^
+checkRd: (-1) smgridVRC.Rd:69: Lost braces
+    69 | \item{...}{Additional arguments passed to \code{est}.}
+       |      ^
+checkRd: (-1) smgridVRC.Rd:69: Lost braces
+    69 | \item{...}{Additional arguments passed to \code{est}.}
+       |           ^
+checkRd: (-1) smgridVRC.Rd:71-80: Lost braces
+    71 | \value{
+       |       ^
+checkRd: (-1) smgridVRC.Rd:81-85: Lost braces
+    81 | \description{
+       |             ^
+checkRd: (-1) smgridVRC.Rd:86-95: Lost braces
+    86 | \details{
+       |         ^
+checkRd: (-1) smgridVRC.Rd:96-99: Lost braces
+    96 | \seealso{
+       |         ^
+checkRd: (-1) smgridVRC.Rd:100: Lost braces; missing escapes or markup?
+   100 | \keyword{htest}
+       |         ^
+checkRd: (-1) smgridVRC.Rd:101: Lost braces; missing escapes or markup?
+   101 | \keyword{multivariate}
+       |         ^
+checkRd: (-1) smgridVRC.Rd:102: Lost braces; missing escapes or markup?
+   102 | \keyword{robust}
+       |         ^
+prepare_Rd: ./man/spearci.Rd:19: unknown macro '\item'
+prepare_Rd: ./man/spearci.Rd:21: unknown macro '\item'
+prepare_Rd: ./man/spearci.Rd:24: unexpected section header '\value'
+prepare_Rd: ./man/spearci.Rd:28: unexpected section header '\description'
+prepare_Rd: ./man/spearci.Rd:31: unexpected section header '\details'
+prepare_Rd: ./man/spearci.Rd:40: unexpected section header '\seealso'
+prepare_Rd: ./man/spearci.Rd:43: unexpected section header '\keyword'
+prepare_Rd: ./man/spearci.Rd:44: unexpected END_OF_INPUT '
+'
+checkRd: (-1) spearci.Rd:19: Lost braces
+    19 | \item{SEED}{Logical. If \code{TRUE} (default), sets random seed for reproducibility.}
+       |      ^
+checkRd: (-1) spearci.Rd:19: Lost braces
+    19 | \item{SEED}{Logical. If \code{TRUE} (default), sets random seed for reproducibility.}
+       |            ^
+checkRd: (-1) spearci.Rd:21: Lost braces
+    21 | \item{MC}{Logical. If \code{TRUE}, uses multicore version \code{\link{corbMC}}.
+       |      ^
+checkRd: (-1) spearci.Rd:21-22: Lost braces
+    21 | \item{MC}{Logical. If \code{TRUE}, uses multicore version \code{\link{corbMC}}.
+       |          ^
+checkRd: (-1) spearci.Rd:24-27: Lost braces
+    24 | \value{
+       |       ^
+checkRd: (-1) spearci.Rd:28-30: Lost braces
+    28 | \description{
+       |             ^
+checkRd: (-1) spearci.Rd:31-39: Lost braces
+    31 | \details{
+       |         ^
+checkRd: (-1) spearci.Rd:40-42: Lost braces
+    40 | \seealso{
+       |         ^
+checkRd: (-1) spearci.Rd:43: Lost braces; missing escapes or markup?
+    43 | \keyword{htest}
+       |         ^
+prepare_Rd: ./man/tsplit.Rd:18: unknown macro '\item'
+prepare_Rd: ./man/tsplit.Rd:20: unknown macro '\item'
+prepare_Rd: ./man/tsplit.Rd:22: unexpected section header '\value'
+prepare_Rd: ./man/tsplit.Rd:26: unexpected section header '\description'
+prepare_Rd: ./man/tsplit.Rd:30: unexpected section header '\details'
+prepare_Rd: ./man/tsplit.Rd:49: unexpected section header '\examples'
+prepare_Rd: ./man/tsplit.Rd:56: unexpected section header '\seealso'
+prepare_Rd: ./man/tsplit.Rd:59: unexpected section header '\keyword'
+prepare_Rd: ./man/tsplit.Rd:60: unexpected section header '\keyword'
+prepare_Rd: ./man/tsplit.Rd:61: unexpected END_OF_INPUT '
+'
+checkRd: (-1) tsplit.Rd:18: Lost braces
+    18 | \item{grp}{Numeric vector. Subset of groups to analyze (default: all groups)}
+       |      ^
+checkRd: (-1) tsplit.Rd:18: Lost braces
+    18 | \item{grp}{Numeric vector. Subset of groups to analyze (default: all groups)}
+       |           ^
+checkRd: (-1) tsplit.Rd:20: Lost braces
+    20 | \item{p}{Integer. Total number of groups J×K (default: J*K)}
+       |      ^
+checkRd: (-1) tsplit.Rd:20: Lost braces
+    20 | \item{p}{Integer. Total number of groups J×K (default: J*K)}
+       |         ^
+checkRd: (-1) tsplit.Rd:22-25: Lost braces
+    22 | \value{
+       |       ^
+checkRd: (-1) tsplit.Rd:26-29: Lost braces
+    26 | \description{
+       |             ^
+checkRd: (-1) tsplit.Rd:30-48: Lost braces
+    30 | \details{
+       |         ^
+checkRd: (-1) tsplit.Rd:49-55: Lost braces
+    49 | \examples{
+       |          ^
+checkRd: (-1) tsplit.Rd:56-58: Lost braces
+    56 | \seealso{
+       |         ^
+checkRd: (-1) tsplit.Rd:59: Lost braces; missing escapes or markup?
+    59 | \keyword{htest}
+       |         ^
+checkRd: (-1) tsplit.Rd:60: Lost braces; missing escapes or markup?
+    60 | \keyword{robust}
+       |         ^
+prepare_Rd: tsregNW.Rd:63-65: Dropping empty section \details
+problem found in ‘ancova.ES.Rd’
+* checking Rd metadata ... OK
+* checking Rd cross-references ... WARNING
+Packages unavailable to check Rd xrefs: ‘mrfDepth’, ‘enetLTS’, ‘ICSOutlier’, ‘randomForest’, ‘segmented’, ‘ddalpha’
+Missing link(s) in Rd file 'Ckappa.Rd':
+  ‘i,j’
 
-The suggested packages are required for a complete check.
-Checking can be attempted without them by setting the environment
-variable _R_CHECK_FORCE_SUGGESTS_ to a false value.
+Missing link(s) in Rd file 'DETMCD.Rd':
+  ‘bicovM’ ‘bicovm’
 
-See section ‘The DESCRIPTION file’ in the ‘Writing R Extensions’
-manual.
+Missing link(s) in Rd file 'DancGLOBv2.Rd':
+  ‘x1, y1, x2, y2’
+
+Missing link(s) in Rd file 'DancovaV2.Rd':
+  ‘x1, y1, x2, y2’
+
+Missing link(s) in Rd file 'Dancovapb.Rd':
+  ‘ancovapb’
+
+Missing link(s) in Rd file 'Dqdif.Rd':
+  ‘qhd’
+
+Missing link(s) in Rd file 'DqdifMC.Rd':
+  ‘qdifMC’
+
+Missing link(s) in Rd file 'DregG.Rd':
+  ‘DregGOLS’
+
+Missing link(s) in Rd file 'DregGMC.Rd':
+  ‘DregGOLS’
+
+Missing link(s) in Rd file 'HQreg.Rd':
+  ‘hqreg’
+
+Missing link(s) in Rd file 'KMS.inter.pbci.Rd':
+  ‘level 1,1’ ‘level 1,2’ ‘level 2,1’ ‘level 2,2’
+
+Missing link(s) in Rd file 'KS.ANOVA.ES.Rd':
+  ‘Complete reference’
+
+Missing link(s) in Rd file 'M1M2.Rd':
+  ‘k’
+
+Missing link(s) in Rd file 'MCDCOR.Rd':
+  ‘DetMCD’
+
+Missing link(s) in Rd file 'MCWB.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'MCWB.crit.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'MULAOVp.Rd':
+  ‘j’ ‘1’
+
+Missing link(s) in Rd file 'MULNC.Rd':
+  ‘i,’ ‘j,’ ‘i,1’ ‘j,1’ ‘i,2’ ‘j,2’
+
+Missing link(s) in Rd file 'MULNC.int.Rd':
+  ‘i,1’ ‘j,1’ ‘i,2’ ‘j,2’
+
+Missing link(s) in Rd file 'MULNC.sub.Rd':
+  ‘i,1’ ‘j,1’ ‘i,2’ ‘j,2’
+
+Missing link(s) in Rd file 'MULNCpb.Rd':
+  ‘i,1’ ‘j,1’ ‘i,2’ ‘j,2’
+
+Missing link(s) in Rd file 'MULtr.anova.Rd':
+  ‘j’
+
+Missing link(s) in Rd file 'PHinter.mcp.Rd':
+  ‘ph.inter’
+
+Missing link(s) in Rd file 'PMD.PB.PCD.Rd':
+  ‘anc.best.PB’
+
+Missing link(s) in Rd file 'PVALS.Rd':
+  ‘0, 1’
+
+Missing link(s) in Rd file 'QS.inter.pbci.Rd':
+  ‘shiftQS’
+
+Missing link(s) in Rd file 'QS1way.Rd':
+  ‘shiftQS’
+
+Missing link(s) in Rd file 'Qregci.Rd':
+  ‘Qreg’
+
+Missing link(s) in Rd file 'RCmcp.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'RMPB.PMD.PCD.Rd':
+  ‘rmanc.best.PB’
+
+Missing link(s) in Rd file 'Rpca.Rd':
+  ‘mcd’
+
+Missing link(s) in Rd file 'Scheffe.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'Scov.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'T.HSD.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'TWOpNOV.Rd':
+  ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'TWOpNOVPV.Rd':
+  ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'TWOpov.Rd':
+  ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'TWOpovPV.Rd':
+  ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'YYmcp.Rd':
+  ‘YYmanovaMC’
+
+Missing link(s) in Rd file 'ancova.ES.Rd':
+  ‘max(q_ql^1, q_ql^2), min(q_ 1-ql ^1, q_ 1-ql ^2)’
+
+Missing link(s) in Rd file 'ancovaG.Rd':
+  ‘1’ ‘2’
+
+Missing link(s) in Rd file 'anova.KMS.ND.Rd':
+  ‘anova.KMS’
+
+Missing link(s) in Rd file 'anova.nestA.Rd':
+  ‘j’
+
+Missing link(s) in Rd file 'anova.nestAP.Rd':
+  ‘j’
+
+Missing link(s) in Rd file 'bbdetmcp.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'bbwcovm.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'bbwmcppb.sub.Rd':
+  ‘1’ ‘2’ ‘K’ ‘K+1’
+
+Missing link(s) in Rd file 'bd1GLOB.Rd':
+  ‘dmean.cen’
+
+Missing link(s) in Rd file 'bdmP.Rd':
+  ‘Complete reference for the BDM method’
+
+Missing link(s) in Rd file 'best.DO.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'bicov.Rd':
+  ‘bicovm’ ‘bicovM’
+
+Missing link(s) in Rd file 'bin2binary.IV.Rd':
+  ‘1’ ‘2’ ‘3’ ‘4’
+
+Missing link(s) in Rd file 'binmat.Rd':
+  ‘, col’ ‘lower, upper’
+
+Missing link(s) in Rd file 'binmat2v.Rd':
+  ‘1’ ‘2’
+
+Missing link(s) in Rd file 'bmcpAKP.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'bplot.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'bptdmean.Rd':
+  ‘isub’
+
+Missing link(s) in Rd file 'bw.2by2.int.es.Rd':
+  ‘1’ ‘2’ ‘3’ ‘4’
+
+Missing link(s) in Rd file 'bw.es.A.Rd':
+  ‘k’
+
+Missing link(s) in Rd file 'bwESP.GLOB.B.NULL.Rd':
+  ‘rmESPRO.est’
+
+Missing link(s) in Rd file 'bwESP.GLOB.B.Rd':
+  ‘rmESPRO.est’
+
+Missing link(s) in Rd file 'bwQS.Rd':
+  ‘j’ ‘k’
+
+Missing link(s) in Rd file 'bwamcp.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'bwiDIF.Rd':
+  ‘1’ ‘2’ ‘K’ ‘K+1’
+
+Missing link(s) in Rd file 'bwiQS.Rd':
+  ‘1’ ‘2’ ‘K’ ‘K+1’
+
+Missing link(s) in Rd file 'bwmarpb.Rd':
+  ‘1’ ‘2’ ‘K’ ‘K+1’
+
+Missing link(s) in Rd file 'bwmcppb.adj.Rd':
+  ‘1’ ‘2’ ‘K’ ‘K+1’
+
+Missing link(s) in Rd file 'bwmcppb.sub.Rd':
+  ‘1’ ‘2’ ‘K’ ‘K+1’
+
+Missing link(s) in Rd file 'bwtrimbt.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'bwwA.es.Rd':
+  ‘bwwA.es.sub’
+
+Missing link(s) in Rd file 'bwwcovm.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'bwwmcppb.sub.Rd':
+  ‘1’ ‘2’ ‘K’ ‘K+1’
+
+Missing link(s) in Rd file 'center.m.Rd':
+  ‘lloc’
+
+Missing link(s) in Rd file 'cgen.bt.Rd':
+  ‘rejpt.bt.lim’
+
+Missing link(s) in Rd file 'cidmul.Rd':
+  ‘cidmulv2’
+
+Missing link(s) in Rd file 'class.uni.error.Rd':
+  ‘i,j’
+
+Missing link(s) in Rd file 'clnorm.Rd':
+  ‘0,1’
+
+Missing link(s) in Rd file 'cnorm.Rd':
+  ‘0,1’
+
+Missing link(s) in Rd file 'comdvar.astig.Rd':
+  ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'comvar2.astig.Rd':
+  ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'conc2.Rd':
+  ‘l1fit’
+
+Missing link(s) in Rd file 'cor.skip.com.Rd':
+  ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'cor2xy.Rd':
+  ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'corb.Rd':
+  ‘i’
+
+Missing link(s) in Rd file 'corblp.bca.C.Rd':
+  ‘corblp’
+
+Missing link(s) in Rd file 'corblp.sub.Rd':
+  ‘corblp’
+
+Missing link(s) in Rd file 'corbsub.Rd':
+  ‘isub’
+
+Missing link(s) in Rd file 'corregci.Rd':
+  ‘corxy’
+
+Missing link(s) in Rd file 'corskip.comPV.Rd':
+  ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'cov.mba.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'cov.ogk.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'cov.roc.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'cov2cor.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'cov2med.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'covl.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'covmba.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'covmba2.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'covmcd.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'covmmed.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'covmve.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'covogk.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'covout.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'covroc.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'dat2dif.Rd':
+  ‘,j’ ‘,k’
+
+Missing link(s) in Rd file 'dcov.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'ddep.Rd':
+  ‘j’
+
+Missing link(s) in Rd file 'ddeptr.Rd':
+  ‘j’
+
+Missing link(s) in Rd file 'dec2way.mcp.Rd':
+  ‘decJK.Amain’ ‘decJK.Bmain’
+
+Missing link(s) in Rd file 'dep2.sign.Rd':
+  ‘i’
+
+Missing link(s) in Rd file 'depQS.Rd':
+  ‘QS.sum.ci’
+
+Missing link(s) in Rd file 'depQSci.Rd':
+  ‘QS.sum.ci’
+
+Missing link(s) in Rd file 'difQpci.Rd':
+  ‘qhd’
+
+Missing link(s) in Rd file 'difQpciMC.Rd':
+  ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'difregOLS.Rd':
+  ‘DregGOLS’
+
+Missing link(s) in Rd file 'discmcp.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'dlintrim.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'dtrimpb.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'errfun.Rd':
+  ‘regpre’
+
+Missing link(s) in Rd file 'estBetaParams.Rd':
+  ‘0,1’
+
+Missing link(s) in Rd file 'ffplot.Rd':
+  ‘mbareg’
+
+Missing link(s) in Rd file 'ffplot2.Rd':
+  ‘mbareg’
+
+Missing link(s) in Rd file 'funloc.Rd':
+  ‘FBplot’
+
+Missing link(s) in Rd file 'fysim.Rd':
+  ‘ardata’
+
+Missing link(s) in Rd file 'getBetaHdi.Rd':
+  ‘0, width’ ‘1-width, 1’ ‘0, 1’
+
+Missing link(s) in Rd file 'gkcov.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'hc4wmc.Rd':
+  ‘1’ ‘2’ ‘J’
+
+Missing link(s) in Rd file 'hc4wtest.Rd':
+  ‘-√3, √3’
+
+Missing link(s) in Rd file 'hdep.Rd':
+  ‘Doplot’
+
+Missing link(s) in Rd file 'hoch2.simp.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'hratio.Rd':
+  ‘i,i’ ‘i,j’
+
+Missing link(s) in Rd file 'idb.Rd':
+  ‘regpre’
+
+Missing link(s) in Rd file 'idmatch.Rd':
+  ‘i,’
+
+Missing link(s) in Rd file 'in.interval.Rd':
+  ‘low, up’
+
+Missing link(s) in Rd file 'interJK.ESmul.Rd':
+  ‘J(J-1)/2’ ‘K(K-1)/2’
+
+Missing link(s) in Rd file 'interplot.Rd':
+  ‘[graphics]{interaction.plot}’
+
+Missing link(s) in Rd file 'johan.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'kbcon.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'ksolve.bt.Rd':
+  ‘k.old/2, k.old*1.5’
+
+Missing link(s) in Rd file 'ksw.crit.Rd':
+  ‘ks.crit’
+
+Missing link(s) in Rd file 'lin.ES.Rd':
+  ‘linES.sub’
+
+Missing link(s) in Rd file 'lin2plot.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'linEP.Rd':
+  ‘j’
+
+Missing link(s) in Rd file 'linQS.Rd':
+  ‘j’
+
+Missing link(s) in Rd file 'lincon.bin.sub.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'lincon.old.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'lincon.pool.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'linconEP.Rd':
+  ‘Inter.EP’
+
+Missing link(s) in Rd file 'linconES.Rd':
+  ‘-1, 1’
+
+Missing link(s) in Rd file 'linconQS.Rd':
+  ‘-1, 1’
+
+Missing link(s) in Rd file 'lindQS.Rd':
+  ‘j’
+
+Missing link(s) in Rd file 'lindm.Rd':
+  ‘j’ ‘,1’
+
+Missing link(s) in Rd file 'lindmsub.Rd':
+  ‘isub’
+
+Missing link(s) in Rd file 'linpairpb.Rd':
+  ‘j’
+
+Missing link(s) in Rd file 'linpbg.Rd':
+  ‘j’ ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'linplot.Rd':
+  ‘j’ ‘lincon’
+
+Missing link(s) in Rd file 'linsign.Rd':
+  ‘j’
+
+Missing link(s) in Rd file 'lintpb.Rd':
+  ‘j’ ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'list.dif.Rd':
+  ‘j’
+
+Missing link(s) in Rd file 'listm.Rd':
+  ‘1’ ‘2’
+
+Missing link(s) in Rd file 'llocv2.Rd':
+  ‘lloc’
+
+Missing link(s) in Rd file 'llrdata.Rd':
+  ‘llrplot’
+
+Missing link(s) in Rd file 'llressp.Rd':
+  ‘llrplot’
+
+Missing link(s) in Rd file 'llrwtfrp.Rd':
+  ‘llrplot’
+
+Missing link(s) in Rd file 'locCV.Rd':
+  ‘i’ ‘-i’
+
+Missing link(s) in Rd file 'locpres1.Rd':
+  ‘isub’
+
+Missing link(s) in Rd file 'logadr.Rd':
+  ‘0,1’
+
+Missing link(s) in Rd file 'logreg.pred.Rd':
+  ‘logistic.ridge’
+
+Missing link(s) in Rd file 'long2g.Rd':
+  ‘smean2’
+
+Missing link(s) in Rd file 'longcov2mat.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'lplot2g.Rd':
+  ‘rplot2g’
+
+Missing link(s) in Rd file 'lrdata.Rd':
+  ‘1’ ‘1:3’
+
+Missing link(s) in Rd file 'matbin2v.Rd':
+  ‘lower, upper’ ‘1’ ‘2’
+
+Missing link(s) in Rd file 'mcdcov.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'mcp.nestAP.Rd':
+  ‘j’ ‘lincon’
+
+Missing link(s) in Rd file 'mcp2a.Rd':
+  ‘2’ ‘4’ ‘3’ ‘1’
+
+Missing link(s) in Rd file 'mcp2atm.Rd':
+  ‘1’ ‘2’ ‘3’ ‘4’ ‘lincon’ ‘bbmcp’
+
+Missing link(s) in Rd file 'mcp3atm.Rd':
+  ‘1’ ‘2’ ‘L+1’ ‘3’ ‘4’ ‘5’ ‘6’ ‘7’ ‘8’ ‘lincon’
+
+Missing link(s) in Rd file 'mcpPV.Rd':
+  ‘mcpKadjp’
+
+Missing link(s) in Rd file 'mcppb20.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'mdiflcr.Rd':
+  ‘lloc’
+
+Missing link(s) in Rd file 'med2mcp.Rd':
+  ‘1’ ‘2’
+
+Missing link(s) in Rd file 'med2way.Rd':
+  ‘1’ ‘2’ ‘4’
+
+Missing link(s) in Rd file 'med2way.sub.Rd':
+  ‘1’ ‘2’ ‘4’
+
+Missing link(s) in Rd file 'medcurve.Rd':
+  ‘FBplot’
+
+Missing link(s) in Rd file 'medind.Rd':
+  ‘qreg’
+
+Missing link(s) in Rd file 'mgvcov.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'mmean.Rd':
+  ‘lloc’
+
+Missing link(s) in Rd file 'mscorci.Rd':
+  ‘1’
+
+Missing link(s) in Rd file 'mscov.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'msplit.Rd':
+  ‘1’ ‘2’ ‘K’ ‘K+1’
+
+Missing link(s) in Rd file 'mul.loc2g.Rd':
+  ‘pbad2g’
+
+Missing link(s) in Rd file 'mvecov.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'oddata.Rd':
+  ‘1:3’
+
+Missing link(s) in Rd file 'ogk.center.Rd':
+  ‘[rrcov]{ogk}’
+
+Missing link(s) in Rd file 'ols.pred.ci.Rd':
+  ‘Y|X’
+
+Missing link(s) in Rd file 'oph.astig.indepcom.Rd':
+  ‘,1’
+
+Missing link(s) in Rd file 'opregpb.Rd':
+  ‘opregpbMC’
+
+Missing link(s) in Rd file 'pball.Rd':
+  ‘pball.sub’
+
+Missing link(s) in Rd file 'pbcor.Rd':
+  ‘pbcorMC’
+
+Missing link(s) in Rd file 'pbprotm.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'pghdist.Rd':
+  ‘rghdist’ ‘dghdist’
+
+Missing link(s) in Rd file 'pmodchk.Rd':
+  ‘rplot.pred’
+
+Missing link(s) in Rd file 'pow2an.Rd':
+  ‘powest’
+
+Missing link(s) in Rd file 'powt1est.Rd':
+  ‘powest’
+
+Missing link(s) in Rd file 'pro.class.Rd':
+  ‘mulwmw.dist.new’
+
+Missing link(s) in Rd file 'pro.classPD.Rd':
+  ‘mulwmw.dist.new’
+
+Missing link(s) in Rd file 'psihat.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'pxly.Rd':
+  ‘0,1’
+
+Missing link(s) in Rd file 'qcor.ep.ci.Rd':
+  ‘qcor.ep’
+
+Missing link(s) in Rd file 'qcorp1.Rd':
+  ‘qreg’
+
+Missing link(s) in Rd file 'qhdplotsm.Rd':
+  ‘qreg’
+
+Missing link(s) in Rd file 'qhdsm.Rd':
+  ‘Qreg’
+
+Missing link(s) in Rd file 'qhomt.Rd':
+  ‘2’ ‘1’
+
+Missing link(s) in Rd file 'qhomtsub.Rd':
+  ‘2’ ‘1’
+
+Missing link(s) in Rd file 'qhomtv2.Rd':
+  ‘1’ ‘2’
+
+Missing link(s) in Rd file 'qindbt_sub_functions.Rd':
+  ‘Qreg’
+
+Missing link(s) in Rd file 'qinvreg.Rd':
+  ‘Qreg’
+
+Missing link(s) in Rd file 'qmjci.Rd':
+  ‘lower limit, upper limit’
+
+Missing link(s) in Rd file 'qplotreg.Rd':
+  ‘qreg’ ‘Qreg’
+
+Missing link(s) in Rd file 'qregplots.Rd':
+  ‘qreg’
+
+Missing link(s) in Rd file 'qregsm.Rd':
+  ‘rqsm’
+
+Missing link(s) in Rd file 'qsmm.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'qsplit.Rd':
+  ‘1’ ‘2’
+
+Missing link(s) in Rd file 'quant.Rd':
+  ‘0,1’
+
+Missing link(s) in Rd file 'r.gauss.pro.Rd':
+  ‘i,j’ ‘i’ ‘j’
+
+Missing link(s) in Rd file 'rbbinom.Rd':
+  ‘0, nbin’ ‘rbeta.binomial’
+
+Missing link(s) in Rd file 'rdepth.orig.Rd':
+  ‘1’ ‘2’
+
+Missing link(s) in Rd file 'reg.con.dist.Rd':
+  ‘Qreg’
+
+Missing link(s) in Rd file 'reg.hyp.split.Rd':
+  ‘Qreg’ ‘lincon’
+
+Missing link(s) in Rd file 'reg.vs.rplot.Rd':
+  ‘rplot.pred’
+
+Missing link(s) in Rd file 'reg1wayISOMC.Rd':
+  ‘reg1wayISO’
+
+Missing link(s) in Rd file 'regGmcp.Rd':
+  ‘j’
+
+Missing link(s) in Rd file 'regIQR.Rd':
+  ‘Qreg’
+
+Missing link(s) in Rd file 'regIVstr.Rd':
+  ‘j’ ‘,j’
+
+Missing link(s) in Rd file 'regbin.hyp.split.Rd':
+  ‘Qreg’
+
+Missing link(s) in Rd file 'regci.inter.Rd':
+  ‘regciMC’
+
+Missing link(s) in Rd file 'regcon.out.Rd':
+  ‘Qreg’
+
+Missing link(s) in Rd file 'reghet.blp.ci.Rd':
+  ‘reg.bca’
+
+Missing link(s) in Rd file 'reglev.Rd':
+  ‘reg.reglev’
+
+Missing link(s) in Rd file 'regmed2.Rd':
+  ‘predictor, mediator’
+
+Missing link(s) in Rd file 'regmediate.Rd':
+  ‘predictor, mediator’
+
+Missing link(s) in Rd file 'regunstack.Rd':
+  ‘i’
+
+Missing link(s) in Rd file 'ribmp.Rd':
+  ‘rimul’
+
+Missing link(s) in Rd file 'rmaha.Rd':
+  ‘[robustbase]{cov.mcd}’
+
+Missing link(s) in Rd file 'rmanog.Rd':
+  ‘i,j’ ‘i,j+1’ ‘,1’ ‘,2’ ‘,J-1’
+
+Missing link(s) in Rd file 'rmba.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'rmdif.scores.Rd':
+  ‘,j’ ‘,k’
+
+Missing link(s) in Rd file 'rmdzD.Rd':
+  ‘j’ ‘j+1’ ‘rmdepth’
+
+Missing link(s) in Rd file 'rmdzero.Rd':
+  ‘j,k’ ‘j’ ‘k’
+
+Missing link(s) in Rd file 'rmdzeroOP.Rd':
+  ‘j,k’ ‘j’ ‘k’
+
+Missing link(s) in Rd file 'rmlinQS.Rd':
+  ‘1’ ‘J’ ‘,1’ ‘,J’ ‘lincon’
+
+Missing link(s) in Rd file 'rmm.dif.Rd':
+  ‘j’ ‘k’
+
+Missing link(s) in Rd file 'rplot.bin.Rd':
+  ‘rplot.pred’
+
+Missing link(s) in Rd file 'rplotN.Rd':
+  ‘rplot.pred’
+
+Missing link(s) in Rd file 'rqfit.Rd':
+  ‘qregci’
+
+Missing link(s) in Rd file 'rqfitpv.Rd':
+  ‘qregci’
+
+Missing link(s) in Rd file 'rqtest.Rd':
+  ‘qregci’ ‘qreg’
+
+Missing link(s) in Rd file 'rqtest.sub.Rd':
+  ‘qreg’
+
+Missing link(s) in Rd file 'rtdep.Rd':
+  ‘0, 1’ ‘dmul’
+
+Missing link(s) in Rd file 'runcor.Rd':
+  ‘i’
+
+Missing link(s) in Rd file 'sband.Rd':
+  ‘ks.crit’
+
+Missing link(s) in Rd file 'scorreg.Rd':
+  ‘,j’ ‘scorreg ci’
+
+Missing link(s) in Rd file 'scorregci.Rd':
+  ‘,j’ ‘scorregci.cr’
+
+Missing link(s) in Rd file 'scorregciH.Rd':
+  ‘,j’
+
+Missing link(s) in Rd file 'shiftdhd.Rd':
+  ‘qcomdhd’
+
+Missing link(s) in Rd file 'skerd.Rd':
+  ‘bandwidth.sj’
+
+Missing link(s) in Rd file 'skip.cov.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'skipcov.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'skipogk.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'skmcp.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'sm.inter.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'smgrid.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'smgridRC.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'smgridVRC.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'smpred.Rd':
+  ‘rplot.pred’ ‘RFreg’
+
+Missing link(s) in Rd file 'smtest.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'spag.plot.Rd':
+  ‘[graphics]{interaction.plot}’
+
+Missing link(s) in Rd file 'split.mat.Rd':
+  ‘,xcol’
+
+Missing link(s) in Rd file 'sppba.Rd':
+  ‘1’ ‘K’ ‘K+1’ ‘2K’ ‘spp’
+
+Missing link(s) in Rd file 'sppbb.Rd':
+  ‘1’ ‘2’ ‘K’ ‘K+1’
+
+Missing link(s) in Rd file 'sppbi.Rd':
+  ‘1’ ‘K’ ‘K+1’ ‘2K’ ‘spp’
+
+Missing link(s) in Rd file 'standmar.Rd':
+  ‘,j’
+
+Missing link(s) in Rd file 'stepmcp.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'sterby3.Rd':
+  ‘der2phiBY3’
+
+Missing link(s) in Rd file 't2way.Rd':
+  ‘1’ ‘2’ ‘K’ ‘K+1’
+
+Missing link(s) in Rd file 't2way.no.p.Rd':
+  ‘1’ ‘2’
+
+Missing link(s) in Rd file 't2waypbg.Rd':
+  ‘1’ ‘2’
+
+Missing link(s) in Rd file 't2wayv2.Rd':
+  ‘1’ ‘2’
+
+Missing link(s) in Rd file 't3way.Rd':
+  ‘1’ ‘2’ ‘L’ ‘L+1’
+
+Missing link(s) in Rd file 't3wayv2.Rd':
+  ‘1’ ‘2’ ‘L’ ‘L+1’ ‘2*L’ ‘K*L+1’
+
+Missing link(s) in Rd file 'tamhane.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'taureg.Rd':
+  ‘-1, 1’
+
+Missing link(s) in Rd file 'tbscov.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'thd.Rd':
+  ‘hdseq’ ‘hdpbci’
+
+Missing link(s) in Rd file 'trange.Rd':
+  ‘i’ ‘qrange’
+
+Missing link(s) in Rd file 'trim2gmul.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'trimmulCI.Rd':
+  ‘trimmul.crit’
+
+Missing link(s) in Rd file 'trimpartt.Rd':
+  ‘lincon’
+
+Missing link(s) in Rd file 'trqreg.Rd':
+  ‘qreg’
+
+Missing link(s) in Rd file 'tsp1reg.Rd':
+  ‘j’ ‘i’
+
+Missing link(s) in Rd file 'twoDNOV.Rd':
+  ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'twoDcorR.Rd':
+  ‘,1’ ‘,2’
+
+Missing link(s) in Rd file 'wincov.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'wincovN.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'wmean.cov.Rd':
+  ‘bicovM’ ‘bicovm’
+
+Missing link(s) in Rd file 'wmwaov.Rd':
+  ‘cidmulv2’
+
+Missing link(s) in Rd file 'wreg.Rd':
+  ‘wsp1reg’
+
+Missing link(s) in Rd file 'wt.bt.Rd':
+  ‘-c1, c1’ ‘0,1’
+
+Missing link(s) in Rd file 'wwwmcppb.sub.Rd':
+  ‘1’ ‘2’ ‘K’ ‘K+1’
+
+Missing link(s) in Rd file 'yuenQS.Rd':
+  ‘shiftQS’
+
+Missing link(s) in Rd file 'zonoid.Rd':
+  ‘Doplot’
+
+See section 'Cross-references' in the 'Writing R Extensions' manual.
+* checking for missing documentation entries ... WARNING
+Undocumented code objects:
+  ‘BCI’ ‘BpBCa’ ‘CompClassicDist’ ‘CompRobustDist’ ‘Dp’ ‘DregGOLS’
+  ‘ES.summary.sub’ ‘HuberTun’ ‘MLEst’ ‘MeanCov’ ‘QSci’ ‘Qreg’ ‘Qreghat’
+  ‘Rdepth’ ‘SEML’ ‘SErob’ ‘Tplt’ ‘WINCOR’ ‘acbinomcipv’
+  ‘anclinKMS.plot’ ‘ancsm.es’ ‘bbbmcppb.sub’ ‘bbmcp’ ‘bcmpQSci’ ‘bicor’
+  ‘bicorM’ ‘bicovM’ ‘bicovm’ ‘bwwA.es.sub’ ‘classSVD’ ‘corregci.sub’
+  ‘corxy’ ‘dep.ES.summary.sub’ ‘der2phiBY3’ ‘derphiBY3’ ‘difqci’
+  ‘difregYvar’ ‘dlin.sign’ ‘draw.ellipse’ ‘extradir’ ‘getSE’ ‘gethdot’
+  ‘greatsort’ ‘hdpv’ ‘hochberg’ ‘inter.TDES.sub’ ‘kernelEVD’
+  ‘linAKP.sub’ ‘linES.sub’ ‘lincon’ ‘lintests1’ ‘lloc’ ‘llrplot’
+  ‘llrsim’ ‘lmsviews’ ‘lnormsd’ ‘lsviews’ ‘lts1reg’ ‘ltsreg.2’ ‘maha’
+  ‘matsqrt’ ‘mbalata’ ‘mbamv’ ‘mbamv2’ ‘mbareg’ ‘mcpKadjp’
+  ‘mdepreg.coef’ ‘mdepreg.orig’ ‘mdepreg.sub’ ‘med2ci’ ‘medci’
+  ‘ols.coef’ ‘olsJmcp’ ‘olshc4band’ ‘opregpbMC’ ‘outreg’ ‘ph.inter’
+  ‘poireg’ ‘powest’ ‘qcor.ep’ ‘qhatds1’ ‘qreg’ ‘qreg.sub’ ‘randomset’
+  ‘rbeta.binomial’ ‘reg.reglev’ ‘reg1mcp’ ‘reg1wayISO’ ‘reg2cimcp’
+  ‘regIQRcon’ ‘regYsub’ ‘regYval’ ‘regcits’ ‘regpecv’ ‘regpre’
+  ‘regpreCV’ ‘regpreS’ ‘regpres1’ ‘regts1’ ‘remove.lab.vec’ ‘rhohc4bt’
+  ‘rimul’ ‘rm2miss.sub’ ‘rmESPRO.est’ ‘rmanogsub’ ‘rob.ridge.liu’
+  ‘robEst’ ‘robR2w’ ‘rplot.pred’ ‘rplot2g’ ‘rplotv2’ ‘rrl.est’ ‘rrplot’
+  ‘rrplot2’ ‘rstmn’ ‘scorall’ ‘shiftQS’ ‘shiftQSci’ ‘sir’ ‘sirviews’
+  ‘smgridLC’ ‘snmreg.sub’ ‘stmci’ ‘symviews’ ‘tailci.mul’ ‘tmci’
+  ‘trviews’ ‘tsgregs1’ ‘tvreg’ ‘tvreg2’ ‘twolsregsub’ ‘unimcd’ ‘uniran’
+  ‘vech’ ‘wddplot’ ‘weightmecov’ ‘wrregfun’ ‘wsp1reg’ ‘zdist’
+Undocumented S4 classes:
+  ‘SSV’ ‘BIN’
+All user-level objects in a package (including S4 classes and methods)
+should have documentation entries.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in Rd file 'Bagplot.Rd'
+  ‘colorloop’ ‘colorchull’ ‘databag’ ‘dataloop’ ‘plot.fence’ ‘type’
+
+Undocumented arguments in Rd file 'DancGLOBv2.Rd'
+  ‘fr1’ ‘fr2’ ‘xout’ ‘outfun’
+
+Undocumented arguments in Rd file 'Dancdet.Rd'
+  ‘x1’ ‘y1’ ‘x2’ ‘y2’ ‘fr1’ ‘fr2’ ‘tr’ ‘xout’ ‘outfun’
+
+Undocumented arguments in Rd file 'Dancols.Rd'
+  ‘x1’ ‘y1’ ‘x2’ ‘y2’ ‘fr1’ ‘fr2’
+
+Undocumented arguments in Rd file 'Dancova.ES.sum.Rd'
+  ‘x1’ ‘y1’ ‘x2’ ‘y2’ ‘fr1’ ‘fr2’ ‘tr’ ‘alpha’ ‘pts’ ‘xout’ ‘outfun’
+  ‘SEED’
+
+Undocumented arguments in Rd file 'DancovaV2.Rd'
+  ‘fr1’ ‘fr2’ ‘xout’ ‘eout’ ‘outfun’
+
+Undocumented arguments in Rd file 'Dancovamp.Rd'
+  ‘fr1’ ‘fr2’
+
+Undocumented arguments in Rd file 'Dancovapb.Rd'
+  ‘x1’ ‘y1’ ‘x2’ ‘y2’ ‘fr1’ ‘fr2’ ‘pts’
+
+Undocumented arguments in Rd file 'Dancovapts.Rd'
+  ‘x1’ ‘y1’ ‘x2’ ‘y2’ ‘fr1’ ‘fr2’ ‘tr’ ‘alpha’ ‘plotit’ ‘xout’ ‘outfun’
+
+Undocumented arguments in Rd file 'Dancts.Rd'
+  ‘x1’ ‘y1’ ‘x2’ ‘y2’ ‘fr1’ ‘fr2’
+
+Undocumented arguments in Rd file 'Danctspb.Rd'
+  ‘x1’ ‘y1’ ‘x2’ ‘y2’ ‘fr1’ ‘fr2’
+
+Undocumented arguments in Rd file 'DanctspbMC.Rd'
+  ‘x1’ ‘y1’ ‘x2’ ‘y2’ ‘fr1’ ‘fr2’
+
+Undocumented arguments in Rd file 'Depth.class.bag.Rd'
+  ‘g’
+
+Undocumented arguments in Rd file 'Dmul.loc2g.Rd'
+  ‘m1’
+
+Undocumented arguments in Rd file 'KMSgrid.mcp.Rd'
+  ‘tr’
+
+Undocumented arguments in Rd file 'KMSgridRC.Rd'
+  ‘tr’
+
+Undocumented arguments in Rd file 'KNNbag.Rd'
+  ‘g’
+
+Undocumented arguments in Rd file 'LCO.CI.Rd'
+  ‘dp’
+
+Undocumented arguments in Rd file 'LMSreg.Rd'
+  ‘outfun’ ‘...’
+
+Undocumented arguments in Rd file 'LSMbag.Rd'
+  ‘g’
+
+Undocumented arguments in Rd file 'MMreg.Rd'
+  ‘outfun’ ‘...’
+
+Undocumented arguments in Rd file 'NNbag.Rd'
+  ‘g’
+
+Undocumented arguments in Rd file 'RFbag.Rd'
+  ‘g’
+
+Undocumented arguments in Rd file 'SVMbag.Rd'
+  ‘g’
+
+Undocumented arguments in Rd file 'TKmeans.Rd'
+  ‘scaling’ ‘runs’ ‘points’ ‘countmode’ ‘printcrit’ ‘maxit’
+
+Undocumented arguments in Rd file 'acbinomciv2.Rd'
+  ‘nullval’
+
+Undocumented arguments in Rd file 'akerd.Rd'
+  ‘pyhat’
+
+Duplicated \argument entries in Rd file 'ancES.Rd':
+  ‘ylab’ ‘zlab’ ‘xlab’
+
+Undocumented arguments in Rd file 'anclog.Rd'
+  ‘pv’
+
+Documented arguments not in \usage in Rd file 'bbmcpQS.Rd':
+  ‘nreps’ ‘SEED’ ‘POOL’
+
+Undocumented arguments in Rd file 'bbtrimQS.Rd'
+  ‘con’ ‘SEED’
+
+Undocumented arguments in Rd file 'bbwmcp.Rd'
+  ‘...’
+
+Undocumented arguments in Rd file 'bbwtrim.Rd'
+  ‘p’
+
+Undocumented arguments in Rd file 'bbwtrimbt.Rd'
+  ‘J’ ‘K’ ‘L’
+
+Undocumented arguments in Rd file 'bmreg.Rd'
+  ‘outfun’ ‘...’
+
+Undocumented arguments in Rd file 'bpmed.Rd'
+  ‘alpha’
+
+Undocumented arguments in Rd file 'bwmcp.Rd'
+  ‘...’
+
+Undocumented arguments in Rd file 'bwtrim.Rd'
+  ‘p’
+
+Undocumented arguments in Rd file 'bwtrimbt.Rd'
+  ‘J’ ‘K’
+
+Undocumented arguments in Rd file 'bwwA.es.Rd'
+  ‘nboot’ ‘...’
+
+Undocumented arguments in Rd file 'bwwmcp.Rd'
+  ‘...’
+
+Undocumented arguments in Rd file 'bwwtrim.Rd'
+  ‘grp’ ‘p’
+
+Undocumented arguments in Rd file 'bwwtrimbt.Rd'
+  ‘J’ ‘K’ ‘L’
+
+Documented arguments not in \usage in Rd file 'cell.com.pv.Rd':
+  ‘data’
+
+Undocumented arguments in Rd file 'chreg.Rd'
+  ‘outfun’ ‘pr’ ‘...’
+
+Undocumented arguments in Rd file 'ddep.Rd'
+  ‘alpha’ ‘SEED’
+
+Undocumented arguments in Rd file 'ddeptr.Rd'
+  ‘alpha’ ‘SEED’ ‘tr’
+
+Undocumented arguments in Rd file 'dec2by2.A.Rd'
+  ‘alpha’ ‘SEED’
+
+Undocumented arguments in Rd file 'dec2by2.B.Rd'
+  ‘alpha’ ‘SEED’
+
+Undocumented arguments in Rd file 'dec2way.mcp.Rd'
+  ‘alpha’ ‘SEED’
+
+Undocumented arguments in Rd file 'decJKinter.Rd'
+  ‘alpha’ ‘SEED’
+
+Undocumented arguments in Rd file 'decinter.Rd'
+  ‘alpha’ ‘SEED’
+
+Undocumented arguments in Rd file 'dep.dif.fun.Rd'
+  ‘tr’ ‘alpha’
+
+Undocumented arguments in Rd file 'depQSci.Rd'
+  ‘alpha’ ‘SEED’
+
+Undocumented arguments in Rd file 'depreg.Rd'
+  ‘outfun’ ‘...’
+
+Undocumented arguments in Rd file 'dis.depth.bag.Rd'
+  ‘g’
+
+Undocumented arguments in Rd file 'discdepth.Rd'
+  ‘g’
+
+Undocumented arguments in Rd file 'dmedpb.Rd'
+  ‘alpha’ ‘grp’ ‘nboot’ ‘SEED’
+
+Undocumented arguments in Rd file 'ees.ci.Rd'
+  ‘pr’
+
+Undocumented arguments in Rd file 'exmed.Rd'
+  ‘alpha’ ‘SEED’
+
+Documented arguments not in \usage in Rd file 'linplot.Rd':
+  ‘plotfun’ ‘nboot’ ‘plotit’ ‘pyhat’ ‘...’
+
+Undocumented arguments in Rd file 'lintest.Rd'
+  ‘x’ ‘y’ ‘alpha’ ‘xout’ ‘outfun’
+
+Undocumented arguments in Rd file 'loc2difpb.Rd'
+  ‘alpha’ ‘nboot’ ‘SEED’
+
+Undocumented arguments in Rd file 'lplot.Rd'
+  ‘expand’
+
+Undocumented arguments in Rd file 'lsfitci.Rd'
+  ‘x’ ‘y’ ‘alpha’ ‘xout’ ‘outfun’
+Documented arguments not in \usage in Rd file 'lsfitci.Rd':
+  ‘...’
+
+Undocumented arguments in Rd file 'mbmreg.Rd'
+  ‘outfun’ ‘...’
+
+Undocumented arguments in Rd file 'mdepreg.Rd'
+  ‘outfun’
+
+Undocumented arguments in Rd file 'med1way.Rd'
+  ‘grp’ ‘alpha’ ‘SEED’
+
+Undocumented arguments in Rd file 'med2g.Rd'
+  ‘alpha’ ‘nboot’ ‘SEED’ ‘...’
+
+Undocumented arguments in Rd file 'med2mcp.Rd'
+  ‘nboot’ ‘alpha’ ‘SEED’
+
+Undocumented arguments in Rd file 'med2way.Rd'
+  ‘SEED’
+
+Undocumented arguments in Rd file 'medcipb.Rd'
+  ‘alpha’ ‘nboot’ ‘SEED’ ‘...’
+
+Undocumented arguments in Rd file 'medind.Rd'
+  ‘SEED’ ‘alpha’
+
+Undocumented arguments in Rd file 'medpb.Rd'
+  ‘alpha’ ‘nboot’ ‘grp’ ‘SEED’
+
+Undocumented arguments in Rd file 'medpb.es.Rd'
+  ‘alpha’ ‘nboot’ ‘grp’ ‘SEED’
+
+Undocumented arguments in Rd file 'medr.Rd'
+  ‘alpha’ ‘nboot’ ‘grp’ ‘SEED’
+
+Undocumented arguments in Rd file 'msmedci.Rd'
+  ‘alpha’
+
+Undocumented arguments in Rd file 'ols.pred.ci.Rd'
+  ‘xout’ ‘RETURN’ ‘newx’
+
+Undocumented arguments in Rd file 'oph.astig.datasetconvexpoly.Rd'
+  ‘plotit’ ‘xlab’ ‘ylab’ ‘pch’ ‘reset’
+
+Undocumented arguments in Rd file 'oph.astig.datasetconvexpoly.mean.Rd'
+  ‘plotit’ ‘xlab’ ‘ylab’
+
+Undocumented arguments in Rd file 'oph.astig.depcom.Rd'
+  ‘tr’ ‘alpha’ ‘nboot’
+
+Undocumented arguments in Rd file 'oph.astig.depcom.unimean.var.Rd'
+  ‘alpha’ ‘nboot’ ‘tr’ ‘SEED’
+
+Undocumented arguments in Rd file 'oph.astig.indepbivmarg.totvars.Rd'
+  ‘alpha’
+
+Undocumented arguments in Rd file 'oph.astig.indepbivmeans.Rd'
+  ‘alpha’ ‘nboot’ ‘tr’
+
+Undocumented arguments in Rd file 'oph.astig.indepbivtotvars.Rd'
+  ‘alpha’
+
+Undocumented arguments in Rd file 'oph.astig.indepcom.Rd'
+  ‘tr’ ‘alpha’ ‘nboot’
+
+Undocumented arguments in Rd file 'oph.astig.meanconvexpoly.Rd'
+  ‘alpha’ ‘nboot’
+
+Undocumented arguments in Rd file 'oph.astig.medianconvexpoly.Rd'
+  ‘alpha’ ‘SEED’
+
+Undocumented arguments in Rd file 'oph.dep.comMAD.Rd'
+  ‘tr’ ‘nboot’
+
+Undocumented arguments in Rd file 'oph.dep.comMeanAE.Rd'
+  ‘tr’ ‘nboot’
+
+Undocumented arguments in Rd file 'oph.dep.comMedAE.Rd'
+  ‘nboot’
+
+Undocumented arguments in Rd file 'oph.dep.comRMSAE.Rd'
+  ‘tr’ ‘nboot’
+
+Undocumented arguments in Rd file 'oph.dep.commean.Rd'
+  ‘tr’
+
+Undocumented arguments in Rd file 'oph.indep.comMAD.Rd'
+  ‘tr’ ‘nboot’
+
+Undocumented arguments in Rd file 'oph.indep.comMeanAE.Rd'
+  ‘tr’ ‘nboot’
+
+Undocumented arguments in Rd file 'oph.indep.comMedAE.Rd'
+  ‘nboot’
+
+Undocumented arguments in Rd file 'oph.indep.comRMSAE.Rd'
+  ‘tr’ ‘nboot’
+
+Undocumented arguments in Rd file 'oph.indep.commean.Rd'
+  ‘tr’
+
+Undocumented arguments in Rd file 'opregpb.Rd'
+  ‘x’ ‘y’ ‘alpha’
+
+Undocumented arguments in Rd file 'pro.class.bag.Rd'
+  ‘g’
+
+Undocumented arguments in Rd file 'pro.classPD.bag.Rd'
+  ‘g’
+
+Undocumented arguments in Rd file 'rdplot.Rd'
+  ‘pyhat’
+
+Undocumented arguments in Rd file 'reg1way.Rd'
+  ‘xout’ ‘outfun’ ‘alpha’
+
+Undocumented arguments in Rd file 'reg2ci.Rd'
+  ‘alpha’ ‘xout’ ‘outfun’
+
+Undocumented arguments in Rd file 'reg2g.p2plot.Rd'
+  ‘zlab’
+
+Undocumented arguments in Rd file 'reg2plot.Rd'
+  ‘pch1’ ‘pch2’
+
+Undocumented arguments in Rd file 'regYband.Rd'
+  ‘crit’
+
+Undocumented arguments in Rd file 'regYci.sum.Rd'
+  ‘xlab’ ‘xlab1’ ‘xlab2’ ‘ylab’
+
+Undocumented arguments in Rd file 'regYci2Gv2.Rd'
+  ‘xlab’ ‘xlab1’ ‘xlab2’ ‘ylab’
+
+Undocumented arguments in Rd file 'regci.Rd'
+  ‘x’ ‘y’ ‘alpha’ ‘xout’ ‘outfun’
+
+Undocumented arguments in Rd file 'regci.inter.Rd'
+  ‘alpha’
+
+Undocumented arguments in Rd file 'reghet.blp.ci.Rd'
+  ‘SEED’
+
+Undocumented arguments in Rd file 'regp2plot.Rd'
+  ‘zlab’
+
+Undocumented arguments in Rd file 'regplot.Rd'
+  ‘zlab’
+
+Undocumented arguments in Rd file 'regtest.Rd'
+  ‘x’ ‘y’ ‘alpha’ ‘xout’ ‘outfun’
+
+Undocumented arguments in Rd file 'rm3mcp.Rd'
+  ‘tr’
+
+Undocumented arguments in Rd file 'rmmcp.Rd'
+  ‘tr’ ‘alpha’
+
+Undocumented arguments in Rd file 'rmmcpES.Rd'
+  ‘tr’ ‘alpha’
+
+Undocumented arguments in Rd file 'rmmcpQS.Rd'
+  ‘tr’ ‘alpha’
+
+Undocumented arguments in Rd file 'rmmcppbd.Rd'
+  ‘alpha’ ‘SEED’
+
+Undocumented arguments in Rd file 'rmmcppbtm.Rd'
+  ‘alpha’ ‘tr’
+
+Undocumented arguments in Rd file 'rmmcppbv2.Rd'
+  ‘alpha’ ‘SEED’
+
+Undocumented arguments in Rd file 'rmmcpv2.Rd'
+  ‘tr’ ‘alpha’
+
+Undocumented arguments in Rd file 'rmmismcp.Rd'
+  ‘alpha’ ‘SEED’
+
+Undocumented arguments in Rd file 'rplot.res.Rd'
+  ‘scat’ ‘pyhat’ ‘zlab’
+
+Undocumented arguments in Rd file 'rplotCI.Rd'
+  ‘pyhat’
+
+Undocumented arguments in Rd file 'rplotCIM.Rd'
+  ‘p.crit’ ‘scat’ ‘pyhat’
+
+Undocumented arguments in Rd file 'rplotCIS.Rd'
+  ‘scat’ ‘pyhat’
+
+Undocumented arguments in Rd file 'rplotCIsmm.Rd'
+  ‘pyhat’ ‘eout’ ‘LP’
+
+Undocumented arguments in Rd file 'rplotpbCI.Rd'
+  ‘scat’ ‘pyhat’
+
+Undocumented arguments in Rd file 'rregci.Rd'
+  ‘x’ ‘y’ ‘alpha’
+
+Undocumented arguments in Rd file 'smgridVRC.Rd'
+  ‘alpha’ ‘VAL1’ ‘VAL2’ ‘PB’ ‘est’ ‘nboot’ ‘pr’ ‘method’ ‘xout’
+  ‘outfun’ ‘SEED’ ‘...’
+
+Undocumented arguments in Rd file 'snmreg.Rd'
+  ‘outfun’
+
+Undocumented arguments in Rd file 'spearci.Rd'
+  ‘SEED’ ‘MC’
+
+Undocumented arguments in Rd file 'tsplit.Rd'
+  ‘grp’ ‘p’
+
+Undocumented arguments in Rd file 'winreg.Rd'
+  ‘tr’ ‘outfun’ ‘...’
+
+Undocumented arguments in Rd file 'wwmed.Rd'
+  ‘alpha’
+
+Undocumented arguments in Rd file 'wwwmed.Rd'
+  ‘alpha’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
+* checking Rd contents ... NOTE
+Rd files without \description:
+  ‘ABES.KS.Rd’ ‘Bagplot.Rd’ ‘LCO.CI.Rd’ ‘ODDSR.CI.Rd’ ‘TKmeans.Rd’
+  ‘acbinomci.Rd’ ‘acbinomciv2.Rd’ ‘bg2ci.Rd’ ‘bwwA.es.Rd’ ‘ees.ci.Rd’
+  ‘lincdtr.Rd’ ‘ols.pred.ci.Rd’ ‘oph.astig.datasetconvexpoly.Rd’
+  ‘oph.astig.datasetconvexpoly.mean.Rd’ ‘pow2an.Rd’ ‘powt1an.Rd’
+  ‘powt1est.Rd’ ‘smgridVRC.Rd’ ‘spearci.Rd’ ‘tsplit.Rd’
+* checking for unstated dependencies in examples ... OK
+* checking examples ... ERROR
+Running examples in ‘WRS-Ex.R’ failed
+The error most likely occurred in:
+
+> ### Name: TWOpNOV
+> ### Title: Compare Two Dependent Pearson Correlations (Non-Overlapping)
+> ### Aliases: TWOpNOV
+> 
+> ### ** Examples
+> 
+> set.seed(123)
+> n <- 50
+> x <- cbind(rnorm(n), rnorm(n))
+> y <- cbind(rnorm(n), rnorm(n))
+> 
+> result <- TWOpNOV(x, y)
+Error in TWOpNOV(x, y) : object 'ZCI' not found
+Execution halted
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... OK
+  Running ‘test-backward-compat.R’
 * DONE
-Status: 1 ERROR
+Status: 1 ERROR, 6 WARNINGs, 2 NOTEs
