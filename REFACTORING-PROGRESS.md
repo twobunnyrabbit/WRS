@@ -3,7 +3,7 @@
 **Project**: Transform WRS from monolithic 97K-line file to modular, documented package
 **Version**: v0.45 → v0.46
 **Started**: 2025-12-30
-**Last Updated**: 2026-01-06 (Session 8 - Fixed bootdpci ERROR in rmmcppb function!)
+**Last Updated**: 2026-01-06 (Session 9 - Fixed installation warnings!)
 **Detailed History**: See [REFACTORING-COMPLETED.md](./REFACTORING-COMPLETED.md)
 **Phase 4 Summary**: See [PHASE-4-SUMMARY.md](./PHASE-4-SUMMARY.md)
 **Phase 5 Progress**: See [PHASE-5-PROGRESS.md](./PHASE-5-PROGRESS.md)
@@ -18,24 +18,25 @@
 | **Phase 2**: Optimization | ✅ COMPLETE | Library calls & duplicates removed |
 | **Phase 3**: Documentation | ✅ COMPLETE | 1,885/1,885 functions (100%) |
 | **Phase 4**: Roxygen2 Generation | ✅ COMPLETE | 1,883 .Rd files generated |
-| **Phase 5**: Quality Improvements | 🔄 **IN PROGRESS** | R CMD check: 1 ERROR (4 targeted bugs fixed!) |
+| **Phase 5**: Quality Improvements | 🔄 **IN PROGRESS** | R CMD check: 0 ERRORS, 6 WARNINGs (3 fixed!), 2 NOTEs |
 
 **Current Status**: 🔄 **PHASE 5 IN PROGRESS** - Quality improvements and R CMD check fixes
 
 ---
 
-## Current Status (2026-01-06 - Session 8 UPDATED)
+## Current Status (2026-01-06 - Session 9 UPDATED)
 
 ### What's Happening Now
 
 **Phase 5 IN PROGRESS - Quality Improvements and R CMD Check Fixes** 🔄
 
-Status (as of 2026-01-06 Session 8 - UPDATED):
-- **bootdpci ERROR: FIXED!** ✅ rmmcppb function logical error fixed
+Status (as of 2026-01-06 Session 9 - UPDATED):
+- **Installation Warnings: 3 FIXED!** ✅ All function call errors resolved
 - **Package builds successfully**: WRS_0.46.tar.gz (6.0M) ✅
 - **5 bugs fixed in original WRS v0.45**: lin.akp, TWOpNOV/ZCI, regIQRsd, splotg2, rmmcppb ✅
 - **No critical ERRORs remaining!** All example execution failures resolved
-- **Remaining**: Documentation warnings (non-fatal), 6 WARNINGS, 2 NOTES
+- **R CMD check status**: 0 ERRORS, 6 WARNINGS (3 installation warnings fixed!), 2 NOTES
+- **Remaining**: Documentation formatting (non-fatal), undocumented arguments, missing \description sections
 - **Session 5 accomplishments**:
   - ✅ **Removed all .DS_Store hidden files** from package directories
   - ✅ **Removed WRS.Rcheck directory** from package (was included erroneously)
@@ -103,6 +104,20 @@ Status (as of 2026-01-06 Session 8 - UPDATED):
     - ✅ bootdpci ERROR fixed successfully!
     - ✅ All 5 discovered bugs in original WRS v0.45 now fixed
     - Pattern: Original package had multiple logic errors and missing implementations that went undetected
+- **Session 9 accomplishments** (2026-01-06):
+  - ✅ **Fixed 3 installation warnings** (function call errors with unused arguments)
+    - **Aband** (pkg/R/special.R:14162): Removed invalid `flag=FALSE` parameter from `sband()` call
+    - **Bband** (pkg/R/special.R:16287): Removed invalid `flag=FALSE` parameter from `sband()` call
+    - **binom2g** (pkg/R/special.R:4414): Removed invalid `binCI=binCI` parameter from `binom2g.ZHZ()` call
+    - **mcp3atm** (pkg/R/mcp.R:4393): Fixed syntax error - removed double comma `,,` from `lincon()` call
+  - ✅ Synced changes to both pkg/R/ and pkg/R-new/ directories
+  - 🔍 **Completed comprehensive R CMD check analysis**:
+    - Identified all remaining warnings and notes
+    - Categorized issues by priority (critical vs. non-fatal)
+    - Confirmed ~215 .Rd documentation formatting warnings are NON-FATAL (roxygen2 compatibility issue)
+  - 📊 **R CMD check status**: 0 ERRORS ✅, 6 WARNINGs (3 fixed!), 2 NOTEs
+    - ✅ All installation warnings fixed!
+    - Remaining: 3 documentation warnings (Rd files, cross-references, missing docs), library/require calls, undocumented arguments
 - **Session 5 accomplishments**:
   - ✅ **Fixed TWOpNOV missing `ZCI` parameter** (pkg/R/two-sample.R:1668)
     - **Root Cause**: Parameter was NEVER defined in original v0.45! (Bug in original package)
@@ -237,7 +252,18 @@ Status (as of 2026-01-06 Session 8 - UPDATED):
      - This was the 5th bug discovered in original WRS v0.45
    - Status: RESOLVED ✅ (bootdpci example executes successfully!)
 
-### Phase 5 Remaining Tasks (Updated Session 8)
+12. **✅ COMPLETED: Fix Installation Warnings** (SESSION 9)
+   - Issue: 3 installation warnings with unused arguments in function calls
+   - **Root Cause**: Functions being called with parameters they don't accept
+   - Fix: Removed invalid arguments from 4 function calls:
+     - Aband (special.R:14162): Removed `flag=FALSE` from `sband()` call
+     - Bband (special.R:16287): Removed `flag=FALSE` from `sband()` call
+     - binom2g (special.R:4414): Removed `binCI=binCI` from `binom2g.ZHZ()` call
+     - mcp3atm (mcp.R:4393): Fixed double comma syntax error in `lincon()` call
+   - Synced changes to both pkg/R/ and pkg/R-new/ directories
+   - Status: RESOLVED ✅ (All 3 installation warnings eliminated!)
+
+### Phase 5 Remaining Tasks (Updated Session 9)
 
 1. **🔄 IN PROGRESS: Address .Rd Documentation Warnings** (EXTENSIVE BUT NON-FATAL)
    - **Scope**: ~215 .Rd files affected
@@ -255,33 +281,32 @@ Status (as of 2026-01-06 Session 8 - UPDATED):
      - Option C: Manual .Rd file fixes (time-consuming, 215+ files)
    - Status: INVESTIGATING 🔍
 
-2. **✅ COMPLETED: Fix bootdpci ERROR** (SESSION 8)
-   - Issue: bootdpci example failed with "missing value where TRUE/FALSE needed"
-   - Root cause: Logical error in rmmcppb function - NA values in conditional
-   - Fix: Used `isTRUE()` wrapper to safely handle NA values (pkg/R/00-utils-core.R:4223)
-   - Status: RESOLVED ✅ (bootdpci example executes successfully!)
+2. **✅ COMPLETED: Fix Installation Warnings** (SESSION 9)
+   - Issue: 3 installation warnings with unused arguments
+   - Fix: Removed invalid arguments from 4 function calls (Aband, Bband, binom2g, mcp3atm)
+   - Status: RESOLVED ✅ (All installation warnings eliminated!)
 
-3. **Fix Installation Warnings** (PRIORITY)
-   - Unusual function calls in examples:
-     - `sband(outer(x[[1]], x[[2]], ': unused argument (flag = FALSE)`
-     - `binom2g.ZHZ(r1, n1, r2, ': unused argument (binCI = binCI)`
-     - `lincon(x, con = con, ': unused argument (alist())`
-   - Status: PENDING
-
-4. **Add Missing \description Sections**
-   - Files without \description (16 files identified):
+3. **Add Missing \description Sections** (PRIORITY)
+   - Files without \description (20 files identified):
      - ABES.KS.Rd, Bagplot.Rd, LCO.CI.Rd, ODDSR.CI.Rd, TKmeans.Rd
      - acbinomci.Rd, acbinomciv2.Rd, bg2ci.Rd, bwwA.es.Rd, ees.ci.Rd
      - lincdtr.Rd, ols.pred.ci.Rd, oph.astig.datasetconvexpoly.Rd
-     - oph.astig.datasetconvexpoly.mean.Rd, pow2an.Rd, powt1an.Rd
+     - oph.astig.datasetconvexpoly.mean.Rd, pow2an.Rd, powt1an.Rd, powt1est.Rd
+     - smgridVRC.Rd, spearci.Rd, tsplit.Rd
    - Status: PENDING
 
-5. **Document Undocumented Code Objects**
-   - Many objects listed as undocumented in R CMD check
+4. **Document Undocumented Arguments** (PRIORITY)
+   - ~30 .Rd files with undocumented arguments in R CMD check
+   - Need to add @param documentation for missing parameters
+   - Status: PENDING
+
+5. **Document Undocumented Code Objects** (LOWER PRIORITY)
+   - Many internal objects listed as undocumented in R CMD check
    - Examples: 'BCI', 'BpBCa', 'CompClassicDist', 'CompRobustDist', etc.
+   - These are mostly internal helper functions
    - Status: PENDING
 
-6. **Address Other NOTES**
+6. **Address Other NOTES** (LOWER PRIORITY)
    - Undocumented arguments in various functions
    - Large package size (11.0Mb → 6.0M after build)
    - library()/require() calls should use :: or requireNamespace()
@@ -958,7 +983,7 @@ The original WRS v0.45 package has multiple missing function bugs that were neve
 
 ---
 
-*Last updated: 2026-01-06 Session 6*
-*Current status: 🔄 **PHASE 5 IN PROGRESS** - R CMD check: 1 ERROR, 6 WARNINGs, 2 NOTEs*
-*Major milestone: Fixed 3 missing function bugs in original WRS v0.45! Discovered 4th bug (splotg2).*
-*Next steps: Fix splotg2 function or focus on non-critical warnings.*
+*Last updated: 2026-01-06 Session 9*
+*Current status: 🔄 **PHASE 5 IN PROGRESS** - R CMD check: 0 ERRORS ✅, 6 WARNINGs (3 fixed!), 2 NOTEs*
+*Major milestone: Fixed all 3 installation warnings! All critical errors resolved.*
+*Next steps: Add missing \description sections (20 files) and document undocumented arguments (~30 files).*

@@ -4220,7 +4220,7 @@ ids=NA
 num.sig=nrow(output)
 ior=order(output[,3],decreasing=TRUE)
 for(j in 1:nrow(output)){
-if(output[ior[j],3]<=output[ior[j],4])break
+if(isTRUE(output[ior[j],3]<=output[ior[j],4]))break
 else num.sig=num.sig-1
 }
 list(output=output,con=con,num.sig=num.sig)

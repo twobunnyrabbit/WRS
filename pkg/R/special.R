@@ -4411,7 +4411,7 @@ binom2g<-function(r1 = sum(elimna(x)), n1 = length(elimna(x)), r2 = sum(elimna(y
 type=match.arg(method)
 switch(type,
    ECP=binmcp(c(r1,r2),n=c(n1,n2),alpha=alpha,iter=iter,SEED=SEED),
-   ZHZ=binom2g.ZHZ(r1,n1,r2,n2,binCI=binCI,alpha=alpha),
+   ZHZ=binom2g.ZHZ(r1,n1,r2,n2,alpha=alpha),
     KMS=bi2KMSv2(r1,n1,r2,n2,x=x,y=y,alpha=alpha),
     SK=twobinom(r1,n1,r2,n2,x=x,y=y),
     )
@@ -14159,7 +14159,7 @@ plotit<-F
 g2plot(v1,v2)
 }
 output<-sband(outer(x[[1]],x[[2]],FUN="+"),outer(x[[3]],x[[4]],FUN="+"),
-plotit=plotit,crit=crit,flag=FALSE,sm=sm,xlab=xlab,ylab=ylab)
+plotit=plotit,crit=crit,sm=sm,xlab=xlab,ylab=ylab)
 if(!print.all){
 numsig<-output$numsig
 ks.test.stat<-ks.test(outer(x[[1]],x[[2]],FUN="+"),
@@ -16284,7 +16284,7 @@ plotit<-F
 g2plot(v1,v2)
 }
 output<-sband(outer(x[[1]],x[[2]],FUN="+"),outer(x[[3]],x[[4]],FUN="+"),
-plotit=plotit,crit=crit,flag=FALSE,sm=sm,xlab=xlab,ylab=ylab)
+plotit=plotit,crit=crit,sm=sm,xlab=xlab,ylab=ylab)
 if(!print.all){
 numsig<-output$numsig
 ks.test.stat<-ks.test(outer(x[[1]],x[[2]],FUN="+"),
