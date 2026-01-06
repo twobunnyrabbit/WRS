@@ -6,7 +6,7 @@
     GNU Fortran (Ubuntu 11.4.0-1ubuntu1~22.04.2) 11.4.0
 * running under: Ubuntu 22.04.5 LTS
 * using session charset: UTF-8
-* using options ‘--no-manual --no-build-vignettes’
+* using option ‘--no-manual’
 * checking for file ‘WRS/DESCRIPTION’ ... OK
 * checking extension type ... Package
 * this is package ‘WRS’ version ‘0.46’
@@ -2973,29 +2973,4 @@ Rd files without \description:
   ‘oph.astig.datasetconvexpoly.mean.Rd’ ‘pow2an.Rd’ ‘powt1an.Rd’
   ‘powt1est.Rd’ ‘smgridVRC.Rd’ ‘spearci.Rd’ ‘tsplit.Rd’
 * checking for unstated dependencies in examples ... OK
-* checking examples ... ERROR
-Running examples in ‘WRS-Ex.R’ failed
-The error most likely occurred in:
-
-> ### Name: bootdpci
-> ### Title: Percentile Bootstrap CI for Dependent Groups
-> ### Aliases: bootdpci
-> 
-> ### ** Examples
-> 
-> # Paired data
-> x <- c(120, 135, 140, 125, 130, 142, 128, 133)
-> y <- c(115, 130, 138, 120, 125, 140, 125, 130)
-> bootdpci(x, y, nboot=500)
-[1] "dif=TRUE, so analysis is done on difference scores."
-[1] " Each confidence interval has probability coverage 1-alpha."
-[1] "Also note that a sequentially rejective method is being used"
-Error in if (output[ior[j], 3] <= output[ior[j], 4]) break else num.sig = num.sig -  : 
-  missing value where TRUE/FALSE needed
-Calls: bootdpci -> rmmcppb
-Execution halted
-* checking for unstated dependencies in ‘tests’ ... OK
-* checking tests ... OK
-  Running ‘test-backward-compat.R’
-* DONE
-Status: 1 ERROR, 6 WARNINGs, 2 NOTEs
+* checking examples ...

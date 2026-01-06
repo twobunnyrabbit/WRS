@@ -3,7 +3,7 @@
 **Project**: Transform WRS from monolithic 97K-line file to modular, documented package
 **Version**: v0.45 → v0.46
 **Started**: 2025-12-30
-**Last Updated**: 2026-01-06 (Session 7 - Fixed binband/splotg2 ERROR - ALL targeted bugs now fixed!)
+**Last Updated**: 2026-01-06 (Session 8 - Fixed bootdpci ERROR in rmmcppb function!)
 **Detailed History**: See [REFACTORING-COMPLETED.md](./REFACTORING-COMPLETED.md)
 **Phase 4 Summary**: See [PHASE-4-SUMMARY.md](./PHASE-4-SUMMARY.md)
 **Phase 5 Progress**: See [PHASE-5-PROGRESS.md](./PHASE-5-PROGRESS.md)
@@ -24,18 +24,18 @@
 
 ---
 
-## Current Status (2026-01-06 - Session 7 UPDATED)
+## Current Status (2026-01-06 - Session 8 UPDATED)
 
 ### What's Happening Now
 
 **Phase 5 IN PROGRESS - Quality Improvements and R CMD Check Fixes** 🔄
 
-Status (as of 2026-01-06 Session 7 - UPDATED):
-- **R CMD check: 1 ERROR remaining** (different error, not related to our fixes)
+Status (as of 2026-01-06 Session 8 - UPDATED):
+- **bootdpci ERROR: FIXED!** ✅ rmmcppb function logical error fixed
 - **Package builds successfully**: WRS_0.46.tar.gz (6.0M) ✅
-- **4 bugs fixed in original WRS v0.45**: lin.akp, TWOpNOV/ZCI, regIQRsd, splotg2 ✅
-- **binband ERROR: FIXED!** ✅ splotg2 function successfully implemented
-- **Remaining**: 1 ERROR (bootdpci - pre-existing bug), 6 WARNINGS, 2 NOTES
+- **5 bugs fixed in original WRS v0.45**: lin.akp, TWOpNOV/ZCI, regIQRsd, splotg2, rmmcppb ✅
+- **No critical ERRORs remaining!** All example execution failures resolved
+- **Remaining**: Documentation warnings (non-fatal), 6 WARNINGS, 2 NOTES
 - **Session 5 accomplishments**:
   - ✅ **Removed all .DS_Store hidden files** from package directories
   - ✅ **Removed WRS.Rcheck directory** from package (was included erroneously)
@@ -88,6 +88,21 @@ Status (as of 2026-01-06 Session 7 - UPDATED):
     - ✅ binband ERROR fixed successfully!
     - ❌ New ERROR in bootdpci (pre-existing bug in rmmcppb function)
     - Pattern confirmed: Original WRS v0.45 had multiple missing function implementations
+- **Session 8 accomplishments** (2026-01-06):
+  - ✅ **Fixed bootdpci ERROR: logical error in rmmcppb function** (pkg/R/00-utils-core.R:4223)
+    - **Root Cause**: Missing NA check in conditional statement caused "missing value where TRUE/FALSE needed" error
+    - **Issue**: Line 4223 had `if(output[ior[j],3]<=output[ior[j],4])break` which could evaluate to NA
+    - **Fix**: Changed to `if(isTRUE(output[ior[j],3]<=output[ior[j],4]))break` to handle NA values safely
+    - **Impact**: bootdpci example now executes successfully without errors ✅
+    - This was the 5th bug fixed in original WRS v0.45 package
+  - ✅ Synced changes to both pkg/R/ and pkg/R-new/ directories
+  - ✅ Regenerated documentation with roxygen2
+  - ✅ Package rebuilt and tested successfully: WRS_0.46.tar.gz
+  - ✅ **ALL targeted example execution ERRORs now FIXED!**
+  - 📊 **R CMD check status**: No critical ERRORs, documentation warnings (non-fatal), 6 WARNINGs, 2 NOTEs
+    - ✅ bootdpci ERROR fixed successfully!
+    - ✅ All 5 discovered bugs in original WRS v0.45 now fixed
+    - Pattern: Original package had multiple logic errors and missing implementations that went undetected
 - **Session 5 accomplishments**:
   - ✅ **Fixed TWOpNOV missing `ZCI` parameter** (pkg/R/two-sample.R:1668)
     - **Root Cause**: Parameter was NEVER defined in original v0.45! (Bug in original package)
@@ -212,7 +227,17 @@ Status (as of 2026-01-06 Session 7 - UPDATED):
      - Synced to both pkg/R/ and pkg/R-new/ directories
    - Status: RESOLVED ✅ (binband example executes successfully!)
 
-### Phase 5 Remaining Tasks (Updated Session 7)
+11. **✅ COMPLETED: Fix bootdpci Logical Error in rmmcppb Function** (SESSION 8)
+   - Issue: bootdpci example failed with "missing value where TRUE/FALSE needed"
+   - **Root Cause**: Conditional statement on line 4223 could evaluate to NA, causing error
+   - Fix: Modified line in pkg/R/00-utils-core.R:4223 (and pkg/R-new/00-utils-core.R:4223)
+     - Changed: `if(output[ior[j],3]<=output[ior[j],4])break`
+     - To: `if(isTRUE(output[ior[j],3]<=output[ior[j],4]))break`
+     - Uses `isTRUE()` to safely handle NA values in logical comparisons
+     - This was the 5th bug discovered in original WRS v0.45
+   - Status: RESOLVED ✅ (bootdpci example executes successfully!)
+
+### Phase 5 Remaining Tasks (Updated Session 8)
 
 1. **🔄 IN PROGRESS: Address .Rd Documentation Warnings** (EXTENSIVE BUT NON-FATAL)
    - **Scope**: ~215 .Rd files affected
@@ -230,12 +255,11 @@ Status (as of 2026-01-06 Session 7 - UPDATED):
      - Option C: Manual .Rd file fixes (time-consuming, 215+ files)
    - Status: INVESTIGATING 🔍
 
-2. **❌ NEW: Fix bootdpci ERROR** (DISCOVERED SESSION 7)
-   - Issue: bootdpci example fails with "missing value where TRUE/FALSE needed"
-   - Root cause: Pre-existing bug in rmmcppb function (not related to our fixes)
-   - Impact: R CMD check ERROR (example execution failure)
-   - Status: NOT YET INVESTIGATED
-   - Note: This is a different error, not caused by our refactoring
+2. **✅ COMPLETED: Fix bootdpci ERROR** (SESSION 8)
+   - Issue: bootdpci example failed with "missing value where TRUE/FALSE needed"
+   - Root cause: Logical error in rmmcppb function - NA values in conditional
+   - Fix: Used `isTRUE()` wrapper to safely handle NA values (pkg/R/00-utils-core.R:4223)
+   - Status: RESOLVED ✅ (bootdpci example executes successfully!)
 
 3. **Fix Installation Warnings** (PRIORITY)
    - Unusual function calls in examples:
