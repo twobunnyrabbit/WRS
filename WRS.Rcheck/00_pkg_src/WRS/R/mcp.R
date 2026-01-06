@@ -4390,7 +4390,7 @@ Factor.AC<-NA
 Factor.BC<-NA
 Factor.ABC<-NA
 con<-cbind(conA,conB,conB,conAB,conAC,conBC,conABC)
-All.Tests<-lincon(x,con=con,tr=tr,alpha=alpha,,pr=pr)
+All.Tests<-lincon(x,con=con,tr=tr,alpha=alpha,pr=pr)
 }
 list(Factor.A=Factor.A,Factor.B=Factor.B,Factor.C=Factor.C,
 Factor.AB=Factor.AB,Factor.AC=Factor.AC,Factor.BC=Factor.BC,

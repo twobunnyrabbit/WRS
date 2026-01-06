@@ -760,7 +760,6 @@ IQR
 
 #' Dataset-Level Convex Polygons for Astigmatism Data
 #'
-#' @description
 #' Computes depth-based central regions and convex hull polygons for astigmatism datasets.
 #' For each formula (column pair), identifies the central region based on data depth and
 #' constructs the convex hull of points in that region.
@@ -858,7 +857,6 @@ list(centers=centers,convex.hull.pts=region)
 
 #' Dataset-Level Convex Polygons Using Means for Astigmatism Data
 #'
-#' @description
 #' Computes depth-based central regions and convex hull polygons for astigmatism datasets
 #' using means as the measure of central tendency. Identical to \code{\link{oph.astig.datasetconvexpoly}}
 #' except uses means instead of medians for computing the center.
@@ -4413,7 +4411,7 @@ binom2g<-function(r1 = sum(elimna(x)), n1 = length(elimna(x)), r2 = sum(elimna(y
 type=match.arg(method)
 switch(type,
    ECP=binmcp(c(r1,r2),n=c(n1,n2),alpha=alpha,iter=iter,SEED=SEED),
-   ZHZ=binom2g.ZHZ(r1,n1,r2,n2,binCI=binCI,alpha=alpha),
+   ZHZ=binom2g.ZHZ(r1,n1,r2,n2,alpha=alpha),
     KMS=bi2KMSv2(r1,n1,r2,n2,x=x,y=y,alpha=alpha),
     SK=twobinom(r1,n1,r2,n2,x=x,y=y),
     )
@@ -14161,7 +14159,7 @@ plotit<-F
 g2plot(v1,v2)
 }
 output<-sband(outer(x[[1]],x[[2]],FUN="+"),outer(x[[3]],x[[4]],FUN="+"),
-plotit=plotit,crit=crit,flag=FALSE,sm=sm,xlab=xlab,ylab=ylab)
+plotit=plotit,crit=crit,sm=sm,xlab=xlab,ylab=ylab)
 if(!print.all){
 numsig<-output$numsig
 ks.test.stat<-ks.test(outer(x[[1]],x[[2]],FUN="+"),
@@ -14282,15 +14280,6 @@ absfun
 #' @param n Deprecated. Use \code{nn} instead
 #' @param alpha Type I error rate (default: 0.05 for 95\% confidence interval)
 #'
-#' @return
-#' List with components:
-#' \describe{
-#'   \item{\code{phat}}{Estimated probability of success (x/n)}
-#'   \item{\code{se}}{Standard error of the estimate}
-#'   \item{\code{ci}}{Two-element vector containing lower and upper confidence limits}
-#'   \item{\code{n}}{Sample size used}
-#' }
-#'
 #' @details
 #' The Agresti-Coull method adds \eqn{z^2} successes and failures to the data before
 #' computing the Wald interval, where \eqn{z = z_{1-\alpha/2}}. This provides better
@@ -14301,6 +14290,15 @@ absfun
 #' \itemize{
 #'   \item When \code{x = 0} or \code{x = n}: Exact binomial intervals
 #'   \item When \code{x = 1} or \code{x = n-1}: Modified exact intervals
+#' }
+#'
+#' @return
+#' List with components:
+#' \describe{
+#'   \item{\code{phat}}{Estimated probability of success (x/n)}
+#'   \item{\code{se}}{Standard error of the estimate}
+#'   \item{\code{ci}}{Two-element vector containing lower and upper confidence limits}
+#'   \item{\code{n}}{Sample size used}
 #' }
 #'
 #' @references
@@ -14356,7 +14354,6 @@ list(phat=phat,se=sqrt(ptil*(1-ptil)/ntil),ci=c(lower,upper),n=n)
 
 #' Agresti-Coull Binomial Test with P-Value
 #'
-#' @description
 #' Tests the hypothesis that the probability of success equals a specified null value
 #' using the Agresti-Coull method. Computes both confidence interval and p-value by
 #' inverting the confidence interval.
@@ -16287,7 +16284,7 @@ plotit<-F
 g2plot(v1,v2)
 }
 output<-sband(outer(x[[1]],x[[2]],FUN="+"),outer(x[[3]],x[[4]],FUN="+"),
-plotit=plotit,crit=crit,flag=FALSE,sm=sm,xlab=xlab,ylab=ylab)
+plotit=plotit,crit=crit,sm=sm,xlab=xlab,ylab=ylab)
 if(!print.all){
 numsig<-output$numsig
 ks.test.stat<-ks.test(outer(x[[1]],x[[2]],FUN="+"),
@@ -17506,7 +17503,6 @@ list(n=n,Est=e,p.value=pv)
 
 #' Brown-Guo Confidence Interval for Median
 #'
-#' @description
 #' Computes a robust confidence interval for the sample median using the
 #' Brown-Guo standard error based on the middle \eqn{n^{0.8}} cases. This method
 #' is optimal for estimating the standard error but is not fully resistant to outliers.
@@ -25342,7 +25338,6 @@ ecdf
 
 #' Confidence Interval for Robust Heteroscedastic Effect Size
 #'
-#' @description
 #' Computes a confidence interval for a robust, heteroscedastic measure of explanatory
 #' power (effect size) based on Yuen's trimmed mean comparison. Provides bootstrap
 #' CI for the proportion of variance explained.
@@ -33358,7 +33353,6 @@ val
 
 #' LCO Confidence Intervals for Binomial Proportion
 #'
-#' @description
 #' Generates likelihood-based confidence ordering (LCO) confidence intervals for
 #' binomial proportions for all possible values of X from 0 to n.
 #'
@@ -33717,7 +33711,6 @@ list(test=test,psihat=psihat,num.sig=num.sig)
 
 #' Linear Contrasts for Dependent Groups Using Trimmed Means
 #'
-#' @description
 #' Performs heteroscedastic tests of linear contrasts among dependent groups
 #' using trimmed means.
 #'
@@ -44834,7 +44827,6 @@ list(n.out=no,p.value=mean(val>=no))
 
 #' Confidence Interval for Odds Ratio
 #'
-#' @description
 #' Computes confidence interval for the odds ratio in a 2×2 contingency table
 #' using logistic regression.
 #'
@@ -45192,7 +45184,6 @@ weights <- hard.rejection(distances, p, beta=beta,...)
 
 #' OLS Regression Line with Prediction Confidence Interval
 #'
-#' @description
 #' Plots OLS regression line with confidence intervals for predicted values.
 #' Optionally removes leverage points before fitting.
 #'
@@ -67734,7 +67725,6 @@ sum(x[(iL+1):iR] * W)
 
 #' Trimmed K-Means Clustering
 #'
-#' @description
 #' Performs robust cluster analysis using the trimmed k-means method, which
 #' automatically trims a proportion of outlying observations.
 #'
