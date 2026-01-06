@@ -1,0 +1,60 @@
+* using log directory ‘/home/mando/coding/R-Projects/WRS/pkg/WRS.Rcheck’
+* using R version 4.5.2 (2025-10-31)
+* using platform: x86_64-pc-linux-gnu
+* R was compiled by
+    gcc (Ubuntu 11.4.0-1ubuntu1~22.04.2) 11.4.0
+    GNU Fortran (Ubuntu 11.4.0-1ubuntu1~22.04.2) 11.4.0
+* running under: Ubuntu 22.04.5 LTS
+* using session charset: UTF-8
+* using options ‘--no-manual --no-build-vignettes --as-cran’
+* checking for file ‘WRS/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘WRS’ version ‘0.46’
+* package encoding: UTF-8
+* checking CRAN incoming feasibility ... [13s/27s] NOTE
+Maintainer: ‘Felix Schönbrodt <felix@nicebread.de>’
+
+New submission
+
+Non-FOSS package license (file LICENSE)
+
+Suggests or Enhances not in mainstream repositories:
+  WRScpp, hrbrthemes
+
+No Authors@R field in DESCRIPTION.
+Please add one, modifying
+  Authors@R: c(person(given = c("Rand", "R."),
+                      family = "Wilcox",
+                      role = "aut",
+                      email = "rwilcox@usc.edu"),
+               person(given = "Felix",
+                      family = "Schönbrodt",
+                      role = "cre",
+                      email = "felix@nicebread.de"))
+as necessary.
+
+Package CITATION file contains call(s) to old-style personList() or
+as.personList().  Please use c() on person objects instead.
+Package CITATION file contains call(s) to old-style citEntry().  Please
+use bibentry() instead.
+
+The Description field contains
+  by R. R. Wilcox (http://dornsife.usc.edu/labs/rwilcox/software/).
+Please enclose URLs in angle brackets (<...>).
+
+Size of tarball: 6245532 bytes
+* checking package namespace information ... OK
+* checking package dependencies ... ERROR
+Packages suggested but not available:
+  'bcaboot', 'mrfDepth', 'randomForest', 'neuralnet', 'mboost', 'gbm',
+  'DetMCD', 'ICSOutlier', 'ROCR', 'hqreg', 'enetLTS', 'ddalpha',
+  'viridis', 'reshape', 'plotrix', 'hrbrthemes', 'segmented'
+
+The suggested packages are required for a complete check.
+Checking can be attempted without them by setting the environment
+variable _R_CHECK_FORCE_SUGGESTS_ to a false value.
+
+See section ‘The DESCRIPTION file’ in the ‘Writing R Extensions’
+manual.
+* DONE
+Status: 1 ERROR, 1 NOTE

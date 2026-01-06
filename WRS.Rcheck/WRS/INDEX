@@ -1102,6 +1102,7 @@ lasso.rep               Repeated LASSO Regression for Stable
 lband                   Confidence Band for Shift Function (Lombard
                         Method)
 lin.ES                  Quantile Shift Effect Size for Linear Contrasts
+lin.akp                 AKP Effect Size for Linear Contrasts
 lin2plot                Plot Two Distributions Based on Positive and
                         Negative Contrast Coefficients
 linEP                   Explanatory Power for Linear Contrast
@@ -1799,6 +1800,8 @@ regGmcp                 Global Multiple Comparisons for Regression
 regHH                   Regression After Removing Bad Leverage Points
                         (HH Method)
 regIQR                  Interquartile Range for Regression
+regIQRsd                Robust Standard Deviation for Regression Using
+                        IQR
 regIVcom                Compare Strength of Association for Two
                         Predictor Subsets
 regIVcommcp             Multiple Comparisons of Predictor Strength for
@@ -2185,6 +2188,7 @@ spearci                 Bootstrap Confidence Interval for Spearman's
 split.mat               Split Data into Groups Based on Quantiles
 splot                   Plot Relative Frequency Distribution for
                         Discrete or Continuous Data
+splotg2                 Frequency Plot for Two Groups
 splotg5                 Plot Relative Frequency Distributions for Up to
                         Five Groups
 spmcpa                  Multiple Comparisons for Split-Plot Designs -

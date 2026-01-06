@@ -6109,6 +6109,9 @@ for(i in 1:n)abline(outmat[i,1],outmat[i,2])
 #'     \item \code{'sprojdepth'}: Skewness-adjusted projection depth
 #'   }
 #'
+#' @return A bagplot object from the `mrfDepth` package. Creates a plot as
+#'   a side effect.
+#'
 #' @details
 #' The bagplot extends the boxplot concept to two dimensions using data depth:
 #' - **Bag**: Contains the 50\% deepest points (analogous to the IQR)
@@ -6116,9 +6119,6 @@ for(i in 1:n)abline(outmat[i,1],outmat[i,2])
 #' - **Outliers**: Points beyond the loop
 #'
 #' **Requires**: The `mrfDepth` and `ggplot2` packages must be installed.
-#'
-#' @return A bagplot object from the `mrfDepth` package. Creates a plot as
-#'   a side effect.
 #'
 #' @references
 #' Rousseeuw, P.J., Ruts, I., and Tukey, J.W. (1999). The bagplot: A bivariate
@@ -6410,6 +6410,52 @@ if(NN>=2)lines(temp,freqx2,lty=2)
 if(NN>=3)lines(temp,freqx3,lty=3)
 if(NN>=4)lines(temp,freqx4,lty=4)
 if(NN>=5)lines(temp,freqx5,lty=5)
+}
+
+#' Frequency Plot for Two Groups
+#'
+#' @description
+#' Creates a frequency plot comparing the discrete probability distributions
+#' of two independent groups. For each unique value, plots the relative
+#' frequency (proportion) for both groups with different line types.
+#'
+#' @param x Numeric vector for first group.
+#' @param y Numeric vector for second group.
+#' @param xlab Label for x-axis (default: "X").
+#' @param ylab Label for y-axis (default: "Rel. Freq.").
+#'
+#' @details
+#' This function is a specialized version of \code{\link{splotg5}} for comparing
+#' exactly two groups. It plots relative frequencies for all unique values that
+#' appear in either group:
+#' - Group 1 (x): solid line (lty=1)
+#' - Group 2 (y): dashed line (lty=2)
+#'
+#' Missing values are automatically removed from both groups before plotting.
+#'
+#' This function was missing in the original WRS v0.45 package and has been
+#' implemented as a wrapper around \code{\link{splotg5}} for consistency.
+#'
+#' @return Invisibly returns `NULL`. Creates a plot as a side effect.
+#'
+#' @seealso
+#' \code{\link{splotg5}} for comparing up to 5 groups,
+#' \code{\link{splot}} for plotting a single distribution,
+#' \code{\link{binband}} which uses this function for visualization
+#'
+#' @export
+#' @examples
+#' # Compare two discrete distributions
+#' x <- sample(1:5, 100, replace=TRUE, prob=c(0.1,0.2,0.3,0.2,0.2))
+#' y <- sample(1:5, 100, replace=TRUE, prob=c(0.3,0.2,0.2,0.2,0.1))
+#' splotg2(x, y)
+#'
+#' # Custom axis labels
+#' splotg2(x, y, xlab="Score", ylab="Proportion")
+splotg2 <- function(x, y, xlab="X", ylab="Rel. Freq.") {
+  # Wrapper function for two-group frequency plots
+  # Calls splotg5 with only x1 and x2 parameters
+  splotg5(x1=x, x2=y, xlab=xlab, ylab=ylab)
 }
 
 #' Plot Kernel Density Estimate

@@ -212,7 +212,7 @@ Information on the location(s) of code generating the ‘Note’s can be
 obtained by re-running with environment variable R_KEEP_PKG_SOURCE set
 to ‘yes’.
 * checking installed package size ... INFO
-  installed size is 10.9Mb
+  installed size is 11.0Mb
   sub-directories of 1Mb or more:
     R      4.8Mb
     help   5.6Mb
@@ -231,11 +231,12 @@ to ‘yes’.
 * checking whether the namespace can be unloaded cleanly ... OK
 * checking loading without being on the library search path ... OK
 * checking whether startup messages can be suppressed ... OK
-* checking dependencies in R code ... NOTE
+* checking dependencies in R code ... WARNING
+'library' or 'require' call not declared from: ‘MASS’
 'library' or 'require' calls in package code:
-  ‘DepthProc’ ‘DetMCD’ ‘ICSOutlier’ ‘ROCR’ ‘Rfit’ ‘WRScpp’ ‘bcaboot’
-  ‘class’ ‘cobs’ ‘ddalpha’ ‘e1071’ ‘enetLTS’ ‘fda’ ‘gbm’ ‘ggplot2’
-  ‘glmnet’ ‘hqreg’ ‘hrbrthemes’ ‘lars’ ‘mboost’ ‘mc2d’ ‘mgcv’
+  ‘DepthProc’ ‘DetMCD’ ‘ICSOutlier’ ‘MASS’ ‘ROCR’ ‘Rfit’ ‘WRScpp’
+  ‘bcaboot’ ‘class’ ‘cobs’ ‘ddalpha’ ‘e1071’ ‘enetLTS’ ‘fda’ ‘gbm’
+  ‘ggplot2’ ‘glmnet’ ‘hqreg’ ‘hrbrthemes’ ‘lars’ ‘mboost’ ‘mc2d’ ‘mgcv’
   ‘mrfDepth’ ‘neuralnet’ ‘nnet’ ‘plotrix’ ‘psych’ ‘pwr’ ‘quantreg’
   ‘ragg’ ‘randomForest’ ‘rankFD’ ‘reshape’ ‘robust’ ‘robustbase’
   ‘rrcov’ ‘scatterplot3d’ ‘segmented’ ‘tidyverse’ ‘trimcluster’
@@ -295,7 +296,6 @@ KNNv2: no visible global function definition for ‘knn’
 LAD.lasso: no visible global function definition for ‘rq’
 LADlasso.Z: no visible global function definition for ‘rq’
 LADlasso.Z: no visible global function definition for ‘rq.fit.lasso’
-LCES: no visible global function definition for ‘lin.akp’
 LG.samp: no visible binding for global variable ‘tr’
 LMSreg: no visible global function definition for ‘lmsreg’
 LTS.EN: no visible binding for global variable ‘plotit’
@@ -334,7 +334,6 @@ SVM: no visible global function definition for ‘svm’
 Scov: no visible global function definition for ‘CovSest’
 Stein.pairs: no visible binding for global variable ‘pow’
 TKmeans: no visible global function definition for ‘trimkmeans’
-TWOpNOV: no visible binding for global variable ‘ZCI’
 UB.class.error: no visible binding for global variable ‘reps’
 UBROC: no visible global function definition for ‘prediction’
 UBROC: no visible global function definition for ‘performance’
@@ -351,11 +350,8 @@ ancDEP.MULC.ES: no visible binding for global variable ‘j’
 ancGLOB: no visible global function definition for ‘ancGLOB_pv_C’
 ancM.COV.ES: no visible binding for global variable ‘j’
 ancdet2C: no visible binding for global variable ‘p.crit2’
-ancova.ES: no visible global function definition for ‘regIQRsd’
-ancova.KMS: no visible global function definition for ‘regIQRsd’
 ancovad.ESci: no visible binding for global variable ‘id’
 ancovampG: no visible global function definition for ‘scatterplot3d’
-ancovap2.KMS: no visible global function definition for ‘regIQRsd’
 ancovap2.KMS.plot: no visible global function definition for
   ‘scatterplot3d’
 ancovap2.wmw.plot: no visible global function definition for
@@ -370,7 +366,6 @@ bdmP: no visible global function definition for ‘rankFD’
 bestPB.DO: no visible binding for global variable ‘tr’
 bestPB.DO: no visible binding for global variable ‘Z’
 bestPB.DO: no visible binding for global variable ‘dif’
-binband: no visible global function definition for ‘splotg2’
 binom2g: possible error in binom2g.ZHZ(r1, n1, r2, n2, binCI = binCI,
   alpha = alpha): unused argument (binCI = binCI)
 bmp: no visible binding for global variable ‘rval’
@@ -696,10 +691,10 @@ Undefined global functions or variables:
   .. .pt AdaExp BYlogreg CI90_low CI90_up COR.method CovOgk CovSest
   DancGLOB_pv_C Danctspb.sub DetMCD Est.dif FBplot Inter.EP J JNH_sub1
   JNH_sub2 K MVECOR ND PcaLocantore RFreg SEED Stop TOST.p.value VA2 Z
-  ZCI aes alpha anc.best.PB anc.bestH.crit ancGLOB_pv_C ardata
-  backsolvet bagdistance bagplot bandwidth.sj bbmcppb.sub bcajack
-  bcajack2 binKMS.mpts.crit bwiPATEL center cidmulv2 cobs compBagplot
-  con coord_cartesian corblp covRob crit cv.glmnet dati decJK.Amain
+  aes alpha anc.best.PB anc.bestH.crit ancGLOB_pv_C ardata backsolvet
+  bagdistance bagplot bandwidth.sj bbmcppb.sub bcajack bcajack2
+  binKMS.mpts.crit bwiPATEL center cidmulv2 cobs compBagplot con
+  coord_cartesian corblp covRob crit cv.glmnet dati decJK.Amain
   decJK.Bmain depth.zonoid depthProjection dialogbox
   dialogbox.add.control dialogbox.display dif disp downdateR
   draw.circle editfield.control element_rect element_text enetLTS
@@ -708,21 +703,21 @@ Undefined global functions or variables:
   geom_rect geom_segment geom_vline gettau gettauF0 ggplot ggsave
   ggtitle glmnet gprc grp gval hqreg ics.distances ics.outlier ics2 id
   idc is.fd is.fdPar is.fdSmooth is.wholenumber istop j jaeckel knn
-  ks.crit l1fit labs lars lin.akp linconMpb.sub linconSpb.sub lm.ridge
-  lmRob lmrob lmsreg logistic.ridge lower lplot.sub lsqs2.for ltsReg
-  lynx mat mba mboost mdif melt morig multinom mulwmw.dist.new mvrnorm
-  n n1 n2 na.rm nboot neuralnet nmin nreps nval olshc4sub outfun p
-  p.crit2 p1 parallelRandomForest pch pdis.for performance plotit pow
-  pr prediction pts pwr.chisq.test randomForest rankFD rdepth
-  rdepthmedian reg.bca regIQRsd regciMC rejpt.bt.lim reps rfit
-  rmanc.best.PB rmanc.best.critPB rmultinomial rplot4g rq rq.fit.br
-  rq.fit.lasso runm3ds1 runs.test rval scale_color_manual
-  scale_fill_gradientn scale_fill_viridis scale_x_continuous
-  scale_y_continuous scatterplot3d scorregci.cr sec_axis segmented
-  signedrank skipcov.for smean2 splotg2 statictext.control svals svm
-  taustar test theme theme_ipsum theme_minimal tr trimkmeans
-  trimmul.crit trmn trq.fit tukmed uiw updateR upper ut.lm v1 v2 value
-  variable wmw.QC x x1 x2 xlab xmax xmin y y2 ylab
+  ks.crit l1fit labs lars linconMpb.sub linconSpb.sub lm.ridge lmRob
+  lmrob lmsreg logistic.ridge lower lplot.sub lsqs2.for ltsReg lynx mat
+  mba mboost mdif melt morig multinom mulwmw.dist.new mvrnorm n n1 n2
+  na.rm nboot neuralnet nmin nreps nval olshc4sub outfun p p.crit2 p1
+  parallelRandomForest pch pdis.for performance plotit pow pr
+  prediction pts pwr.chisq.test randomForest rankFD rdepth rdepthmedian
+  reg.bca regciMC rejpt.bt.lim reps rfit rmanc.best.PB
+  rmanc.best.critPB rmultinomial rplot4g rq rq.fit.br rq.fit.lasso
+  runm3ds1 runs.test rval scale_color_manual scale_fill_gradientn
+  scale_fill_viridis scale_x_continuous scale_y_continuous
+  scatterplot3d scorregci.cr sec_axis segmented signedrank skipcov.for
+  smean2 statictext.control svals svm taustar test theme theme_ipsum
+  theme_minimal tr trimkmeans trimmul.crit trmn trq.fit tukmed uiw
+  updateR upper ut.lm v1 v2 value variable wmw.QC x x1 x2 xlab xmax
+  xmin y y2 ylab
 Consider adding
   importFrom("datasets", "lynx")
 to your NAMESPACE file.
@@ -1613,9 +1608,6 @@ Missing link(s) in Rd file 'KMS.inter.pbci.Rd':
 Missing link(s) in Rd file 'KS.ANOVA.ES.Rd':
   ‘Complete reference’
 
-Missing link(s) in Rd file 'LCES.Rd':
-  ‘lin.akp’
-
 Missing link(s) in Rd file 'M1M2.Rd':
   ‘k’
 
@@ -1998,7 +1990,7 @@ Missing link(s) in Rd file 'ksw.crit.Rd':
   ‘ks.crit’
 
 Missing link(s) in Rd file 'lin.ES.Rd':
-  ‘linES.sub’ ‘lin.akp’
+  ‘linES.sub’
 
 Missing link(s) in Rd file 'lin2plot.Rd':
   ‘lincon’
@@ -2279,6 +2271,9 @@ Missing link(s) in Rd file 'regGmcp.Rd':
 Missing link(s) in Rd file 'regIQR.Rd':
   ‘Qreg’
 
+Missing link(s) in Rd file 'regIQRsd.Rd':
+  ‘Qreg’
+
 Missing link(s) in Rd file 'regIVstr.Rd':
   ‘j’ ‘,j’
 
@@ -2524,21 +2519,21 @@ Undocumented code objects:
   ‘corxy’ ‘dep.ES.summary.sub’ ‘der2phiBY3’ ‘derphiBY3’ ‘difqci’
   ‘difregYvar’ ‘dlin.sign’ ‘draw.ellipse’ ‘extradir’ ‘getSE’ ‘gethdot’
   ‘greatsort’ ‘hdpv’ ‘hochberg’ ‘inter.TDES.sub’ ‘kernelEVD’
-  ‘linES.sub’ ‘lincon’ ‘lintests1’ ‘lloc’ ‘llrplot’ ‘llrsim’ ‘lmsviews’
-  ‘lnormsd’ ‘lsviews’ ‘lts1reg’ ‘ltsreg.2’ ‘maha’ ‘matsqrt’ ‘mbalata’
-  ‘mbamv’ ‘mbamv2’ ‘mbareg’ ‘mcpKadjp’ ‘mdepreg.coef’ ‘mdepreg.orig’
-  ‘mdepreg.sub’ ‘med2ci’ ‘medci’ ‘ols.coef’ ‘olsJmcp’ ‘olshc4band’
-  ‘opregpbMC’ ‘outreg’ ‘ph.inter’ ‘poireg’ ‘powest’ ‘qcor.ep’ ‘qhatds1’
-  ‘qreg’ ‘qreg.sub’ ‘randomset’ ‘rbeta.binomial’ ‘reg.reglev’ ‘reg1mcp’
-  ‘reg1wayISO’ ‘reg2cimcp’ ‘regIQRcon’ ‘regYsub’ ‘regYval’ ‘regcits’
-  ‘regpecv’ ‘regpre’ ‘regpreCV’ ‘regpreS’ ‘regpres1’ ‘regts1’
-  ‘remove.lab.vec’ ‘rhohc4bt’ ‘rimul’ ‘rm2miss.sub’ ‘rmESPRO.est’
-  ‘rmanogsub’ ‘rob.ridge.liu’ ‘robEst’ ‘robR2w’ ‘rplot.pred’ ‘rplot2g’
-  ‘rplotv2’ ‘rrl.est’ ‘rrplot’ ‘rrplot2’ ‘rstmn’ ‘scorall’ ‘shiftQS’
-  ‘shiftQSci’ ‘sir’ ‘sirviews’ ‘smgridLC’ ‘snmreg.sub’ ‘stmci’
-  ‘symviews’ ‘tailci.mul’ ‘tmci’ ‘trviews’ ‘tsgregs1’ ‘tvreg’ ‘tvreg2’
-  ‘twolsregsub’ ‘unimcd’ ‘uniran’ ‘vech’ ‘wddplot’ ‘weightmecov’
-  ‘wrregfun’ ‘wsp1reg’ ‘zdist’
+  ‘linAKP.sub’ ‘linES.sub’ ‘lincon’ ‘lintests1’ ‘lloc’ ‘llrplot’
+  ‘llrsim’ ‘lmsviews’ ‘lnormsd’ ‘lsviews’ ‘lts1reg’ ‘ltsreg.2’ ‘maha’
+  ‘matsqrt’ ‘mbalata’ ‘mbamv’ ‘mbamv2’ ‘mbareg’ ‘mcpKadjp’
+  ‘mdepreg.coef’ ‘mdepreg.orig’ ‘mdepreg.sub’ ‘med2ci’ ‘medci’
+  ‘ols.coef’ ‘olsJmcp’ ‘olshc4band’ ‘opregpbMC’ ‘outreg’ ‘ph.inter’
+  ‘poireg’ ‘powest’ ‘qcor.ep’ ‘qhatds1’ ‘qreg’ ‘qreg.sub’ ‘randomset’
+  ‘rbeta.binomial’ ‘reg.reglev’ ‘reg1mcp’ ‘reg1wayISO’ ‘reg2cimcp’
+  ‘regIQRcon’ ‘regYsub’ ‘regYval’ ‘regcits’ ‘regpecv’ ‘regpre’
+  ‘regpreCV’ ‘regpreS’ ‘regpres1’ ‘regts1’ ‘remove.lab.vec’ ‘rhohc4bt’
+  ‘rimul’ ‘rm2miss.sub’ ‘rmESPRO.est’ ‘rmanogsub’ ‘rob.ridge.liu’
+  ‘robEst’ ‘robR2w’ ‘rplot.pred’ ‘rplot2g’ ‘rplotv2’ ‘rrl.est’ ‘rrplot’
+  ‘rrplot2’ ‘rstmn’ ‘scorall’ ‘shiftQS’ ‘shiftQSci’ ‘sir’ ‘sirviews’
+  ‘smgridLC’ ‘snmreg.sub’ ‘stmci’ ‘symviews’ ‘tailci.mul’ ‘tmci’
+  ‘trviews’ ‘tsgregs1’ ‘tvreg’ ‘tvreg2’ ‘twolsregsub’ ‘unimcd’ ‘uniran’
+  ‘vech’ ‘wddplot’ ‘weightmecov’ ‘wrregfun’ ‘wsp1reg’ ‘zdist’
 Undocumented S4 classes:
   ‘SSV’ ‘BIN’
 All user-level objects in a package (including S4 classes and methods)
@@ -2982,30 +2977,25 @@ Rd files without \description:
 Running examples in ‘WRS-Ex.R’ failed
 The error most likely occurred in:
 
-> ### Name: LCES
-> ### Title: Linear Contrast Effect Sizes (Multiple Measures)
-> ### Aliases: LCES
+> ### Name: bootdpci
+> ### Title: Percentile Bootstrap CI for Dependent Groups
+> ### Aliases: bootdpci
 > 
 > ### ** Examples
 > 
-> # Three-group comparison
-> set.seed(123)
-> g1 <- rnorm(20, mean = 0)
-> g2 <- rnorm(20, mean = 0.5)
-> g3 <- rnorm(20, mean = 1)
-> x <- list(g1, g2, g3)
-> 
-> # Pairwise contrasts
-> con <- matrix(c(1, -1, 0,
-+                  1, 0, -1,
-+                  0, 1, -1), ncol = 3)
-> LCES(x, con)
-Error in lin.akp(x, con[, i], locfun = mean, nreps = nreps, tr = tr) : 
-  could not find function "lin.akp"
-Calls: LCES
+> # Paired data
+> x <- c(120, 135, 140, 125, 130, 142, 128, 133)
+> y <- c(115, 130, 138, 120, 125, 140, 125, 130)
+> bootdpci(x, y, nboot=500)
+[1] "dif=TRUE, so analysis is done on difference scores."
+[1] " Each confidence interval has probability coverage 1-alpha."
+[1] "Also note that a sequentially rejective method is being used"
+Error in if (output[ior[j], 3] <= output[ior[j], 4]) break else num.sig = num.sig -  : 
+  missing value where TRUE/FALSE needed
+Calls: bootdpci -> rmmcppb
 Execution halted
 * checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... OK
   Running ‘test-backward-compat.R’
 * DONE
-Status: 1 ERROR, 5 WARNINGs, 3 NOTEs
+Status: 1 ERROR, 6 WARNINGs, 2 NOTEs

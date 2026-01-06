@@ -22,4 +22,4 @@ License: file LICENSE
 LazyLoad: yes
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
-Built: R 4.5.2; ; 2026-01-05 19:51:46 UTC; unix
+Built: R 4.5.2; ; 2026-01-05 20:50:14 UTC; unix

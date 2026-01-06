@@ -8259,3 +8259,72 @@ e=regfun(x[keep,],y[keep],...)
 list(n=n,n.keep=nk,coef=e$coef)
 }
 
+
+
+# ============================================================================
+# regIQRsd
+# ============================================================================
+
+#' Robust Standard Deviation for Regression Using IQR
+#'
+#' @description
+#' Computes a robust estimate of the standard deviation of regression residuals
+#' at specified design points using the interquartile range (IQR) method.
+#'
+#' @param x Numeric vector or matrix. Predictor variable(s).
+#' @param y Numeric vector. Response variable.
+#' @param pts Numeric vector. Design points at which to estimate standard deviation.
+#'   Default uses unique values of x.
+#' @param regfun Regression function to use (default: Qreg for quantile regression).
+#'
+#' @return Numeric value. Robust standard deviation estimate based on IQR of residuals.
+#'
+#' @details
+#' This function computes a robust standard deviation estimate for regression by:
+#' \enumerate{
+#'   \item Fitting regression at specified design points using the specified regression function
+#'   \item Computing residuals from the regression fit
+#'   \item Estimating standard deviation as IQR/1.349 (the expected IQR for standard normal)
+#' }
+#'
+#' The IQR-based standard deviation is more resistant to outliers than the classical
+#' standard deviation. The constant 1.349 is the ratio of IQR to standard deviation
+#' for a normal distribution.
+#'
+#' @seealso \code{\link{regYvar}}, \code{\link{idealfIQR}}, \code{\link{Qreg}}
+#'
+#' @export
+#' @examples
+#' # Generate regression data with outliers
+#' set.seed(123)
+#' x <- runif(50, 0, 10)
+#' y <- 2 + 0.5*x + rnorm(50, 0, 1.5)
+#' y[c(5, 15)] <- y[c(5, 15)] + 10  # Add outliers
+#'
+#' # Compute robust SD at design points
+#' pts <- seq(min(x), max(x), length.out = 10)
+#' sd_est <- regIQRsd(x, y, pts = pts)
+#' sd_est
+regIQRsd <- function(x, y, pts = unique(x), regfun = Qreg) {
+  # Fit regression and get predicted values at design points
+  yhat <- regYhat(x, y, xr = pts, regfun = regfun)
+
+  # Get actual y values corresponding to design points
+  # For each point in pts, find closest x value and get corresponding y
+  residuals <- numeric(length(pts))
+  for (i in seq_along(pts)) {
+    # Find observations near this design point
+    idx <- which.min(abs(x - pts[i]))
+    if (length(idx) > 0) {
+      residuals[i] <- y[idx] - yhat[i]
+    }
+  }
+
+  # Compute robust SD using IQR method
+  # IQR / 1.349 gives SD estimate for normal distribution
+  iqr_val <- idealfIQR(residuals)
+  sd_est <- iqr_val / 1.349
+
+  return(sd_est)
+}
+

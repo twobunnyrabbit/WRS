@@ -719,6 +719,7 @@ lband.fun2	lband.fun2
 LCES	LCES
 LCO.CI	LCO.CI
 LG.samp	LG.samp
+lin.akp	lin.akp
 lin.ES	lin.ES
 lin2plot	lin2plot
 lincdm	lincdm
@@ -1336,6 +1337,7 @@ reghet.blp.ci	reghet.blp.ci
 regHH	regHH
 regi	regi
 regIQR	regIQR
+regIQRsd	regIQRsd
 regIVbinv2_sub	regIVbinv2_sub
 regIVcom	regIVcom
 regIVcommcp	regIVcommcp
@@ -1629,6 +1631,7 @@ spear	spear
 spearci	spearci
 split.mat	split.mat
 splot	splot
+splotg2	splotg2
 splotg5	splotg5
 spmcpa	spmcpa
 spmcpb	spmcpb
